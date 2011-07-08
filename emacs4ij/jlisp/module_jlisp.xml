@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_jlisp" default="compile.module.jlisp">
+  <dirname property="module.jlisp.basedir" file="${ant.file.module_jlisp}"/>
+  
+  <property name="module.jdk.home.jlisp" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.jlisp" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.jlisp" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.jlisp" value="${compiler.args}"/>
+  
+  <property name="jlisp.output.dir" value="${module.jlisp.basedir}/../out/production/jlisp"/>
+  <property name="jlisp.testoutput.dir" value="${module.jlisp.basedir}/../out/test/jlisp"/>
+  
+  <path id="jlisp.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="jlisp.module.production.classpath">
+    <path refid="${module.jdk.classpath.jlisp}"/>
+  </path>
+  
+  <path id="jlisp.runtime.production.module.classpath">
+    <pathelement location="${jlisp.output.dir}"/>
+  </path>
+  
+  <path id="jlisp.module.classpath">
+    <path refid="${module.jdk.classpath.jlisp}"/>
+    <pathelement location="${jlisp.output.dir}"/>
+  </path>
+  
+  <path id="jlisp.runtime.module.classpath">
+    <pathelement location="${jlisp.testoutput.dir}"/>
+    <pathelement location="${jlisp.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.jlisp">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.jlisp">
+    <patternset refid="excluded.from.module.jlisp"/>
+  </patternset>
+  
+  <path id="jlisp.module.sourcepath">
+    <dirset dir="${module.jlisp.basedir}">
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.jlisp" depends="compile.module.jlisp.production,compile.module.jlisp.tests" description="Compile module jlisp"/>
+  
+  <target name="compile.module.jlisp.production" depends="register.custom.compilers" description="Compile module jlisp; production classes">
+    <mkdir dir="${jlisp.output.dir}"/>
+    <javac2 destdir="${jlisp.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.jlisp}/javac">
+      <compilerarg line="${compiler.args.jlisp}"/>
+      <bootclasspath refid="jlisp.module.bootclasspath"/>
+      <classpath refid="jlisp.module.production.classpath"/>
+      <src refid="jlisp.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.jlisp"/>
+    </javac2>
+    
+    <copy todir="${jlisp.output.dir}">
+      <fileset dir="${module.jlisp.basedir}/src/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.jlisp.tests" depends="register.custom.compilers,compile.module.jlisp.production" description="compile module jlisp; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.jlisp" description="cleanup module">
+    <delete dir="${jlisp.output.dir}"/>
+    <delete dir="${jlisp.testoutput.dir}"/>
+  </target>
+</project>
