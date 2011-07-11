@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingParenthese;
+import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.exception.ReadFinishedException;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class Parser {
                 }
                 element += c;
             } catch (ReadFinishedException e) {
-                throw new MissingClosingParenthese();
+                throw new MissingClosingBracketException();
             }
         }
     }

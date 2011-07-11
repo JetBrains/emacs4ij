@@ -7,8 +7,8 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 7:50 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MissingClosingParenthese extends LispException {
-    public MissingClosingParenthese () {
-        super("Missing closing parenthese");
+public class MissingClosingBracketException extends LispException {
+    public MissingClosingBracketException() {
+        super("Missing closing bracket");
     }
 }
