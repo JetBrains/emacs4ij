@@ -1,4 +1,4 @@
-package com.jetbrains.emacs4ij.jlisp;
+package org.jetbrains.emacs4ij.jelisp;
 
 /**
  * Created by IntelliJ IDEA.

@@ -8,8 +8,8 @@
   
   <property name="compiler.args.emacs4ij" value="${compiler.args}"/>
   
-  <property name="emacs4ij.output.dir" value="${module.emacs4ij.basedir}/out/production/emacs4ij"/>
-  <property name="emacs4ij.testoutput.dir" value="${module.emacs4ij.basedir}/out/test/emacs4ij"/>
+  <property name="emacs4ij.output.dir" value="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
+  <property name="emacs4ij.testoutput.dir" value="${module.emacs4ij.basedir}/../out/test/emacs4ij"/>
   
   <path id="emacs4ij.module.bootclasspath">
     <!-- Paths to be included in compilation bootclasspath -->
@@ -42,15 +42,51 @@
     <patternset refid="excluded.from.module.emacs4ij"/>
   </patternset>
   
+  <path id="emacs4ij.module.sourcepath">
+    <dirset dir="${module.emacs4ij.basedir}">
+      <include name="java"/>
+    </dirset>
+  </path>
+  
   
   <target name="compile.module.emacs4ij" depends="compile.module.emacs4ij.production,compile.module.emacs4ij.tests" description="Compile module emacs4ij"/>
   
-  <target name="compile.module.emacs4ij.production" depends="register.custom.compilers" description="Compile module emacs4ij; production classes"/>
+  <target name="compile.module.emacs4ij.production" depends="register.custom.compilers" description="Compile module emacs4ij; production classes">
+    <mkdir dir="${emacs4ij.output.dir}"/>
+    <javac2 destdir="${emacs4ij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
+      <compilerarg line="${compiler.args.emacs4ij}"/>
+      <bootclasspath refid="emacs4ij.module.bootclasspath"/>
+      <classpath refid="emacs4ij.module.production.classpath"/>
+      <src refid="emacs4ij.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.emacs4ij"/>
+    </javac2>
+    
+    <copy todir="${emacs4ij.output.dir}">
+      <fileset dir="${module.emacs4ij.basedir}/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
   
   <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests"/>
   
   <target name="clean.module.emacs4ij" description="cleanup module">
     <delete dir="${emacs4ij.output.dir}"/>
     <delete dir="${emacs4ij.testoutput.dir}"/>
+  </target>
+  
+  <property name="emacs4ij.plugin.path.jar" value="${module.emacs4ij.basedir}/emacs4ij.jar"/>
+  
+  <!-- Build archive for plugin 'emacs4ij' -->
+  <target name="plugin.build.jar.emacs4ij" depends="compile.module.emacs4ij" description="Build plugin archive for module &apos;emacs4ij&apos;">
+    <jar destfile="${emacs4ij.plugin.path.jar}" duplicate="preserve">
+      <zipfileset dir="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
+      <zipfileset file="${module.emacs4ij.basedir}/META-INF/plugin.xml" prefix="META-INF"/>
+      <manifest>
+        <attribute name="Created-By" value="IntelliJ IDEA"/>
+        <attribute name="Manifest-Version" value="1.0"/>
+      </manifest>
+    </jar>
   </target>
 </project>

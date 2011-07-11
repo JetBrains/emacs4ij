@@ -1,4 +1,4 @@
-package com.jetbrains.emacs4ij.jlisp;
+package org.jetbrains.emacs4ij.jelisp;
 
 import java.io.*;
 
@@ -16,7 +16,7 @@ public class Interpreter {
             //no code
             return;
         }
-        Reader lispCode = null;
+        Reader lispCode;
         if (args.length == 1) { //it may be lisp code or file name
             File f = new File(args[0]);
             try {
@@ -25,16 +25,12 @@ public class Interpreter {
                 //it must be lisp code
                 lispCode = new StringReader(args[0]);
             }
-        } else {
+        } else { // it is a lisp code. Concatenate string arguments into string
             StringBuilder stringBuilder = new StringBuilder();
             for (String arg: args) {
                 stringBuilder.append(arg).append(" ");
             }
             lispCode = new StringReader(stringBuilder.toString());
-        }
-        if (lispCode == null) {
-            //code read error
-            return;
         }
         LispProgram lispProgram = Parser.parse(lispCode);
         if (lispProgram == null) {

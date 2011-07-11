@@ -1,4 +1,4 @@
-package com.jetbrains.emacs4ij.jlisp;
+package org.jetbrains.emacs4ij.jelisp;
 
 import java.util.ArrayList;
 
@@ -11,6 +11,7 @@ import java.util.ArrayList;
  * This class represents a lisp program
  */
 public class LispProgram {
+
     private ArrayList<String> myConstant;
     private ArrayList<String> mySpecialForms; //this list must be common for every program
     private ArrayList<String> myVariables;

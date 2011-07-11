@@ -1,4 +1,4 @@
-package com.jetbrains.emacs4ij.jlisp;
+package org.jetbrains.emacs4ij.jelisp;
 
 import org.junit.Test;
 
@@ -24,6 +24,6 @@ public class InterpreterTest {
     }
     @Test
     public void testMultipleCodeArgs() throws Exception {
-        Interpreter.main(new String[] {"'(+", "2","3)"});
+        Interpreter.main(new String[] {"'(+", "2", "3)"});
     }
 }
