@@ -13,11 +13,20 @@ import java.io.Reader;
  */
 public class Parser {
 
+    private String readLispObject (Reader lispCode) {
+        String
+        while (true) {
 
-    private char readChar (Reader lispCode) {
+        }
         try {
+            int symbol = lispCode.read();
+            if (symbol == -1)
+                return null;
 
-            char c = (char) lispCode.read();
+            char c = (char)
+            if (c == -1) {
+                return  -1;
+            }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
