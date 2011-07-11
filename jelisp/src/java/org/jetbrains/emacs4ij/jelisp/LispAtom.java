@@ -7,5 +7,5 @@ package org.jetbrains.emacs4ij.jelisp;
  * Time: 1:29 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispAtom extends LispObject {
+public abstract class LispAtom extends LispObject {
 }

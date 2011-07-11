@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+
 import java.io.*;
 
 /**
@@ -12,6 +14,8 @@ import java.io.*;
 public class Interpreter {
 
     public static void main (String[] args) {
+        System.out.println(args.length);
+
         if (args.length == 0) {
             //no code
             return;
@@ -32,11 +36,14 @@ public class Interpreter {
             }
             lispCode = new StringReader(stringBuilder.toString());
         }
-        LispProgram lispProgram = Parser.parse(lispCode);
-        if (lispProgram == null) {
+
+        Parser parser = new Parser();
+        StringBuilder stackTrace = parser.parse(lispCode);
+        if (stackTrace == null) {
             //there were parse errors
+            //TODO: output stackTrace
             return;
         }
-        Evaluator.evaluate(lispProgram);
+        Evaluator.evaluate(parser.getMyProgram(), parser.getMyEnvironment());
     }
 }

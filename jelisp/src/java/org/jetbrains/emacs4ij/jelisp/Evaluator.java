@@ -10,7 +10,7 @@ package org.jetbrains.emacs4ij.jelisp;
  */
 public class Evaluator {
 
-    public static void evaluate (LispProgram lispProgram) {
+    public static void evaluate (LispObject program, Environment environment) {
 
     }
 }

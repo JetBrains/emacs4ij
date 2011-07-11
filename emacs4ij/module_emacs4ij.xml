@@ -44,7 +44,13 @@
   
   <path id="emacs4ij.module.sourcepath">
     <dirset dir="${module.emacs4ij.basedir}">
-      <include name="java"/>
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  <path id="emacs4ij.module.test.sourcepath">
+    <dirset dir="${module.emacs4ij.basedir}">
+      <include name="src/test"/>
     </dirset>
   </path>
   
@@ -62,14 +68,30 @@
     </javac2>
     
     <copy todir="${emacs4ij.output.dir}">
-      <fileset dir="${module.emacs4ij.basedir}/java">
+      <fileset dir="${module.emacs4ij.basedir}/src/java">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
     </copy>
   </target>
   
-  <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests"/>
+  <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests">
+    <mkdir dir="${emacs4ij.testoutput.dir}"/>
+    <javac2 destdir="${emacs4ij.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
+      <compilerarg line="${compiler.args.emacs4ij}"/>
+      <bootclasspath refid="emacs4ij.module.bootclasspath"/>
+      <classpath refid="emacs4ij.module.classpath"/>
+      <src refid="emacs4ij.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.emacs4ij"/>
+    </javac2>
+    
+    <copy todir="${emacs4ij.testoutput.dir}">
+      <fileset dir="${module.emacs4ij.basedir}/src/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
   
   <target name="clean.module.emacs4ij" description="cleanup module">
     <delete dir="${emacs4ij.output.dir}"/>
