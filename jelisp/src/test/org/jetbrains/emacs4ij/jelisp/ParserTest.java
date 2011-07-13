@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -79,12 +80,23 @@ public class ParserTest {
         Assert.assertEquals(new LispString("(5 \"la la\")"), lispObject);
     }
 
-    /*@Test
+    @Test
     public void testStringWithDblQuote () throws LispException {
-        LispObject lispObject = p.parseLine("(5 \"la \\" la\")");
-        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
-    }*/
+        LispObject lispObject = p.parseLine("(5 \"la \\\" la\")");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la \" la"))), lispObject);
+    }
+
+    @Test
+    public void testInnerList () throws LispException {
+        LispObject lispObject = p.parseLine("(5 (10))");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispList(Arrays.<LispObject>asList(new LispInteger(10))))), lispObject);
+    }
+
+    @Test
+    public void testListWithMultipleSpaces () throws LispException {
+        LispObject lispObject = p.parseLine("(   5    \"la   la\"   )");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la   la"))), lispObject);
+    }
 
 
-    //TODO: inner lists
 }

@@ -21,7 +21,7 @@ public class Parser {
     private int myCurrentIndex = 0;
     private String myLispCode;
     //TODO: to enum or hashmap
-    private char[] mySeparators = new char[] {'(', '"', ' '};
+    private char[] mySeparators = new char[] {')', '"', ' '};
 
     private void increaseMyCurrentIndex() throws EndOfLineException {
         if (myCurrentIndex == myLispCode.length())
@@ -39,11 +39,15 @@ public class Parser {
         myCurrentIndex = newValue;
     }
 
+    private char getCurrentChar() throws EndOfLineException {
+        return myLispCode.charAt(getMyCurrentIndex());
+    }
+
     private LispObject parseList() throws LispException {
         LispList list = new LispList();
         try {
-            while (myLispCode.charAt(getMyCurrentIndex()) != ')') {
-                if (myLispCode.charAt(getMyCurrentIndex()) == ' ') {
+            while (getCurrentChar() != ')') {
+                if (getCurrentChar() == ' ') {
                     increaseMyCurrentIndex();
                     continue;
                 }
@@ -61,13 +65,26 @@ public class Parser {
         return list;
     }
 
+    private int getNextDoubleQuoteIndex (int from) {
+        int i = myLispCode.indexOf('"', from);
+        if (i == -1)
+            return i;
+        if (i != 0)
+            if (myLispCode.charAt(i-1) == '\\')
+                if (i + 1 != myLispCode.length()) {
+                    i = getNextDoubleQuoteIndex(i+1);
+                } else {
+                    return -1;
+                }
+        return i;
+    }
+
     private int getNextIndexOf (char what) throws EndOfLineException {
-        int i = myLispCode.indexOf(what, getMyCurrentIndex());
+        int i = (what == '"') ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
         return ((i == -1) ? myLispCode.length() : i);
     }
 
     private LispString parseString() throws MissingClosingDoubleQuoteException, EndOfLineException {
-        //TODO: skip \" which means double quote symbol itself
         int nextDoubleQuoteIndex = getNextIndexOf('"');
 
         if (nextDoubleQuoteIndex == myLispCode.length())
@@ -112,16 +129,7 @@ public class Parser {
         //TODO: what to do with empty code string?
         myCurrentIndex = 0;
         myLispCode = lispCode;
-        /*Pattern pattern = Pattern.compile("[\n]*");
-        Matcher matcher = pattern.matcher(myLispCode);
-        myLispCode = matcher.replaceAll(" ");
-
-        pattern = Pattern.compile("[ ]{2,}");
-        matcher = pattern.matcher(myLispCode);
-        myLispCode = matcher.replaceAll(" "); */
-
         myLispCode = myLispCode.trim();
-
         return parseObject();
     }
 
@@ -135,17 +143,17 @@ public class Parser {
         //TODO: stack to hold quotes, brackets and so on -- because strings and lists can be in multiple lines
 
 
-        if (myLispCode.charAt(getMyCurrentIndex()) == '\'') {
+        if (getCurrentChar() == '\'') {
             increaseMyCurrentIndex();
             return parseQuote();
         }
 
-        if (myLispCode.charAt(getMyCurrentIndex()) == '"') {
+        if (getCurrentChar() == '"') {
             increaseMyCurrentIndex();
             return parseString();
         }
 
-        if (myLispCode.charAt(getMyCurrentIndex()) == '(') {
+        if (getCurrentChar() == '(') {
             increaseMyCurrentIndex();
             return parseList();
         }

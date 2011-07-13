@@ -1,5 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -13,7 +16,9 @@ public class LispString extends LispAtom {
     private String myData;
 
     public LispString (String data) {
-        myData = data;
+        //Pattern pattern = Pattern.compile("\\\"");
+        //Matcher matcher = pattern.matcher(data);
+        myData = data.replaceAll("\\\\\"", "\"");
     }
 
     @Override
