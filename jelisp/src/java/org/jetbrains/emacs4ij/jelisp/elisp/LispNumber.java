@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.elisp;
 
 /**
  * Created by IntelliJ IDEA.
@@ -7,7 +7,8 @@ package org.jetbrains.emacs4ij.jelisp;
  * Time: 4:17 PM
  * To change this template use File | Settings | File Templates.
  *
- * elisp number = 13, 1355, -7979, etc
+ * base class for elisp numbers
  */
-public class LispNumber extends LispAtom {
+public abstract class LispNumber extends LispAtom {
+
 }

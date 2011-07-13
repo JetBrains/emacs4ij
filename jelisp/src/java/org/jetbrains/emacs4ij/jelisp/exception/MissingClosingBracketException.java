@@ -8,7 +8,10 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class MissingClosingBracketException extends LispException {
+    /*public MissingClosingBracketException(int position) {
+         super("Missing closing bracket", position);
+    } */
     public MissingClosingBracketException() {
-        super("Missing closing bracket");
+         super("Missing closing bracket");
     }
 }

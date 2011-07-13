@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ekaterina.polishchuk

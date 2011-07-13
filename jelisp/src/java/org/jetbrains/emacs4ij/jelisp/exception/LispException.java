@@ -13,13 +13,15 @@ public class LispException extends Exception {
     //TODO: store the position where the exception raised
 
     protected StringBuilder myStackTrace;
+   // protected int myPosition;
 
     public LispException () {
         super ("Unknown exception");
     }
 
-    public LispException (String message) {
+    public LispException (String message) { //}, int position) {
         super(message);
+        //myPosition = position;
     }
 
     public LispException(String message, StringBuilder stackTrace) {
@@ -29,5 +31,10 @@ public class LispException extends Exception {
 
     public StringBuilder getMyStackTrace () {
         return myStackTrace;
+    }
+
+    @Override
+    public String toString() {
+        return "LispException{}";
     }
 }

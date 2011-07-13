@@ -37,13 +37,13 @@ public class Interpreter {
             lispCode = new StringReader(stringBuilder.toString());
         }
 
-        Parser parser = new Parser();
-        StringBuilder stackTrace = parser.parse(lispCode);
+        /*Parser parser = new Parser();
+        /*StringBuilder stackTrace = parser.parse(lispCode);
         if (stackTrace == null) {
             //there were parse errors
             //TODO: output stackTrace
             return;
         }
-        Evaluator.evaluate(parser.getMyProgram(), parser.getMyEnvironment());
+        Evaluator.evaluate(parser.getMyProgram(), parser.getMyEnvironment());  */
     }
 }

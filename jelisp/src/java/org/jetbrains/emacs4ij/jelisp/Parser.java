@@ -1,12 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
-import org.jetbrains.emacs4ij.jelisp.exception.ReadFinishedException;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
+import sun.plugin.javascript.navig.Array;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,68 +18,145 @@ import java.util.ArrayList;
  */
 
 public class Parser {
+    private int myCurrentIndex = 0;
+    private String myLispCode;
+    //TODO: to enum or hashmap
+    private char[] mySeparators = new char[] {'(', '"', ' '};
 
-    private Reader myLispCode;
-    private LispObject myProgram;
-    private Environment myEnvironment = new Environment();
-    private StringBuilder myStackTrace = null;
-
-    private boolean myAsIs;
-
-    public LispObject getMyProgram() {
-        return myProgram;
+    private void increaseMyCurrentIndex() throws EndOfLineException {
+        if (myCurrentIndex == myLispCode.length())
+            throw new EndOfLineException();
+        ++myCurrentIndex;
     }
 
-    public Environment getMyEnvironment() {
-        return myEnvironment;
+    private int getMyCurrentIndex() throws EndOfLineException {
+        if (myCurrentIndex == myLispCode.length())
+            throw new EndOfLineException();
+        return myCurrentIndex;
     }
 
-    private char read () throws LispException {
-        int symbol = -1;
+    private void setMyCurrentIndex(int newValue) {
+        myCurrentIndex = newValue;
+    }
+
+    private LispObject parseList() throws LispException {
+        LispList list = new LispList();
         try {
-            symbol = myLispCode.read();
-        } catch (IOException e) {
-            try {
-                myLispCode.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            throw new LispException("The input Reader is corrupted. Parsing aborted.");
-        }
-        if (symbol == -1)
-            throw new ReadFinishedException();
-        return (char)symbol;
-    }
-
-    public ArrayList<LispObject> parseList() throws LispException {
-        ArrayList<LispObject> list = null;
-        String element = "";
-        while (true) {
-            try {
-                char c = read();
-                if (c == ')') {
-                    //TODO: check for empty list
-                    return list;
-                }
-                if ((c == ' ') || (c == '\n')) {
-                    if (element != "") {
-                        //TODO: recognize the element
-                    }
+            while (myLispCode.charAt(getMyCurrentIndex()) != ')') {
+                if (myLispCode.charAt(getMyCurrentIndex()) == ' ') {
+                    increaseMyCurrentIndex();
                     continue;
                 }
-                element += c;
-            } catch (ReadFinishedException e) {
-                throw new MissingClosingBracketException();
+                list.add(parseObject());
+            }
+        } catch (EndOfLineException e) {
+            throw new MissingClosingBracketException();
+        }
+
+        setMyCurrentIndex(getMyCurrentIndex()+1);
+
+        if (list.isEmpty())
+            return Environment.ourNilSymbol;
+
+        return list;
+    }
+
+    private int getNextIndexOf (char what) throws EndOfLineException {
+        int i = myLispCode.indexOf(what, getMyCurrentIndex());
+        return ((i == -1) ? myLispCode.length() : i);
+    }
+
+    private LispString parseString() throws MissingClosingDoubleQuoteException, EndOfLineException {
+        //TODO: skip \" which means double quote symbol itself
+        int nextDoubleQuoteIndex = getNextIndexOf('"');
+
+        if (nextDoubleQuoteIndex == myLispCode.length())
+            throw new MissingClosingDoubleQuoteException();
+
+        String string = myLispCode.substring(getMyCurrentIndex(), nextDoubleQuoteIndex);
+        setMyCurrentIndex(nextDoubleQuoteIndex + 1);
+        return new LispString(string);
+    }
+
+    private int getNextSeparatorIndex() throws EndOfLineException {
+        ArrayList<Integer> nextSeparatorIndex = new ArrayList<Integer>();
+        for (char separator : mySeparators) {
+            nextSeparatorIndex.add(getNextIndexOf(separator));
+        }
+        return Collections.min(nextSeparatorIndex);
+    }
+
+    private LispObject parseNumber () throws EndOfLineException {
+        int nextSeparatorIndex = getNextSeparatorIndex();
+        String numberCandidate = myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex);
+        try {
+            int intNumber = Integer.parseInt(numberCandidate);
+            setMyCurrentIndex(nextSeparatorIndex);
+            return new LispInteger(intNumber);
+        } catch (NumberFormatException e) {
+            try {
+                double dblNumber = Double.parseDouble(numberCandidate);
+                setMyCurrentIndex(nextSeparatorIndex);
+                return new LispFloat(dblNumber);
+            } catch (NumberFormatException e1) {
+                return Environment.ourNilSymbol;
             }
         }
     }
 
-    public StringBuilder parse(Reader lispCode) {
+    private LispObject parseSymbol () {
+        return Environment.ourNilSymbol;
+    }
+
+    public LispObject parseLine (String lispCode) throws LispException {
+        //TODO: what to do with empty code string?
+        myCurrentIndex = 0;
         myLispCode = lispCode;
+        /*Pattern pattern = Pattern.compile("[\n]*");
+        Matcher matcher = pattern.matcher(myLispCode);
+        myLispCode = matcher.replaceAll(" ");
 
-        // parse :)
+        pattern = Pattern.compile("[ ]{2,}");
+        matcher = pattern.matcher(myLispCode);
+        myLispCode = matcher.replaceAll(" "); */
 
-        return myStackTrace;
+        myLispCode = myLispCode.trim();
+
+        return parseObject();
+    }
+
+    private LispObject parseQuote() throws LispException {
+        // TODO: deal with ' and nothing next
+        LispObject lispObject = parseObject();
+        return lispObject.toLispString();
+    }
+
+    private LispObject parseObject() throws LispException {
+        //TODO: stack to hold quotes, brackets and so on -- because strings and lists can be in multiple lines
+
+
+        if (myLispCode.charAt(getMyCurrentIndex()) == '\'') {
+            increaseMyCurrentIndex();
+            return parseQuote();
+        }
+
+        if (myLispCode.charAt(getMyCurrentIndex()) == '"') {
+            increaseMyCurrentIndex();
+            return parseString();
+        }
+
+        if (myLispCode.charAt(getMyCurrentIndex()) == '(') {
+            increaseMyCurrentIndex();
+            return parseList();
+        }
+
+        LispObject lispObject = parseNumber();
+        if (lispObject == Environment.ourNilSymbol) {
+            lispObject = parseSymbol();
+            if (lispObject == Environment.ourNilSymbol)
+                throw new UnknownCodeBlockException();
+        }
+
+        return lispObject;
     }
 }
