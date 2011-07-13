@@ -68,4 +68,8 @@ public class LispList extends LispObject {
     public int hashCode() {
         return myData != null ? myData.hashCode() : 0;
     }
+
+    public LispObject car () {
+        return myData.get(0);
+    }
 }

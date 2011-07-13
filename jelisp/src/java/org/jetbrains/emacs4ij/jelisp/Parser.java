@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -21,7 +22,7 @@ public class Parser {
     //TODO: to enum or hashmap
     private char[] mySeparators = new char[] {')', '"', ' ', ';'};
 
-    private void increaseMyCurrentIndex() throws EndOfLineException {
+    private void advance() throws EndOfLineException {
         if (myCurrentIndex == myLispCode.length())
             throw new EndOfLineException();
         ++myCurrentIndex;
@@ -33,7 +34,7 @@ public class Parser {
         return myCurrentIndex;
     }
 
-    private void setMyCurrentIndex(int newValue) {
+    private void advanceTo(int newValue) {
         myCurrentIndex = newValue;
     }
 
@@ -46,7 +47,7 @@ public class Parser {
         try {
             while (getCurrentChar() != ')') {
                 if (getCurrentChar() == ' ') {
-                    increaseMyCurrentIndex();
+                    advance();
                     continue;
                 }
                 list.add(parseObject());
@@ -55,7 +56,7 @@ public class Parser {
             throw new MissingClosingBracketException();
         }
 
-        setMyCurrentIndex(getMyCurrentIndex()+1);
+        advanceTo(getMyCurrentIndex() + 1);
 
         if (list.isEmpty())
             return LispSymbol.ourNilSymbol;
@@ -89,7 +90,7 @@ public class Parser {
             throw new MissingClosingDoubleQuoteException();
 
         String string = myLispCode.substring(getMyCurrentIndex(), nextDoubleQuoteIndex);
-        setMyCurrentIndex(nextDoubleQuoteIndex + 1);
+        advanceTo(nextDoubleQuoteIndex + 1);
         return new LispString(string);
     }
 
@@ -106,12 +107,12 @@ public class Parser {
         String numberCandidate = myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex);
         try {
             int intNumber = Integer.parseInt(numberCandidate);
-            setMyCurrentIndex(nextSeparatorIndex);
+            advanceTo(nextSeparatorIndex);
             return new LispInteger(intNumber);
         } catch (NumberFormatException e) {
             try {
                 double dblNumber = Double.parseDouble(numberCandidate);
-                setMyCurrentIndex(nextSeparatorIndex);
+                advanceTo(nextSeparatorIndex);
                 return new LispFloat(dblNumber);
             } catch (NumberFormatException e1) {
                 LispFloat lispFloat = null;
@@ -123,7 +124,7 @@ public class Parser {
                     lispFloat = LispFloat.ourNaN;
 
                 if (lispFloat != null) {
-                    setMyCurrentIndex(nextSeparatorIndex);
+                    advanceTo(nextSeparatorIndex);
                     return lispFloat;
                 }
 
@@ -134,19 +135,43 @@ public class Parser {
 
     private LispObject parseSymbol () throws EndOfLineException {
         int nextSeparatorIndex = getNextSeparatorIndex();
-        return new LispSymbol(myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex));
+        int currentIndex = getMyCurrentIndex();
+        advanceTo(nextSeparatorIndex);
+        return new LispSymbol(myLispCode.substring(currentIndex, nextSeparatorIndex));
     }
 
     public LispObject parseLine (String lispCode) throws LispException {
         myCurrentIndex = 0;
         myLispCode = lispCode;
         myLispCode = myLispCode.trim();
-        return parseObject();
+        LispObject lispObject = parseObject();
+
+        try {
+            getMyCurrentIndex();
+        } catch (EndOfLineException ignored) {
+            return lispObject;
+        }
+        if (getCurrentChar() == ';')
+            return lispObject;
+        throw new UnknownCodeBlockException();
     }
 
     private LispObject parseQuote() throws LispException {
-        // TODO: deal with ' and nothing next;
-        return parseObject();
+        try {
+            while (getCurrentChar() == '\'') {
+                advance();
+            }
+        } catch (EndOfLineException ignored) {
+
+        }
+
+        LispObject lispObject = parseObject();
+        if (lispObject instanceof LispList) {
+            if (((LispList) lispObject).car() instanceof LispSymbol)
+                if (((LispSymbol)(((LispList) lispObject).car())).equals(new LispSymbol("quote")))
+                return lispObject;
+        }
+        return new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), parseObject()));
     }
 
     private LispObject parseObject() throws LispException {
@@ -159,23 +184,23 @@ public class Parser {
         }
 
         if (getCurrentChar() == '\'') {
-            increaseMyCurrentIndex();
+            advance();
             return parseQuote();
         }
 
         if (getCurrentChar() == '"') {
-            increaseMyCurrentIndex();
+            advance();
             return parseString();
         }
 
         if (getCurrentChar() == '(') {
-            increaseMyCurrentIndex();
+            advance();
             return parseList();
         }
 
         if (getCurrentChar() == ';') {
             //it is a comment, skip to the end of line
-            setMyCurrentIndex(myLispCode.length());
+            advanceTo(myLispCode.length());
             return LispSymbol.ourNilSymbol;
         }
 

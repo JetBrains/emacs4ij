@@ -1,6 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispNumber;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +15,15 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
  */
 public class Evaluator {
 
-    public static void evaluate (LispObject program, Environment environment) {
+    public static LispObject evaluate (LispObject lispObject, Environment environment) {
+        if (lispObject instanceof LispNumber)
+            return lispObject;
+        if (lispObject instanceof LispString)
+            return lispObject;
+        if (lispObject instanceof LispList) {
+
+        }
+        return null;
 
     }
 }

@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,10 +74,10 @@ public class ParserTest {
         p.parseLine("(5 \"la la");
     }
 
-    @Test
+    @Test (expected = UnknownCodeBlockException.class)
     public void testQuotedList () throws LispException {
-        LispObject lispObject = p.parseLine("'(5 \"la la\")");
-        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
+        LispObject lispObject = p.parseLine("'    (5 \"la la\")");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
     }
 
     @Test
@@ -189,7 +190,25 @@ public class ParserTest {
     @Test
     public void testEmptyQuote() throws LispException {
         LispObject lispObject = p.parseLine("'");
-        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNilSymbol)), lispObject);
+    }
+
+    @Test
+    public void testQuotedSpace() throws LispException {
+        LispObject lispObject = p.parseLine("' ");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNilSymbol)), lispObject);
+    }
+
+    @Test
+    public void testQuotedQuotedList() throws LispException {
+        LispObject lispObject = p.parseLine("'(quote 5)");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), new LispInteger(5))), lispObject);
+    }
+
+    @Test
+    public void testParsePlus () throws LispException {
+        LispObject lispObject = p.parseLine("(+ 2 2)");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
     }
 
 
@@ -200,3 +219,4 @@ public class ParserTest {
     }
   */
 }
+

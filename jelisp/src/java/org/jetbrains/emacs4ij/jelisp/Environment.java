@@ -21,22 +21,29 @@ public class Environment {
     private HashMap<String, Object> mySpecialForm; //this list must be common for every program
     private HashMap<String, Object> myVariable;
     private HashMap<String, Object> myFunction;
+
     private StringBuilder myStackTrace;
     private ArrayList<LispObject> myCode; // the program
 
     private Environment myOuterEnv;
 
     public Environment (Environment outerEnv) {
-        myOuterEnv = new Environment(outerEnv);
+        myOuterEnv = outerEnv;
+        //if
     }
 
-    public static Environment getGlobalEnvironment() {
+    private void setGlobal() {
 
-        return null;
     }
 
 
     public void appendConstant (String name, LispObject value) {
+
+    }
+
+    public LispObject find(String name) {
+        return null;
+
 
     }
 }

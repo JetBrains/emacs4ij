@@ -36,9 +36,8 @@ public class LispSymbol extends LispAtom {
 
         LispSymbol that = (LispSymbol) o;
 
-        if (myPrintName != null ? !myPrintName.equals(that.myPrintName) : that.myPrintName != null) return false;
+        return !(myPrintName != null ? !myPrintName.equals(that.myPrintName) : that.myPrintName != null);
 
-        return true;
     }
 
     @Override

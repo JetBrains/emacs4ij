@@ -8,5 +8,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class LispObject {
+    //protected boolean myIsQuoted;
     public abstract LispString toLispString();
 }
