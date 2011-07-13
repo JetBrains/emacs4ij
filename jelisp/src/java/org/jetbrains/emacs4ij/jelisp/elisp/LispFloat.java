@@ -9,19 +9,21 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  *
  * elisp float number = ‘1500.0’, ‘15e2’, ‘15.0e2’, ‘1.5e3’
  * it is the same as the range of the C data type double on the machine you are using
+ *
+ * TODO: To test whether a floating point value is a NaN, compare it with itself using =.
+ * That returns nil for a NaN, and t for any other floating point value.
  */
 public class LispFloat extends LispNumber{
+
+    public static final LispFloat ourPositiveInfinity = new LispFloat(Double.POSITIVE_INFINITY);
+    public static final LispFloat ourNegativeInfinity = new LispFloat(Double.NEGATIVE_INFINITY);
+    public static final LispFloat ourNaN = new LispFloat(Double.NaN);
 
     private double myData;
 
     public LispFloat(double myData) {
         this.myData = myData;
     }
-
-    //TODO: To test whether a floating point value is a NaN, compare it with itself using =.
-    // That returns nil for a NaN, and t for any other floating point value.
-
-    //TODO: NAN and so on
 
     @Override
     public String toString() {
@@ -33,5 +35,25 @@ public class LispFloat extends LispNumber{
     @Override
     public LispString toLispString() {
         return new LispString(Double.toString(myData));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+            //return this != ourNaN;
+        }
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LispFloat lispFloat = (LispFloat) o;
+
+        return Double.compare(lispFloat.myData, myData) == 0;
+
+    }
+
+    @Override
+    public int hashCode() {
+        long temp = myData != +0.0d ? Double.doubleToLongBits(myData) : 0L;
+        return (int) (temp ^ (temp >>> 32));
     }
 }

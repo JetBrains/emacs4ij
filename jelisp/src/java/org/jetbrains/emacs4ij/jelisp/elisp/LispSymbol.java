@@ -1,7 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -12,16 +10,22 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
 public class LispSymbol extends LispAtom {
-    private String myName = null;
+    public static final LispSymbol ourNilSymbol = new LispSymbol("nil");
+    public static final LispSymbol ourTSymbol = new LispSymbol("t");
+
+    private String myPrintName = null;
+    private LispObject myValue = null;
+    //myFunction
+    //myPropertyList
 
     public LispSymbol(String myName) {
-        this.myName = myName;
+        this.myPrintName = myName;
     }
 
     @Override
     public String toString() {
         return "LispSymbol{" +
-                "myName='" + myName + '\'' +
+                "myPrintName='" + myPrintName + '\'' +
                 '}';
     }
 
@@ -32,22 +36,22 @@ public class LispSymbol extends LispAtom {
 
         LispSymbol that = (LispSymbol) o;
 
-        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
+        if (myPrintName != null ? !myPrintName.equals(that.myPrintName) : that.myPrintName != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return myName != null ? myName.hashCode() : 0;
+        return myPrintName != null ? myPrintName.hashCode() : 0;
     }
 
     @Override
     public LispString toLispString() {
-        if (this.equals(Environment.ourNilSymbol))
+        if (this.equals(ourNilSymbol))
             return new LispString("nil");
-        if (this.equals(Environment.ourTSymbol))
+        if (this.equals(ourTSymbol))
             return new LispString("t");
-        return new LispString(myName);
+        return new LispString(myPrintName);
     }
 }

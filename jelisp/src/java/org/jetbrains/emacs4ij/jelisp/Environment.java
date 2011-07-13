@@ -15,6 +15,8 @@ import java.util.HashMap;
  */
 public class Environment {
 
+    public static final Environment ourGlobal = new Environment(null);
+
     private HashMap<String, LispObject> myConstant;
     private HashMap<String, Object> mySpecialForm; //this list must be common for every program
     private HashMap<String, Object> myVariable;
@@ -22,8 +24,16 @@ public class Environment {
     private StringBuilder myStackTrace;
     private ArrayList<LispObject> myCode; // the program
 
-    public static final LispSymbol ourNilSymbol = new LispSymbol("nil");
-    public static final LispSymbol ourTSymbol = new LispSymbol("t");
+    private Environment myOuterEnv;
+
+    public Environment (Environment outerEnv) {
+        myOuterEnv = new Environment(outerEnv);
+    }
+
+    public static Environment getGlobalEnvironment() {
+
+        return null;
+    }
 
 
     public void appendConstant (String name, LispObject value) {

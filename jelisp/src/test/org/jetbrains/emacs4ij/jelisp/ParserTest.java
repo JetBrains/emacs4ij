@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,7 +28,7 @@ public class ParserTest {
     @Test
     public void testEmptyList () throws LispException {
         LispObject lispObject = p.parseLine("()");
-        Assert.assertEquals(Environment.ourNilSymbol, lispObject);
+        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
     }
     @Test
     public void testEmptyString() throws LispException {
@@ -77,7 +76,7 @@ public class ParserTest {
     @Test
     public void testQuotedList () throws LispException {
         LispObject lispObject = p.parseLine("'(5 \"la la\")");
-        Assert.assertEquals(new LispString("(5 \"la la\")"), lispObject);
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
     }
 
     @Test
@@ -98,5 +97,106 @@ public class ParserTest {
         Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la   la"))), lispObject);
     }
 
+    @Test
+    public void testFloatNegativeInfinity() throws LispException {
+        LispObject lispObject = p.parseLine("-1.0e+INF");
+        Assert.assertEquals(LispFloat.ourNegativeInfinity, lispObject);
+    }
 
+    @Test
+    public void testFloatPositiveInfinity() throws LispException {
+        LispObject lispObject = p.parseLine("1.0e+INF");
+        Assert.assertEquals(LispFloat.ourPositiveInfinity, lispObject);
+    }
+
+    @Test
+    public void testFloatNanNoSign() throws LispException {
+        LispObject lispObject = p.parseLine("0.0e+NaN");
+        Assert.assertEquals(LispFloat.ourNaN, lispObject);
+    }
+
+    @Test
+    public void testFloatNanWithSign() throws LispException {
+        LispObject lispObject = p.parseLine("-0.0e+NaN");
+        Assert.assertEquals(LispFloat.ourNaN, lispObject);
+    }
+
+    /*@Test
+    public void testFloatNanEquality() throws LispException {
+        LispObject lispObject = p.parseLine("-0.0e+NaN");
+        Assert.assertEquals(LispFloat.ourNaN, lispObject);
+    }*/
+
+    @Test
+    public void testFloat1() throws LispException {
+        LispObject lispObject = p.parseLine("1500.0");
+        Assert.assertEquals(new LispFloat(1500), lispObject);
+    }
+
+    @Test
+    public void testFloat2() throws LispException {
+        LispObject lispObject = p.parseLine("15e2");
+        Assert.assertEquals(new LispFloat(1500), lispObject);
+    }
+
+    @Test
+    public void testFloat3() throws LispException {
+        LispObject lispObject = p.parseLine("15.0e2");
+        Assert.assertEquals(new LispFloat(1500), lispObject);
+    }
+
+    @Test
+    public void testFloat4() throws LispException {
+        LispObject lispObject = p.parseLine("1.5e3");
+        Assert.assertEquals(new LispFloat(1500), lispObject);
+    }
+
+    @Test
+    public void testFloat5() throws LispException {
+        LispObject lispObject = p.parseLine(".15e4");
+        Assert.assertEquals(new LispFloat(1500), lispObject);
+    }
+
+    @Test
+    public void testEmptyLineWithComments() throws LispException {
+        LispObject lispObject = p.parseLine("; a comment");
+        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+    }
+
+    @Test
+    public void testIntegerWithComments() throws LispException {
+        LispObject lispObject = p.parseLine("5; a comment");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testStringWithComments() throws LispException {
+        LispObject lispObject = p.parseLine("\"test;\"; a comment");
+        Assert.assertEquals(new LispString("test;"), lispObject);
+    }
+
+    @Test
+    public void testEmptyListWithComments() throws LispException {
+        LispObject lispObject = p.parseLine("(); a comment");
+        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+    }
+
+    @Test (expected = MissingClosingBracketException.class)
+    public void testUnclosedListWithComments() throws LispException {
+        p.parseLine("(5 10 ;); a comment");
+    }
+
+    @Test
+    public void testEmptyQuote() throws LispException {
+        LispObject lispObject = p.parseLine("'");
+        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+    }
+
+
+/*    @Test
+    public void testParseSymbol() throws LispException {
+        LispObject lispObject = p.parseLine("test");
+        Assert.assertEquals(new LispSymbol("test"), lispObject);
+    }
+  */
 }

@@ -16,8 +16,6 @@ public class LispString extends LispAtom {
     private String myData;
 
     public LispString (String data) {
-        //Pattern pattern = Pattern.compile("\\\"");
-        //Matcher matcher = pattern.matcher(data);
         myData = data.replaceAll("\\\\\"", "\"");
     }
 
