@@ -22,6 +22,10 @@ public class LispSymbol extends LispAtom {
         this.myPrintName = myName;
     }
 
+    public String getMyPrintName() {
+        return myPrintName;
+    }
+
     @Override
     public String toString() {
         return "LispSymbol{" +

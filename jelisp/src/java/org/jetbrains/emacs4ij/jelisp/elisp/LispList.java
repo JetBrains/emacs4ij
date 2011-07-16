@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,6 +46,10 @@ public class LispList extends LispObject {
         return new LispString(list);
     }
 
+    public ArrayList<LispObject> getData() {
+        return myData;
+    }
+
     @Override
     public String toString() {
         return "LispList{" +
@@ -70,6 +75,11 @@ public class LispList extends LispObject {
     }
 
     public LispObject car () {
-        return myData.get(0);
+        return ((myData.size() == 0) ? LispSymbol.ourNilSymbol : myData.get(0)) ;
+    }
+
+    public LispList cdr () {
+        //TODO: nilSymbol
+        return new LispList(myData.subList(1, myData.size()));
     }
 }

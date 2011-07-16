@@ -12,9 +12,12 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 public class LispInteger extends LispNumber {
     private int myData;
 
-
     public LispInteger(int myData) {
         this.myData = myData;
+    }
+
+    public int getMyData() {
+        return myData;
     }
 
     @Override

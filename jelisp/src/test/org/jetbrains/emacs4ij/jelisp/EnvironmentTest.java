@@ -21,4 +21,5 @@ public class EnvironmentTest {
         Assert.assertTrue(lispObject instanceof LispBuiltinFunction);
         Assert.assertEquals("+", ((LispBuiltinFunction) lispObject).getName());
     }
+
 }

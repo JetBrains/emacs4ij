@@ -40,5 +40,11 @@ public class EvaluatorTest {
         Assert.assertEquals(new LispInteger(4), lispObject);
     }
 
+    @Test
+    public void testInnerLists() throws LispException {
+        LispObject lispObject = evaluateString("(+ 2 (+ 2 3))");
+        Assert.assertEquals(new LispInteger(7), lispObject);
+    }
+
 
 }

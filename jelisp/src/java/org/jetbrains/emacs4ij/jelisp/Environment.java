@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuiltinFunction;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 
@@ -17,7 +18,7 @@ public class Environment {
 
     public static final Environment ourGlobal = new Environment(null);
 
-    private HashMap<String, LispObject> myConstant;
+    private HashMap<String, LispObject> myS;
     private HashMap<String, Object> mySpecialForm; //this list must be common for every program
     private HashMap<String, Object> myVariable;
     private HashMap<String, Object> myFunction;
@@ -42,8 +43,6 @@ public class Environment {
     }
 
     public LispObject find(String name) {
-        return null;
-
-
+        return new LispBuiltinFunction(name);
     }
 }
