@@ -166,12 +166,12 @@ public class Parser {
         }
 
         LispObject lispObject = parseObject();
-        if (lispObject instanceof LispList) {
+        /*if (lispObject instanceof LispList) {
             if (((LispList) lispObject).car() instanceof LispSymbol)
                 if (((LispSymbol)(((LispList) lispObject).car())).equals(new LispSymbol("quote")))
                 return lispObject;
-        }
-        return new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), parseObject()));
+        }*/
+        return new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), lispObject));
     }
 
     private LispObject parseObject() throws LispException {

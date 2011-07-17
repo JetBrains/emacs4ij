@@ -1,5 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +25,7 @@ public class LispBuiltinFunction extends LispObject{
         return myName;
     }
 
-    public LispObject execute (List<LispObject> args) {
+    public LispObject execute (List<LispObject> args, Environment environment) {
         if (myName.equals("+")) {
             int ans = 0;
             for (LispObject lispObject: args) {
@@ -30,7 +33,13 @@ public class LispBuiltinFunction extends LispObject{
             }
             return new LispInteger(ans);
         }
-        return null;
+        if (myName.equals("set")) {
+            if (args.size() != 2)
+                throw new WrongNumberOfArgumentsException();
+            environment.setVariable(args.get(0), args.get(1));
+            return args.get(1);
+        }
+        throw new RuntimeException("unknown builtin function " + myName);
     }
 
     @Override

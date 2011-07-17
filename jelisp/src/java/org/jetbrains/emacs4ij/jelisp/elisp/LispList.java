@@ -14,10 +14,14 @@ import java.util.List;
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
 public class LispList extends LispObject {
-    private ArrayList<LispObject> myData = null;
+    private List<LispObject> myData = null;
 
     public LispList() {
         myData = new ArrayList<LispObject>();
+    }
+
+    public LispList (LispObject ... objects) {
+        myData = Arrays.asList(objects);
     }
 
     public LispList (List<LispObject> data) {
@@ -46,7 +50,7 @@ public class LispList extends LispObject {
         return new LispString(list);
     }
 
-    public ArrayList<LispObject> getData() {
+    public List<LispObject> getData() {
         return myData;
     }
 
@@ -64,9 +68,8 @@ public class LispList extends LispObject {
 
         LispList lispList = (LispList) o;
 
-        if (myData != null ? !myData.equals(lispList.myData) : lispList.myData != null) return false;
+        return !(myData != null ? !myData.equals(lispList.myData) : lispList.myData != null);
 
-        return true;
     }
 
     @Override

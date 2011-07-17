@@ -9,7 +9,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  *
  * this is the base elisp exception
  */
-public class LispException extends Exception {
+public class LispException extends RuntimeException {
     //TODO: store the position where the exception raised
 
     protected StringBuilder myStackTrace;

@@ -17,9 +17,11 @@ import org.junit.Test;
  */
 public class EvaluatorTest {
 
+    Environment environment = new Environment(null);
+
     private LispObject evaluateString (String lispCode) throws LispException {
         Parser p = new Parser();
-        return Evaluator.evaluate(p.parseLine(lispCode), new Environment(null));
+        return Evaluator.evaluate(p.parseLine(lispCode), environment);
     }
 
     @Test
@@ -46,5 +48,18 @@ public class EvaluatorTest {
         Assert.assertEquals(new LispInteger(7), lispObject);
     }
 
+    @Test
+    public void testQuote () {
+        LispObject lispObject = evaluateString("'5");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
 
+    @Test
+    public void testSetVar() throws LispException {
+        LispObject value = evaluateString("(set 'var 5)");
+        Assert.assertEquals("set return value assertion", new LispInteger(5), value);
+
+        LispObject lispObject = evaluateString("var");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
 }

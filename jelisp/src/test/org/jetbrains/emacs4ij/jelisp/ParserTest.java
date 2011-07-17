@@ -200,9 +200,15 @@ public class ParserTest {
     }
 
     @Test
+    public void testQuotedInt() throws LispException {
+        LispObject lispObject = p.parseLine("'5");
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  new LispInteger(5))), lispObject);
+    }
+
+    @Test
     public void testQuotedQuotedList() throws LispException {
         LispObject lispObject = p.parseLine("'(quote 5)");
-        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), new LispInteger(5))), lispObject);
+        Assert.assertEquals(new LispList(new LispSymbol("quote"), new LispList(new LispSymbol("quote"), new LispInteger(5))), lispObject);
     }
 
     @Test
