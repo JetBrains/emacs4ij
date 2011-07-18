@@ -13,11 +13,10 @@ import java.io.*;
  */
 public class Interpreter {
 
-    public static void main (String[] args) {
-        System.out.println(args.length);
+    public static void interpret (String[] args) {
+        //System.out.println(args.length);
 
         if (args.length == 0) {
-            //no code
             return;
         }
         Reader lispCode;

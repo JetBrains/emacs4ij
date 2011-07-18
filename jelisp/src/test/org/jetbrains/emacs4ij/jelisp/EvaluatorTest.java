@@ -53,6 +53,12 @@ public class EvaluatorTest {
     }
 
     @Test
+    public void testQuotedQuotedList () {
+        LispObject lispObject = evaluateString("'(quote )");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
     public void testSetVar() throws LispException {
         LispObject value = evaluateString("(set 'var 5)");
         Assert.assertEquals("set return value assertion", new LispInteger(5), value);

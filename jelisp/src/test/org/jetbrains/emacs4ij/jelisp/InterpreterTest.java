@@ -12,18 +12,19 @@ import org.junit.Test;
 public class InterpreterTest {
     @Test
     public void testNoArg() throws Exception {
-        Interpreter.main(new String[] {});
+        Interpreter.interpret(new String[]{});
     }
     @Test
     public void testOneCodeArg() throws Exception {
-        Interpreter.main(new String[] {"'(+ 2 3)"});
+        Interpreter.interpret(new String[]{"'(+ 2 3)"});
     }
     @Test
     public void testOneFileArg() throws Exception {
-        Interpreter.main(new String[] {"test.lisp"});
+        Interpreter.interpret(new String[]{"test.lisp"});
     }
     @Test
     public void testMultipleCodeArgs() throws Exception {
-        Interpreter.main(new String[] {"'(+", "2", "3)"});
+        Interpreter.interpret(new String[]{"'(+", "2", "3)"});
     }
+
 }
