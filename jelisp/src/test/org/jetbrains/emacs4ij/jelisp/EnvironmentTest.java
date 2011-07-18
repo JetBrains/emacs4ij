@@ -2,7 +2,9 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuiltinFunction;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Test;
 
 /**
@@ -16,10 +18,18 @@ public class EnvironmentTest {
 
     @Test
     public void testGetBuiltInF () {
-        Environment e = new Environment(null);
+        Environment e = Environment.ourGlobal;
         LispObject lispObject = e.find("+");
         Assert.assertTrue(lispObject instanceof LispBuiltinFunction);
-        Assert.assertEquals("+", ((LispBuiltinFunction) lispObject).getName());
+        Assert.assertEquals(new LispSymbol("+"), ((LispBuiltinFunction) lispObject).getName());
+    }
+
+    @Test
+    public void testOverrideVar () {
+        Environment e = new Environment(Environment.ourGlobal);
+        e.setVariable(new LispSymbol("a"), new LispInteger(5));
+        e.setVariable(new LispSymbol("a"), new LispInteger(6));
+        Assert.assertEquals(new LispInteger(6), e.getVariable("a"));
     }
 
 }

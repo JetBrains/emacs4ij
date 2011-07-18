@@ -20,6 +20,10 @@ public class Evaluator {
         if (lispObject instanceof LispString)
             return lispObject;
         if (lispObject instanceof LispList) {
+
+            if (((LispList) lispObject).isEmpty())
+                return LispSymbol.ourNilSymbol;
+
             LispSymbol fun = (LispSymbol)((LispList)lispObject).car();
             LispObject lispObject1 = environment.find(fun.getName());
 

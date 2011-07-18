@@ -29,7 +29,7 @@ public class ParserTest {
     @Test
     public void testEmptyList () throws LispException {
         LispObject lispObject = p.parseLine("()");
-        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+        Assert.assertEquals(new LispList(), lispObject);
     }
     @Test
     public void testEmptyString() throws LispException {
@@ -179,7 +179,7 @@ public class ParserTest {
     @Test
     public void testEmptyListWithComments() throws LispException {
         LispObject lispObject = p.parseLine("(); a comment");
-        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+        Assert.assertEquals(new LispList(), lispObject);
     }
 
     @Test (expected = MissingClosingBracketException.class)
@@ -215,11 +215,6 @@ public class ParserTest {
     public void testParsePlus () throws LispException {
         LispObject lispObject = p.parseLine("(+ 2 2)");
         Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
-    }
-
-    @Test
-    public void testParseDefun () {
-
     }
 
 /*    @Test

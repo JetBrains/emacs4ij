@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Evaluator;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
 import java.util.Collections;
 import java.util.List;
@@ -14,16 +15,15 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class LispCustomFunction extends LispFunction {
-    private LispObject myArguments = null;
+    private LispList myArguments = null;
     private LispString myDocumentation = null;
     private LispList myInteractive = null;
     private LispList myBody = null;
 
     public LispCustomFunction(List<LispObject> args) {
         //TODO: cast exceptions
-        //TODO: empty body?
         myName = (LispSymbol)args.get(0);
-        myArguments = args.get(1);
+        myArguments = (LispList)args.get(1);
         if (args.get(2) instanceof LispString) {
             myDocumentation = (LispString)args.get(2);
             if (args.size() == 4) {
@@ -45,9 +45,11 @@ public class LispCustomFunction extends LispFunction {
 
     @Override
     public LispObject execute(List<LispObject> args, Environment environment) {
-        //TODO: check for number of arguments
 
-        if (myArguments != LispSymbol.ourNilSymbol) {
+        if (myArguments.getSize() != args.size())
+            throw new WrongNumberOfArgumentsException();
+
+        if (!myArguments.isEmpty()) {
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
                 LispObject argValue = args.get(i);
                 LispObject argMask = ((LispList)myArguments).get(i);

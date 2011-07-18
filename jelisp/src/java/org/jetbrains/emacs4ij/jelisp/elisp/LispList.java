@@ -56,6 +56,10 @@ public class LispList extends LispObject {
         return myData;
     }
 
+    public int getSize () {
+        return ((myData == null) ? 0 : myData.size());
+    }
+
     public LispObject get (int index) {
         return myData.get(index);
     }
@@ -74,10 +78,18 @@ public class LispList extends LispObject {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
 
-        LispList lispList = (LispList) o;
+        Object list = o;
+        if (getClass() != o.getClass()) {
+            if (o.getClass() == ArrayList.class) {
+                list = new LispList((List<LispObject>)o);
+            } else {
+                return false;
+            }
+        }
 
+        LispList lispList = (LispList) list;
         return !(myData != null ? !myData.equals(lispList.myData) : lispList.myData != null);
 
     }
@@ -92,6 +104,7 @@ public class LispList extends LispObject {
     }
 
     public LispObject cdr () {
-        return ((myData.size() < 2) ? LispSymbol.ourNilSymbol : new LispList(myData.subList(1, myData.size())));
+        return ((myData.size() < 2) ? new LispList() : new LispList(myData.subList(1, myData.size())));
     }
+
 }

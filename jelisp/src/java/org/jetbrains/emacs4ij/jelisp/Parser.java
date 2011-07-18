@@ -58,9 +58,6 @@ public class Parser {
 
         advanceTo(getMyCurrentIndex() + 1);
 
-        if (list.isEmpty())
-            return LispSymbol.ourNilSymbol;
-
         return list;
     }
 

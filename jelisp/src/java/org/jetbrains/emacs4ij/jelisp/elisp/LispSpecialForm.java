@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.List;
 
@@ -30,13 +31,15 @@ public class LispSpecialForm extends LispObject {
                 throw new WrongNumberOfArgumentsException();
             return args.get(0);
         }
-
         if (myName.equals("defun")) {
             if ((args.size() < 3) || (args.size() > 5))
                 throw new WrongNumberOfArgumentsException();
             LispCustomFunction function = new LispCustomFunction(args);
             environment.defineFunction(function.getName(), function);
             return function.getName();
+        }
+        if (myName.equals("interactive")) {
+            throw new NotImplementedException();
         }
 
         throw new RuntimeException("unknown special form " + myName);

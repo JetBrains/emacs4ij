@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Test;
 
 /**
@@ -14,7 +15,7 @@ import org.junit.Test;
  */
 public class EvaluatorTest {
 
-    Environment environment = new Environment(null);
+    Environment environment = Environment.ourGlobal;
 
     private LispObject evaluateString (String lispCode) throws LispException {
         Parser p = new Parser();
@@ -23,13 +24,13 @@ public class EvaluatorTest {
 
     @Test
     public void testEvaluateInteger () {
-        LispObject lispObject = Evaluator.evaluate(new LispInteger(5), new Environment(null));
+        LispObject lispObject = Evaluator.evaluate(new LispInteger(5), environment);
         Assert.assertEquals(new LispInteger(5), lispObject);
     }
 
     @Test
     public void testEvaluateString () {
-        LispObject lispObject = Evaluator.evaluate(new LispString("test"), new Environment(null));
+        LispObject lispObject = Evaluator.evaluate(new LispString("test"), environment);
         Assert.assertEquals(new LispString("test"), lispObject);
     }
 
@@ -61,10 +62,35 @@ public class EvaluatorTest {
     }
 
     @Test
+    public void testDefun3args() {
+        LispObject fun = evaluateString("(defun mult7 (arg) (* 7 arg))");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
+        LispObject value = evaluateString("(mult7 5)");
+        Assert.assertEquals("mult7 return value assertion", new LispInteger(35), value);
+    }
+
+    @Test
     public void testDefun4args() {
         LispObject fun = evaluateString("(defun mult7 (arg) \"multiplies arg*7\" (* 7 arg))");
         Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
         LispObject value = evaluateString("(mult7 5)");
         Assert.assertEquals("mult7 return value assertion", new LispInteger(35), value);
     }
+
+    @Test (expected = WrongNumberOfArgumentsException.class)
+    public void testDefunWrongNumberOfArgs() {
+        LispObject fun = evaluateString("(defun mult7 () ())");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
+        evaluateString("(mult7 5)");
+    }
+
+    @Test
+    public void testDefunEmptyBody() {
+        LispObject fun = evaluateString("(defun nilFun () ())");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
+        LispObject value = evaluateString("(nilFun)");
+        Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNilSymbol, value);
+    }
+
+
 }

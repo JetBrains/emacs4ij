@@ -18,11 +18,13 @@ import java.util.HashMap;
 public class Environment {
 
     public static final Environment ourGlobal = new Environment(null);
+    private static int k = 0;
 
-    private final HashMap<String, LispObject> mySpecialForms = new HashMap<String, LispObject>();
-    private HashMap<String, LispObject> myVariables = new HashMap<String, LispObject>();
-    private HashMap<String, LispObject> myFunctions = new HashMap<String, LispObject>();
-    private HashMap<String, LispObject> myBuiltinFunctions = new HashMap<String, LispObject>();
+    private final HashMap<LispSymbol, LispObject> mySpecialForms = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LispObject> myVariables = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LispObject> myBuiltinVariables = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LispObject> myFunctions = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LispObject> myBuiltinFunctions = new HashMap<LispSymbol, LispObject>();
 
     private Environment myOuterEnv;
 
@@ -31,33 +33,44 @@ public class Environment {
 
         if (outerEnv == null) {
             setGlobal();
+            k++;
+            if (k>1)
+                System.out.println("lol");
         }
     }
 
     private void setGlobal() {
-        mySpecialForms.put("quote", new LispSpecialForm("quote"));
-        mySpecialForms.put("defun", new LispSpecialForm("defun"));
+        mySpecialForms.put(new LispSymbol("quote"), new LispSpecialForm("quote"));
+        mySpecialForms.put(new LispSymbol("defun"), new LispSpecialForm("defun"));
+        mySpecialForms.put(new LispSymbol("interactive"), new LispSpecialForm("interactive"));
 
-        myBuiltinFunctions.put("+", new LispBuiltinFunction("+"));
-        myBuiltinFunctions.put("*", new LispBuiltinFunction("*"));
-        myBuiltinFunctions.put("set", new LispBuiltinFunction("set"));
+        myBuiltinFunctions.put(new LispSymbol("+"), new LispBuiltinFunction("+"));
+        myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
+        myBuiltinFunctions.put(new LispSymbol("set"), new LispBuiltinFunction("set"));
 
     }
 
     public LispObject find(String name) {
-        LispObject lispObject = mySpecialForms.get(name);
+
+        LispSymbol lsName = new LispSymbol(name);
+
+        LispObject lispObject = mySpecialForms.get(lsName);
         if (lispObject != null)
             return lispObject;
 
-        lispObject = myVariables.get(name);
+        lispObject = myBuiltinVariables.get(lsName);
         if (lispObject != null)
             return lispObject;
 
-        lispObject = myBuiltinFunctions.get(name);
+        lispObject = myVariables.get(lsName);
         if (lispObject != null)
             return lispObject;
 
-        lispObject = myFunctions.get(name);
+        lispObject = myBuiltinFunctions.get(lsName);
+        if (lispObject != null)
+            return lispObject;
+
+        lispObject = myFunctions.get(lsName);
         if (lispObject != null)
             return lispObject;
 
@@ -68,13 +81,21 @@ public class Environment {
         throw new RuntimeException("unknown symbol " + name);
     }
 
+
     public void setVariable(LispObject name, LispObject value) {
-        //TODO: check names to be unique
-        myVariables.put(((LispSymbol)name).getName(), value);
+        myVariables.put((LispSymbol)name, value);
+    }
+
+    public LispObject getVariable (String name) {
+        return getVariable(new LispSymbol(name));
+    }
+
+    public LispObject getVariable(LispSymbol name) {
+        return myVariables.get(name);
     }
 
     public void defineFunction (LispObject name, LispObject value) {
-        myFunctions.put(((LispSymbol)name).getName(), value);
+        myFunctions.put((LispSymbol)name, value);
     }
 
 }

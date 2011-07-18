@@ -22,16 +22,20 @@ public class LispBuiltinFunction extends LispFunction {
     public LispObject execute (List<LispObject> args, Environment environment) {
         if (myName.is("+")) {
             int ans = 0;
+
             for (LispObject lispObject: args) {
                 ans += ((LispInteger)lispObject).getMyData();
             }
+
             return new LispInteger(ans);
         }
         if (myName.is("*")) {
             int ans = 1;
+
             for (LispObject lispObject: args) {
                 ans *= ((LispInteger)lispObject).getMyData();
             }
+
             return new LispInteger(ans);
         }
 
