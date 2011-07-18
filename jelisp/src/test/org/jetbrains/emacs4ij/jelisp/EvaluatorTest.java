@@ -1,10 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispNumber;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Test;
 
@@ -61,5 +58,13 @@ public class EvaluatorTest {
 
         LispObject lispObject = evaluateString("var");
         Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testDefun4args() {
+        LispObject fun = evaluateString("(defun mult7 (arg) \"multiplies arg*7\" (* 7 arg))");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
+        LispObject value = evaluateString("(mult7 5)");
+        Assert.assertEquals("mult7 return value assertion", new LispInteger(35), value);
     }
 }

@@ -13,27 +13,29 @@ import java.util.List;
  * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispBuiltinFunction extends LispObject{
+public class LispBuiltinFunction extends LispFunction {
 
     public LispBuiltinFunction(String myName) {
-        this.myName = myName;
-    }
-
-    private String myName;
-
-    public String getName() {
-        return myName;
+        this.myName = new LispSymbol(myName);
     }
 
     public LispObject execute (List<LispObject> args, Environment environment) {
-        if (myName.equals("+")) {
+        if (myName.is("+")) {
             int ans = 0;
             for (LispObject lispObject: args) {
                 ans += ((LispInteger)lispObject).getMyData();
             }
             return new LispInteger(ans);
         }
-        if (myName.equals("set")) {
+        if (myName.is("*")) {
+            int ans = 1;
+            for (LispObject lispObject: args) {
+                ans *= ((LispInteger)lispObject).getMyData();
+            }
+            return new LispInteger(ans);
+        }
+
+        if (myName.is("set")) {
             if (args.size() != 2)
                 throw new WrongNumberOfArgumentsException();
             environment.setVariable(args.get(0), args.get(1));
@@ -44,6 +46,6 @@ public class LispBuiltinFunction extends LispObject{
 
     @Override
     public LispString toLispString() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new LispString(myName.getName());
     }
 }

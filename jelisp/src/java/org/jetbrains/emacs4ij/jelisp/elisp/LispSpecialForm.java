@@ -1,6 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;import java.util.List;
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,14 +24,22 @@ public class LispSpecialForm extends LispObject {
         return myName;
     }
 
-    public LispObject execute (List<LispObject> args)throws WrongNumberOfArgumentsException {
+    public LispObject execute (List<LispObject> args, Environment environment) throws WrongNumberOfArgumentsException {
         if (myName.equals("quote")) {
             if (args.size() != 1)
                 throw new WrongNumberOfArgumentsException();
             return args.get(0);
         }
 
-        throw new RuntimeException("no execute param");
+        if (myName.equals("defun")) {
+            if ((args.size() < 3) || (args.size() > 5))
+                throw new WrongNumberOfArgumentsException();
+            LispCustomFunction function = new LispCustomFunction(args);
+            environment.defineFunction(function.getName(), function);
+            return function.getName();
+        }
+
+        throw new RuntimeException("unknown special form " + myName);
     }
 
     @Override

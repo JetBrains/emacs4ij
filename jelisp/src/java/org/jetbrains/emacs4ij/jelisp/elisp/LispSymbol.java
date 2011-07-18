@@ -13,24 +13,28 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNilSymbol = new LispSymbol("nil");
     public static final LispSymbol ourTSymbol = new LispSymbol("t");
 
-    private String myPrintName = null;
+    private String myName = null;
     private LispObject myValue = null;
     //myFunction
     //myPropertyList
 
     public LispSymbol(String myName) {
-        this.myPrintName = myName;
+        this.myName = myName;
     }
 
-    public String getMyPrintName() {
-        return myPrintName;
+    public String getName() {
+        return myName;
     }
 
     @Override
     public String toString() {
         return "LispSymbol{" +
-                "myPrintName='" + myPrintName + '\'' +
+                "myName='" + myName + '\'' +
                 '}';
+    }
+
+    public boolean is (String name) {
+        return myName.equals(name);
     }
 
     @Override
@@ -40,13 +44,13 @@ public class LispSymbol extends LispAtom {
 
         LispSymbol that = (LispSymbol) o;
 
-        return !(myPrintName != null ? !myPrintName.equals(that.myPrintName) : that.myPrintName != null);
+        return !(myName != null ? !myName.equals(that.myName) : that.myName != null);
 
     }
 
     @Override
     public int hashCode() {
-        return myPrintName != null ? myPrintName.hashCode() : 0;
+        return myName != null ? myName.hashCode() : 0;
     }
 
     @Override
@@ -55,6 +59,6 @@ public class LispSymbol extends LispAtom {
             return new LispString("nil");
         if (this.equals(ourTSymbol))
             return new LispString("t");
-        return new LispString(myPrintName);
+        return new LispString(myName);
     }
 }

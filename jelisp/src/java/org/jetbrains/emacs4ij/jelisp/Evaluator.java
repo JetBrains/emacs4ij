@@ -1,9 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,22 +21,25 @@ public class Evaluator {
             return lispObject;
         if (lispObject instanceof LispList) {
             LispSymbol fun = (LispSymbol)((LispList)lispObject).car();
-            LispObject lispObject1 = environment.find(fun.getMyPrintName());
-            if (lispObject1 instanceof LispBuiltinFunction) {
-                List<LispObject> data = ((LispList) lispObject).cdr().getData();
+            LispObject lispObject1 = environment.find(fun.getName());
+
+            if (lispObject1 instanceof LispFunction) {
+                List<LispObject> data = ((LispList)((LispList) lispObject).cdr()).getData();
                 for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
                     data.set(i, evaluate(data.get(i), environment));
                 }
-                return ((LispBuiltinFunction) lispObject1).execute(data, environment);
+                return ((LispFunction) lispObject1).execute(data, environment);
             }
+
             if (lispObject1 instanceof LispSpecialForm) {
-                List<LispObject> data = ((LispList) lispObject).cdr().getData();
-                return ((LispSpecialForm)lispObject1).execute(data);
+                List<LispObject> data = ((LispList)((LispList) lispObject).cdr()).getData();
+                return ((LispSpecialForm)lispObject1).execute(data, environment);
             }
+
             throw new RuntimeException("function or special form not found in environment");
         }
         if (lispObject instanceof LispSymbol) {
-            return environment.find(((LispSymbol) lispObject).getMyPrintName());
+            return environment.find(((LispSymbol) lispObject).getName());
         }
         return null;
 

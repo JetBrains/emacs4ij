@@ -19,13 +19,10 @@ public class Environment {
 
     public static final Environment ourGlobal = new Environment(null);
 
-    //private HashMap<String, LispObject> myBuilt;
     private final HashMap<String, LispObject> mySpecialForms = new HashMap<String, LispObject>();
     private HashMap<String, LispObject> myVariables = new HashMap<String, LispObject>();
     private HashMap<String, LispObject> myFunctions = new HashMap<String, LispObject>();
-
-    private StringBuilder myStackTrace;
-    private ArrayList<LispObject> myCode; // the program
+    private HashMap<String, LispObject> myBuiltinFunctions = new HashMap<String, LispObject>();
 
     private Environment myOuterEnv;
 
@@ -39,12 +36,11 @@ public class Environment {
 
     private void setGlobal() {
         mySpecialForms.put("quote", new LispSpecialForm("quote"));
+        mySpecialForms.put("defun", new LispSpecialForm("defun"));
 
-
-    }
-
-
-    public void appendConstant (String name, LispObject value) {
+        myBuiltinFunctions.put("+", new LispBuiltinFunction("+"));
+        myBuiltinFunctions.put("*", new LispBuiltinFunction("*"));
+        myBuiltinFunctions.put("set", new LispBuiltinFunction("set"));
 
     }
 
@@ -57,10 +53,28 @@ public class Environment {
         if (lispObject != null)
             return lispObject;
 
-        return new LispBuiltinFunction(name);
+        lispObject = myBuiltinFunctions.get(name);
+        if (lispObject != null)
+            return lispObject;
+
+        lispObject = myFunctions.get(name);
+        if (lispObject != null)
+            return lispObject;
+
+        if (myOuterEnv != null) {
+            return myOuterEnv.find(name);
+        }
+
+        throw new RuntimeException("unknown symbol " + name);
     }
 
     public void setVariable(LispObject name, LispObject value) {
-        myVariables.put(((LispSymbol)name).getMyPrintName(), value);
+        //TODO: check names to be unique
+        myVariables.put(((LispSymbol)name).getName(), value);
     }
+
+    public void defineFunction (LispObject name, LispObject value) {
+        myFunctions.put(((LispSymbol)name).getName(), value);
+    }
+
 }

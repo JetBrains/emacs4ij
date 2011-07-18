@@ -217,6 +217,10 @@ public class ParserTest {
         Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
     }
 
+    @Test
+    public void testParseDefun () {
+
+    }
 
 /*    @Test
     public void testParseSymbol() throws LispException {
