@@ -57,9 +57,9 @@
   
   <!-- JDK definitions -->
   
-  <property name="jdk.bin.idea_ic-107.322" value="${jdk.home.idea_ic-107.322}/../../../Program Files/Java/jdk1.6.0_26/bin"/>
-  <path id="jdk.classpath.idea_ic-107.322">
-    <fileset dir="${jdk.home.idea_ic-107.322}">
+  <property name="jdk.bin.idea_ic-107.322_(1)" value="${jdk.home.idea_ic-107.322_(1)}/../../../Program Files/Java/jdk1.6.0_26/bin"/>
+  <path id="jdk.classpath.idea_ic-107.322_(1)">
+    <fileset dir="${jdk.home.idea_ic-107.322_(1)}">
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/alt-rt.jar"/>
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/alt-string.jar"/>
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/charsets.jar"/>
@@ -151,9 +151,9 @@
     </fileset>
   </path>
   
-  <property name="project.jdk.home" value="${jdk.home.idea_ic-107.322}"/>
-  <property name="project.jdk.bin" value="${jdk.bin.idea_ic-107.322}"/>
-  <property name="project.jdk.classpath" value="jdk.classpath.idea_ic-107.322"/>
+  <property name="project.jdk.home" value="${jdk.home.1.6}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.6}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.6"/>
   <!-- Register Custom Compiler Taskdefs -->
   <property name="javac2.home" value="${idea.home}/lib"/>
   <path id="javac2.classpath">

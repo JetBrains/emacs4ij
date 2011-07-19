@@ -1,14 +1,14 @@
 <idea-plugin version="2">
   <name>Emacs4ij</name>
-  <description>Plugin for Elisp language support</description>
+  <description>Plugin for Emacs support</description>
   <version>1.0</version>
-  <vendor logo="emacs16.png">JetBrains</vendor>
+  <vendor logo="icons\idea.png">YourCompany</vendor>
   <idea-version since-build="8000"/>
 
   <application-components>
     <!-- Add your application components here -->
       <component>
-          <implementation-class>org.jetbrains.emacs4ij.emacs4ij.NewElispProjectAppComponent</implementation-class>
+          <implementation-class>org.jetbrains.emacs4ij.Emacs4ijPlugin</implementation-class>
       </component>
   </application-components>
 
@@ -18,9 +18,10 @@
 
   <actions>
     <!-- Add your actions here -->
-      <action id="NewElispProject" class="org.jetbrains.emacs4ij.emacs4ij.NewElispProjectAction"
-              text="Create New Elisp Project" description="Create a new emacs lisp project" icon="emacs.png">
-          <add-to-group group-id="WelcomeScreen.QuickStart" anchor="first"/>
+      <action id="org.jetbrains.emacs4ij.ExecuteElispCommand" class="org.jetbrains.emacs4ij.ExecuteElispCommandAction"
+              text="Execute _elisp command" description="Execute elisp command" icon="icons\emacs.png">
+          <add-to-group group-id="MainToolBar" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt X"/>
       </action>
   </actions>
 

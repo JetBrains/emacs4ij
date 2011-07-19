@@ -36,7 +36,8 @@ public class Interpreter {
             lispCode = new StringReader(stringBuilder.toString());
         }
 
-        /*Parser parser = new Parser();
+        Parser parser = new Parser();
+
         /*StringBuilder stackTrace = parser.parse(lispCode);
         if (stackTrace == null) {
             //there were parse errors
