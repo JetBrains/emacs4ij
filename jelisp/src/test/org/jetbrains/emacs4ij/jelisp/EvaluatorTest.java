@@ -128,10 +128,12 @@ public class EvaluatorTest {
 
     @Test
     public void testDefunComplexBody () {
-        LispObject fun = evaluateString("(defun testFun () 5 'ann)");
+        LispObject fun = evaluateString("(defun testFun () 5 6 7 8 'ann)");
         Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
         LispObject value = evaluateString("(testFun)");
         Assert.assertEquals("testFun return value assertion", new LispSymbol("ann"), value);
     }
+
+
 
 }

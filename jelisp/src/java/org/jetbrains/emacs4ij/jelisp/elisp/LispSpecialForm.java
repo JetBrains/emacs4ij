@@ -32,7 +32,7 @@ public class LispSpecialForm extends LispObject {
             return args.get(0);
         }
         if (myName.equals("defun")) {
-            if ((args.size() < 3) || (args.size() > 5))
+            if (args.size() < 3)
                 throw new WrongNumberOfArgumentsException();
             LispCustomFunction function = new LispCustomFunction(args);
             environment.defineFunction(function.getName(), function);
