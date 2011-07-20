@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Evaluator;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -18,7 +19,21 @@ public class LispCustomFunction extends LispFunction {
     private LispList myArguments = null;
     private LispString myDocumentation = null;
     private LispList myInteractive = null;
-    private LispList myBody = null;
+    private ArrayList<LispObject> myBody = new ArrayList<LispObject>();
+
+    private void checkInteractiveAndBody (int index, List<LispObject> args) {
+        try {
+            if (((LispList)args.get(index)).car() == new LispSymbol("interactive")) {
+                myInteractive = (LispList)args.get(index);
+                index++;
+            }
+        } catch (ClassCastException ignored) {
+            //args at index can be any LispObject
+        }
+        for (int i = index; i != args.size(); ++i ) {
+            myBody.add(args.get(i));
+        }
+    }
 
     public LispCustomFunction(List<LispObject> args) {
         //TODO: cast exceptions
@@ -26,22 +41,25 @@ public class LispCustomFunction extends LispFunction {
         myArguments = (LispList)args.get(1);
         if (args.get(2) instanceof LispString) {
             myDocumentation = (LispString)args.get(2);
-            if (args.size() == 4) {
-                myBody = (LispList)args.get(3);
-            } else {
-                myInteractive = (LispList)args.get(3);
-                myBody = (LispList)args.get(4);
-            }
+            checkInteractiveAndBody(3, args);
         } else {
-            if (args.size() == 3) {
-                myBody = (LispList)args.get(2);
-            } else {
-                myInteractive = (LispList)args.get(2);
-                myBody = (LispList)args.get(3);
-            }
+            checkInteractiveAndBody(2, args);
         }
     }
 
+    private void substituteArgument (LispObject argName, LispObject argValue) {
+        for (LispObject bodyElement: myBody) {
+            if (bodyElement == argName) {
+                bodyElement = argValue;
+                continue;
+            }
+            if (bodyElement instanceof LispList) {
+                Collections.replaceAll(((LispList) bodyElement).getData(), argName , argValue);
+                continue;
+            }
+            throw new RuntimeException("argument substitution failed: function " + myName + ", argument " + argName);
+        }
+    }
 
     @Override
     public LispObject execute(List<LispObject> args, Environment environment) {
@@ -52,12 +70,16 @@ public class LispCustomFunction extends LispFunction {
         if (!myArguments.isEmpty()) {
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
                 LispObject argValue = args.get(i);
-                LispObject argMask = ((LispList)myArguments).get(i);
-                Collections.replaceAll(myBody.getData(), argMask, argValue);
+                LispObject argName = myArguments.get(i);
+                substituteArgument(argName , argValue);
             }
         }
 
-        return Evaluator.evaluate(myBody, new Environment(environment));
+        LispObject result = LispSymbol.ourNilSymbol;
+        for (int i=0; i!=myBody.size(); ++i) {
+            result = Evaluator.evaluate(myBody.get(i), new Environment(environment));
+        }
+        return result;
     }
 
     public LispSymbol getName() {

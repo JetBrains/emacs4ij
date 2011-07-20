@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Test;
@@ -54,8 +55,8 @@ public class EvaluatorTest {
 
     @Test
     public void testQuotedQuotedList () {
-        LispObject lispObject = evaluateString("'(quote )");
-        Assert.assertEquals(new LispInteger(5), lispObject);
+        LispObject lispObject = evaluateString("'(quote 5)");
+        Assert.assertEquals(new LispList(new LispSymbol("quote"), new LispInteger(5)), lispObject);
     }
 
     @Test
@@ -108,6 +109,29 @@ public class EvaluatorTest {
     public void testT () {
         LispObject n = evaluateString("t");
         Assert.assertEquals(LispSymbol.ourTSymbol, n);
+    }
+
+    @Test
+    public void testDefunIntBody () {
+        LispObject fun = evaluateString("(defun testFun () 5)");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
+        LispObject value = evaluateString("(testFun)");
+        Assert.assertEquals("testFun return value assertion", new LispInteger(5), value);
+    }
+
+    @Test (expected = InvalidFunctionException.class)
+    public void testDefunWrongBody () {
+        LispObject fun = evaluateString("(defun testFun () (5))");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
+        evaluateString("(testFun)");
+    }
+
+    @Test
+    public void testDefunComplexBody () {
+        LispObject fun = evaluateString("(defun testFun () 5 'ann)");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
+        LispObject value = evaluateString("(testFun)");
+        Assert.assertEquals("testFun return value assertion", new LispSymbol("ann"), value);
     }
 
 }

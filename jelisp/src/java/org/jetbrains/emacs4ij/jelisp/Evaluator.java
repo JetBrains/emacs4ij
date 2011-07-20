@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 
 import java.util.List;
 
@@ -24,7 +25,12 @@ public class Evaluator {
             if (((LispList) lispObject).isEmpty())
                 return LispSymbol.ourNilSymbol;
 
-            LispSymbol fun = (LispSymbol)((LispList)lispObject).car();
+            LispSymbol fun;
+            try {
+                fun = (LispSymbol)((LispList)lispObject).car();
+            } catch (ClassCastException e) {
+                throw new InvalidFunctionException(((LispList)lispObject).car().toString());
+            }
             LispObject lispObject1 = environment.find(fun.getName());
 
             if (lispObject1 instanceof LispFunction) {
