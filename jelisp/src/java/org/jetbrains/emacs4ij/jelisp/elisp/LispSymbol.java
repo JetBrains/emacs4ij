@@ -14,9 +14,6 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourTSymbol = new LispSymbol("t");
 
     private String myName = null;
-    private LispObject myValue = null;
-    //myFunction
-    //myPropertyList
 
     public LispSymbol(String myName) {
         this.myName = myName;

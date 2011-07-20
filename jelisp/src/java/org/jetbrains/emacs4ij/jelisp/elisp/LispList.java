@@ -31,6 +31,8 @@ public class LispList extends LispObject {
     }
 
     public void add (LispObject lispObject) {
+        if (lispObject == null)
+            return;
         myData.add(lispObject);
     }
 

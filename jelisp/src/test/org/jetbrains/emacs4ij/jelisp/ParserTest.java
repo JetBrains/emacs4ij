@@ -217,6 +217,24 @@ public class ParserTest {
         Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
     }
 
+    @Test
+    public void testParseMultiLineListWithComments () {
+        LispObject lispObject = p.parseLine("(rose\nbutterfly;;something like comment\nelefant;;kit\n)");
+        Assert.assertEquals(new LispList(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
+    }
+
+    @Test
+    public void testParseMultiLineList () {
+        LispObject lispObject = p.parseLine("(rose\nbutterfly\nelefant)");
+        Assert.assertEquals(new LispList(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
+    }
+
+    @Test
+    public void testParseMultiLineString () {
+        LispObject lispObject = p.parseLine("\"multiline\nstring\"");
+        Assert.assertEquals(new LispString("multiline\nstring"), lispObject);
+    }
+
 /*    @Test
     public void testParseSymbol() throws LispException {
         LispObject lispObject = p.parseLine("test");

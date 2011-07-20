@@ -20,7 +20,7 @@ public class Parser {
     private int myCurrentIndex = 0;
     private String myLispCode;
     //TODO: to enum or hashmap
-    private char[] mySeparators = new char[] {')', '"', ' ', ';'};
+    private char[] mySeparators = new char[] {')', '"', ' ', ';', '\n'};
 
     private void advance() throws EndOfLineException {
         if (myCurrentIndex == myLispCode.length())
@@ -46,7 +46,7 @@ public class Parser {
         LispList list = new LispList();
         try {
             while (getCurrentChar() != ')') {
-                if (getCurrentChar() == ' ') {
+                if ((getCurrentChar() == ' ') || ((getCurrentChar() == '\n'))) {
                     advance();
                     continue;
                 }
@@ -142,6 +142,8 @@ public class Parser {
         myLispCode = lispCode;
         myLispCode = myLispCode.trim();
         LispObject lispObject = parseObject();
+        if (lispObject == null)
+            lispObject = LispSymbol.ourNilSymbol;
 
         try {
             getMyCurrentIndex();
@@ -172,8 +174,6 @@ public class Parser {
     }
 
     private LispObject parseObject() throws LispException {
-        //TODO: stack to hold quotes, brackets and so on -- because strings and lists can be in multiple lines
-
         try {
             getCurrentChar();
         } catch (EndOfLineException e) {
@@ -197,8 +197,8 @@ public class Parser {
 
         if (getCurrentChar() == ';') {
             //it is a comment, skip to the end of line
-            advanceTo(myLispCode.length());
-            return LispSymbol.ourNilSymbol;
+            advanceTo(getNextIndexOf('\n'));
+            return null;
         }
 
         LispObject lispObject = parseNumber();

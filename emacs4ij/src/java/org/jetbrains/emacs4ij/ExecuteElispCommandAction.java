@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.ui.Messages;
+
 
 /**
  * Created by IntelliJ IDEA.

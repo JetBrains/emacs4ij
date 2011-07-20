@@ -21,7 +21,7 @@
       <action id="org.jetbrains.emacs4ij.ExecuteElispCommand" class="org.jetbrains.emacs4ij.ExecuteElispCommandAction"
               text="Execute _elisp command" description="Execute elisp command" icon="icons\emacs.png">
           <add-to-group group-id="MainToolBar" anchor="last"/>
-          <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt X"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
       </action>
   </actions>
 

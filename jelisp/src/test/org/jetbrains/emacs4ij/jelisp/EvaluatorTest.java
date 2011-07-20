@@ -98,5 +98,16 @@ public class EvaluatorTest {
         Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNilSymbol, value);
     }
 
+    @Test
+    public void testNil () {
+        LispObject n = evaluateString("nil");
+        Assert.assertEquals(LispSymbol.ourNilSymbol, n);
+    }
+
+    @Test
+    public void testT () {
+        LispObject n = evaluateString("t");
+        Assert.assertEquals(LispSymbol.ourTSymbol, n);
+    }
 
 }

@@ -48,6 +48,8 @@ public class Environment {
         myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
         myBuiltinFunctions.put(new LispSymbol("set"), new LispBuiltinFunction("set"));
 
+        myBuiltinVariables.put(LispSymbol.ourNilSymbol, LispSymbol.ourNilSymbol);
+        myBuiltinVariables.put(LispSymbol.ourTSymbol, LispSymbol.ourTSymbol);
     }
 
     public LispObject find(String name) {
