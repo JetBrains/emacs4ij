@@ -12,6 +12,8 @@ import java.util.List;
  * Date: 7/16/11
  * Time: 2:47 PM
  * To change this template use File | Settings | File Templates.
+ *
+ * in fact it is a kind of builtin function
  */
 public class LispSpecialForm extends LispFunction {
 

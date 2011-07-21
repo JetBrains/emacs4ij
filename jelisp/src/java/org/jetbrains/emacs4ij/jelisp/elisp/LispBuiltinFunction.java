@@ -42,8 +42,7 @@ public class LispBuiltinFunction extends LispFunction {
             return args.get(1);
         }
 
-        //search in elisp functions
-
+        //TODO: implement builtin functions
 
         throw new RuntimeException("unknown builtin function " + myName);
     }

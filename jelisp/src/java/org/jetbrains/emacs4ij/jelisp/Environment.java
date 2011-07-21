@@ -1,9 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuiltinFunction;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSpecialForm;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -19,7 +16,6 @@ import java.util.HashMap;
 public class Environment {
 
     public static final Environment ourGlobal = new Environment(null);
-    private static int k = 0;
 
     private final HashMap<LispSymbol, LispObject> mySpecialForms = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myVariables = new HashMap<LispSymbol, LispObject>();
@@ -36,9 +32,6 @@ public class Environment {
 
         if (outerEnv == null) {
             setGlobal();
-            k++;
-            if (k>1)
-                System.out.println("lol");
         }
     }
 
@@ -53,6 +46,11 @@ public class Environment {
 
         myBuiltinVariables.put(LispSymbol.ourNilSymbol, LispSymbol.ourNilSymbol);
         myBuiltinVariables.put(LispSymbol.ourTSymbol, LispSymbol.ourTSymbol);
+    }
+
+    public LispFunction findEmacsFunction (String name) {
+
+        return null;
     }
 
     public LispObject find(String name, SymbolType symbolType) {
@@ -91,6 +89,9 @@ public class Environment {
             case VARIABLE:
                 throw new VoidVariableException(name);
             case FUNCTION:
+                lispObject = findEmacsFunction(name);
+                if (lispObject != null)
+                    return lispObject;
                 throw new VoidFunctionException(name);
         }
 
