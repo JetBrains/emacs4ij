@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.awt.*;
 
 /**
@@ -28,5 +30,10 @@ public class LispBuffer extends LispObject {
     @Override
     public LispString toLispString() {
         return new LispString(myName);
+    }
+
+    @Override
+    public LispObject evaluate(Object... parameters) {
+        throw new NotImplementedException();
     }
 }

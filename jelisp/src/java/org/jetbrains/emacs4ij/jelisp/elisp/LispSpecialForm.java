@@ -13,32 +13,26 @@ import java.util.List;
  * Time: 2:47 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispSpecialForm extends LispObject {
-
-    private String myName;
+public class LispSpecialForm extends LispFunction {
 
     public LispSpecialForm(String myName) {
-        this.myName = myName;
-    }
-
-    public String getName() {
-        return myName;
+        super(myName);
     }
 
     public LispObject execute (List<LispObject> args, Environment environment) throws WrongNumberOfArgumentsException {
-        if (myName.equals("quote")) {
+        if (myName.is("quote")) {
             if (args.size() != 1)
                 throw new WrongNumberOfArgumentsException();
             return args.get(0);
         }
-        if (myName.equals("defun")) {
+        if (myName.is("defun")) {
             if (args.size() < 3)
                 throw new WrongNumberOfArgumentsException();
             LispCustomFunction function = new LispCustomFunction(args);
             environment.defineFunction(function.getName(), function);
             return function.getName();
         }
-        if (myName.equals("interactive")) {
+        if (myName.is("interactive")) {
             throw new NotImplementedException();
         }
 
@@ -47,6 +41,6 @@ public class LispSpecialForm extends LispObject {
 
     @Override
     public LispString toLispString() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 }

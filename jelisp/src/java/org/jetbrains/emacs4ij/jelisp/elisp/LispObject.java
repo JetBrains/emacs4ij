@@ -11,4 +11,5 @@ import java.util.List;
  */
 public abstract class LispObject {
     public abstract LispString toLispString();
+    public abstract LispObject evaluate(Object... parameters);
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Evaluator;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +51,7 @@ public class LispCustomFunction extends LispFunction {
     private void substituteArgument (LispObject argName, LispObject argValue) {
         for (LispObject bodyElement: myBody) {
             if (bodyElement == argName) {
+                //TODO: check
                 bodyElement = argValue;
                 continue;
             }
@@ -82,12 +84,9 @@ public class LispCustomFunction extends LispFunction {
         return result;
     }
 
-    public LispSymbol getName() {
-        return myName;
-    }
-
     @Override
     public LispString toLispString() {
         return new LispString(myName.getName());
     }
+
 }

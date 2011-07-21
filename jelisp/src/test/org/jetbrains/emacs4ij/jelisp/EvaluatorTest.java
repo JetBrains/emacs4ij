@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Test;
 
@@ -16,23 +17,28 @@ import org.junit.Test;
  */
 public class EvaluatorTest {
 
-    Environment environment = Environment.ourGlobal;
+    Environment environment = new Environment(Environment.ourGlobal);
 
     private LispObject evaluateString (String lispCode) throws LispException {
-        Parser p = new Parser();
-        return Evaluator.evaluate(p.parseLine(lispCode), environment);
+        Parser parser = new Parser();
+        return Evaluator.evaluate(parser.parseLine(lispCode), environment);
     }
 
     @Test
     public void testEvaluateInteger () {
-        LispObject lispObject = Evaluator.evaluate(new LispInteger(5), environment);
+        LispObject lispObject = evaluateString("5");
         Assert.assertEquals(new LispInteger(5), lispObject);
     }
 
     @Test
     public void testEvaluateString () {
-        LispObject lispObject = Evaluator.evaluate(new LispString("test"), environment);
+        LispObject lispObject = evaluateString("\"test\"");
         Assert.assertEquals(new LispString("test"), lispObject);
+    }
+
+    @Test (expected = VoidVariableException.class)
+    public void testEvalSymbol() {
+        evaluateString("test");
     }
 
     @Test

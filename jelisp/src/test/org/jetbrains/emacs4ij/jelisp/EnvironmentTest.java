@@ -19,7 +19,7 @@ public class EnvironmentTest {
     @Test
     public void testGetBuiltInF () {
         Environment e = Environment.ourGlobal;
-        LispObject lispObject = e.find("+");
+        LispObject lispObject = e.find("+", Environment.SymbolType.FUNCTION);
         Assert.assertTrue(lispObject instanceof LispBuiltinFunction);
         Assert.assertEquals(new LispSymbol("+"), ((LispBuiltinFunction) lispObject).getName());
     }

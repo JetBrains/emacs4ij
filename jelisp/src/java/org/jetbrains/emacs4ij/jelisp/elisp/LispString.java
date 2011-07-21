@@ -1,8 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -46,5 +43,10 @@ public class LispString extends LispAtom {
     @Override
     public LispString toLispString() {
         return new LispString('"' + myData + '"');
+    }
+
+    @Override
+    public LispObject evaluate(Object... parameters) {
+        return this;
     }
 }

@@ -1,5 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -57,5 +64,23 @@ public class LispSymbol extends LispAtom {
         if (this.equals(ourTSymbol))
             return new LispString("t");
         return new LispString(myName);
+    }
+
+    @Override
+    public LispObject evaluate(Object... parameters) {
+        Environment environment = null;
+        try {
+            environment =(Environment) Arrays.asList(parameters).get(0);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("invalid symbol evaluation arguments!");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        LispObject lispObject = environment.find(myName, Environment.SymbolType.VARIABLE);
+        if (lispObject == null)
+            throw new VoidVariableException(myName);
+        if ((lispObject == LispSymbol.ourNilSymbol) || (lispObject == LispSymbol.ourTSymbol))
+            return lispObject;
+        return lispObject.evaluate(parameters);
     }
 }

@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +56,38 @@ public class LispList extends LispObject {
         return new LispString(list);
     }
 
+    public LispObject evaluate(Object... parameters) {
+        if (isEmpty())
+            return LispSymbol.ourNilSymbol;
+
+        LispSymbol fun;
+        try {
+            fun = (LispSymbol)car();
+        } catch (ClassCastException e) {
+            throw new InvalidFunctionException(car().toString());
+        }
+
+        Environment environment;
+        try {
+            environment =(Environment) Arrays.asList(parameters).get(0);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("invalid list evaluation arguments!");
+        }
+
+        LispObject lispObject = environment.find(fun.getName(), Environment.SymbolType.FUNCTION);
+
+        List<LispObject> data = ((LispList)cdr()).getData();
+
+        if (lispObject instanceof LispSpecialForm) {
+            return ((LispSpecialForm)lispObject).execute(data, environment);
+        }
+
+        for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
+            data.set(i, data.get(i).evaluate(environment));
+        }
+        return ((LispFunction) lispObject).execute(data, environment);
+    }
+
     public List<LispObject> getData() {
         return myData;
     }
@@ -64,10 +98,6 @@ public class LispList extends LispObject {
 
     public LispObject get (int index) {
         return myData.get(index);
-    }
-
-    public void set (int index, LispObject newValue) {
-        myData.set(index, newValue);
     }
 
     @Override

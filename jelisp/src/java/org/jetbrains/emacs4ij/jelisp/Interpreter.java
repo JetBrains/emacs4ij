@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 import java.io.*;
 
@@ -13,37 +14,9 @@ import java.io.*;
  */
 public class Interpreter {
 
-    public static void interpret (String[] args) {
-        //System.out.println(args.length);
-
-        if (args.length == 0) {
-            return;
-        }
-        Reader lispCode;
-        if (args.length == 1) { //it may be lisp code or file name
-            File f = new File(args[0]);
-            try {
-                lispCode = new BufferedReader(new FileReader(f));
-            } catch (FileNotFoundException e) {
-                //it must be lisp code
-                lispCode = new StringReader(args[0]);
-            }
-        } else { // it is a lisp code. Concatenate string arguments into string
-            StringBuilder stringBuilder = new StringBuilder();
-            for (String arg: args) {
-                stringBuilder.append(arg).append(" ");
-            }
-            lispCode = new StringReader(stringBuilder.toString());
-        }
-
+    public static LispObject interpret (String line) {
         Parser parser = new Parser();
-
-        /*StringBuilder stackTrace = parser.parse(lispCode);
-        if (stackTrace == null) {
-            //there were parse errors
-            //TODO: output stackTrace
-            return;
-        }
-        Evaluator.evaluate(parser.getMyProgram(), parser.getMyEnvironment());  */
+        Environment environment = new Environment(Environment.ourGlobal);
+        return Evaluator.evaluate(parser.parseLine(line), environment);
     }
 }

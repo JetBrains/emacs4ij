@@ -4,8 +4,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispBuiltinFunction;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSpecialForm;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -27,6 +28,8 @@ public class Environment {
     private HashMap<LispSymbol, LispObject> myBuiltinFunctions = new HashMap<LispSymbol, LispObject>();
 
     private Environment myOuterEnv;
+
+    public static enum SymbolType {VARIABLE, FUNCTION}
 
     public Environment (Environment outerEnv) {
         myOuterEnv = outerEnv;
@@ -52,32 +55,43 @@ public class Environment {
         myBuiltinVariables.put(LispSymbol.ourTSymbol, LispSymbol.ourTSymbol);
     }
 
-    public LispObject find(String name) {
-
+    public LispObject find(String name, SymbolType symbolType) {
         LispSymbol lsName = new LispSymbol(name);
+        LispObject lispObject;
 
-        LispObject lispObject = mySpecialForms.get(lsName);
-        if (lispObject != null)
-            return lispObject;
+        switch (symbolType) {
+            case VARIABLE:
+                lispObject = myBuiltinVariables.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
 
-        lispObject = myBuiltinVariables.get(lsName);
-        if (lispObject != null)
-            return lispObject;
+                lispObject = myVariables.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
 
-        lispObject = myVariables.get(lsName);
-        if (lispObject != null)
-            return lispObject;
+            case FUNCTION:
+                lispObject = mySpecialForms.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
 
-        lispObject = myBuiltinFunctions.get(lsName);
-        if (lispObject != null)
-            return lispObject;
+                lispObject = myBuiltinFunctions.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
 
-        lispObject = myFunctions.get(lsName);
-        if (lispObject != null)
-            return lispObject;
+                lispObject = myFunctions.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
+        }
 
         if (myOuterEnv != null) {
-            return myOuterEnv.find(name);
+            return myOuterEnv.find(name, symbolType);
+        }
+
+        switch (symbolType) {
+            case VARIABLE:
+                throw new VoidVariableException(name);
+            case FUNCTION:
+                throw new VoidFunctionException(name);
         }
 
         throw new RuntimeException("unknown symbol " + name);

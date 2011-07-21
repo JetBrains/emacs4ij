@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -13,7 +14,29 @@ import java.util.List;
  */
 public abstract class LispFunction extends LispObject {
     protected LispSymbol myName = null;
+
+    public LispFunction (String name) {
+        myName = new LispSymbol(name);
+    }
+
+    public LispFunction() {
+    }
+
     public abstract LispObject execute (List<LispObject> args, Environment environment);
+
+    @Override
+    public LispObject evaluate (Object... parameters) {
+        List<LispObject> args;
+        Environment environment;
+        try {
+            //TODO: wtf??
+            args = (List<LispObject>) Arrays.asList(parameters).get(0);
+            environment =(Environment) Arrays.asList(parameters).get(1);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("invalid function evaluation arguments!");
+        }
+        return execute(args, environment);
+    }
 
     public LispSymbol getName () {
         return myName;
