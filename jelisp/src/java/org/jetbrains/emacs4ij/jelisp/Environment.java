@@ -3,7 +3,9 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.*;
 import java.util.HashMap;
 
 /**
@@ -44,11 +46,41 @@ public class Environment {
         myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
         myBuiltinFunctions.put(new LispSymbol("set"), new LispBuiltinFunction("set"));
 
-        myBuiltinVariables.put(LispSymbol.ourNilSymbol, LispSymbol.ourNilSymbol);
-        myBuiltinVariables.put(LispSymbol.ourTSymbol, LispSymbol.ourTSymbol);
+        myBuiltinVariables.put(LispSymbol.ourNil, LispSymbol.ourNil);
+        myBuiltinVariables.put(LispSymbol.ourT, LispSymbol.ourT);
+    }
+
+    public LispFunction getFunctionFromFile (String fileName, String functionName) {
+        File file = new File(fileName);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+        String line = "";
+        while (true) {
+            try {
+                line = reader.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException("Error while reading " + fileName);
+            }
+            if (line == null)
+                throw new RuntimeException("function " + functionName + " not found in " + fileName);
+            if (line.contains("(defun " + functionName))
+                break;
+        }
+
+        BufferedReaderParser p = new BufferedReaderParser(reader);
+
+        LispObject parsed = p.parse(line);
+
+        throw new NotImplementedException();
     }
 
     public LispFunction findEmacsFunction (String name) {
+        String emacsPath = "c:\\kate\\emacs-23.3";
+        String lispObjectFileNameFile = "c:/kate/emacs-23.3/lisp/help-fns.el";
 
         return null;
     }

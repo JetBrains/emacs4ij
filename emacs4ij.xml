@@ -57,9 +57,29 @@
   
   <!-- JDK definitions -->
   
-  <property name="jdk.bin.idea_ic-107.322_(1)" value="${jdk.home.idea_ic-107.322_(1)}/../../../Program Files/Java/jdk1.6.0_26/bin"/>
-  <path id="jdk.classpath.idea_ic-107.322_(1)">
-    <fileset dir="${jdk.home.idea_ic-107.322_(1)}">
+  <property name="jdk.bin.1.6" value="${jdk.home.1.6}/bin"/>
+  <path id="jdk.classpath.1.6">
+    <fileset dir="${jdk.home.1.6}">
+      <include name="jre/lib/alt-rt.jar"/>
+      <include name="jre/lib/alt-string.jar"/>
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="jdk.bin.idea_ic-107.322" value="${jdk.home.idea_ic-107.322}/../../../Program Files/Java/jdk1.6.0_26/bin"/>
+  <path id="jdk.classpath.idea_ic-107.322">
+    <fileset dir="${jdk.home.idea_ic-107.322}">
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/alt-rt.jar"/>
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/alt-string.jar"/>
       <include name="../../../Program Files/Java/jdk1.6.0_26/jre/lib/charsets.jar"/>
@@ -131,26 +151,6 @@
     </fileset>
   </path>
   
-  <property name="jdk.bin.1.6" value="${jdk.home.1.6}/bin"/>
-  <path id="jdk.classpath.1.6">
-    <fileset dir="${jdk.home.1.6}">
-      <include name="jre/lib/alt-rt.jar"/>
-      <include name="jre/lib/alt-string.jar"/>
-      <include name="jre/lib/charsets.jar"/>
-      <include name="jre/lib/deploy.jar"/>
-      <include name="jre/lib/javaws.jar"/>
-      <include name="jre/lib/jce.jar"/>
-      <include name="jre/lib/jsse.jar"/>
-      <include name="jre/lib/management-agent.jar"/>
-      <include name="jre/lib/plugin.jar"/>
-      <include name="jre/lib/resources.jar"/>
-      <include name="jre/lib/rt.jar"/>
-      <include name="jre/lib/ext/dnsns.jar"/>
-      <include name="jre/lib/ext/localedata.jar"/>
-      <include name="jre/lib/ext/sunjce_provider.jar"/>
-    </fileset>
-  </path>
-  
   <property name="project.jdk.home" value="${jdk.home.1.6}"/>
   <property name="project.jdk.bin" value="${jdk.bin.1.6}"/>
   <property name="project.jdk.classpath" value="jdk.classpath.1.6"/>
@@ -170,17 +170,17 @@
   
   <!-- Modules -->
   
-  <import file="${basedir}/emacs4ij/module_emacs4ij.xml"/>
-  
   <import file="${basedir}/jelisp/module_jelisp.xml"/>
+  
+  <import file="${basedir}/emacs4ij/module_emacs4ij.xml"/>
   
   <target name="init" description="Build initialization">
     <!-- Perform any build initialization in this target -->
   </target>
   
-  <target name="clean" depends="clean.module.emacs4ij, clean.module.jelisp" description="cleanup all"/>
+  <target name="clean" depends="clean.module.jelisp, clean.module.emacs4ij" description="cleanup all"/>
   
-  <target name="build.modules" depends="init, clean, plugin.build.jar.emacs4ij, compile.module.jelisp" description="build all modules"/>
+  <target name="build.modules" depends="init, clean, compile.module.jelisp, plugin.build.jar.emacs4ij" description="build all modules"/>
   
   <target name="all" depends="build.modules" description="build all"/>
 </project>

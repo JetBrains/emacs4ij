@@ -3,9 +3,11 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Observable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +18,7 @@ import java.util.Collections;
  * this is a parser for lisp program
  */
 
-public class Parser {
+public class Parser extends Observable {
     private int myCurrentIndex = 0;
     private String myLispCode;
     //TODO: to enum or hashmap
@@ -44,20 +46,25 @@ public class Parser {
 
     private LispObject parseList() throws LispException {
         LispList list = new LispList();
-        try {
-            while (getCurrentChar() != ')') {
-                if ((getCurrentChar() == ' ') || ((getCurrentChar() == '\n'))) {
-                    advance();
-                    continue;
+        while (true) {
+            try {
+                while (getCurrentChar() != ')') {
+                    if ((getCurrentChar() == ' ') || ((getCurrentChar() == '\n'))) {
+                        advance();
+                        continue;
+                    }
+                    list.add(parseObject());
                 }
-                list.add(parseObject());
+                break;
+            } catch (EndOfLineException e) {
+                if (countObservers() == 0)
+                    throw new MissingClosingBracketException();
+                setChanged();
+                notifyObservers(new MissingClosingBracketException());
+                clearChanged();
             }
-        } catch (EndOfLineException e) {
-            throw new MissingClosingBracketException();
         }
-
         advanceTo(getMyCurrentIndex() + 1);
-
         return list;
     }
 
@@ -81,11 +88,19 @@ public class Parser {
     }
 
     private LispString parseString() throws MissingClosingDoubleQuoteException, EndOfLineException {
-        int nextDoubleQuoteIndex = getNextIndexOf('"');
-
-        if (nextDoubleQuoteIndex == myLispCode.length())
-            throw new MissingClosingDoubleQuoteException();
-
+        int nextDoubleQuoteIndex;
+        while (true) {
+            nextDoubleQuoteIndex = getNextIndexOf('"');
+            if (nextDoubleQuoteIndex == myLispCode.length()) {
+                if (countObservers() == 0)
+                    throw new MissingClosingDoubleQuoteException();
+                setChanged();
+                notifyObservers(new MissingClosingDoubleQuoteException());
+                clearChanged();
+                continue;
+            }
+            break;
+        }
         String string = myLispCode.substring(getMyCurrentIndex(), nextDoubleQuoteIndex);
         advanceTo(nextDoubleQuoteIndex + 1);
         return new LispString(string);
@@ -125,7 +140,7 @@ public class Parser {
                     return lispFloat;
                 }
 
-                return LispSymbol.ourNilSymbol;
+                return LispSymbol.ourNil;
             }
         }
     }
@@ -143,7 +158,7 @@ public class Parser {
         myLispCode = myLispCode.trim();
         LispObject lispObject = parseObject();
         if (lispObject == null)
-            lispObject = LispSymbol.ourNilSymbol;
+            lispObject = LispSymbol.ourNil;
 
         try {
             getMyCurrentIndex();
@@ -177,7 +192,7 @@ public class Parser {
         try {
             getCurrentChar();
         } catch (EndOfLineException e) {
-            return LispSymbol.ourNilSymbol;
+            return LispSymbol.ourNil;
         }
 
         if (getCurrentChar() == '\'') {
@@ -202,12 +217,17 @@ public class Parser {
         }
 
         LispObject lispObject = parseNumber();
-        if (lispObject == LispSymbol.ourNilSymbol) {
+        if (lispObject == LispSymbol.ourNil) {
             lispObject = parseSymbol();
-            if (lispObject == LispSymbol.ourNilSymbol)
+            if (lispObject == LispSymbol.ourNil)
                 throw new UnknownCodeBlockException();
         }
 
         return lispObject;
     }
+
+    public void append (String lispCode) {
+        myLispCode += lispCode;
+    }
+
 }

@@ -2,9 +2,9 @@
 <project name="module_emacs4ij" default="compile.module.emacs4ij">
   <dirname property="module.emacs4ij.basedir" file="${ant.file.module_emacs4ij}"/>
   
-  <property name="module.jdk.home.emacs4ij" value="${jdk.home.idea_ic-107.322_(1)}"/>
-  <property name="module.jdk.bin.emacs4ij" value="${jdk.bin.idea_ic-107.322_(1)}"/>
-  <property name="module.jdk.classpath.emacs4ij" value="jdk.classpath.idea_ic-107.322_(1)"/>
+  <property name="module.jdk.home.emacs4ij" value="${jdk.home.idea_ic-107.322}"/>
+  <property name="module.jdk.bin.emacs4ij" value="${jdk.bin.idea_ic-107.322}"/>
+  <property name="module.jdk.classpath.emacs4ij" value="jdk.classpath.idea_ic-107.322"/>
   
   <property name="compiler.args.emacs4ij" value="${compiler.args}"/>
   
@@ -17,20 +17,27 @@
   
   <path id="emacs4ij.module.production.classpath">
     <path refid="${module.jdk.classpath.emacs4ij}"/>
+    <pathelement location="${jelisp.output.dir}"/>
   </path>
   
   <path id="emacs4ij.runtime.production.module.classpath">
     <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
   </path>
   
   <path id="emacs4ij.module.classpath">
     <path refid="${module.jdk.classpath.emacs4ij}"/>
     <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
   </path>
   
   <path id="emacs4ij.runtime.module.classpath">
     <pathelement location="${emacs4ij.testoutput.dir}"/>
     <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
   </path>
   
   
@@ -48,10 +55,16 @@
     </dirset>
   </path>
   
+  <path id="emacs4ij.module.test.sourcepath">
+    <dirset dir="${module.emacs4ij.basedir}">
+      <include name="src/test"/>
+    </dirset>
+  </path>
+  
   
   <target name="compile.module.emacs4ij" depends="compile.module.emacs4ij.production,compile.module.emacs4ij.tests" description="Compile module emacs4ij"/>
   
-  <target name="compile.module.emacs4ij.production" depends="register.custom.compilers" description="Compile module emacs4ij; production classes">
+  <target name="compile.module.emacs4ij.production" depends="register.custom.compilers,compile.module.jelisp" description="Compile module emacs4ij; production classes">
     <mkdir dir="${emacs4ij.output.dir}"/>
     <javac2 destdir="${emacs4ij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
       <compilerarg line="${compiler.args.emacs4ij}"/>
@@ -66,15 +79,26 @@
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
-      <fileset dir="${module.emacs4ij.basedir}/icons"/>
-    </copy>
-
-    <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/icons">
-      <fileset dir="${module.emacs4ij.basedir}/icons"/>
     </copy>
   </target>
   
-  <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests"/>
+  <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests">
+    <mkdir dir="${emacs4ij.testoutput.dir}"/>
+    <javac2 destdir="${emacs4ij.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
+      <compilerarg line="${compiler.args.emacs4ij}"/>
+      <bootclasspath refid="emacs4ij.module.bootclasspath"/>
+      <classpath refid="emacs4ij.module.classpath"/>
+      <src refid="emacs4ij.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.emacs4ij"/>
+    </javac2>
+    
+    <copy todir="${emacs4ij.testoutput.dir}">
+      <fileset dir="${module.emacs4ij.basedir}/src/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
   
   <target name="clean.module.emacs4ij" description="cleanup module">
     <delete dir="${emacs4ij.output.dir}"/>

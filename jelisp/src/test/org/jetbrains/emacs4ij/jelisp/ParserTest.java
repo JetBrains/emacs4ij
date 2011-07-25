@@ -161,7 +161,7 @@ public class ParserTest {
     @Test
     public void testEmptyLineWithComments() throws LispException {
         LispObject lispObject = p.parseLine("; a comment");
-        Assert.assertEquals(LispSymbol.ourNilSymbol, lispObject);
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
     @Test
@@ -190,13 +190,13 @@ public class ParserTest {
     @Test
     public void testEmptyQuote() throws LispException {
         LispObject lispObject = p.parseLine("'");
-        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNilSymbol)), lispObject);
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
     @Test
     public void testQuotedSpace() throws LispException {
         LispObject lispObject = p.parseLine("' ");
-        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNilSymbol)), lispObject);
+        Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
     @Test
@@ -235,11 +235,12 @@ public class ParserTest {
         Assert.assertEquals(new LispString("multiline\nstring"), lispObject);
     }
 
-/*    @Test
+    @Test
     public void testParseSymbol() throws LispException {
         LispObject lispObject = p.parseLine("test");
         Assert.assertEquals(new LispSymbol("test"), lispObject);
     }
-  */
+
+
 }
 

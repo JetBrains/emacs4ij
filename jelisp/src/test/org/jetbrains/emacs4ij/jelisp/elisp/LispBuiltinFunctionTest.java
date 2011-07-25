@@ -4,10 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.junit.Test;
 
-import java.sql.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,7 +25,7 @@ public class LispBuiltinFunctionTest {
     @Test
     public void testPlusNoArgs () {
         LispBuiltinFunction plus = new LispBuiltinFunction("+");
-        LispObject res = plus.execute(Arrays.<LispObject>asList(LispSymbol.ourNilSymbol), Environment.ourGlobal);
+        LispObject res = plus.execute(Arrays.<LispObject>asList(LispSymbol.ourNil), Environment.ourGlobal);
         Assert.assertEquals(new LispInteger(0), res);
     }
 }

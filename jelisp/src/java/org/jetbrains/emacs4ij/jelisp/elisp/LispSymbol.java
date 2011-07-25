@@ -2,10 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,8 +15,9 @@ import java.util.List;
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
 public class LispSymbol extends LispAtom {
-    public static final LispSymbol ourNilSymbol = new LispSymbol("nil");
-    public static final LispSymbol ourTSymbol = new LispSymbol("t");
+    public static final LispSymbol ourNil = new LispSymbol("nil");
+    public static final LispSymbol ourT = new LispSymbol("t");
+    public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
 
@@ -59,10 +58,12 @@ public class LispSymbol extends LispAtom {
 
     @Override
     public LispString toLispString() {
-        if (this.equals(ourNilSymbol))
+       /* if (this.equals(ourNil))
             return new LispString("nil");
-        if (this.equals(ourTSymbol))
+        if (this.equals(ourT))
             return new LispString("t");
+        if (this.equals(ourT))
+            return new LispString("void");   */
         return new LispString(myName);
     }
 
@@ -79,7 +80,7 @@ public class LispSymbol extends LispAtom {
         LispObject lispObject = environment.find(myName, Environment.SymbolType.VARIABLE);
         if (lispObject == null)
             throw new VoidVariableException(myName);
-        if ((lispObject == LispSymbol.ourNilSymbol) || (lispObject == LispSymbol.ourTSymbol))
+        if ((lispObject == LispSymbol.ourNil) || (lispObject == LispSymbol.ourT))
             return lispObject;
         return lispObject.evaluate(parameters);
     }

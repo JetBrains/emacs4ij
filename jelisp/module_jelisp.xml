@@ -2,9 +2,9 @@
 <project name="module_jelisp" default="compile.module.jelisp">
   <dirname property="module.jelisp.basedir" file="${ant.file.module_jelisp}"/>
   
-  <property name="module.jdk.home.jelisp" value="${project.jdk.home}"/>
-  <property name="module.jdk.bin.jelisp" value="${project.jdk.bin}"/>
-  <property name="module.jdk.classpath.jelisp" value="${project.jdk.classpath}"/>
+  <property name="module.jdk.home.jelisp" value="${jdk.home.1.6}"/>
+  <property name="module.jdk.bin.jelisp" value="${jdk.bin.1.6}"/>
+  <property name="module.jdk.classpath.jelisp" value="jdk.classpath.1.6"/>
   
   <property name="compiler.args.jelisp" value="${compiler.args}"/>
   

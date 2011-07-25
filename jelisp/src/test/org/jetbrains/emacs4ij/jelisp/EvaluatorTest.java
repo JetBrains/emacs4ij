@@ -102,19 +102,19 @@ public class EvaluatorTest {
         LispObject fun = evaluateString("(defun nilFun () ())");
         Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
         LispObject value = evaluateString("(nilFun)");
-        Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNilSymbol, value);
+        Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
     }
 
     @Test
     public void testNil () {
         LispObject n = evaluateString("nil");
-        Assert.assertEquals(LispSymbol.ourNilSymbol, n);
+        Assert.assertEquals(LispSymbol.ourNil, n);
     }
 
     @Test
     public void testT () {
         LispObject n = evaluateString("t");
-        Assert.assertEquals(LispSymbol.ourTSymbol, n);
+        Assert.assertEquals(LispSymbol.ourT, n);
     }
 
     @Test

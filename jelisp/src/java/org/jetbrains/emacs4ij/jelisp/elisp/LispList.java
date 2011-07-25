@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,7 +57,7 @@ public class LispList extends LispObject {
 
     public LispObject evaluate(Object... parameters) {
         if (isEmpty())
-            return LispSymbol.ourNilSymbol;
+            return LispSymbol.ourNil;
 
         LispSymbol fun;
         try {
@@ -132,7 +131,7 @@ public class LispList extends LispObject {
     }
 
     public LispObject car () {
-        return ((myData.size() == 0) ? LispSymbol.ourNilSymbol : myData.get(0)) ;
+        return ((myData.size() == 0) ? LispSymbol.ourNil : myData.get(0)) ;
     }
 
     public LispObject cdr () {
