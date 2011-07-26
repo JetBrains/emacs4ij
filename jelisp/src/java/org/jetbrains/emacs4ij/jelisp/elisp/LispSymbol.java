@@ -83,8 +83,9 @@ public class LispSymbol extends LispAtom {
         LispObject lispObject = environment.find(myName, Environment.SymbolType.VARIABLE);
         if (lispObject == null)
             throw new VoidVariableException(myName);
-        if ((lispObject == LispSymbol.ourNil) || (lispObject == LispSymbol.ourT))
+        return lispObject;
+        /*if ((lispObject == LispSymbol.ourNil) || (lispObject == LispSymbol.ourT))
             return lispObject;
-        return lispObject.evaluate(parameters);
+        return lispObject.evaluate(parameters);*/
     }
 }

@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Arrays;
@@ -37,12 +38,45 @@ public class LispBuiltinFunction extends LispFunction {
         }
         if (myName.is("set")) {
             if (args.size() != 2)
-                throw new WrongNumberOfArgumentsException();
+                throw new WrongNumberOfArgumentsException(myName.getName());
             environment.setVariable(args.get(0), args.get(1));
             return args.get(1);
         }
+        if (myName.is("eq")) {
+            if (args.size() != 2)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            if (args.get(0).equals(args.get(1)))
+                return LispSymbol.ourT;
+            return LispSymbol.ourNil;
+        }
+        if (myName.is("car-safe")) {
+            if (args.size() != 1)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            if (args.get(0) instanceof LispList)
+                return ((LispList) args.get(0)).car();
+            return LispSymbol.ourNil;
+        }
+        if (myName.is("cdr-safe")) {
+            if (args.size() != 1)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            if (args.get(0) instanceof LispList)
+                return ((LispList) args.get(0)).cdr();
+            return LispSymbol.ourNil;
+        }
+        if (myName.is("memq")) {
+            if (args.size() != 2)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            if (args.get(1) instanceof LispList) {
+                return ((LispList) args.get(1)).memq(args.get(0));
+            }
+            throw new WrongTypeArgument("LispList", args.get(1).getClass().toString());
+        }
+        if (myName.is("list")) {
+            LispList list = new LispList(args);
+            return list.isEmpty() ? LispSymbol.ourNil : list;
+        }
 
-        //TODO: implement builtin functions
+
 
         throw new RuntimeException("unknown builtin function " + myName);
     }

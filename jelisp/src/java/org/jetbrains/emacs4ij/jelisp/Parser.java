@@ -22,7 +22,7 @@ public class Parser extends Observable {
     private int myCurrentIndex = 0;
     private String myLispCode;
     //TODO: to enum or hashmap
-    private char[] mySeparators = new char[] {')', '"', ' ', ';', '\n'};
+    private char[] mySeparators = new char[] {')', '"', ' ', ';', '\n', '\t'};
 
     private void advance() throws EndOfLineException {
         if (myCurrentIndex == myLispCode.length())
@@ -49,7 +49,7 @@ public class Parser extends Observable {
         while (true) {
             try {
                 while (getCurrentChar() != ')') {
-                    if ((getCurrentChar() == ' ') || ((getCurrentChar() == '\n'))) {
+                    if ((getCurrentChar() == ' ') || (getCurrentChar() == '\n') || (getCurrentChar() == '\t')) {
                         advance();
                         continue;
                     }

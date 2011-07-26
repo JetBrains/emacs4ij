@@ -8,7 +8,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class WrongNumberOfArgumentsException extends LispException {
-    public WrongNumberOfArgumentsException() {
-        super("Wrong number of arguments");
+    public WrongNumberOfArgumentsException(String functionName) {
+        super(functionName +  ": Wrong number of arguments");
     }
 }

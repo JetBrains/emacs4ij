@@ -212,6 +212,12 @@ public class ParserTest {
     }
 
     @Test
+    public void testListOfQuotedItems() {
+        LispObject lispObject = p.parseLine("('test)");
+        Assert.assertEquals(new LispList(new LispList(new LispSymbol("quote"), new LispSymbol("test"))), lispObject);
+    }
+
+    @Test
     public void testParsePlus () throws LispException {
         LispObject lispObject = p.parseLine("(+ 2 2)");
         Assert.assertEquals(new LispList(Arrays.<LispObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);

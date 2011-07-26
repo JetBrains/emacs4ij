@@ -68,9 +68,8 @@ public class EvaluatorTest {
 
     @Test
     public void testSetVar() throws LispException {
-        LispObject value = evaluateString("(set 'var 5)");
+        LispObject value = evaluateString("(set 'var (+ 2 3))");
         Assert.assertEquals("set return value assertion", new LispInteger(5), value);
-
         LispObject lispObject = evaluateString("var");
         Assert.assertEquals(new LispInteger(5), lispObject);
     }
@@ -151,6 +150,20 @@ public class EvaluatorTest {
     }
 
     @Test
+    public void testFunctionSymbolArgumentsSubstitution() {
+        evaluateString("(defun test (a) a)");
+        LispObject lispObject = evaluateString("(test 5)");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testFunctionArgumentsSubstitution() {
+        evaluateString("(defun test (a) (+ a (+ a 1)))");
+        LispObject lispObject = evaluateString("(test 5)");
+        Assert.assertEquals(new LispInteger(11), lispObject);
+    }
+
+    @Test
     public void testLetEmpty() {
         LispObject lispObject = evaluateString("(let ())");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -186,11 +199,112 @@ public class EvaluatorTest {
         Assert.assertEquals(new LispInteger(12), lispObject);
     }
 
-    @Ignore
+    @Test
+    public void testEq() {
+        LispObject lispObject = evaluateString("(eq 5 5)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
+    public void testCarSafe() {
+        evaluateString("(set 'p 'defun)");
+        LispObject lispObject = evaluateString("(car-safe p)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testQuotedFunctionArg() {
+        LispObject kit = evaluateString("(defun kit (a) (car-safe a))");
+        Assert.assertEquals("kit ", new LispSymbol("kit"), kit);
+        LispObject lispObject = evaluateString("(kit 'test)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testOrEmpty() {
+        LispObject or = evaluateString("(or)");
+        Assert.assertEquals(LispSymbol.ourNil, or);
+    }
+
+    @Test
+    public void testOrMulti() {
+        LispObject or = evaluateString("(or nil nil nil 5)");
+        Assert.assertEquals(new LispInteger(5), or);
+    }
+
+    @Test
+    public void testAndEmpty() {
+        LispObject and = evaluateString("(and)");
+        Assert.assertEquals(LispSymbol.ourT, and);
+    }
+
+    @Test
+    public void testAndNil() {
+        LispObject and = evaluateString("(and 1 2 3 nil)");
+        Assert.assertEquals(LispSymbol.ourNil, and);
+    }
+
+    @Test
+    public void testAndVal() {
+        LispObject and = evaluateString("(and 1 2 3 4 5)");
+        Assert.assertEquals(new LispInteger(5), and);
+    }
+
+    @Test
+    public void testIfT () {
+        LispObject lispObject = evaluateString("(if t)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
+    public void testIfNil () {
+        LispObject lispObject = evaluateString("(if nil)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testIfTrue () {
+        LispObject lispObject = evaluateString("(if 5 'true 'false)");
+        Assert.assertEquals(new LispSymbol("true"), lispObject);
+    }
+
+    @Test
+    public void testIfFalse () {
+        LispObject lispObject = evaluateString("(if () 'true 'one 'two 'false)");
+        Assert.assertEquals(new LispSymbol("false"), lispObject);
+    }
+
+    @Test
+    public void testMemq () {
+        evaluateString("(set 'a '(1 2 3))");
+        LispObject lispObject = evaluateString("(memq 4 a)");
+        Assert.assertEquals("not exist", LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(memq 3 a)");
+        Assert.assertEquals(new LispList(new LispInteger(3)), lispObject);
+    }
+
+    @Test
+    public void testList() {
+        LispObject lispObject = evaluateString("(list)");
+        Assert.assertEquals("no args", LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(list 5 \"test\")");
+        Assert.assertEquals("2 args", new LispList(new LispInteger(5), new LispString("test")), lispObject);
+        lispObject = evaluateString("(list nil)");
+        Assert.assertEquals("list of nil -1", new LispList(LispSymbol.ourNil), lispObject);
+        lispObject = evaluateString("(list (list))");
+        Assert.assertEquals("list of nil -2", new LispList(LispSymbol.ourNil), lispObject);
+    }
+
+    //@Ignore
     @Test
     public void testFinder () {
+        try {
         LispObject path = evaluateString("(" + Environment.ourFinder.getName() + " 'fill-column 'defvar)");
         Assert.assertEquals(new LispString("src/buffer.c"), path);
+        } catch (LispException e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
 
 

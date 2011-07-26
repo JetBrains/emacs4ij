@@ -80,12 +80,12 @@ public class LispSpecialForm extends LispFunction {
     public LispObject execute (Environment environment, List<LispObject> args) throws WrongNumberOfArgumentsException {
         if (myName.is("quote")) {
             if (args.size() != 1)
-                throw new WrongNumberOfArgumentsException();
+                throw new WrongNumberOfArgumentsException(myName.getName());
             return args.get(0);
         }
         if (myName.is("defun")) {
             if (args.size() < 2)
-                throw new WrongNumberOfArgumentsException();
+                throw new WrongNumberOfArgumentsException(myName.getName());
             LispCustomFunction function = new LispCustomFunction(args);
             environment.defineFunction(function.getName(), function);
             return function.getName();
@@ -96,8 +96,38 @@ public class LispSpecialForm extends LispFunction {
         if (myName.is("let*")) {
             return executeLet(true, environment, args);
         }
-
-
+        if (myName.is("or")) {
+            for (int i=0; i!=args.size(); ++i) {
+                LispObject result = args.get(i).evaluate(environment);
+                if (result != LispSymbol.ourNil)
+                    return result;
+            }
+            return LispSymbol.ourNil;
+        }
+        if (myName.is("and")) {
+            LispObject result = LispSymbol.ourT;
+            for (int i=0; i!=args.size(); ++i) {
+                result = args.get(i).evaluate(environment);
+                if (result == LispSymbol.ourNil)
+                    return result;
+            }
+            return result;
+        }
+        if (myName.is("if")) {
+            if (args.size() < 1)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            LispObject condition = args.get(0).evaluate(environment);
+            if (condition != LispSymbol.ourNil) {
+                if (args.size() > 1)
+                    return args.get(1).evaluate(environment);
+                return LispSymbol.ourT;
+            }
+            LispObject result = LispSymbol.ourNil;
+            for (int i=2; i<args.size(); ++i) {
+                result = args.get(i).evaluate(environment);
+            }
+            return result;
+        }
         if (myName.is("interactive")) {
             throw new NotImplementedException();
         }
