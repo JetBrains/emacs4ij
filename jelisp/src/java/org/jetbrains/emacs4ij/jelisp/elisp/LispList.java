@@ -41,6 +41,7 @@ public class LispList extends LispObject {
         return ((myData == null) || myData.isEmpty());
     }
 
+    @Override
     public LispString toLispString() {
         String list = "(";
         if (isEmpty()) {
@@ -55,6 +56,12 @@ public class LispList extends LispObject {
         return new LispString(list);
     }
 
+    /**
+     *
+     * @param parameters = Environment
+     * @return the result of last function execution
+     */
+    @Override
     public LispObject evaluate(Object... parameters) {
         if (isEmpty())
             return LispSymbol.ourNil;
@@ -78,13 +85,13 @@ public class LispList extends LispObject {
         List<LispObject> data = ((LispList)cdr()).getData();
 
         if (lispObject instanceof LispSpecialForm) {
-            return ((LispSpecialForm)lispObject).execute(data, environment);
+            return ((LispSpecialForm)lispObject).execute(environment, data);
         }
 
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
             data.set(i, data.get(i).evaluate(environment));
         }
-        return ((LispFunction) lispObject).execute(data, environment);
+        return ((LispFunction) lispObject).execute(environment, data);
     }
 
     public List<LispObject> getData() {

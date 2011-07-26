@@ -10,5 +10,11 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * base class for elisp numbers
  */
 public abstract class LispNumber extends LispAtom {
-
+    @Override
+    /**
+     * no parameters required
+     */
+    public LispObject evaluate(Object... parameters) {
+        return this;
+    }
 }

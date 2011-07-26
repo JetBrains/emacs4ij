@@ -1,10 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuiltinFunction;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -16,9 +14,15 @@ import org.junit.Test;
  */
 public class EnvironmentTest {
 
+    private Environment e;
+
+    @Before
+    public void setUp() throws Exception {
+        e = new Environment(Environment.ourGlobal);
+    }
+
     @Test
     public void testGetBuiltInF () {
-        Environment e = Environment.ourGlobal;
         LispObject lispObject = e.find("+", Environment.SymbolType.FUNCTION);
         Assert.assertTrue(lispObject instanceof LispBuiltinFunction);
         Assert.assertEquals(new LispSymbol("+"), ((LispBuiltinFunction) lispObject).getName());
@@ -26,10 +30,23 @@ public class EnvironmentTest {
 
     @Test
     public void testOverrideVar () {
-        Environment e = new Environment(Environment.ourGlobal);
         e.setVariable(new LispSymbol("a"), new LispInteger(5));
         e.setVariable(new LispSymbol("a"), new LispInteger(6));
         Assert.assertEquals(new LispInteger(6), e.getVariable("a"));
+    }
+
+    @Test
+    public void testGetFunctionFromFile() {
+        String lispObjectFileNameFile = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\lisp\\help-fns.el";
+        String lispFunctionName = "find-lisp-object-file-name";
+        LispList functionFromFile = e.getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
+        Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList) functionFromFile.cdr()).car());
+    }
+
+    @Test
+    public void testFindEmacsFinder() {
+        LispCustomFunction finder = (LispCustomFunction) e.find(Environment.ourFinder.getName(), Environment.SymbolType.FUNCTION);
+        Assert.assertEquals(Environment.ourFinder, finder.getName());
     }
 
 }

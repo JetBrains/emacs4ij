@@ -46,6 +46,9 @@ public class LispString extends LispAtom {
     }
 
     @Override
+    /**
+     * no parameters required
+     */
     public LispObject evaluate(Object... parameters) {
         return this;
     }

@@ -39,6 +39,8 @@ public class LispCustomFunction extends LispFunction {
         //TODO: cast exceptions
         myName = (LispSymbol)args.get(0);
         myArguments = (LispList)args.get(1);
+        if (args.size() == 2)
+            return;
         if (args.get(2) instanceof LispString) {
             myDocumentation = (LispString)args.get(2);
             checkInteractiveAndBody(3, args);
@@ -63,7 +65,7 @@ public class LispCustomFunction extends LispFunction {
     }
 
     @Override
-    public LispObject execute(List<LispObject> args, Environment environment) {
+    public LispObject execute(Environment environment, List<LispObject> args) {
 
         if (myArguments.getSize() != args.size())
             throw new WrongNumberOfArgumentsException();

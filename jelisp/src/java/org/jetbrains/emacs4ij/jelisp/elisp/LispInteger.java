@@ -47,8 +47,4 @@ public class LispInteger extends LispNumber {
         return new LispString(Integer.toString(myData));
     }
 
-    @Override
-    public LispObject evaluate(Object... parameters) {
-        return this;
-    }
 }

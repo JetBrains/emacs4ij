@@ -38,11 +38,6 @@ public class LispFloat extends LispNumber{
     }
 
     @Override
-    public LispObject evaluate(Object... parameters) {
-        return this;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

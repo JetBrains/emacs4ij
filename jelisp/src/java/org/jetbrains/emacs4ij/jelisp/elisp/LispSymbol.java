@@ -68,6 +68,9 @@ public class LispSymbol extends LispAtom {
     }
 
     @Override
+    /**
+     * takes Environment
+     */
     public LispObject evaluate(Object... parameters) {
         Environment environment = null;
         try {

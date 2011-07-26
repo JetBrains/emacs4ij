@@ -16,18 +16,21 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class Environment {
-
-    public static final Environment ourGlobal = new Environment(null);
-
     private final HashMap<LispSymbol, LispObject> mySpecialForms = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myVariables = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinVariables = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myFunctions = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinFunctions = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LispCustomFunction> myEmacsFunctions = new HashMap<LispSymbol, LispCustomFunction>();
+
+    private static final String ourEmacsPath = findEmacs();
+    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+    private static final String ourFinderPath = "lisp\\help-fns.el";
 
     private Environment myOuterEnv;
 
     public static enum SymbolType {VARIABLE, FUNCTION}
+    public static final Environment ourGlobal = new Environment(null);
 
     public Environment (Environment outerEnv) {
         myOuterEnv = outerEnv;
@@ -40,25 +43,35 @@ public class Environment {
     private void setGlobal() {
         mySpecialForms.put(new LispSymbol("quote"), new LispSpecialForm("quote"));
         mySpecialForms.put(new LispSymbol("defun"), new LispSpecialForm("defun"));
+        mySpecialForms.put(new LispSymbol("let"), new LispSpecialForm("let"));
+        mySpecialForms.put(new LispSymbol("let*"), new LispSpecialForm("let*"));
+
         mySpecialForms.put(new LispSymbol("interactive"), new LispSpecialForm("interactive"));
 
         myBuiltinFunctions.put(new LispSymbol("+"), new LispBuiltinFunction("+"));
         myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
         myBuiltinFunctions.put(new LispSymbol("set"), new LispBuiltinFunction("set"));
 
+        myEmacsFunctions.put(ourFinder, findEmacsFunction(ourFinder));
+
         myBuiltinVariables.put(LispSymbol.ourNil, LispSymbol.ourNil);
         myBuiltinVariables.put(LispSymbol.ourT, LispSymbol.ourT);
     }
 
-    public LispFunction getFunctionFromFile (String fileName, String functionName) {
+    private static String findEmacs() {
+        return  "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
+    }
+
+    //TODO: its public only for test
+    public LispList getFunctionFromFile(String fileName, String functionName) {
         File file = new File(fileName);
-        BufferedReader reader = null;
+        BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
             throw new RuntimeException("File not found: " + fileName);
         }
-        String line = "";
+        String line;
         while (true) {
             try {
                 line = reader.readLine();
@@ -75,14 +88,36 @@ public class Environment {
 
         LispObject parsed = p.parse(line);
 
-        throw new NotImplementedException();
+        if (parsed instanceof LispList) {
+
+            if (((LispSymbol)((LispList) parsed).car()).getName().equals("defun"))
+                return (LispList) parsed;
+            throw new RuntimeException("Parsed list is not a function definition!");
+        }
+        throw new RuntimeException("Parsed object is not a LispList!");
     }
 
-    public LispFunction findEmacsFunction (String name) {
-        String emacsPath = "c:\\kate\\emacs-23.3";
-        String lispObjectFileNameFile = "c:/kate/emacs-23.3/lisp/help-fns.el";
+    //TODO: its public only for test
+    public String findEmacsFunctionFileName(String functionName) {
+        LispCustomFunction finder = myEmacsFunctions.get(ourFinder);
+        if (finder == null)
+            return ourEmacsPath + ourFinderPath;
 
         return null;
+    }
+
+    public LispCustomFunction findEmacsFunction (LispSymbol name) {
+        LispCustomFunction emacsFunction = myEmacsFunctions.get(name);
+        if (emacsFunction != null)
+            return emacsFunction;
+        String path = findEmacsFunctionFileName(name.getName());
+        LispList function = getFunctionFromFile(path, name.getName());
+        if (function.cdr() instanceof LispList) {
+            LispCustomFunction f = new LispCustomFunction(((LispList) function.cdr()).getData());
+            myEmacsFunctions.put(name, f);
+            return f;
+        }
+        throw new RuntimeException("Wrong defun construction: no arguments");
     }
 
     public LispObject find(String name, SymbolType symbolType) {
@@ -121,7 +156,7 @@ public class Environment {
             case VARIABLE:
                 throw new VoidVariableException(name);
             case FUNCTION:
-                lispObject = findEmacsFunction(name);
+                lispObject = findEmacsFunction(lsName);
                 if (lispObject != null)
                     return lispObject;
                 throw new VoidFunctionException(name);

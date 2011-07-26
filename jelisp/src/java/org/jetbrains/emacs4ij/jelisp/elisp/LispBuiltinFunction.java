@@ -20,7 +20,7 @@ public class LispBuiltinFunction extends LispFunction {
         super(myName);
     }
 
-    public LispObject execute (List<LispObject> args, Environment environment) {
+    public LispObject execute (Environment environment, List<LispObject> args) {
         if (myName.is("+")) {
             int ans = 0;
             for (LispObject lispObject: args) {

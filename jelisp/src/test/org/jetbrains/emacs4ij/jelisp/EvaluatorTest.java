@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -106,6 +107,15 @@ public class EvaluatorTest {
     }
 
     @Test
+    public void testDefunEmptyBody2 () {
+        LispObject fun = evaluateString("(defun nilFun ())");
+        Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
+        LispObject value = evaluateString("(nilFun)");
+        Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
+    }
+
+
+    @Test
     public void testNil () {
         LispObject n = evaluateString("nil");
         Assert.assertEquals(LispSymbol.ourNil, n);
@@ -138,6 +148,49 @@ public class EvaluatorTest {
         Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
         LispObject value = evaluateString("(testFun)");
         Assert.assertEquals("testFun return value assertion", new LispSymbol("ann"), value);
+    }
+
+    @Test
+    public void testLetEmpty() {
+        LispObject lispObject = evaluateString("(let ())");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testLetEmptyVar() {
+        LispObject lispObject = evaluateString("(let () 5)");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testLetNilVar() {
+        LispObject lispObject = evaluateString("(let (a) a)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testLetEmptyBody() {
+        LispObject lispObject = evaluateString("(let ((a 5)) )");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testLetAtomVar() {
+        LispObject lispObject = evaluateString("(let ((a 5)) a)");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testLetStar() {
+        LispObject lispObject = evaluateString("(let* ((a 5) (b (+ 2 a))) (+ a b))");
+        Assert.assertEquals(new LispInteger(12), lispObject);
+    }
+
+    @Ignore
+    @Test
+    public void testFinder () {
+        LispObject path = evaluateString("(" + Environment.ourFinder.getName() + " 'fill-column 'defvar)");
+        Assert.assertEquals(new LispString("src/buffer.c"), path);
     }
 
 

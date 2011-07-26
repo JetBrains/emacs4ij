@@ -22,20 +22,24 @@ public abstract class LispFunction extends LispObject {
     public LispFunction() {
     }
 
-    public abstract LispObject execute (List<LispObject> args, Environment environment);
+    public abstract LispObject execute (Environment environment, List<LispObject> args);
 
     @Override
+    /**
+     * takes Environment and List<LispObject> args
+     */
     public LispObject evaluate (Object... parameters) {
         List<LispObject> args;
         Environment environment;
         try {
             //TODO: wtf??
-            args = (List<LispObject>) Arrays.asList(parameters).get(0);
-            environment =(Environment) Arrays.asList(parameters).get(1);
+            environment =(Environment) Arrays.asList(parameters).get(0);
+            args = (List<LispObject>) Arrays.asList(parameters).get(1);
+
         } catch (ClassCastException e) {
             throw new RuntimeException("invalid function evaluation arguments!");
         }
-        return execute(args, environment);
+        return execute(environment, args);
     }
 
     public LispSymbol getName () {
