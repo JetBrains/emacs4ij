@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.HashMap;
@@ -127,6 +128,44 @@ public class LispSpecialForm extends LispFunction {
                 result = args.get(i).evaluate(environment);
             }
             return result;
+        }
+        if (myName.is("while")) {
+            if (args.size() < 1)
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            Environment inner = new Environment(environment);
+            LispObject condition = args.get(0).evaluate(inner);
+            while (condition != LispSymbol.ourNil) {
+                for (int i = 1; i != args.size(); ++i)
+                    args.get(i).evaluate(inner);
+                condition = args.get(0).evaluate(inner);
+            }
+            return condition;
+        }
+        if (myName.is("cond")) {
+            //if (args.isEmpty())
+            //    return LispSymbol.ourNil;
+            LispObject result = LispSymbol.ourNil;
+            for (int i=0; i!=args.size(); ++i) {
+                LispObject clause = args.get(i);
+                if (!(clause instanceof LispList)) {
+                    if (clause.equals(LispSymbol.ourNil))
+                        continue;
+                    throw new WrongTypeArgument("LispList", clause.getClass().toString());
+                }
+                if (((LispList) clause).isEmpty())
+                    continue;
+                LispObject condition = ((LispList) clause).car().evaluate(environment);
+                if (condition != LispSymbol.ourNil) {
+                    List<LispObject> data = ((LispList) clause).cdr().getData();
+                    result = condition;
+                    for (int k = 0; k != data.size(); ++k)
+                        result = data.get(k).evaluate(environment);
+                    return result;
+                }
+            }
+
+            return result;
+
         }
         if (myName.is("interactive")) {
             throw new NotImplementedException();

@@ -141,7 +141,7 @@ public class LispList extends LispObject {
         return ((myData.size() == 0) ? LispSymbol.ourNil : myData.get(0)) ;
     }
 
-    public LispObject cdr () {
+    public LispList cdr () {
         return ((myData.size() < 2) ? new LispList() : new LispList(myData.subList(1, myData.size())));
     }
 

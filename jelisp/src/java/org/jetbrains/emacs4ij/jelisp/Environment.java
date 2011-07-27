@@ -7,6 +7,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +20,7 @@ public class Environment {
     private final HashMap<LispSymbol, LispObject> mySpecialForms = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myVariables = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinVariables = new HashMap<LispSymbol, LispObject>();
-    private HashMap<LispSymbol, LispCustomFunction> myFunctions = new HashMap<LispSymbol, LispCustomFunction>();
+    private HashMap<LispSymbol, LispObject> myFunctions = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinFunctions = new HashMap<LispSymbol, LispObject>();
     //private HashMap<LispSymbol, LispCustomFunction> myEmacsFunctions = new HashMap<LispSymbol, LispCustomFunction>();
 
@@ -49,6 +50,8 @@ public class Environment {
         mySpecialForms.put(new LispSymbol("or"), new LispSpecialForm("or"));
         mySpecialForms.put(new LispSymbol("and"), new LispSpecialForm("and"));
         mySpecialForms.put(new LispSymbol("if"), new LispSpecialForm("if"));
+        mySpecialForms.put(new LispSymbol("while"), new LispSpecialForm("while"));
+        mySpecialForms.put(new LispSymbol("cond"), new LispSpecialForm("cond"));
 
         myBuiltinFunctions.put(new LispSymbol("+"), new LispBuiltinFunction("+"));
         myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
@@ -58,12 +61,24 @@ public class Environment {
         myBuiltinFunctions.put(new LispSymbol("cdr-safe"), new LispBuiltinFunction("cdr-safe"));
         myBuiltinFunctions.put(new LispSymbol("memq"), new LispBuiltinFunction("memq"));
         myBuiltinFunctions.put(new LispSymbol("list"), new LispBuiltinFunction("list"));
+        myBuiltinFunctions.put(new LispSymbol("null"), new LispBuiltinFunction("null"));
+        myBuiltinFunctions.put(new LispSymbol("not"), new LispBuiltinFunction("not"));
+        myBuiltinFunctions.put(new LispSymbol("car"), new LispBuiltinFunction("car"));
+        myBuiltinFunctions.put(new LispSymbol("cdr"), new LispBuiltinFunction("cdr"));
+        myBuiltinFunctions.put(new LispSymbol("stringp"), new LispBuiltinFunction("stringp"));
+        myBuiltinFunctions.put(new LispSymbol("symbol-function"), new LispBuiltinFunction("symbol-function"));
+        myBuiltinFunctions.put(new LispSymbol("subrp"), new LispBuiltinFunction("subrp"));
+        myBuiltinFunctions.put(new LispSymbol("symbolp"), new LispBuiltinFunction("symbolp"));
+        myBuiltinFunctions.put(new LispSymbol("integerp"), new LispBuiltinFunction("integerp"));
+        myBuiltinFunctions.put(new LispSymbol("get"), new LispBuiltinFunction("get"));
+        myBuiltinFunctions.put(new LispSymbol("put"), new LispBuiltinFunction("put"));
 
-        //TODO: uncomment this line
-        //myFunctions.put(ourFinder, findAndRegisterEmacsFunction(ourFinder));
+        findAndRegisterEmacsFunction(ourFinder);
 
         myBuiltinVariables.put(LispSymbol.ourNil, LispSymbol.ourNil);
         myBuiltinVariables.put(LispSymbol.ourT, LispSymbol.ourT);
+        myBuiltinVariables.put(new LispSymbol("load-history"), LispSymbol.ourNil);
+        myBuiltinVariables.put(new LispSymbol("fill-column"), new LispInteger(70));
     }
 
     private static String findEmacs() {
@@ -107,7 +122,7 @@ public class Environment {
 
     //TODO: its public only for test
     public String findEmacsFunctionFileName(String functionName) {
-        LispCustomFunction finder = myFunctions.get(ourFinder);
+        LispCustomFunction finder = (LispCustomFunction) myFunctions.get(ourFinder);
         if (finder == null) {
             if (functionName.equals(ourFinder.getName()))
                 return ourEmacsPath + ourFinderPath;
@@ -115,20 +130,21 @@ public class Environment {
         if (functionName.equals("symbol-file"))
             return ourEmacsPath + "lisp\\subr.el";
 
-        throw new RuntimeException("I dont know where to find function " + functionName);
+        throw new RuntimeException("I don't know where to find function " + functionName);
+
     }
 
     public LispCustomFunction findAndRegisterEmacsFunction (LispSymbol name) {
-        LispCustomFunction emacsFunction = myFunctions.get(name);
+        LispCustomFunction emacsFunction = (LispCustomFunction) myFunctions.get(name);
         if (emacsFunction != null)
             return emacsFunction;
         String path = findEmacsFunctionFileName(name.getName());
         LispList function = getFunctionFromFile(path, name.getName());
         LispObject evaluated = function.evaluate(this);
-        if (name.equals(evaluated)) {
-            return myFunctions.get(name);
+        if (!name.equals(evaluated)) {
+            throw new RuntimeException("findAndRegisterEmacsFunction FAILED : " + name.getName());
         }
-        throw new RuntimeException("findAndRegisterEmacsFunction FAILED");
+        return (LispCustomFunction) myFunctions.get(name);
     }
 
     public LispObject find(String name, SymbolType symbolType) {
@@ -176,6 +192,64 @@ public class Environment {
         throw new RuntimeException("unknown symbol " + name);
     }
 
+    private LispSymbol getKey (HashMap<LispSymbol, LispObject> where, LispSymbol key) {
+        for (Map.Entry<LispSymbol, LispObject> entry : where.entrySet()) {
+            if (entry.getKey().equals(key))
+                return entry.getKey();
+        }
+        return LispSymbol.ourNil;
+    }
+
+    private boolean replaceKey(HashMap<LispSymbol, LispObject> where, LispSymbol newKey) {
+        for (Map.Entry<LispSymbol, LispObject> entry : where.entrySet()) {
+            if (entry.getKey().equals(newKey)) {
+                LispObject value = entry.getValue();
+                where.remove(newKey);
+                where.put(newKey, value);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public LispSymbol findKeySymbol (LispSymbol key) {
+        LispSymbol result = getKey(myBuiltinFunctions, key);
+        if (result != LispSymbol.ourNil) return result;
+
+        result = getKey(myBuiltinVariables, key);
+        if (result != LispSymbol.ourNil) return result;
+
+        result = getKey(myFunctions, key);
+        if (result != LispSymbol.ourNil) return result;
+
+        result = getKey(myVariables, key);
+        if (result != LispSymbol.ourNil) return result;
+
+        result = getKey(mySpecialForms, key);
+        if (result != LispSymbol.ourNil) return result;
+
+        if (myOuterEnv != null)
+            return myOuterEnv.findKeySymbol(key);
+
+        throw new RuntimeException("Variable or function with name " + key.getName() + " not registered");
+    }
+
+    public boolean replaceKeySymbol (LispSymbol key) {
+        if (replaceKey(myBuiltinFunctions, key))
+            return true;
+        if (replaceKey(myBuiltinVariables, key))
+            return true;
+        if (replaceKey(myFunctions, key))
+            return true;
+        if (replaceKey(myVariables, key))
+            return true;
+
+        if (myOuterEnv != null)
+            if (myOuterEnv.replaceKeySymbol(key))
+                return true;
+
+        throw new RuntimeException("Variable or function with name " + key.getName() + " not registered");
+    }
 
     public void setVariable(LispObject name, LispObject value) {
         myVariables.put((LispSymbol)name, value);
@@ -192,5 +266,13 @@ public class Environment {
     public void defineFunction (LispObject name, LispCustomFunction value) {
         myFunctions.put((LispSymbol)name, value);
     }
+
+  /*  public LispObject getFunctionDefinition (LispSymbol name) {
+        return ((LispFunction)find(name.getName(), SymbolType.FUNCTION)).getDefinition();
+    }*/
+
+   /* public boolean isBuiltInFunction (LispSymbol name) {
+        return myBuiltinFunctions.containsKey(name);
+    }            */
 
 }

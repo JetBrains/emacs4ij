@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,9 +18,11 @@ import java.util.Arrays;
 public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
-    public static final LispSymbol ourVoid = new LispSymbol("void");
+    //public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
+    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
+
 
     public LispSymbol(String myName) {
         this.myName = myName;
@@ -58,12 +61,6 @@ public class LispSymbol extends LispAtom {
 
     @Override
     public LispString toLispString() {
-       /* if (this.equals(ourNil))
-            return new LispString("nil");
-        if (this.equals(ourT))
-            return new LispString("t");
-        if (this.equals(ourT))
-            return new LispString("void");   */
         return new LispString(myName);
     }
 
@@ -84,8 +81,22 @@ public class LispSymbol extends LispAtom {
         if (lispObject == null)
             throw new VoidVariableException(myName);
         return lispObject;
-        /*if ((lispObject == LispSymbol.ourNil) || (lispObject == LispSymbol.ourT))
-            return lispObject;
-        return lispObject.evaluate(parameters);*/
+    }
+
+    public LispObject getPropertyList() {
+        LispList pList = new LispList();
+        for (LispSymbol key: myProperties.keySet())
+            pList.add(new LispList(key, myProperties.get(key)));
+        return pList;
+    }
+
+    public LispObject getPropertyValue (LispSymbol pName) {
+        if (myProperties.containsKey(pName))
+            return myProperties.get(pName);
+        return LispSymbol.ourNil;
+    }
+
+    public void putProperty(LispSymbol key, LispObject value) {
+        myProperties.put(key, value);
     }
 }

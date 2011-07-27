@@ -46,4 +46,8 @@ public abstract class LispFunction extends LispObject {
         return myName;
     }
 
+    public LispObject getDefinition() {
+        return new LispString("#<subr " + myName.getName() + ">");
+    }
+
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Evaluator;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -14,8 +15,8 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class LispCustomFunction extends LispFunction {
-    private HashMap<LispSymbol, LispObject> myParameters = new HashMap<LispSymbol, LispObject>();
-    private HashMap<LispSymbol, String> myArguments = null;
+    //private LinkedHashMap<LispSymbol, LispObject> myParameters = new LinkedHashMap<LispSymbol, LispObject>();
+    private LinkedHashMap<LispSymbol, String> myArguments = new LinkedHashMap<LispSymbol, String>();
     private LispString myDocumentation = null;
     private LispList myInteractive = null;
     private ArrayList<LispObject> myBody = new ArrayList<LispObject>();
@@ -37,7 +38,7 @@ public class LispCustomFunction extends LispFunction {
     private void setArguments (LispList args) {
         if (args.isEmpty())
             return;
-        myArguments = new HashMap<LispSymbol, String>();
+
         List<LispObject> data = args.getData();
         String type = "required";
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
@@ -98,22 +99,27 @@ public class LispCustomFunction extends LispFunction {
     @Override
     public LispObject execute(Environment environment, List<LispObject> args) {
 
-        if (nRequiredArguments() > args.size())
+        if (nRequiredArguments() > args.size() || myArguments.size() < args.size())
             throw new WrongNumberOfArgumentsException(myName.getName());
 
         Environment inner = new Environment(environment);
-
+        List<LispSymbol> keys = new ArrayList<LispSymbol>(myArguments.keySet());
         if (!myArguments.isEmpty()) {
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
                 LispObject argValue = args.get(i);
-                //TODO: substitute variables
-                //LispSymbol argName =  myArguments.get(i);
-                //inner.setVariable(argName,argValue);
-
-
-                //myParameters.put(argName, argValue);
-                //substituteArgument(myBody, argName, argValue);
+                LispSymbol argName =  keys.get(i);
+                if (!myArguments.get(argName).equals("rest")) {
+                    inner.setVariable(argName,argValue);
+                    continue;
+                }
+                List<LispObject> rest = args.subList(i, argsSize);
+                inner.setVariable(argName, new LispList(rest));
+                for (int k = i+1; k!=keys.size(); ++k)
+                    inner.setVariable(keys.get(k), LispSymbol.ourNil);
+                break;
             }
+            for (int k = args.size(); k!=keys.size(); ++k)
+                inner.setVariable(keys.get(k), LispSymbol.ourNil);
         }
 
         LispObject result = LispSymbol.ourNil;
@@ -121,6 +127,13 @@ public class LispCustomFunction extends LispFunction {
             result = Evaluator.evaluate(myBody.get(i), inner);
         }
         return result;
+    }
+
+    @Override
+    public LispString getDefinition() {
+        //TODO: differ from emacs functions
+        //return toLambda();
+        throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
