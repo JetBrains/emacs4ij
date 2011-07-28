@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * To change this template use File | Settings | File Templates.
  */
 public class Emacs4ijPlugin implements ApplicationComponent {
+
     public Emacs4ijPlugin() {
     }
 

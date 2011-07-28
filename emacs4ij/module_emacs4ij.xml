@@ -79,6 +79,11 @@
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
+      <fileset dir="${module.emacs4ij.basedir}/icons" />
+    </copy>
+
+    <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/icons">
+      <fileset dir="${module.emacs4ij.basedir}/icons" />
     </copy>
   </target>
   
