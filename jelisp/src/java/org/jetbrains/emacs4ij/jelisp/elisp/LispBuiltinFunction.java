@@ -4,9 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**

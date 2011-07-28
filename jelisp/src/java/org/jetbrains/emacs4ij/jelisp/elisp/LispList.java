@@ -82,7 +82,7 @@ public class LispList extends LispObject {
 
         LispObject lispObject = environment.find(fun.getName(), Environment.SymbolType.FUNCTION);
 
-        List<LispObject> data = ((LispList)cdr()).getData();
+        List<LispObject> data = cdr().getData();
 
         if (lispObject instanceof LispSpecialForm) {
             return ((LispSpecialForm)lispObject).execute(environment, data);

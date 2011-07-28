@@ -45,6 +45,7 @@ public class EnvironmentTest {
 
     @Test
     public void testFindEmacsFinder() {
+        Environment.ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
         LispCustomFunction finder = (LispCustomFunction) e.find(Environment.ourFinder.getName(), Environment.SymbolType.FUNCTION);
         Assert.assertEquals(Environment.ourFinder, finder.getName());
     }

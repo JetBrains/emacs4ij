@@ -1,9 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-
-import java.util.List;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.

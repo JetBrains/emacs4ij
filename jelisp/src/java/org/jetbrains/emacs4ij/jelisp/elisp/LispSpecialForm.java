@@ -1,9 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -142,8 +142,6 @@ public class LispSpecialForm extends LispFunction {
             return condition;
         }
         if (myName.is("cond")) {
-            //if (args.isEmpty())
-            //    return LispSymbol.ourNil;
             LispObject result = LispSymbol.ourNil;
             for (int i=0; i!=args.size(); ++i) {
                 LispObject clause = args.get(i);
@@ -163,15 +161,116 @@ public class LispSpecialForm extends LispFunction {
                     return result;
                 }
             }
-
             return result;
-
         }
         if (myName.is("interactive")) {
-            throw new NotImplementedException();
+            if (args.size() > 1) {
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            }
+            if (args.size() == 1) {
+                LispObject a = args.get(0);
+                if (!(a instanceof LispString)) {
+                    LispObject result = a.evaluate(environment);
+                    if (result instanceof LispList)
+                        return result;
+                    throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
+                }
+                return processInteractiveString((LispString) a, environment);
+            }
+            return LispSymbol.ourNil;
         }
 
         throw new RuntimeException("unknown special form " + myName);
+    }
+
+    private LispList processInteractiveString (LispString interactiveString, Environment environment) {
+        String[] commands = interactiveString.toString().split("\n");
+        LispList args = new LispList();
+        for (int i = 0, commandsLength = commands.length; i < commandsLength; i++) {
+            String command = commands[i];
+            char codeLetter = command.charAt(0);
+            switch (codeLetter) {
+                case 'a': // -- Function name: symbol with a function definition.
+                    while (true) {
+                       /* Environment.ourMiniBuffer.setEditable(true);
+                        Environment.ourMiniBuffer.setText("hi");
+                        Environment.ourMiniBuffer.append("\n" + command.substring(1));
+                         */
+                        String userText = Environment.read();
+
+                        try {
+                            environment.find(userText, Environment.SymbolType.FUNCTION);
+                            args.add(new LispSymbol(userText));
+                            break;
+                        } catch (RuntimeException e) {
+                           // Environment.ourMiniBuffer.append(" [No Match]\n");
+                        }
+                    }
+                    break;
+                case 'b': // -- Name of existing buffer. No check
+
+                    break;
+                case 'B': // -- Name of buffer, possibly nonexistent.
+                    break;
+                case 'c': // -- Character (no input method is used).
+                    break;
+                case 'C': // -- Command name: symbol with interactive function definition.
+                    break;
+                case 'd': // -- Value of point as number.  Does not do I/O.
+                    break;
+                case 'D': // -- Directory name.
+                    break;
+                case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
+                          // If used more than once, the Nth `e' returns the Nth parameterized event.
+                          // This skips events that are integers or symbols.
+                    break;
+                case 'f': // -- Existing file name.
+                    break;
+                case 'F': // -- Possibly nonexistent file name.
+                    break;
+                case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
+                    break;
+                case 'i': // -- Ignored, i.e. always nil.  Does not do I/O.
+                    break;
+                case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
+                    break;
+                case 'K': // -- Key sequence to be redefined (do not downcase the last event).
+                    break;
+                case 'm': // -- Value of mark as number.  Does not do I/O.
+                    break;
+                case 'M': // -- Any string.  Inherits the current input method.
+                    break;
+                case 'n': // -- Number read using minibuffer.
+                    break;
+                case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
+                    break;
+                case 'p': // -- Prefix arg converted to number.  Does not do I/O.
+                    break;
+                case 'P': // -- Prefix arg in raw form.  Does not do I/O.
+                    break;
+                case 'r': // -- Region: point and mark as 2 numeric args, smallest first.  Does no I/O.
+                    break;
+                case 's': // -- Any string.  Does not inherit the current input method.
+                    break;
+                case 'S': // -- Any symbol.
+                    break;
+                case 'U': // -- Mouse up event discarded by a previous k or K argument.
+                    break;
+                case 'v': // -- Variable name: symbol that is user-variable-p.
+                    break;
+                case 'x': // -- Lisp expression read but not evaluated.
+                    break;
+                case 'X': // -- Lisp expression read and evaluated.
+                    break;
+                case 'z': // -- Coding system.
+                    break;
+                case 'Z': // -- Coding system, nil if no prefix arg.
+                    break;
+                default:
+                    throw new InvalidControlLetterException(codeLetter);
+            }
+        }
+        return args;
     }
 
     @Override

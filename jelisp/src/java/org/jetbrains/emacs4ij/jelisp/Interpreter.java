@@ -1,9 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-
-import java.io.*;
 
 /**
  * Created by IntelliJ IDEA.

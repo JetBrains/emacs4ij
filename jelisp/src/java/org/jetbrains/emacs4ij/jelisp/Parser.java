@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
-import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

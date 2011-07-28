@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.ui.Messages;
+import org.jetbrains.annotations.TestOnly;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Evaluator;
 import org.jetbrains.emacs4ij.jelisp.Parser;
@@ -8,9 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +18,7 @@ import java.awt.event.WindowEvent;
  * Time: 7:32 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ExecuteElispCommandForm extends JFrame {
+public class ExecuteElispCommandForm extends JFrame implements Runnable {
     private JTextArea commandTextArea;
     private JButton executeButton;
     private JScrollPane commandScrollPane;
@@ -31,11 +30,19 @@ public class ExecuteElispCommandForm extends JFrame {
     private JButton browseButton;
     private JTextArea emacsHomeTextArea;
     private JScrollPane emacsHomeScrollPane;
+    private JTextArea minibufferTextArea;
+    private JScrollPane minibufferScrollPane;
+
+    @TestOnly
+    public void setCommandInteractive (String command) {
+        emacsHomeTextArea.setText("c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3");
+        commandTextArea.setText("(interactive \"" + command + "\")");
+    }
 
     public ExecuteElispCommandForm() {
         setTitle("Emacs4ij");
         setResizable(false);
-        Dimension formSize = new Dimension(400, 200);
+        Dimension formSize = new Dimension(400, 225);
         setPreferredSize(formSize);
         setLocationRelativeTo(getOwner());
         commandLabel.setFocusable(false);
@@ -44,6 +51,8 @@ public class ExecuteElispCommandForm extends JFrame {
         commandScrollPane.setViewportView(commandTextArea);
         emacsHomeTextArea.setText(Environment.ourEmacsPath);
         emacsHomeScrollPane.setViewportView(emacsHomeTextArea);
+        minibufferScrollPane.setViewportView(minibufferTextArea);
+        //Environment.ourMiniBuffer = minibufferTextArea;
         executeTab.setName("Execute");
         settingsTab.setName("Settings");
         commandTabbedPane.add(executeTab);
@@ -51,12 +60,34 @@ public class ExecuteElispCommandForm extends JFrame {
         this.add(mainPanel);
         pack();
 
+        minibufferTextArea.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+            }
+
+            public void keyPressed(KeyEvent e) {
+            }
+
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    //typed[0] = true;
+                    System.out.println("hi");
+                }
+
+            }
+        });
+
         executeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Parser parser = new Parser();
                 try {
-                    LispObject lispObject = Evaluator.evaluate(parser.parseLine(commandTextArea.getText()), Environment.ourGlobal);
-                    Messages.showInfoMessage(lispObject.toString(), "Evaluation result");
+                    try {
+
+                        Thread.currentThread().wait();
+                    } catch (InterruptedException e1) {
+                        LispObject lispObject = Evaluator.evaluate(parser.parseLine(commandTextArea.getText()), Environment.ourGlobal);
+                        Messages.showInfoMessage(lispObject.toString(), "Evaluation result");
+                    }
+
                 } catch (RuntimeException exc) {
                     Messages.showErrorDialog(exc.getMessage(), "Elisp interpreter error");
                 }
@@ -78,6 +109,7 @@ public class ExecuteElispCommandForm extends JFrame {
 
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(WindowEvent winEvt) {
+                //Environment.ourMiniBuffer = null;
                 setVisible(false);
                 dispose();
             }
@@ -85,5 +117,7 @@ public class ExecuteElispCommandForm extends JFrame {
 
     }
 
-
+    public void run() {
+        this.setVisible(true);
+    }
 }

@@ -22,26 +22,25 @@ public class Environment {
     private HashMap<LispSymbol, LispObject> myBuiltinVariables = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myFunctions = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinFunctions = new HashMap<LispSymbol, LispObject>();
-    //private HashMap<LispSymbol, LispCustomFunction> myEmacsFunctions = new HashMap<LispSymbol, LispCustomFunction>();
-
-    private static final String ourEmacsPath = findEmacs();
-    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
-    private static final String ourFinderPath = "lisp\\help-fns.el";
-
+    private HashMap<LispSymbol, LispBuffer> myBuffers = new HashMap<LispSymbol, LispBuffer>();
     private Environment myOuterEnv;
 
-    public static enum SymbolType {VARIABLE, FUNCTION}
+    public static String ourEmacsPath = "";
+    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+    private static final String ourFinderPath = "\\lisp\\help-fns.el";
+    public static enum SymbolType {VARIABLE, FUNCTION, BUFFER}
     public static final Environment ourGlobal = new Environment(null);
+    //public static JTextArea ourMiniBuffer;
 
     public Environment (Environment outerEnv) {
         myOuterEnv = outerEnv;
-
-        if (outerEnv == null) {
+        if (myOuterEnv == null) {
             setGlobal();
         }
     }
 
     private void setGlobal() {
+
         mySpecialForms.put(new LispSymbol("quote"), new LispSpecialForm("quote"));
         mySpecialForms.put(new LispSymbol("defun"), new LispSpecialForm("defun"));
         mySpecialForms.put(new LispSymbol("let"), new LispSpecialForm("let"));
@@ -73,16 +72,14 @@ public class Environment {
         myBuiltinFunctions.put(new LispSymbol("get"), new LispBuiltinFunction("get"));
         myBuiltinFunctions.put(new LispSymbol("put"), new LispBuiltinFunction("put"));
 
-        findAndRegisterEmacsFunction(ourFinder);
+        //findAndRegisterEmacsFunction(ourFinder);
 
         myBuiltinVariables.put(LispSymbol.ourNil, LispSymbol.ourNil);
         myBuiltinVariables.put(LispSymbol.ourT, LispSymbol.ourT);
         myBuiltinVariables.put(new LispSymbol("load-history"), LispSymbol.ourNil);
         myBuiltinVariables.put(new LispSymbol("fill-column"), new LispInteger(70));
-    }
 
-    private static String findEmacs() {
-        return  "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
+        myBuffers.put(new LispSymbol("*scratch*"), new LispBuffer("*scratch*"));
     }
 
     //TODO: its public only for test
@@ -120,15 +117,22 @@ public class Environment {
         throw new RuntimeException("Parsed object is not a LispList!");
     }
 
-    //TODO: its public only for test
+    //TODO: it is public only for test
     public String findEmacsFunctionFileName(String functionName) {
+        if (ourEmacsPath.equals("")) {
+            throw new RuntimeException("Emacs path is not set!");
+        }
+
         LispCustomFunction finder = (LispCustomFunction) myFunctions.get(ourFinder);
+
         if (finder == null) {
             if (functionName.equals(ourFinder.getName()))
                 return ourEmacsPath + ourFinderPath;
         }
         if (functionName.equals("symbol-file"))
-            return ourEmacsPath + "lisp\\subr.el";
+            return ourEmacsPath + "\\lisp\\subr.el";
+
+        //TODO: eval finder
 
         throw new RuntimeException("I don't know where to find function " + functionName);
 
@@ -173,6 +177,11 @@ public class Environment {
                 lispObject = myFunctions.get(lsName);
                 if (lispObject != null)
                     return lispObject;
+
+            case BUFFER:
+                lispObject = myBuffers.get(lsName);
+                if (lispObject != null)
+                    return lispObject;
         }
 
         if (myOuterEnv != null) {
@@ -187,6 +196,9 @@ public class Environment {
                 if (lispObject != null)
                     return lispObject;
                 throw new VoidFunctionException(name);
+            case BUFFER:
+                throw new RuntimeException("buffer " + name + "doesn't exist");
+
         }
 
         throw new RuntimeException("unknown symbol " + name);
@@ -267,12 +279,42 @@ public class Environment {
         myFunctions.put((LispSymbol)name, value);
     }
 
-  /*  public LispObject getFunctionDefinition (LispSymbol name) {
-        return ((LispFunction)find(name.getName(), SymbolType.FUNCTION)).getDefinition();
-    }*/
+    public static String read () {
 
-   /* public boolean isBuiltInFunction (LispSymbol name) {
-        return myBuiltinFunctions.containsKey(name);
-    }            */
+        //TODO: new form
+        throw new NotImplementedException();
 
+        /*if (ourMiniBuffer == null)
+            return null;
+
+        ourMiniBuffer.setEditable(true);
+        final boolean[] typed = {false};
+        ourMiniBuffer.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+            }
+
+            public void keyPressed(KeyEvent e) {
+            }
+
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    typed[0] = true;
+                }
+
+            }
+        });
+        int oldLength = ourMiniBuffer.getText().length();
+        while (true) {
+            try {
+                Thread.currentThread().sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+            System.out.println("f");
+        }
+        //ourMiniBuffer.setEditable(false);
+        //return ourMiniBuffer.getText().substring(oldLength);
+        //return  null;
+        */
+    }
 }

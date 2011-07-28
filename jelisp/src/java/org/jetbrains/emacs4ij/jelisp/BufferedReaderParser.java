@@ -3,14 +3,11 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Stack;
 
 /**
  * Created by IntelliJ IDEA.

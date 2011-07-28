@@ -6,9 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import sun.awt.Symbol;
-
-import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,11 +16,12 @@ import java.util.*;
  */
 public class EvaluatorTest {
 
-
+    //private String emacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
     private Environment environment;
 
     @Before
     public void setUp() {
+        Environment.ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
         environment = new Environment(Environment.ourGlobal);
     }
 
@@ -120,6 +118,13 @@ public class EvaluatorTest {
         Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
     }
 
+    @Test
+    public void testDefunInteractive() {
+        evaluateString("(defun f () (interactive) 5)");
+        LispObject actual = environment.find("f", Environment.SymbolType.FUNCTION);
+        LispCustomFunction expected = new LispCustomFunction(new LispSymbol("f"), new LispList(), new LispList(new LispSymbol("interactive")), new LispInteger(5));
+        Assert.assertEquals(expected, actual);
+    }
 
     @Test
     public void testNil () {
@@ -446,10 +451,12 @@ public class EvaluatorTest {
         Assert.assertEquals(new LispSymbol("v1"), lispObject);
     }
 
+
+    @Ignore
     @Test
     public void testFinder () {
         try {
-        LispObject path = evaluateString("(find-lisp-object-file-name 'fill-column 'defvar)");
+        LispObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
         Assert.assertEquals(new LispString("src/buffer.c"), path);
         } catch (LispException e) {
             System.out.println(e.getMessage());

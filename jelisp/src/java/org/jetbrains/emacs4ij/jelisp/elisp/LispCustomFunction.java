@@ -23,12 +23,12 @@ public class LispCustomFunction extends LispFunction {
 
     private void checkInteractiveAndBody (int index, List<LispObject> args) {
         try {
-            if (((LispList)args.get(index)).car() == new LispSymbol("interactive")) {
+            if (((LispList)args.get(index)).car().equals(new LispSymbol("interactive"))) {
                 myInteractive = (LispList)args.get(index);
                 index++;
             }
         } catch (ClassCastException ignored) {
-            //args at index can be any LispObject
+
         }
         for (int i = index; i != args.size(); ++i ) {
             myBody.add(args.get(i));
@@ -59,7 +59,7 @@ public class LispCustomFunction extends LispFunction {
         }
     }
 
-    public LispCustomFunction(List<LispObject> args) {
+    private void construct (List<LispObject> args) {
         //TODO: cast exceptions
         myName = (LispSymbol)args.get(0);
         setArguments((LispList) args.get(1));
@@ -71,6 +71,15 @@ public class LispCustomFunction extends LispFunction {
         } else {
             checkInteractiveAndBody(2, args);
         }
+    }
+
+    public LispCustomFunction (LispObject ... objects) {
+        List<LispObject> args = Arrays.asList(objects);
+        construct(args);
+    }
+
+    public LispCustomFunction(List<LispObject> args) {
+        construct(args);
     }
 
     private void substituteArgument (ArrayList<LispObject> where, LispObject argName, LispObject argValue) {
@@ -132,6 +141,7 @@ public class LispCustomFunction extends LispFunction {
     @Override
     public LispString getDefinition() {
         //TODO: differ from emacs functions
+        //TODO: implement lambda
         //return toLambda();
         throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -141,4 +151,29 @@ public class LispCustomFunction extends LispFunction {
         return new LispString(myName.getName());
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LispCustomFunction that = (LispCustomFunction) o;
+
+        if (myArguments != null ? !myArguments.equals(that.myArguments) : that.myArguments != null) return false;
+        if (myBody != null ? !myBody.equals(that.myBody) : that.myBody != null) return false;
+        if (myDocumentation != null ? !myDocumentation.equals(that.myDocumentation) : that.myDocumentation != null)
+            return false;
+        if (myInteractive != null ? !myInteractive.equals(that.myInteractive) : that.myInteractive != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = myArguments != null ? myArguments.hashCode() : 0;
+        result = 31 * result + (myDocumentation != null ? myDocumentation.hashCode() : 0);
+        result = 31 * result + (myInteractive != null ? myInteractive.hashCode() : 0);
+        result = 31 * result + (myBody != null ? myBody.hashCode() : 0);
+        return result;
+    }
 }
