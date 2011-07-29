@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.Evaluator;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -133,7 +132,7 @@ public class LispCustomFunction extends LispFunction {
 
         LispObject result = LispSymbol.ourNil;
         for (int i=0; i!=myBody.size(); ++i) {
-            result = Evaluator.evaluate(myBody.get(i), inner);
+            result = myBody.get(i).evaluate(inner);
         }
         return result;
     }

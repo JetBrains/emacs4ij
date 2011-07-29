@@ -192,5 +192,14 @@
     <mapping directory="" vcs="Git" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
+  <component name="libraryTable">
+    <library name="idea10">
+      <CLASSES />
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://$USER_HOME$/idea10/java/openapi/src" />
+      </SOURCES>
+    </library>
+  </component>
 </project>
 

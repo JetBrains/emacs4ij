@@ -14,6 +14,6 @@ public class Interpreter {
     public static LispObject interpret (String line) {
         Parser parser = new Parser();
         Environment environment = new Environment(Environment.ourGlobal);
-        return Evaluator.evaluate(parser.parseLine(line), environment);
+        return parser.parseLine(line).evaluate(environment);
     }
 }

@@ -17,6 +17,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="idea10" level="project" />
   </component>
 </module>
 

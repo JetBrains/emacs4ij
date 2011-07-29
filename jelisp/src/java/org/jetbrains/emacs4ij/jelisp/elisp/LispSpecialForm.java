@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +29,7 @@ public class LispSpecialForm extends LispFunction {
         for (LispObject var: varList.getData()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
-                LispList valueForm = (LispList) ((LispList) var).cdr();
+                LispList valueForm = ((LispList) var).cdr();
                 LispObject value = valueForm.car().evaluate(inner);
 
                 if (isStar)
@@ -183,60 +184,84 @@ public class LispSpecialForm extends LispFunction {
         throw new RuntimeException("unknown special form " + myName);
     }
 
+    private String getParameter (String message) {
+        //TODO get Editor; save old header; read parameter from text field; set old header back
+        throw new NotImplementedException();
+    }
+
     private LispList processInteractiveString (LispString interactiveString, Environment environment) {
         String[] commands = interactiveString.toString().split("\n");
         LispList args = new LispList();
         for (int i = 0, commandsLength = commands.length; i < commandsLength; i++) {
             String command = commands[i];
+            String parameter = "";
             char codeLetter = command.charAt(0);
             switch (codeLetter) {
                 case 'a': // -- Function name: symbol with a function definition.
+                    String message = command.substring(1);
                     while (true) {
-                       /* Environment.ourMiniBuffer.setEditable(true);
-                        Environment.ourMiniBuffer.setText("hi");
-                        Environment.ourMiniBuffer.append("\n" + command.substring(1));
-                         */
-                        String userText = Environment.read();
-
+                        parameter = getParameter(message);
                         try {
-                            environment.find(userText, Environment.SymbolType.FUNCTION);
-                            args.add(new LispSymbol(userText));
+                            environment.find(parameter, Environment.SymbolType.FUNCTION);
+                            args.add(new LispSymbol(parameter));
                             break;
                         } catch (RuntimeException e) {
-                           // Environment.ourMiniBuffer.append(" [No Match]\n");
+                            message = command.substring(1) + parameter + " [No Match]";
                         }
                     }
                     break;
                 case 'b': // -- Name of existing buffer. No check
-
+                    parameter = getParameter(command.substring(1)+ " (default *scratch*) :");
+                    if (parameter.equals(""))
+                        parameter = "*scratch*";
+                    args.add(new LispString(parameter));
                     break;
                 case 'B': // -- Name of buffer, possibly nonexistent.
+                    //behaves the same way as b
                     break;
                 case 'c': // -- Character (no input method is used).
+                    //ascii code of first key pressed
+                    //TODO: keyEvent
                     break;
                 case 'C': // -- Command name: symbol with interactive function definition.
+                    //list of possible commands beginning from [what was printed] and ability to retype
                     break;
                 case 'd': // -- Value of point as number.  Does not do I/O.
                     break;
                 case 'D': // -- Directory name.
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
+                    args.add(new LispString(parameter));
                     break;
                 case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
-                          // If used more than once, the Nth `e' returns the Nth parameterized event.
+                          // If used more than once, the Nth `e' returns the Nth parametrized event.
                           // This skips events that are integers or symbols.
+                    //if no event: (error "command must be bound to an event with parameters")
                     break;
                 case 'f': // -- Existing file name.
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
+                    //list of existing files beginning from [what was printed] and ability to retype
+
                     break;
-                case 'F': // -- Possibly nonexistent file name.
+                case 'F': // -- Possibly nonexistent file name. -- no check
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
+                    if (parameter.equals(System.getProperty("user.home")))
+                        parameter += "#scratch.lisp#";
+                    args.add(new LispString(parameter));
                     break;
                 case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
+                    args.add(new LispString(parameter));
                     break;
                 case 'i': // -- Ignored, i.e. always nil.  Does not do I/O.
+                    args.add(LispSymbol.ourNil);
                     break;
                 case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
+                    // 1 first printed char or ??
                     break;
                 case 'K': // -- Key sequence to be redefined (do not downcase the last event).
                     break;
                 case 'm': // -- Value of mark as number.  Does not do I/O.
+
                     break;
                 case 'M': // -- Any string.  Inherits the current input method.
                     break;

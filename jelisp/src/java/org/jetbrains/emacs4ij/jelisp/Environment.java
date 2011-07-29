@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+//import com.intellij.openapi.editor.Editor;
 
 import java.io.*;
 import java.util.HashMap;
@@ -17,6 +17,8 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class Environment {
+    //public static com.intellij.openapi.editor.Editor ourEditor;
+
     private final HashMap<LispSymbol, LispObject> mySpecialForms = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myVariables = new HashMap<LispSymbol, LispObject>();
     private HashMap<LispSymbol, LispObject> myBuiltinVariables = new HashMap<LispSymbol, LispObject>();
@@ -277,44 +279,5 @@ public class Environment {
 
     public void defineFunction (LispObject name, LispCustomFunction value) {
         myFunctions.put((LispSymbol)name, value);
-    }
-
-    public static String read () {
-
-        //TODO: new form
-        throw new NotImplementedException();
-
-        /*if (ourMiniBuffer == null)
-            return null;
-
-        ourMiniBuffer.setEditable(true);
-        final boolean[] typed = {false};
-        ourMiniBuffer.addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {
-            }
-
-            public void keyPressed(KeyEvent e) {
-            }
-
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    typed[0] = true;
-                }
-
-            }
-        });
-        int oldLength = ourMiniBuffer.getText().length();
-        while (true) {
-            try {
-                Thread.currentThread().sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            System.out.println("f");
-        }
-        //ourMiniBuffer.setEditable(false);
-        //return ourMiniBuffer.getText().substring(oldLength);
-        //return  null;
-        */
     }
 }

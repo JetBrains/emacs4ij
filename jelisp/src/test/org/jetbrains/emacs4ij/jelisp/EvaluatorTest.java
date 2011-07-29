@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Scanner;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -27,7 +29,7 @@ public class EvaluatorTest {
 
     private LispObject evaluateString (String lispCode) throws LispException {
         Parser parser = new Parser();
-        return Evaluator.evaluate(parser.parseLine(lispCode), environment);
+        return parser.parseLine(lispCode).evaluate(environment);
     }
 
     @Test
@@ -462,6 +464,15 @@ public class EvaluatorTest {
             System.out.println(e.getMessage());
             throw e;
         }
+    }
+
+
+    public static void main(String[] args) {
+       Scanner sc = new Scanner(System.in);
+       String answer;
+       System.out.print("Press Enter to continue...");
+       answer = sc.next();
+       System.out.println(answer);
     }
 
 
