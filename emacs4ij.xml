@@ -154,6 +154,11 @@
   <property name="project.jdk.home" value="${jdk.home.1.6}"/>
   <property name="project.jdk.bin" value="${jdk.bin.1.6}"/>
   <property name="project.jdk.classpath" value="jdk.classpath.1.6"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.idea10.classpath"/>
   <!-- Register Custom Compiler Taskdefs -->
   <property name="javac2.home" value="${idea.home}/lib"/>
   <path id="javac2.classpath">

@@ -7,8 +7,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Scanner;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -453,6 +451,24 @@ public class EvaluatorTest {
         Assert.assertEquals(new LispSymbol("v1"), lispObject);
     }
 
+    @Test (expected = VoidVariableException.class)
+    public void testDefvar1() {
+        evaluateString("(defvar a)");
+        evaluateString("a");
+    }
+
+    @Test
+    public void testDefvar2() {
+        evaluateString("(defvar a 5 \"doc\")");
+        LispObject a = environment.find("a", Environment.SymbolType.VARIABLE);
+        Assert.assertEquals(new LispVariable(new LispSymbol("a"), new LispInteger(5)), a);
+        LispObject varDoc = evaluateString("(get 'a 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), varDoc);
+        a = evaluateString("(set 'a 10)");
+        Assert.assertEquals(new LispInteger(10), a);
+        varDoc = evaluateString("(get 'a 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), varDoc);
+    }
 
     @Ignore
     @Test
@@ -465,16 +481,4 @@ public class EvaluatorTest {
             throw e;
         }
     }
-
-
-    public static void main(String[] args) {
-       Scanner sc = new Scanner(System.in);
-       String answer;
-       System.out.print("Press Enter to continue...");
-       answer = sc.next();
-       System.out.println(answer);
-    }
-
-
-
 }

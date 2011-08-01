@@ -12,8 +12,7 @@ import java.util.List;
  * Time: 12:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class LispFunction extends LispObject {
-    protected LispSymbol myName = null;
+public abstract class LispFunction extends NamedLispObject {
 
     public LispFunction (String name) {
         myName = new LispSymbol(name);
@@ -40,10 +39,6 @@ public abstract class LispFunction extends LispObject {
             throw new RuntimeException("invalid function evaluation arguments!");
         }
         return execute(environment, args);
-    }
-
-    public LispSymbol getName () {
-        return myName;
     }
 
     public LispObject getDefinition() {

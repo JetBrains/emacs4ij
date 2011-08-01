@@ -16,6 +16,6 @@ public class LispListTest {
     public void testCdr () {
         LispList list = new LispList(new LispSymbol("test"));
         LispObject list1 = list.cdr();
-        Assert.assertEquals(LispSymbol.ourNil, list1);
+        Assert.assertEquals(new LispList(), list1);
     }
 }

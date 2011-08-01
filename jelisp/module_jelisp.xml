@@ -17,22 +17,26 @@
   
   <path id="jelisp.module.production.classpath">
     <path refid="${module.jdk.classpath.jelisp}"/>
+    <path refid="library.idea10.classpath"/>
   </path>
   
   <path id="jelisp.runtime.production.module.classpath">
     <pathelement location="${jelisp.output.dir}"/>
+    <path refid="library.idea10.classpath"/>
   </path>
   
   <path id="jelisp.module.classpath">
     <path refid="${module.jdk.classpath.jelisp}"/>
     <pathelement location="${jelisp.output.dir}"/>
     <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
+    <path refid="library.idea10.classpath"/>
   </path>
   
   <path id="jelisp.runtime.module.classpath">
     <pathelement location="${jelisp.testoutput.dir}"/>
     <pathelement location="${jelisp.output.dir}"/>
     <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
+    <path refid="library.idea10.classpath"/>
   </path>
   
   

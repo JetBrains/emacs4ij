@@ -18,7 +18,7 @@ import java.util.HashMap;
 public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
-    //public static final LispSymbol ourVoid = new LispSymbol("void");
+    public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
@@ -77,8 +77,8 @@ public class LispSymbol extends LispAtom {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-        LispObject lispObject = environment.find(myName, Environment.SymbolType.VARIABLE);
-        if (lispObject == null)
+        LispObject lispObject = environment.find(myName, Environment.SymbolType.VARIABLE, "getValue");
+        if (lispObject == null || lispObject.equals(LispSymbol.ourVoid))
             throw new VoidVariableException(myName);
         return lispObject;
     }
@@ -90,13 +90,13 @@ public class LispSymbol extends LispAtom {
         return pList;
     }
 
-    public LispObject getPropertyValue (LispSymbol pName) {
+    public LispObject getProperty(LispSymbol pName) {
         if (myProperties.containsKey(pName))
             return myProperties.get(pName);
         return LispSymbol.ourNil;
     }
 
-    public void putProperty(LispSymbol key, LispObject value) {
+    public void setProperty(LispSymbol key, LispObject value) {
         myProperties.put(key, value);
     }
 }

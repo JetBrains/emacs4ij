@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
@@ -20,12 +21,12 @@ public class LispBuiltinFunction extends LispFunction {
         super(myName);
     }
 
-
-
     public LispObject execute (Environment environment, List<LispObject> args) {
         if (myName.is("+")) {
             int ans = 0;
             for (LispObject lispObject: args) {
+                if (lispObject.equals(LispSymbol.ourNil))
+                    break;
                 ans += ((LispInteger)lispObject).getMyData();
             }
             return new LispInteger(ans);
@@ -40,8 +41,18 @@ public class LispBuiltinFunction extends LispFunction {
         if (myName.is("set")) {
             if (args.size() != 2)
                 throw new WrongNumberOfArgumentsException(myName.getName());
-            environment.setVariable(args.get(0), args.get(1));
-            return args.get(1);
+            LispVariable variable;
+            try {
+                variable = (LispVariable) environment.find(((LispSymbol)args.get(0)).getName(), Environment.SymbolType.VARIABLE);
+                if (!variable.getValue().equals(args.get(1))) {
+                    variable.setValue(args.get(1));
+                    environment.defineVariable(args.get(0), variable);
+                }
+            } catch (VoidVariableException e) {
+                variable = new LispVariable((LispSymbol) args.get(0), args.get(1));
+                environment.defineVariable(args.get(0), variable);
+            }
+            return variable.getValue();
         }
         if (myName.is("eq")) {
             if (args.size() != 2)
@@ -117,7 +128,7 @@ public class LispBuiltinFunction extends LispFunction {
             if (!(args.get(0) instanceof LispSymbol))
                 throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString());
             try {
-                return ((LispFunction)environment.find(((LispSymbol)args.get(0)).getName(), Environment.SymbolType.FUNCTION)).getDefinition();
+                return environment.find(((LispSymbol) args.get(0)).getName(), Environment.SymbolType.FUNCTION, "getDefinition");
             } catch (RuntimeException e) {
                 throw new VoidFunctionException(((LispSymbol)args.get(0)).getName());
             }
@@ -134,8 +145,7 @@ public class LispBuiltinFunction extends LispFunction {
                 throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString() + " and " + args.get(1).getClass().toString());
             LispSymbol symbol = (LispSymbol) args.get(0);
             LispSymbol property = (LispSymbol) args.get(1);
-            LispSymbol environmentSymbol = environment.findKeySymbol(symbol);
-            return environmentSymbol.getPropertyValue(property);
+            return environment.find(symbol.getName(), Environment.SymbolType.ANY, "getProperty", new Class[]{LispSymbol.class}, property);
         }
         if (myName.is("put")) {
             if (args.size() != 3)
@@ -145,9 +155,8 @@ public class LispBuiltinFunction extends LispFunction {
             LispSymbol symbol = (LispSymbol) args.get(0);
             LispSymbol property = (LispSymbol) args.get(1);
             LispObject value = args.get(2);
-            LispSymbol environmentSymbol = environment.findKeySymbol(symbol);
-            environmentSymbol.putProperty(property, value);
-            environment.replaceKeySymbol(environmentSymbol);
+
+            environment.find(symbol.getName(), Environment.SymbolType.ANY, "setProperty", new Class[] {LispSymbol.class, LispObject.class}, property, value);
             return value;
         }
 

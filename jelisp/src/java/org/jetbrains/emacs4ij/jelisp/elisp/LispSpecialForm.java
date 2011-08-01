@@ -33,7 +33,7 @@ public class LispSpecialForm extends LispFunction {
                 LispObject value = valueForm.car().evaluate(inner);
 
                 if (isStar)
-                    inner.setVariable(symbol, value);
+                    inner.defineVariable(symbol, new LispVariable(symbol, value));
                 else
                     vars.put(symbol, value);
 
@@ -41,7 +41,7 @@ public class LispSpecialForm extends LispFunction {
             }
             if (var instanceof LispSymbol) {
                 if (isStar)
-                    inner.setVariable(var, LispSymbol.ourNil);
+                    inner.defineVariable(var, new LispVariable((LispSymbol) var, LispSymbol.ourNil));
                 else
                     vars.put((LispSymbol)var, LispSymbol.ourNil);
 
@@ -52,7 +52,7 @@ public class LispSpecialForm extends LispFunction {
 
         if (!isStar)
             for (LispSymbol symbol : vars.keySet()) {
-                inner.setVariable(symbol, vars.get(symbol));
+                inner.defineVariable(symbol, new LispVariable(symbol, vars.get(symbol)));
             }
     }
 
@@ -92,6 +92,13 @@ public class LispSpecialForm extends LispFunction {
             environment.defineFunction(function.getName(), function);
             return function.getName();
         }
+        if (myName.is("defvar")) {
+            if ((args.size() < 1) || (args.size() > 3))
+                throw new WrongNumberOfArgumentsException(myName.getName());
+            LispVariable.createOrUpdate(environment, args);
+            return args.get(0);
+        }
+
         if (myName.is("let")) {
             return executeLet(false, environment, args);
         }

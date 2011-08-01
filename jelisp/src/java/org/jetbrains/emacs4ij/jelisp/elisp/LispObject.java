@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 
+import java.lang.reflect.Method;
+
 /**
  * Created by IntelliJ IDEA.
  * User: ekaterina.polishchuk
@@ -11,4 +13,14 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 public abstract class LispObject {
     public abstract LispString toLispString();
     public abstract LispObject evaluate(Object... parameters);
+
+    public LispObject invokeMethod (String methodName, Class[] parameterTypes, Object... methodParameters) {
+        try {
+            Method m = this.getClass().getMethod(methodName, parameterTypes);
+            LispObject result = (LispObject) m.invoke(this, methodParameters);
+            return result == null ? this : result;
+        } catch (Exception e) {
+            return this;
+        }
+    }
 }

@@ -11,17 +11,15 @@ import java.awt.*;
  * Time: 3:06 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispBuffer extends LispObject {
-
-    private String myName;
+public class LispBuffer extends NamedLispObject {
     private TextArea myData = new TextArea();
 
-    public LispBuffer(String myName) {
-        this.myName = myName;
+    public LispBuffer(String name) {
+        myName = new LispSymbol(name);
     }
 
     public LispBuffer(String myName, TextArea myData, boolean editable, int caretPosition) {
-        this.myName = myName;
+        this.myName = new LispSymbol(myName);
         this.myData = myData;
         this.myData.setEditable(editable);
         this.myData.setCaretPosition(caretPosition);
@@ -29,7 +27,7 @@ public class LispBuffer extends LispObject {
 
     @Override
     public LispString toLispString() {
-        return new LispString(myName);
+        return new LispString(myName.getName());
     }
 
     @Override
