@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.components.ApplicationComponent;
+import com.intellij.openapi.components.*;
 import org.jetbrains.annotations.NotNull;
 
 /**
