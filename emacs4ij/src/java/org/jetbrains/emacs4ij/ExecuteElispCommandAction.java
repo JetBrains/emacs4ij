@@ -1,13 +1,8 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.RoamingType;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -25,23 +20,13 @@ import java.awt.event.KeyEvent;
  * Time: 7:18 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ExecuteElispCommandAction extends AnAction implements PersistentStateComponent<String> {
-
-    @State(
-            name="EmacsHome",
-            storages = {@Storage(id="other", file = "$WORKSPACE_FILE$")},
-            reloadable = true,
-            roamingType = RoamingType.DISABLED
-    )
-
-    private String myEmacsHome;
-
+public class ExecuteElispCommandAction extends AnAction {
     private Parser myParser = new Parser();
     private JTextField myInput = new JTextField();
 
-    public ExecuteElispCommandAction () {
+    public String myEmacsHome = "";
 
-        myEmacsHome = "";
+    public ExecuteElispCommandAction () {
 
         Environment.ourEmacsPath = myEmacsHome;
 
@@ -90,13 +75,5 @@ public class ExecuteElispCommandAction extends AnAction implements PersistentSta
 
         /*ExecuteElispCommandForm executeElispCommandForm = new ExecuteElispCommandForm(e);
         executeElispCommandForm.setVisible(true);*/
-    }
-
-    public String getState() {
-        return myEmacsHome;
-    }
-
-    public void loadState(String s) {
-        myEmacsHome = s;
     }
 }

@@ -5,6 +5,7 @@
   <vendor logo="icons/idea.png">JetBrains</vendor>
   <idea-version since-build="8000"/>
 
+
   <application-components>
     <!-- Add your application components here -->
       <component>

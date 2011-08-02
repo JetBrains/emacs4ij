@@ -1,0 +1,7 @@
+#this is a list of files to be ignored by Git
+
+*.iws
+*.class
+*.jar
+*.lisp
+*.properties
