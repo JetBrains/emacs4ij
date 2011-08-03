@@ -125,16 +125,14 @@ public class LispSymbol extends LispAtom {
     }
 
     public LispObject evaluateFunction (Environment environment, List<LispObject> args) {
-        if (is(LispSymbol.FunctionType.SpecialForm)) {
-            return SpecialForm.evaluate(myName, environment, args);
-        }
+
+        if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
+            return LispSubroutine.evaluate(this, environment, args);
+
+        //custom function
         for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
             args.set(i, args.get(i).evaluate(environment));
         }
-        if (is(LispSymbol.FunctionType.BuiltIn))
-            return LispBuiltInFunction.evaluate(myName, environment, args);
-
-        //custom function
 
         List<LispObject> functionData = ((LispList)myFunction).getData();
         if (!functionData.get(0).equals(new LispSymbol("lambda")))

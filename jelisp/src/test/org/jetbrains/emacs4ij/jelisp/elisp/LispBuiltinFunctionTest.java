@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.junit.Test;
 
 /**
@@ -13,6 +12,6 @@ import org.junit.Test;
 public class LispBuiltinFunctionTest {
     @Test
     public void test1() {
-        LispBuiltInFunction.evaluate("car", Environment.ourGlobal, null);
+        //LispSubroutine.evaluate("car", Environment.ourGlobal, null);
     }
 }

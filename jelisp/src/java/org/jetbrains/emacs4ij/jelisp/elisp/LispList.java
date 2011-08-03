@@ -73,7 +73,7 @@ public class LispList extends LispObject {
         } catch (ClassCastException e) {
             throw new InvalidFunctionException(car().toString());
         }
-        LispSymbol symbol = (LispSymbol) environment.find(fun.getName());
+        LispSymbol symbol = environment.find(fun.getName());
         if (symbol == null || symbol.getFunction().equals(LispSymbol.ourVoid))
             throw new VoidFunctionException(fun.getName());
 

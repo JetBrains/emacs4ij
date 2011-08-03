@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
 import java.util.List;
@@ -17,10 +16,8 @@ import java.util.List;
 public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
-    @AnnotationBuiltin("symbol-function")
+    @Subroutine(value = "symbol-function", exact = 1)
     public static LispObject symbolFunction(Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("symbol-function");
         if (!(args.get(0) instanceof LispSymbol))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString());
         try {
@@ -30,20 +27,16 @@ public abstract class BuiltinsSymbol {
             throw new VoidFunctionException(((LispSymbol)args.get(0)).getName());
         }
     }
-    @AnnotationBuiltin("get")
+    @Subroutine(value = "get", exact = 2)
     public static LispObject get(Environment environment, List<LispObject> args) {
-        if (args.size() != 2)
-            throw new WrongNumberOfArgumentsException("get");
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString() + " and " + args.get(1).getClass().toString());
         LispSymbol symbol = (LispSymbol) args.get(0);
         LispSymbol property = (LispSymbol) args.get(1);
         return environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, property);
     }
-    @AnnotationBuiltin("put")
+    @Subroutine(value = "put", exact = 3)
     public static LispObject put(Environment environment, List<LispObject> args) {
-        if (args.size() != 3)
-            throw new WrongNumberOfArgumentsException("put");
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString() + " and " + args.get(1).getClass().toString());
         LispSymbol symbol = (LispSymbol) args.get(0);

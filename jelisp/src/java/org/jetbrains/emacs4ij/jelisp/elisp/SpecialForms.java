@@ -1,11 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,31 +17,9 @@ import java.util.List;
  *
  * in fact it is a kind of builtin function
  */
-public abstract class SpecialForm {
+public abstract class SpecialForms {
     
-    private SpecialForm() {}
-
-    public static LispObject evaluate (String name, Environment environment, List<LispObject> args) {
-        Method[] methods = SpecialForm.class.getMethods();
-        for (Method m: methods) {
-            AnnotationSpecialForm annotation = m.getAnnotation(AnnotationSpecialForm.class);
-            if (annotation == null)
-                continue;
-            if (annotation.value().equals(name))
-                try {
-                    return (LispObject) m.invoke(null, environment, args);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    throw new RuntimeException(e.getMessage());
-                } catch (InvocationTargetException e) {
-                    if (e.getTargetException() instanceof LispException)
-                        throw (LispException) e.getTargetException();
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    throw new RuntimeException(e.getMessage());
-                }
-        }
-        throw new RuntimeException("unknown special form " + name);
-    }
+    private SpecialForms() {}
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
@@ -100,29 +77,27 @@ public abstract class SpecialForm {
         return result;
     }
 
-    @AnnotationSpecialForm("quote")
+    @Subroutine(value = "quote", exact = 1)
     public static LispObject quote(Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("quote");
         return args.get(0);
     }
     
-    @AnnotationSpecialForm("defmacro")
+    @Subroutine("defmacro")
     public static LispObject defineMacro (Environment environment, List<LispObject> args) {
         throw new NotImplementedException();
     }
 
-    @AnnotationSpecialForm("let")
+    @Subroutine("let")
     public static LispObject let (Environment environment, List<LispObject> args) {
         return executeLet(false, environment, args);
     }
 
-    @AnnotationSpecialForm("let*")
+    @Subroutine("let*")
     public static LispObject letStar (Environment environment, List<LispObject> args) {
         return executeLet(true, environment, args);
     }
 
-    @AnnotationSpecialForm("interactive")
+    @Subroutine("interactive")
     public static LispObject interactive(Environment environment, List<LispObject> args) {
         throw new NotImplementedException();
 
@@ -142,7 +117,7 @@ public abstract class SpecialForm {
         return LispSymbol.ourNil; */
     }
 
-    @AnnotationSpecialForm("cond")
+    @Subroutine("cond")
     public static LispObject cond(Environment environment, List<LispObject> args) {
         LispObject result = LispSymbol.ourNil;
         for (int i=0; i!=args.size(); ++i) {
@@ -165,10 +140,8 @@ public abstract class SpecialForm {
         }
         return result;
     }
-    @AnnotationSpecialForm("while")
+    @Subroutine(value = "while", min = 1)
     public static LispObject lispWhile(Environment environment, List<LispObject> args) {
-        if (args.size() < 1)
-            throw new WrongNumberOfArgumentsException("while");
         Environment inner = new Environment(environment);
         LispObject condition = args.get(0).evaluate(inner);
         while (condition != LispSymbol.ourNil) {
@@ -178,10 +151,8 @@ public abstract class SpecialForm {
         }
         return condition;
     }
-    @AnnotationSpecialForm("if")
+    @Subroutine(value = "if", min = 1)
     public static LispObject lispIf(Environment environment, List<LispObject> args) {
-        if (args.size() < 1)
-            throw new WrongNumberOfArgumentsException("if");
         LispObject condition = args.get(0).evaluate(environment);
         if (condition != LispSymbol.ourNil) {
             if (args.size() > 1)
@@ -194,7 +165,7 @@ public abstract class SpecialForm {
         }
         return result;
     }
-    @AnnotationSpecialForm("and")
+    @Subroutine("and")
     public static LispObject lispAnd(Environment environment, List<LispObject> args) {
         LispObject result = LispSymbol.ourT;
         for (int i=0; i!=args.size(); ++i) {
@@ -204,7 +175,7 @@ public abstract class SpecialForm {
         }
         return result;
     }
-    @AnnotationSpecialForm("or")
+    @Subroutine("or")
     public static LispObject lispOr(Environment environment, List<LispObject> args) {
         for (int i=0; i!=args.size(); ++i) {
             LispObject result = args.get(i).evaluate(environment);
@@ -213,10 +184,8 @@ public abstract class SpecialForm {
         }
         return LispSymbol.ourNil;
     }
-    @AnnotationSpecialForm("defvar")
+    @Subroutine(value = "defvar", min = 1, max = 3)
     public static LispObject defineVariable(Environment environment, List<LispObject> args) {
-        if ((args.size() < 1) || (args.size() > 3))
-            throw new WrongNumberOfArgumentsException("defvar");
         String name = ((LispSymbol) args.get(0)).getName();
         LispSymbol  variable = environment.find(name);
         if (variable == null) {
@@ -239,10 +208,8 @@ public abstract class SpecialForm {
         environment.defineSymbol(variable);
         return args.get(0);
     }
-    @AnnotationSpecialForm("defun")
+    @Subroutine(value = "defun", min = 2)
     public static LispObject defineFunction(Environment environment, List<LispObject> args) {
-        if (args.size() < 2)
-            throw new WrongNumberOfArgumentsException("defun");
         LispSymbol f = (LispSymbol)args.get(0);
         LispList functionCell = new LispList(new LispSymbol("lambda"));
         for (int i=1; i!=args.size(); ++i)

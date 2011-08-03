@@ -8,13 +8,16 @@ import java.lang.annotation.Target;
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
- * Date: 8/3/11
- * Time: 10:26 AM
+ * Date: 8/2/11
+ * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AnnotationSpecialForm {
+public @interface Subroutine {
     String value();
+    int min() default -1;
+    int max() default -1;
+    int exact() default -1;
 }

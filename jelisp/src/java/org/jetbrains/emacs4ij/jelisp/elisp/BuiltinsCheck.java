@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
 import java.util.List;
 
@@ -15,28 +14,20 @@ import java.util.List;
 public abstract class BuiltinsCheck {
     private BuiltinsCheck() {}
 
-    @AnnotationBuiltin("stringp")
+    @Subroutine(value = "stringp", exact = 1)
     public static LispObject stringp (Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("stringp");
         return (args.get(0) instanceof LispString) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @AnnotationBuiltin("symbolp")
+    @Subroutine(value = "symbolp", exact = 1)
     public static LispObject symbolp (Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("symbolp");
         return (args.get(0) instanceof LispSymbol) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @AnnotationBuiltin("integerp")
+    @Subroutine(value = "integerp", exact = 1)
     public static LispObject integerp (Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("integerp");
         return (args.get(0) instanceof LispInteger) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @AnnotationBuiltin("subrp")
+    @Subroutine(value = "subrp", exact = 1)
     public static LispObject subrp (Environment environment, List<LispObject> args) {
-        if (args.size() != 1)
-            throw new WrongNumberOfArgumentsException("subrp");
         //TODO : what returns the real symbol-function
         return ((args.get(0) instanceof LispString) && (args.get(0).toString().contains("<# subr"))) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
