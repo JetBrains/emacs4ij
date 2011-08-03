@@ -1,7 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,21 +25,21 @@ public class EnvironmentTest {
     public void setUp() throws Exception {
         e = new Environment(Environment.ourGlobal);
     }
-    /*
+
     @Test
     public void testGetBuiltInF () {
-        LispObject lispObject = e.find("+", Environment.SymbolType.FUNCTION);
-        Assert.assertTrue(lispObject instanceof CoreBuiltin);
-        Assert.assertEquals(new LispSymbol("+"), ((CoreBuiltin) lispObject).getName());
+        LispObject lispObject = e.find("+");
+        Assert.assertTrue(lispObject instanceof LispSymbol);
+        Assert.assertTrue(!((LispSymbol) lispObject).getFunction().equals(LispSymbol.ourVoid));
     }
 
     @Test
     public void testOverrideVar () {
-        e.defineVariable(new LispSymbol("a"), new LispInteger(5));
-        e.defineVariable(new LispSymbol("a"), new LispInteger(6));
-        Assert.assertEquals(new LispInteger(6), ((LispVariable)e.getSymbol("a")).getValue());
+        e.defineSymbol(new LispSymbol("a", new LispInteger(5)));
+        e.defineSymbol(new LispSymbol("a", new LispInteger(6)));
+        Assert.assertEquals(new LispInteger(6), (e.find("a")).getValue());
     }
-
+    /*
     @Test
     public void testGetFunctionFromFile() {
         String lispObjectFileNameFile = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\lisp\\help-fns.el";
@@ -63,33 +65,6 @@ public class EnvironmentTest {
                 System.out.println(f.getName() + " --DIR");
             else
                 System.out.println(f.getName());
-        }
-    }
-
-    @Test
-    public void invokeMeth() {
-        LispSymbol lispObject = new LispSymbol("test");
-        String methodName = "setProperty";
-        Object[] methodParameters = new Object[] {new LispSymbol("name"), new LispString("i am test")};
-        LispObject lispObject1 = lispObject.invokeMethod(methodName, new Class[]{LispSymbol.class, LispObject.class}, methodParameters);
-        Assert.assertEquals(lispObject, lispObject1);
-    }
-
-    @Test
-    public void testSwitch() {
-        int k = 5;
-        switch (k) {
-            case 1:
-                case 2:
-                    System.out.println("2");
-                    break;
-                case 5:
-                    System.out.println("5");
-                    break;
-                //break;
-            default:
-                System.out.println("0");
-
         }
     }
 

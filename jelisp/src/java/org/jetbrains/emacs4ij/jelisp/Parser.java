@@ -147,8 +147,9 @@ public class Parser extends Observable {
     private LispObject parseSymbol () throws EndOfLineException {
         int nextSeparatorIndex = getNextSeparatorIndex();
         int currentIndex = getMyCurrentIndex();
+        String symbol = myLispCode.substring(currentIndex, nextSeparatorIndex);
         advanceTo(nextSeparatorIndex);
-        return new LispSymbol(myLispCode.substring(currentIndex, nextSeparatorIndex));
+        return new LispSymbol(symbol);
     }
 
     public LispObject parseLine (String lispCode) throws LispException {

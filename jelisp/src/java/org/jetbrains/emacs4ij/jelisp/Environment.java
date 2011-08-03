@@ -65,8 +65,8 @@ public class Environment {
         mySymbols.put("cdr-safe", new LispSymbol("cdr-safe", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("memq", new LispSymbol("memq", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("list", new LispSymbol("list", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("null", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("not", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("null", new LispSymbol("null", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("not", new LispSymbol("not", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("stringp", new LispSymbol("stringp", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("subrp", new LispSymbol("subrp", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("symbolp", new LispSymbol("symbolp", LispSymbol.FunctionType.BuiltIn));
@@ -178,8 +178,8 @@ public class Environment {
         return find(name, methodName, null);
     }
 
-    public LispObject find(String name) {
-        return find(name, "", null);
+    public LispSymbol find(String name) {
+        return (LispSymbol) find(name, "", null);
     }
 
     public LispObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
@@ -190,13 +190,13 @@ public class Environment {
         if (myOuterEnv != null) {
             return myOuterEnv.find(name, methodName, parameterTypes, methodParameters);
         }
-
-        throw new RuntimeException("unknown symbol " + name);
+        return null;
+        //throw new RuntimeException("unknown symbol " + name);
     }
 
-    public LispSymbol getSymbol(String name) {
+    /*private LispSymbol getSymbol(String name) {
         return mySymbols.get(name);
-    }
+    } */
 
     public void defineSymbol (LispSymbol symbol) {
         mySymbols.put(symbol.getName(), symbol);

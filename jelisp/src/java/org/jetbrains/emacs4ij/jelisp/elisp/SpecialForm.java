@@ -1,11 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,27 +19,53 @@ import java.util.List;
  * in fact it is a kind of builtin function
  */
 public abstract class SpecialForm {
+    
+    private SpecialForm() {}
 
-    private void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
-       /* HashMap<LispSymbol, LispObject> vars = new HashMap<LispSymbol, LispObject>();
+    public static LispObject evaluate (String name, Environment environment, List<LispObject> args) {
+        Method[] methods = SpecialForm.class.getMethods();
+        for (Method m: methods) {
+            AnnotationSpecialForm annotation = m.getAnnotation(AnnotationSpecialForm.class);
+            if (annotation == null)
+                continue;
+            if (annotation.value().equals(name))
+                try {
+                    return (LispObject) m.invoke(null, environment, args);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    throw new RuntimeException(e.getMessage());
+                } catch (InvocationTargetException e) {
+                    if (e.getTargetException() instanceof LispException)
+                        throw (LispException) e.getTargetException();
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    throw new RuntimeException(e.getMessage());
+                }
+        }
+        throw new RuntimeException("unknown special form " + name);
+    }
+
+    private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
+        ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
         for (LispObject var: varList.getData()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
                 LispList valueForm = ((LispList) var).cdr();
                 LispObject value = valueForm.car().evaluate(inner);
+                symbol.setValue(value);
 
                 if (isStar)
-                    inner.defineVariable(symbol, new LispVariable(symbol, value));
+                    inner.defineSymbol(symbol);
                 else
-                    vars.put(symbol, value);
+                    vars.add(symbol);
 
                 continue;
             }
             if (var instanceof LispSymbol) {
+                ((LispSymbol) var).setValue(LispSymbol.ourNil);
                 if (isStar)
-                    inner.defineVariable(var, new LispVariable((LispSymbol) var, LispSymbol.ourNil));
+                    inner.defineSymbol((LispSymbol) var);
                 else
-                    vars.put((LispSymbol)var, LispSymbol.ourNil);
+                    vars.add((LispSymbol) var);
 
                 continue;
             }
@@ -46,12 +73,12 @@ public abstract class SpecialForm {
         }
 
         if (!isStar)
-            for (LispSymbol symbol : vars.keySet()) {
-                inner.defineVariable(symbol, new LispVariable(symbol, vars.get(symbol)));
-            } */
+            for (LispSymbol symbol : vars) {
+                inner.defineSymbol(symbol);
+            }
     }
 
-    private LispObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
+    private static LispObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
         /* (let(*) VARLIST BODY...)
         Bind variables according to VARLIST then eval BODY.
         The value of the last form in BODY is returned.
@@ -73,121 +100,156 @@ public abstract class SpecialForm {
         return result;
     }
 
-    public static LispObject execute(LispSymbol function, Environment environment, List<LispObject> args) {
-        if (function.is("quote")) {
-            if (args.size() != 1)
-                throw new WrongNumberOfArgumentsException(function.getName());
-            return args.get(0);
-        }
-        if (function.is("defun")) {
-            if (args.size() < 2)
-                throw new WrongNumberOfArgumentsException(function.getName());
-            /*CustomFunction function = new CustomFunction(args);
-            environment.defineFunction(function.getName(), function);
-            return function.getName(); */
-            return null;
-        }
-        if (function.is("defvar")) {
-            if ((args.size() < 1) || (args.size() > 3))
-                throw new WrongNumberOfArgumentsException(function.getName());
-            LispVariable.createOrUpdate(environment, args);
-            return args.get(0);
-        }
-        if (function.is("defmacro")) {
+    @AnnotationSpecialForm("quote")
+    public static LispObject quote(Environment environment, List<LispObject> args) {
+        if (args.size() != 1)
+            throw new WrongNumberOfArgumentsException("quote");
+        return args.get(0);
+    }
+    
+    @AnnotationSpecialForm("defmacro")
+    public static LispObject defineMacro (Environment environment, List<LispObject> args) {
+        throw new NotImplementedException();
+    }
 
+    @AnnotationSpecialForm("let")
+    public static LispObject let (Environment environment, List<LispObject> args) {
+        return executeLet(false, environment, args);
+    }
+
+    @AnnotationSpecialForm("let*")
+    public static LispObject letStar (Environment environment, List<LispObject> args) {
+        return executeLet(true, environment, args);
+    }
+
+    @AnnotationSpecialForm("interactive")
+    public static LispObject interactive(Environment environment, List<LispObject> args) {
+        throw new NotImplementedException();
+
+        /*if (args.size() > 1) {
+            throw new WrongNumberOfArgumentsException("interactive");
         }
-        if (function.is("let")) {
-            return null;
-            //return executeLet(false, environment, args);
-        }
-        if (function.is("let*")) {
-            return null;
-            //return executeLet(true, environment, args);
-        }
-        if (function.is("or")) {
-            for (int i=0; i!=args.size(); ++i) {
-                LispObject result = args.get(i).evaluate(environment);
-                if (result != LispSymbol.ourNil)
+        if (args.size() == 1) {
+            LispObject a = args.get(0);
+            if (!(a instanceof LispString)) {
+                LispObject result = a.evaluate(environment);
+                if (result instanceof LispList)
                     return result;
+                throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
             }
-            return LispSymbol.ourNil;
+            return null;//processInteractiveString((LispString) a, environment);
         }
-        if (function.is("and")) {
-            LispObject result = LispSymbol.ourT;
-            for (int i=0; i!=args.size(); ++i) {
-                result = args.get(i).evaluate(environment);
-                if (result == LispSymbol.ourNil)
-                    return result;
-            }
-            return result;
-        }
-        if (function.is("if")) {
-            if (args.size() < 1)
-                throw new WrongNumberOfArgumentsException(function.getName());
-            LispObject condition = args.get(0).evaluate(environment);
-            if (condition != LispSymbol.ourNil) {
-                if (args.size() > 1)
-                    return args.get(1).evaluate(environment);
-                return LispSymbol.ourT;
-            }
-            LispObject result = LispSymbol.ourNil;
-            for (int i=2; i<args.size(); ++i) {
-                result = args.get(i).evaluate(environment);
-            }
-            return result;
-        }
-        if (function.is("while")) {
-            if (args.size() < 1)
-                throw new WrongNumberOfArgumentsException(function.getName());
-            Environment inner = new Environment(environment);
-            LispObject condition = args.get(0).evaluate(inner);
-            while (condition != LispSymbol.ourNil) {
-                for (int i = 1; i != args.size(); ++i)
-                    args.get(i).evaluate(inner);
-                condition = args.get(0).evaluate(inner);
-            }
-            return condition;
-        }
-        if (function.is("cond")) {
-            LispObject result = LispSymbol.ourNil;
-            for (int i=0; i!=args.size(); ++i) {
-                LispObject clause = args.get(i);
-                if (!(clause instanceof LispList)) {
-                    if (clause.equals(LispSymbol.ourNil))
-                        continue;
-                    throw new WrongTypeArgument("LispList", clause.getClass().toString());
-                }
-                if (((LispList) clause).isEmpty())
+        return LispSymbol.ourNil; */
+    }
+
+    @AnnotationSpecialForm("cond")
+    public static LispObject cond(Environment environment, List<LispObject> args) {
+        LispObject result = LispSymbol.ourNil;
+        for (int i=0; i!=args.size(); ++i) {
+            LispObject clause = args.get(i);
+            if (!(clause instanceof LispList)) {
+                if (clause.equals(LispSymbol.ourNil))
                     continue;
-                LispObject condition = ((LispList) clause).car().evaluate(environment);
-                if (condition != LispSymbol.ourNil) {
-                    List<LispObject> data = ((LispList) clause).cdr().getData();
-                    result = condition;
-                    for (int k = 0; k != data.size(); ++k)
-                        result = data.get(k).evaluate(environment);
-                    return result;
-                }
+                throw new WrongTypeArgument("LispList", clause.getClass().toString());
             }
-            return result;
+            if (((LispList) clause).isEmpty())
+                continue;
+            LispObject condition = ((LispList) clause).car().evaluate(environment);
+            if (condition != LispSymbol.ourNil) {
+                List<LispObject> data = ((LispList) clause).cdr().getData();
+                result = condition;
+                for (int k = 0; k != data.size(); ++k)
+                    result = data.get(k).evaluate(environment);
+                return result;
+            }
         }
-        if (function.is("interactive")) {
-            if (args.size() > 1) {
-                throw new WrongNumberOfArgumentsException(function.getName());
-            }
-            if (args.size() == 1) {
-                LispObject a = args.get(0);
-                if (!(a instanceof LispString)) {
-                    LispObject result = a.evaluate(environment);
-                    if (result instanceof LispList)
-                        return result;
-                    throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
-                }
-                return null;//processInteractiveString((LispString) a, environment);
-            }
-            return LispSymbol.ourNil;
+        return result;
+    }
+    @AnnotationSpecialForm("while")
+    public static LispObject lispWhile(Environment environment, List<LispObject> args) {
+        if (args.size() < 1)
+            throw new WrongNumberOfArgumentsException("while");
+        Environment inner = new Environment(environment);
+        LispObject condition = args.get(0).evaluate(inner);
+        while (condition != LispSymbol.ourNil) {
+            for (int i = 1; i != args.size(); ++i)
+                args.get(i).evaluate(inner);
+            condition = args.get(0).evaluate(inner);
         }
-
-        throw new RuntimeException("unknown special form " + function);
+        return condition;
+    }
+    @AnnotationSpecialForm("if")
+    public static LispObject lispIf(Environment environment, List<LispObject> args) {
+        if (args.size() < 1)
+            throw new WrongNumberOfArgumentsException("if");
+        LispObject condition = args.get(0).evaluate(environment);
+        if (condition != LispSymbol.ourNil) {
+            if (args.size() > 1)
+                return args.get(1).evaluate(environment);
+            return LispSymbol.ourT;
+        }
+        LispObject result = LispSymbol.ourNil;
+        for (int i=2; i<args.size(); ++i) {
+            result = args.get(i).evaluate(environment);
+        }
+        return result;
+    }
+    @AnnotationSpecialForm("and")
+    public static LispObject lispAnd(Environment environment, List<LispObject> args) {
+        LispObject result = LispSymbol.ourT;
+        for (int i=0; i!=args.size(); ++i) {
+            result = args.get(i).evaluate(environment);
+            if (result == LispSymbol.ourNil)
+                return result;
+        }
+        return result;
+    }
+    @AnnotationSpecialForm("or")
+    public static LispObject lispOr(Environment environment, List<LispObject> args) {
+        for (int i=0; i!=args.size(); ++i) {
+            LispObject result = args.get(i).evaluate(environment);
+            if (result != LispSymbol.ourNil)
+                return result;
+        }
+        return LispSymbol.ourNil;
+    }
+    @AnnotationSpecialForm("defvar")
+    public static LispObject defineVariable(Environment environment, List<LispObject> args) {
+        if ((args.size() < 1) || (args.size() > 3))
+            throw new WrongNumberOfArgumentsException("defvar");
+        String name = ((LispSymbol) args.get(0)).getName();
+        LispSymbol  variable = environment.find(name);
+        if (variable == null) {
+            variable = (LispSymbol) args.get(0);
+            if (args.size() > 1)
+                variable.setValue(args.get(1).evaluate(environment));
+            if (args.size() == 3) {
+                LispString docString = (LispString) args.get(2);
+                variable.setVariableDocumentation(docString);
+            }
+        } else {
+            if (variable.getValue().equals(LispSymbol.ourVoid) && (args.size() > 1))
+                variable.setValue(args.get(1).evaluate(environment));
+            if (args.size() == 3) {
+                LispString docString = (LispString) args.get(2);
+                if (!(variable.getVariableDocumentation().equals(docString)))
+                   variable.setVariableDocumentation(docString);
+            }
+        }
+        environment.defineSymbol(variable);
+        return args.get(0);
+    }
+    @AnnotationSpecialForm("defun")
+    public static LispObject defineFunction(Environment environment, List<LispObject> args) {
+        if (args.size() < 2)
+            throw new WrongNumberOfArgumentsException("defun");
+        LispSymbol f = (LispSymbol)args.get(0);
+        LispList functionCell = new LispList(new LispSymbol("lambda"));
+        for (int i=1; i!=args.size(); ++i)
+            functionCell.add(args.get(i));
+        f.setFunction(functionCell);
+        environment.defineSymbol(f);
+        return args.get(0);
     }
 
     private String getParameter (String message) {

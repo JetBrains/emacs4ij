@@ -117,15 +117,7 @@ public class EvaluatorTest {
         LispObject value = evaluateString("(nilFun)");
         Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
     }
-    /*
-    @Test
-    public void testDefunInteractive() {
-        evaluateString("(defun f () (interactive) 5)");
-        LispObject actual = environment.find("f", Environment.SymbolType.FUNCTION);
-        CustomFunction expected = new CustomFunction(new LispSymbol("f"), new LispList(), new LispList(new LispSymbol("interactive")), new LispInteger(5));
-        Assert.assertEquals(expected, actual);
-    }
-    */
+
     @Test
     public void testNil () {
         LispObject n = evaluateString("nil");
@@ -456,20 +448,20 @@ public class EvaluatorTest {
         evaluateString("(defvar a)");
         evaluateString("a");
     }
-    /*
+
     @Test
     public void testDefvar2() {
         evaluateString("(defvar a 5 \"doc\")");
-        LispObject a = environment.find("a", Environment.SymbolType.VARIABLE);
-        Assert.assertEquals(new LispVariable(new LispSymbol("a"), new LispInteger(5)), a);
+        LispSymbol a = environment.find("a");
+        Assert.assertEquals(new LispInteger(5), a.getValue());
         LispObject varDoc = evaluateString("(get 'a 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), varDoc);
-        a = evaluateString("(set 'a 10)");
-        Assert.assertEquals(new LispInteger(10), a);
+        LispObject b = evaluateString("(set 'a 10)");
+        Assert.assertEquals(new LispInteger(10), b);
         varDoc = evaluateString("(get 'a 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), varDoc);
     }
-    */
+
     @Ignore
     @Test
     public void testFinder () {

@@ -15,21 +15,23 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class BuiltinsSymbol {
+    private BuiltinsSymbol() {}
 
-    @Builtin("symbol-function")
-    private static LispObject symbolFunction(Environment environment, List<LispObject> args) {
+    @AnnotationBuiltin("symbol-function")
+    public static LispObject symbolFunction(Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("symbol-function");
         if (!(args.get(0) instanceof LispSymbol))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString());
         try {
-            return environment.find(((LispSymbol) args.get(0)).getName(), "getDefinition");
+            LispSymbol real = environment.find(((LispSymbol) args.get(0)).getName());
+            return real.getFunction();
         } catch (RuntimeException e) {
             throw new VoidFunctionException(((LispSymbol)args.get(0)).getName());
         }
     }
-    @Builtin("get")
-    private static LispObject get(Environment environment, List<LispObject> args) {
+    @AnnotationBuiltin("get")
+    public static LispObject get(Environment environment, List<LispObject> args) {
         if (args.size() != 2)
             throw new WrongNumberOfArgumentsException("get");
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))
@@ -38,8 +40,8 @@ public abstract class BuiltinsSymbol {
         LispSymbol property = (LispSymbol) args.get(1);
         return environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, property);
     }
-    @Builtin("put")
-    private static LispObject put(Environment environment, List<LispObject> args) {
+    @AnnotationBuiltin("put")
+    public static LispObject put(Environment environment, List<LispObject> args) {
         if (args.size() != 3)
             throw new WrongNumberOfArgumentsException("put");
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))

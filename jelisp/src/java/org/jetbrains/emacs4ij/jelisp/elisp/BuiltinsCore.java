@@ -13,8 +13,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class BuiltinsCore {
+    private BuiltinsCore() {}
 
-    @Builtin("+")
+    @AnnotationBuiltin("+")
     public static LispObject plus (Environment environment, List<LispObject> args) {
         int ans = 0;
         for (LispObject lispObject: args) {
@@ -24,7 +25,7 @@ public abstract class BuiltinsCore {
         }
         return new LispInteger(ans);
     }
-    @Builtin("*")
+    @AnnotationBuiltin("*")
     public static LispObject multiply (Environment environment, List<LispObject> args) {
         int ans = 1;
         for (LispObject lispObject: args) {
@@ -32,7 +33,7 @@ public abstract class BuiltinsCore {
         }
         return new LispInteger(ans);
     }
-    @Builtin("set")
+    @AnnotationBuiltin("set")
     public static LispObject set (Environment environment, List<LispObject> args) {
         if (args.size() != 2)
             throw new WrongNumberOfArgumentsException("set");
@@ -50,7 +51,7 @@ public abstract class BuiltinsCore {
         }
         return variable.getValue();
     }
-    @Builtin("eq")
+    @AnnotationBuiltin("eq")
     public static LispObject eq (Environment environment, List<LispObject> args) {
         if (args.size() != 2)
             throw new WrongNumberOfArgumentsException("eq");
@@ -58,13 +59,13 @@ public abstract class BuiltinsCore {
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
-    @Builtin("null")
+    @AnnotationBuiltin("null")
     public static LispObject lispNull (Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("null");
         return (args.get(0) == LispSymbol.ourNil) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Builtin("not")
+    @AnnotationBuiltin("not")
     public static LispObject lispNot (Environment environment, List<LispObject> args) {
         //TODO another name
         return lispNull(environment, args);

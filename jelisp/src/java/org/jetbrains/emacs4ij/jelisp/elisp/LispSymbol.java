@@ -2,8 +2,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,11 +43,11 @@ public class LispSymbol extends LispAtom {
     public LispSymbol (String myName, FunctionType functionType) {
         this.myName = myName;
         if (functionType.equals(FunctionType.BuiltIn) || functionType.equals(FunctionType.SpecialForm)) {
-            myFunction = new LispString("<#subr " + myName + ">");
+            myFunction = new LispString("#<subr " + myName + ">");
             setProperty("function-type", new LispString(functionType.getValue()));
             return;
         }
-        throw new RuntimeException("Invalid initialization of function " + myName + ", type " + functionType.getValue());
+        throw new RuntimeException("Invalid initialization of custom function " + myName + ", type " + functionType.getValue());
     }
 
     public LispSymbol (String myName, LispObject value) {
@@ -70,8 +71,8 @@ public class LispSymbol extends LispAtom {
         return myFunction;
     }
 
-    public void setFunction(LispObject myFunction, String functionType) {
-        setProperty("function-type", new LispString(functionType));
+    public void setFunction(LispObject myFunction) {
+        setProperty("function-type", new LispString(FunctionType.Custom.getValue()));
         this.myFunction = myFunction;
     }
 
@@ -79,13 +80,7 @@ public class LispSymbol extends LispAtom {
     public String toString() {
         return "LispSymbol{" +
                 "myName='" + myName + '\'' +
-                "myValue=[" + myValue.toString() + "] " +
-                "myFunction=[" + myFunction.toString()+"]"+
                 '}';
-    }
-
-    public boolean is (String name) {
-        return myName.equals(name);
     }
 
     public boolean is (FunctionType functionType) {
@@ -129,6 +124,103 @@ public class LispSymbol extends LispAtom {
         return lispObject;
     }
 
+    public LispObject evaluateFunction (Environment environment, List<LispObject> args) {
+        if (is(LispSymbol.FunctionType.SpecialForm)) {
+            return SpecialForm.evaluate(myName, environment, args);
+        }
+        for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+            args.set(i, args.get(i).evaluate(environment));
+        }
+        if (is(LispSymbol.FunctionType.BuiltIn))
+            return LispBuiltInFunction.evaluate(myName, environment, args);
+
+        //custom function
+
+        List<LispObject> functionData = ((LispList)myFunction).getData();
+        if (!functionData.get(0).equals(new LispSymbol("lambda")))
+            throw new RuntimeException("unsupported custom function " + functionData.get(0).toString());
+        LinkedHashMap<LispSymbol, String> arguments = readMyArguments((LispList) functionData.get(1));
+        Environment inner = substituteArguments(environment, args, arguments);
+        LispString docString = null;
+
+        try {
+            int index = 2;
+            if (functionData.get(index) instanceof LispString) {
+                docString = (LispString) functionData.get(index);
+                ++index;
+            }
+            if (functionData.get(index) instanceof LispList) {
+                if (((LispList)functionData.get(index)).car().equals(new LispSymbol("interactive")))
+                    ++index;
+            }
+            LispObject result = LispSymbol.ourNil;
+            for (; index != functionData.size(); ++index) {
+                result = functionData.get(index).evaluate(inner);
+            }
+            return result;
+
+        } catch (IndexOutOfBoundsException e) {
+            return (docString == null) ? LispSymbol.ourNil : docString;
+        }
+    }
+
+    private Environment substituteArguments (Environment environment, List<LispObject> args, LinkedHashMap<LispSymbol, String> arguments) {
+        int nRequiredArguments = 0;
+        for (Map.Entry<LispSymbol, String> arg: arguments.entrySet()) {
+            if (arg.getValue().equals("required"))
+                ++nRequiredArguments;
+        }
+        if (nRequiredArguments > args.size() || arguments.size() < args.size())
+            throw new WrongNumberOfArgumentsException(myName);
+
+        Environment inner = new Environment(environment);
+        List<LispSymbol> keys = new ArrayList<LispSymbol>(arguments.keySet());
+        if (!arguments.isEmpty()) {
+            for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
+                LispObject argValue = args.get(i);
+                LispSymbol argName =  keys.get(i);
+                if (!arguments.get(argName).equals("rest")) {
+                    inner.defineSymbol(new LispSymbol(argName.getName(), argValue));
+                    continue;
+                }
+                List<LispObject> rest = args.subList(i, argsSize);
+                inner.defineSymbol(new LispSymbol(argName.getName(), new LispList(rest)));
+                for (int k = i+1; k!=keys.size(); ++k)
+                    inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
+                break;
+            }
+            for (int k = args.size(); k!=keys.size(); ++k)
+                inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
+        }
+        return inner;
+    }
+
+    private LinkedHashMap<LispSymbol, String> readMyArguments (LispList args) {
+        LinkedHashMap<LispSymbol, String> arguments = new LinkedHashMap<LispSymbol, String>();
+        if (args.isEmpty())
+            return arguments;
+
+        List<LispObject> data = args.getData();
+        String type = "required";
+        for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
+            LispSymbol argName = (LispSymbol)data.get(i);
+            if (!type.equals("rest")) {
+                if (argName.equals(new LispSymbol("&rest"))) {
+                    type = "rest";
+                    continue;
+                }
+                if (!type.equals("optional")) {
+                    if (argName.equals(new LispSymbol("&optional"))) {
+                        type = "optional";
+                        continue;
+                    }
+                }
+            }
+            arguments.put(argName, type);
+        }
+        return arguments;
+    }
+
     public LispObject getPropertyList() {
         LispList pList = new LispList();
         for (LispSymbol key: myProperties.keySet())
@@ -161,6 +253,4 @@ public class LispSymbol extends LispAtom {
     public void setVariableDocumentation (LispString value) {
         setProperty("variable-documentation", value);
     }
-
-
 }

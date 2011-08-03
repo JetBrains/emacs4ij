@@ -13,8 +13,10 @@ import java.util.List;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsList extends LispBuiltInFunction {
-    @Builtin("car")
+public abstract class BuiltinsList {
+    private BuiltinsList() {}
+
+    @AnnotationBuiltin("car")
     public static LispObject car (Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("car");
@@ -22,7 +24,7 @@ public abstract class BuiltinsList extends LispBuiltInFunction {
             throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
         return ((LispList) args.get(0)).car();
     }
-    @Builtin("cdr")
+    @AnnotationBuiltin("cdr")
     public static LispObject cdr (Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("cdr");
@@ -31,7 +33,7 @@ public abstract class BuiltinsList extends LispBuiltInFunction {
         LispList cdr = ((LispList) args.get(0)).cdr();
         return (cdr.isEmpty()) ? LispSymbol.ourNil : cdr;
     }
-    @Builtin("car-safe")
+    @AnnotationBuiltin("car-safe")
     public static LispObject carSafe (Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("car-safe");
@@ -39,7 +41,7 @@ public abstract class BuiltinsList extends LispBuiltInFunction {
             return ((LispList) args.get(0)).car();
         return LispSymbol.ourNil;
     }
-    @Builtin("cdr-safe")
+    @AnnotationBuiltin("cdr-safe")
     public static LispObject cdrSafe (Environment environment, List<LispObject> args) {
         if (args.size() != 1)
             throw new WrongNumberOfArgumentsException("cdr-safe");
@@ -47,7 +49,7 @@ public abstract class BuiltinsList extends LispBuiltInFunction {
             return ((LispList) args.get(0)).cdr();
         return LispSymbol.ourNil;
     }
-    @Builtin("memq")
+    @AnnotationBuiltin("memq")
     public static LispObject memq (Environment environment, List<LispObject> args) {
         if (args.size() != 2)
             throw new WrongNumberOfArgumentsException("memq");
@@ -56,7 +58,7 @@ public abstract class BuiltinsList extends LispBuiltInFunction {
         }
         throw new WrongTypeArgument("LispList", args.get(1).getClass().toString());
     }
-    @Builtin("list")
+    @AnnotationBuiltin("list")
     public static LispObject list (Environment environment, List<LispObject> args) {
         LispList list = new LispList(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;

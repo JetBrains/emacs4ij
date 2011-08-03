@@ -18,14 +18,14 @@ import java.util.List;
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
 public class LispList extends LispObject {
-    private List<LispObject> myData = null;
+    private ArrayList<LispObject> myData = null;
 
     public LispList() {
         myData = new ArrayList<LispObject>();
     }
 
     public LispList (LispObject ... objects) {
-        myData = Arrays.asList(objects);
+        myData = new ArrayList<LispObject>(Arrays.asList(objects));
     }
 
     public LispList (List<LispObject> data) {
@@ -79,18 +79,7 @@ public class LispList extends LispObject {
 
         List<LispObject> data = cdr().getData();
 
-        if (symbol.is(LispSymbol.FunctionType.SpecialForm)) {
-            return null;// ((SpecialForm)symbol).execute(environment, data);
-        }
-
-        for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
-            data.set(i, data.get(i).evaluate(environment));
-        }
-
-        if (symbol.is(LispSymbol.FunctionType.BuiltIn))
-            return null;// CoreBuiltin.execute(symbol, environment, data);
-
-        return CustomFunction.execute(symbol, environment, data);
+        return symbol.evaluateFunction(environment, data);
     }
 
     public List<LispObject> getData() {

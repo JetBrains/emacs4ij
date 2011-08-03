@@ -246,7 +246,5 @@ public class ParserTest {
         LispObject lispObject = p.parseLine("test");
         Assert.assertEquals(new LispSymbol("test"), lispObject);
     }
-
-
 }
 
