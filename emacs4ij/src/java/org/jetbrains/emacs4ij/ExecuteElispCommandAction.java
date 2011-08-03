@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -24,11 +25,11 @@ public class ExecuteElispCommandAction extends AnAction {
     private Parser myParser = new Parser();
     private JTextField myInput = new JTextField();
 
-    public String myEmacsHome = "";
+    //public String myEmacsHome = "";
 
     public ExecuteElispCommandAction () {
 
-        Environment.ourEmacsPath = myEmacsHome;
+        //Environment.ourEmacsPath = myEmacsHome;
 
         //Environment.myAction = this;
 
@@ -37,19 +38,25 @@ public class ExecuteElispCommandAction extends AnAction {
             public void keyReleased(KeyEvent keyEvent) {
                 if (keyEvent.getKeyCode() == KeyEvent.VK_ENTER) {
                     //keyEvent.consume();
-                    if (myEmacsHome.equals("")) {
+                    EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+                    if (emacsHomeService.getEmacsHome() == null || emacsHomeService.getEmacsHome().equals("")) {
                         Messages.showInfoMessage("You should choose Emacs home directory!", "Emacs4ij");
                         JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
                         fileChooser.setDialogTitle("Select Emacs home directory");
                         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                         if (fileChooser.showOpenDialog(myInput) == JFileChooser.APPROVE_OPTION) {
-                            myEmacsHome = fileChooser.getSelectedFile().getAbsolutePath();
-                            Environment.ourEmacsPath = myEmacsHome;
+                            String emacsHome = fileChooser.getSelectedFile().getAbsolutePath();
+                            emacsHomeService.setEmacsHome(emacsHome);
+                            Environment.ourEmacsPath = emacsHome;
                         } else {
                             Messages.showErrorDialog("You didn't choose Emacs home directory!\nNo command evaluation will be done.", "Emacs4ij");
                             return;
                         }
+                    } else {
+                        if (Environment.ourEmacsPath.equals(""))
+                            Environment.ourEmacsPath = emacsHomeService.getEmacsHome();
                     }
+
 
                     String parameterValue = ((JTextField)keyEvent.getComponent()).getText();
                     //Messages.showInfoMessage(parameterValue, "component value");

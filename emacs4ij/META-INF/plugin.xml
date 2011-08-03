@@ -8,9 +8,6 @@
 
   <application-components>
     <!-- Add your application components here -->
-      <component>
-          <implementation-class>org.jetbrains.emacs4ij.Emacs4ijPlugin</implementation-class>
-      </component>
   </application-components>
 
   <project-components>
@@ -28,5 +25,9 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
+    <!-- Declare the application level service -->
+    <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService">
+    </applicationService>
+
   </extensions>
 </idea-plugin>
