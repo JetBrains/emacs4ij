@@ -1,10 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 
-import java.io.*;
+import java.io.File;
 import java.util.HashMap;
 
 //import com.intellij.openapi.editor.Editor;
@@ -19,12 +20,12 @@ import java.util.HashMap;
 public class Environment {
     //public static com.intellij.openapi.editor.Editor ourEditor;
 
-    private final HashMap<LispSymbol, NamedLispObject> mySpecialForms = new HashMap<LispSymbol, NamedLispObject>();
-    private HashMap<LispSymbol, NamedLispObject> myVariables = new HashMap<LispSymbol, NamedLispObject>();
-    private HashMap<LispSymbol, NamedLispObject> myBuiltinVariables = new HashMap<LispSymbol, NamedLispObject>();
-    private HashMap<LispSymbol, NamedLispObject> myFunctions = new HashMap<LispSymbol, NamedLispObject>();
-    private HashMap<LispSymbol, NamedLispObject> myBuiltinFunctions = new HashMap<LispSymbol, NamedLispObject>();
-    private HashMap<LispSymbol, LispBuffer> myBuffers = new HashMap<LispSymbol, LispBuffer>();
+    private HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
+    /*private HashMap<String, LispSymbol> myVariables = new HashMap<String, LispSymbol>();
+    private HashMap<String, LispSymbol> myBuiltinVariables = new HashMap<String, LispSymbol>();
+    private HashMap<String, LispSymbol> myFunctions = new HashMap<String, LispSymbol>();
+    private HashMap<String, LispSymbol> myBuiltinFunctions = new HashMap<String, LispSymbol>();*/
+    //private HashMap<String, LispBuffer> myBuffers = new HashMap<String, LispBuffer>();
     private Environment myOuterEnv;
 
     public static String ourEmacsPath = "";
@@ -41,47 +42,48 @@ public class Environment {
     }
 
     private void setGlobal() {
+        mySymbols.put("quote", new LispSymbol("quote", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("defun", new LispSymbol("defun", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("defvar", new LispSymbol("defvar", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("defmacro", new LispSymbol("defmacro", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("let", new LispSymbol("let", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("let*", new LispSymbol("let*", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("interactive", new LispSymbol("interactive", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("or", new LispSymbol("or", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("and", new LispSymbol("and", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("if", new LispSymbol("if", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("while", new LispSymbol("while", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("cond", new LispSymbol("cond", LispSymbol.FunctionType.SpecialForm));
 
-        mySpecialForms.put(new LispSymbol("quote"), new LispSpecialForm("quote"));
-        mySpecialForms.put(new LispSymbol("defun"), new LispSpecialForm("defun"));
-        mySpecialForms.put(new LispSymbol("defvar"), new LispSpecialForm("defvar"));
-        mySpecialForms.put(new LispSymbol("let"), new LispSpecialForm("let"));
-        mySpecialForms.put(new LispSymbol("let*"), new LispSpecialForm("let*"));
-        mySpecialForms.put(new LispSymbol("interactive"), new LispSpecialForm("interactive"));
-        mySpecialForms.put(new LispSymbol("or"), new LispSpecialForm("or"));
-        mySpecialForms.put(new LispSymbol("and"), new LispSpecialForm("and"));
-        mySpecialForms.put(new LispSymbol("if"), new LispSpecialForm("if"));
-        mySpecialForms.put(new LispSymbol("while"), new LispSpecialForm("while"));
-        mySpecialForms.put(new LispSymbol("cond"), new LispSpecialForm("cond"));
-
-        myBuiltinFunctions.put(new LispSymbol("+"), new LispBuiltinFunction("+"));
-        myBuiltinFunctions.put(new LispSymbol("*"), new LispBuiltinFunction("*"));
-        myBuiltinFunctions.put(new LispSymbol("set"), new LispBuiltinFunction("set"));
-        myBuiltinFunctions.put(new LispSymbol("eq"), new LispBuiltinFunction("eq"));
-        myBuiltinFunctions.put(new LispSymbol("car-safe"), new LispBuiltinFunction("car-safe"));
-        myBuiltinFunctions.put(new LispSymbol("cdr-safe"), new LispBuiltinFunction("cdr-safe"));
-        myBuiltinFunctions.put(new LispSymbol("memq"), new LispBuiltinFunction("memq"));
-        myBuiltinFunctions.put(new LispSymbol("list"), new LispBuiltinFunction("list"));
-        myBuiltinFunctions.put(new LispSymbol("null"), new LispBuiltinFunction("null"));
-        myBuiltinFunctions.put(new LispSymbol("not"), new LispBuiltinFunction("not"));
-        myBuiltinFunctions.put(new LispSymbol("car"), new LispBuiltinFunction("car"));
-        myBuiltinFunctions.put(new LispSymbol("cdr"), new LispBuiltinFunction("cdr"));
-        myBuiltinFunctions.put(new LispSymbol("stringp"), new LispBuiltinFunction("stringp"));
-        myBuiltinFunctions.put(new LispSymbol("symbol-function"), new LispBuiltinFunction("symbol-function"));
-        myBuiltinFunctions.put(new LispSymbol("subrp"), new LispBuiltinFunction("subrp"));
-        myBuiltinFunctions.put(new LispSymbol("symbolp"), new LispBuiltinFunction("symbolp"));
-        myBuiltinFunctions.put(new LispSymbol("integerp"), new LispBuiltinFunction("integerp"));
-        myBuiltinFunctions.put(new LispSymbol("get"), new LispBuiltinFunction("get"));
-        myBuiltinFunctions.put(new LispSymbol("put"), new LispBuiltinFunction("put"));
+        mySymbols.put("+", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("*", new LispSymbol("*", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("set", new LispSymbol("set", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("eq", new LispSymbol("eq", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("car", new LispSymbol("car", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("cdr", new LispSymbol("cdr", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("car-safe", new LispSymbol("car-safe", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("cdr-safe", new LispSymbol("cdr-safe", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("memq", new LispSymbol("memq", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("list", new LispSymbol("list", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("null", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("not", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("stringp", new LispSymbol("stringp", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("subrp", new LispSymbol("subrp", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("symbolp", new LispSymbol("symbolp", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("integerp", new LispSymbol("integerp", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("symbol-function", new LispSymbol("symbol-function", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("get", new LispSymbol("get", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("put", new LispSymbol("put", LispSymbol.FunctionType.BuiltIn));
 
         //findAndRegisterEmacsFunction(ourFinder);
 
-        myBuiltinVariables.put(LispSymbol.ourNil,  new LispVariable(LispSymbol.ourNil, LispSymbol.ourNil));
-        myBuiltinVariables.put(LispSymbol.ourT, new LispVariable(LispSymbol.ourT, LispSymbol.ourT));
-        myBuiltinVariables.put(new LispSymbol("load-history"), new LispVariable(new LispSymbol("load-history"), LispSymbol.ourNil));
-        myBuiltinVariables.put(new LispSymbol("fill-column"), new LispVariable(new LispSymbol("fill-column"), new LispInteger(70)));
+        mySymbols.put("nil", LispSymbol.ourNil);
+        mySymbols.put("t", LispSymbol.ourT);
+        mySymbols.put("void", LispSymbol.ourVoid);
+        mySymbols.put("load-history", new LispSymbol("load-history", LispSymbol.ourNil));
+        mySymbols.put("fill-column", new LispSymbol("fill-column", new LispInteger(70)));
 
-        myBuffers.put(new LispSymbol("*scratch*"), new LispBuffer("*scratch*"));
+        mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
     }
 
     private void indexEmacsSources() {
@@ -108,7 +110,7 @@ public class Environment {
     }
 
     //TODO: its public only for test
-    public LispList getFunctionFromFile(String fileName, String functionName) {
+    /*public LispList getFunctionFromFile(String fileName, String functionName) {
         File file = new File(fileName);
         BufferedReader reader;
         try {
@@ -170,87 +172,33 @@ public class Environment {
             throw new RuntimeException("findAndRegisterEmacsFunction FAILED : " + name.getName());
         }
         return (LispCustomFunction) myFunctions.get(name);
+    } */
+
+    public LispObject find(String name, String methodName) {
+        return find(name, methodName, null);
     }
 
-    public LispObject find(String name, SymbolType symbolType, String methodName) {
-        return find(name, symbolType, methodName, null);
+    public LispObject find(String name) {
+        return find(name, "", null);
     }
 
-    public LispObject find(String name, SymbolType symbolType) {
-        return find(name, symbolType, "", null);
-    }
-
-    public LispObject find(String name, SymbolType symbolType, String methodName, Class[] parameterTypes, Object... methodParameters) {
-        LispSymbol lsName = new LispSymbol(name);
-        NamedLispObject lispObject;
-
-        switch (symbolType) {
-            case ANY:
-            case VARIABLE:
-                lispObject = myBuiltinVariables.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-
-                lispObject = myVariables.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-
-            case FUNCTION:
-                lispObject = mySpecialForms.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-
-                lispObject = myBuiltinFunctions.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-
-                lispObject = myFunctions.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-
-            case BUFFER:
-                lispObject = myBuffers.get(lsName);
-                if (lispObject != null)
-                    return lispObject.invokeMethod(methodName, parameterTypes,methodParameters);
-        }
+    public LispObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
+        LispSymbol lispObject = mySymbols.get(name);
+        if (lispObject != null)
+            return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);
 
         if (myOuterEnv != null) {
-            return myOuterEnv.find(name, symbolType, methodName, parameterTypes, methodParameters);
-        }
-
-        switch (symbolType) {
-            case VARIABLE:
-                throw new VoidVariableException(name);
-            case FUNCTION:
-                lispObject = findAndRegisterEmacsFunction(lsName);
-                if (lispObject != null)
-                    return lispObject;
-                throw new VoidFunctionException(name);
-            case BUFFER:
-                throw new RuntimeException("buffer " + name + "doesn't exist");
-
+            return myOuterEnv.find(name, methodName, parameterTypes, methodParameters);
         }
 
         throw new RuntimeException("unknown symbol " + name);
     }
 
-    public void defineVariable (LispObject name, LispObject value) {
-        myVariables.put((LispSymbol) name, new LispVariable((LispSymbol) name, value));
+    public LispSymbol getSymbol(String name) {
+        return mySymbols.get(name);
     }
 
-    public void defineVariable(LispObject name, NamedLispObject value) {
-        myVariables.put((LispSymbol) name, value);
-    }
-
-    public NamedLispObject getVariable (String name) {
-        return getVariable(new LispSymbol(name));
-    }
-
-    public NamedLispObject getVariable(LispSymbol name) {
-        return myVariables.get(name);
-    }
-
-    public void defineFunction (LispSymbol name, LispCustomFunction value) {
-        myFunctions.put(name, value);
+    public void defineSymbol (LispSymbol symbol) {
+        mySymbols.put(symbol.getName(), symbol);
     }
 }

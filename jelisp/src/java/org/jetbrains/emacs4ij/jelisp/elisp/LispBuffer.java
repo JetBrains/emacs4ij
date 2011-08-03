@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.awt.*;
@@ -11,8 +12,14 @@ import java.awt.*;
  * Time: 3:06 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispBuffer extends NamedLispObject {
+public class LispBuffer extends LispObject {
+
     private TextArea myData = new TextArea();
+     protected LispSymbol myName = null;
+
+    public LispSymbol getName() {
+        return myName;
+    }
 
     public LispBuffer(String name) {
         myName = new LispSymbol(name);
@@ -31,7 +38,7 @@ public class LispBuffer extends NamedLispObject {
     }
 
     @Override
-    public LispObject evaluate(Object... parameters) {
+    public LispObject evaluate(Environment environment) {
         throw new NotImplementedException();
     }
 }

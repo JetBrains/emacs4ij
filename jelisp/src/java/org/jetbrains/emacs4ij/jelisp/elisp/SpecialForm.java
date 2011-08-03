@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -18,14 +17,10 @@ import java.util.List;
  *
  * in fact it is a kind of builtin function
  */
-public class LispSpecialForm extends LispFunction {
-
-    public LispSpecialForm(String myName) {
-        super(myName);
-    }
+public abstract class SpecialForm {
 
     private void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
-        HashMap<LispSymbol, LispObject> vars = new HashMap<LispSymbol, LispObject>();
+       /* HashMap<LispSymbol, LispObject> vars = new HashMap<LispSymbol, LispObject>();
         for (LispObject var: varList.getData()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
@@ -53,7 +48,7 @@ public class LispSpecialForm extends LispFunction {
         if (!isStar)
             for (LispSymbol symbol : vars.keySet()) {
                 inner.defineVariable(symbol, new LispVariable(symbol, vars.get(symbol)));
-            }
+            } */
     }
 
     private LispObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
@@ -78,34 +73,38 @@ public class LispSpecialForm extends LispFunction {
         return result;
     }
 
-    @Override
-    public LispObject execute (Environment environment, List<LispObject> args) throws WrongNumberOfArgumentsException {
-        if (myName.is("quote")) {
+    public static LispObject execute(LispSymbol function, Environment environment, List<LispObject> args) {
+        if (function.is("quote")) {
             if (args.size() != 1)
-                throw new WrongNumberOfArgumentsException(myName.getName());
+                throw new WrongNumberOfArgumentsException(function.getName());
             return args.get(0);
         }
-        if (myName.is("defun")) {
+        if (function.is("defun")) {
             if (args.size() < 2)
-                throw new WrongNumberOfArgumentsException(myName.getName());
-            LispCustomFunction function = new LispCustomFunction(args);
+                throw new WrongNumberOfArgumentsException(function.getName());
+            /*CustomFunction function = new CustomFunction(args);
             environment.defineFunction(function.getName(), function);
-            return function.getName();
+            return function.getName(); */
+            return null;
         }
-        if (myName.is("defvar")) {
+        if (function.is("defvar")) {
             if ((args.size() < 1) || (args.size() > 3))
-                throw new WrongNumberOfArgumentsException(myName.getName());
+                throw new WrongNumberOfArgumentsException(function.getName());
             LispVariable.createOrUpdate(environment, args);
             return args.get(0);
         }
+        if (function.is("defmacro")) {
 
-        if (myName.is("let")) {
-            return executeLet(false, environment, args);
         }
-        if (myName.is("let*")) {
-            return executeLet(true, environment, args);
+        if (function.is("let")) {
+            return null;
+            //return executeLet(false, environment, args);
         }
-        if (myName.is("or")) {
+        if (function.is("let*")) {
+            return null;
+            //return executeLet(true, environment, args);
+        }
+        if (function.is("or")) {
             for (int i=0; i!=args.size(); ++i) {
                 LispObject result = args.get(i).evaluate(environment);
                 if (result != LispSymbol.ourNil)
@@ -113,7 +112,7 @@ public class LispSpecialForm extends LispFunction {
             }
             return LispSymbol.ourNil;
         }
-        if (myName.is("and")) {
+        if (function.is("and")) {
             LispObject result = LispSymbol.ourT;
             for (int i=0; i!=args.size(); ++i) {
                 result = args.get(i).evaluate(environment);
@@ -122,9 +121,9 @@ public class LispSpecialForm extends LispFunction {
             }
             return result;
         }
-        if (myName.is("if")) {
+        if (function.is("if")) {
             if (args.size() < 1)
-                throw new WrongNumberOfArgumentsException(myName.getName());
+                throw new WrongNumberOfArgumentsException(function.getName());
             LispObject condition = args.get(0).evaluate(environment);
             if (condition != LispSymbol.ourNil) {
                 if (args.size() > 1)
@@ -137,9 +136,9 @@ public class LispSpecialForm extends LispFunction {
             }
             return result;
         }
-        if (myName.is("while")) {
+        if (function.is("while")) {
             if (args.size() < 1)
-                throw new WrongNumberOfArgumentsException(myName.getName());
+                throw new WrongNumberOfArgumentsException(function.getName());
             Environment inner = new Environment(environment);
             LispObject condition = args.get(0).evaluate(inner);
             while (condition != LispSymbol.ourNil) {
@@ -149,7 +148,7 @@ public class LispSpecialForm extends LispFunction {
             }
             return condition;
         }
-        if (myName.is("cond")) {
+        if (function.is("cond")) {
             LispObject result = LispSymbol.ourNil;
             for (int i=0; i!=args.size(); ++i) {
                 LispObject clause = args.get(i);
@@ -171,9 +170,9 @@ public class LispSpecialForm extends LispFunction {
             }
             return result;
         }
-        if (myName.is("interactive")) {
+        if (function.is("interactive")) {
             if (args.size() > 1) {
-                throw new WrongNumberOfArgumentsException(myName.getName());
+                throw new WrongNumberOfArgumentsException(function.getName());
             }
             if (args.size() == 1) {
                 LispObject a = args.get(0);
@@ -183,12 +182,12 @@ public class LispSpecialForm extends LispFunction {
                         return result;
                     throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
                 }
-                return processInteractiveString((LispString) a, environment);
+                return null;//processInteractiveString((LispString) a, environment);
             }
             return LispSymbol.ourNil;
         }
 
-        throw new RuntimeException("unknown special form " + myName);
+        throw new RuntimeException("unknown special form " + function);
     }
 
     private String getParameter (String message) {
@@ -209,7 +208,7 @@ public class LispSpecialForm extends LispFunction {
                     while (true) {
                         parameter = getParameter(message);
                         try {
-                            environment.find(parameter, Environment.SymbolType.FUNCTION);
+                            environment.find(parameter);
                             args.add(new LispSymbol(parameter));
                             break;
                         } catch (RuntimeException e) {
@@ -305,8 +304,4 @@ public class LispSpecialForm extends LispFunction {
         return args;
     }
 
-    @Override
-    public LispString toLispString() {
-        return null;
-    }
 }

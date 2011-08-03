@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -49,7 +51,7 @@ public class LispString extends LispAtom {
     /**
      * no parameters required
      */
-    public LispObject evaluate(Object... parameters) {
+    public LispObject evaluate(Environment environment) {
         return this;
     }
 }

@@ -12,8 +12,13 @@ import java.util.List;
  * Time: 1:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVariable extends NamedLispObject {
+public class LispVariable extends LispObject {
     private LispObject myValue = LispSymbol.ourVoid;
+    protected LispSymbol myName = null;
+
+    public LispSymbol getName() {
+        return myName;
+    }
 
     public LispVariable (LispSymbol name, LispObject value) {
         myName = name;
@@ -30,21 +35,22 @@ public class LispVariable extends NamedLispObject {
     }
 
     public static void createOrUpdate (Environment environment, List<LispObject> args) {
-        LispSymbol name = (LispSymbol) args.get(0);
-        LispVariable variable;
+        String name = ((LispSymbol) args.get(0)).getName();
+        LispSymbol variable;
         try {
-            variable = (LispVariable) environment.find(name.getName(), Environment.SymbolType.VARIABLE);
+            variable = (LispSymbol) environment.find(name);
             if (variable.getValue().equals(LispSymbol.ourVoid) && (args.size() > 1))
                 variable.setValue(args.get(1).evaluate(environment));
             if (args.size() == 3) {
                 LispString docString = (LispString) args.get(2);
-                if (!(variable.getDocString().equals(docString)))
-                    variable.setDocString(docString);
+                if (!(variable.getVariableDocumentation().equals(docString)))
+                    variable.setVariableDocumentation(docString);
             }
         } catch (VoidVariableException e) {
-            variable = new LispVariable(environment, args);
+            //variable = new LispVariable(environment, args);
+            variable = null;
         }
-        environment.defineVariable(name, variable);
+        environment.defineSymbol(variable);
     }
 
     public LispObject getValue() {
@@ -69,7 +75,7 @@ public class LispVariable extends NamedLispObject {
     }
 
     @Override
-    public LispObject evaluate(Object... parameters) {
+    public LispObject evaluate(Environment environment) {
         if (myValue.equals(LispSymbol.ourVoid))
             throw new VoidVariableException(myName.getName());
         return myValue;

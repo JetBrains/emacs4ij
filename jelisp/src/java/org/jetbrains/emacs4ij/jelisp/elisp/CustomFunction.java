@@ -1,8 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -13,11 +11,12 @@ import java.util.*;
  * Time: 11:07 AM
  * To change this template use File | Settings | File Templates.
  */
-public class LispCustomFunction extends LispFunction {
+public abstract class CustomFunction {
     private LinkedHashMap<LispSymbol, String> myArguments = new LinkedHashMap<LispSymbol, String>();
     private LispString myDocString = null;
     private LispList myInteractive = null;
     private ArrayList<LispObject> myBody = new ArrayList<LispObject>();
+
 
     private void checkInteractiveAndBody (int index, List<LispObject> args) {
         try {
@@ -59,7 +58,7 @@ public class LispCustomFunction extends LispFunction {
 
     private void construct (List<LispObject> args) {
         //TODO: cast exceptions
-        myName = (LispSymbol)args.get(0);
+        //myName = (LispSymbol)args.get(0);
         setArguments((LispList) args.get(1));
         if (args.size() == 2)
             return;
@@ -71,12 +70,12 @@ public class LispCustomFunction extends LispFunction {
         }
     }
 
-    public LispCustomFunction (LispObject ... objects) {
+    public CustomFunction(LispObject... objects) {
         List<LispObject> args = Arrays.asList(objects);
         construct(args);
     }
 
-    public LispCustomFunction(List<LispObject> args) {
+    public CustomFunction(List<LispObject> args) {
         construct(args);
     }
 
@@ -87,17 +86,17 @@ public class LispCustomFunction extends LispFunction {
                 LispObject argValue = args.get(i);
                 LispSymbol argName =  keys.get(i);
                 if (!myArguments.get(argName).equals("rest")) {
-                    inner.defineVariable(argName, argValue);
+                    inner.defineSymbol(new LispSymbol(argName.getName(), argValue));
                     continue;
                 }
                 List<LispObject> rest = args.subList(i, argsSize);
-                inner.defineVariable(argName, new LispList(rest));
+                inner.defineSymbol(new LispSymbol(argName.getName(), new LispList(rest)));
                 for (int k = i+1; k!=keys.size(); ++k)
-                    inner.defineVariable(keys.get(k), LispSymbol.ourNil);
+                    inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
                 break;
             }
             for (int k = args.size(); k!=keys.size(); ++k)
-                inner.defineVariable(keys.get(k), LispSymbol.ourNil);
+                inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
         }
     }
 
@@ -110,9 +109,8 @@ public class LispCustomFunction extends LispFunction {
         return n;
     }
 
-    @Override
-    public LispObject execute(Environment environment, List<LispObject> args) {
-        if (nRequiredArguments() > args.size() || myArguments.size() < args.size())
+    public static LispObject execute(LispSymbol function, Environment environment, List<LispObject> args) {
+    /*    if (nRequiredArguments() > args.size() || myArguments.size() < args.size())
             throw new WrongNumberOfArgumentsException(myName.getName());
         Environment inner = new Environment(environment);
         substituteArguments(inner, args);
@@ -120,45 +118,8 @@ public class LispCustomFunction extends LispFunction {
         for (int i=0; i!=myBody.size(); ++i) {
             result = myBody.get(i).evaluate(inner);
         }
-        return result;
+        return result;  */
+        return null;
     }
 
-    @Override
-    public LispString getDefinition() {
-        //TODO: differ from emacs functions
-        //TODO: implement lambda
-        //return toLambda();
-        throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LispString toLispString() {
-        return new LispString(myName.getName());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        LispCustomFunction that = (LispCustomFunction) o;
-
-        if (myArguments != null ? !myArguments.equals(that.myArguments) : that.myArguments != null) return false;
-        if (myBody != null ? !myBody.equals(that.myBody) : that.myBody != null) return false;
-        if (myDocString != null ? !myDocString.equals(that.myDocString) : that.myDocString != null)
-            return false;
-        if (myInteractive != null ? !myInteractive.equals(that.myInteractive) : that.myInteractive != null)
-            return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = myArguments != null ? myArguments.hashCode() : 0;
-        result = 31 * result + (myDocString != null ? myDocString.hashCode() : 0);
-        result = 31 * result + (myInteractive != null ? myInteractive.hashCode() : 0);
-        result = 31 * result + (myBody != null ? myBody.hashCode() : 0);
-        return result;
-    }
 }

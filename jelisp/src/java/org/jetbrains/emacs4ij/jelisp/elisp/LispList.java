@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,11 +59,11 @@ public class LispList extends LispObject {
 
     /**
      *
-     * @param parameters = Environment
-     * @return the result of last function execution
+     *
+     * @param environment@return the result of last function execution
      */
     @Override
-    public LispObject evaluate(Object... parameters) {
+    public LispObject evaluate(Environment environment) {
         if (isEmpty())
             return LispSymbol.ourNil;
 
@@ -72,38 +73,28 @@ public class LispList extends LispObject {
         } catch (ClassCastException e) {
             throw new InvalidFunctionException(car().toString());
         }
-
-        Environment environment;
-        try {
-            environment =(Environment) Arrays.asList(parameters).get(0);
-        } catch (ClassCastException e) {
-            throw new RuntimeException("invalid list evaluation arguments!");
-        }
-
-        LispObject lispObject = environment.find(fun.getName(), Environment.SymbolType.FUNCTION);
+        LispSymbol symbol = (LispSymbol) environment.find(fun.getName());
+        if (symbol == null || symbol.getFunction().equals(LispSymbol.ourVoid))
+            throw new VoidFunctionException(fun.getName());
 
         List<LispObject> data = cdr().getData();
 
-        if (lispObject instanceof LispSpecialForm) {
-            return ((LispSpecialForm)lispObject).execute(environment, data);
+        if (symbol.is(LispSymbol.FunctionType.SpecialForm)) {
+            return null;// ((SpecialForm)symbol).execute(environment, data);
         }
 
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
             data.set(i, data.get(i).evaluate(environment));
         }
-        return ((LispFunction) lispObject).execute(environment, data);
+
+        if (symbol.is(LispSymbol.FunctionType.BuiltIn))
+            return null;// CoreBuiltin.execute(symbol, environment, data);
+
+        return CustomFunction.execute(symbol, environment, data);
     }
 
     public List<LispObject> getData() {
         return myData;
-    }
-
-    public int getSize () {
-        return ((myData == null) ? 0 : myData.size());
-    }
-
-    public LispObject get (int index) {
-        return myData.get(index);
     }
 
     @Override
