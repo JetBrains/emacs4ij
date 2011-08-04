@@ -1,8 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
-
 import java.lang.reflect.Method;
 
 /**
@@ -12,11 +10,10 @@ import java.lang.reflect.Method;
  * Time: 1:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class LispObject {
-    public abstract LispString toLispString();
-    public abstract LispObject evaluate(Environment environment);
+public abstract class LispObject implements LObject {
 
-    public LispObject invokeMethod (String methodName, Class[] parameterTypes, Object... methodParameters) {
+    @Override
+    public LispObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
         try {
             Method m = this.getClass().getMethod(methodName, parameterTypes);
             LispObject result = (LispObject) m.invoke(this, methodParameters);

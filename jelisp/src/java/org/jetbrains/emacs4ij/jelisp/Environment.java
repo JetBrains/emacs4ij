@@ -1,11 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 //import com.intellij.openapi.editor.Editor;
@@ -18,21 +17,18 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class Environment {
-    //public static com.intellij.openapi.editor.Editor ourEditor;
-
     private HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
-    /*private HashMap<String, LispSymbol> myVariables = new HashMap<String, LispSymbol>();
-    private HashMap<String, LispSymbol> myBuiltinVariables = new HashMap<String, LispSymbol>();
-    private HashMap<String, LispSymbol> myFunctions = new HashMap<String, LispSymbol>();
-    private HashMap<String, LispSymbol> myBuiltinFunctions = new HashMap<String, LispSymbol>();*/
-    //private HashMap<String, LispBuffer> myBuffers = new HashMap<String, LispBuffer>();
+    private static ArrayList<LispBuffer> ourBuffers = new ArrayList<LispBuffer>();
+    //private static String ourCurrentBuffer = "";
     private Environment myOuterEnv;
 
     public static String ourEmacsPath = "";
-    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
-    private static final String ourFinderPath = "\\lisp\\help-fns.el";
-    public static enum SymbolType {VARIABLE, FUNCTION, BUFFER, ANY}
+    //public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+    //private static final String ourFinderPath = "\\lisp\\help-fns.el";
     public static final Environment ourGlobal = new Environment(null);
+
+    //todo: set it on file open in editor, add to GLOBAL symbols, delete on close
+    //
 
     public Environment (Environment outerEnv) {
         myOuterEnv = outerEnv;
@@ -83,7 +79,9 @@ public class Environment {
         mySymbols.put("load-history", new LispSymbol("load-history", LispSymbol.ourNil));
         mySymbols.put("fill-column", new LispSymbol("fill-column", new LispInteger(70)));
 
-        mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
+        //ourBuffers.put(ourCurrentBuffer, )
+
+       // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
     }
 
     private void indexEmacsSources() {
@@ -200,5 +198,60 @@ public class Environment {
 
     public void defineSymbol (LispSymbol symbol) {
         mySymbols.put(symbol.getName(), symbol);
+    }
+
+    public static void defineBuffer (LispBuffer buffer) {
+        ourBuffers.add(buffer);
+    }
+
+    public static LispBuffer getCurrentBuffer () {
+        if (ourBuffers.size() == 0)
+            throw new RuntimeException("no buffer is currently opened");
+        return ourBuffers.get(ourBuffers.size() - 1);
+    }
+
+    private static int exists (String bufferName) {
+        for (int i=0; i!=ourBuffers.size(); ++i) {
+            if (ourBuffers.get(i).getName().equals(bufferName))
+                return i;
+        }
+        throw new RuntimeException("the buffer " + bufferName + " is not registered!");
+    }
+
+    public static void setCurrentBuffer (String bufferName) {
+        if (ourBuffers.size() < 2)
+            return;
+        int newCurrentBufferIndex = exists(bufferName);
+        Collections.swap(ourBuffers, newCurrentBufferIndex, ourBuffers.size()-1);
+    }
+
+    private static LispBuffer get (String bufferName) {
+        for (int i=0; i!=ourBuffers.size(); ++i) {
+            if (ourBuffers.get(i).getName().equals(bufferName))
+                ourBuffers.get(i);
+        }
+        throw new RuntimeException("the buffer " + bufferName + " is not registered!");
+    }
+
+    public static LispBuffer getBuffer (String bufferName) {
+        return get(bufferName);
+    }
+
+    public static LispBuffer getOtherBuffer () {
+        if (ourBuffers.size() < 2)
+            //todo: what to return here?
+            return getCurrentBuffer();
+        return ourBuffers.get(ourBuffers.size() - 2);
+    }
+
+    public static LispBuffer getOtherBuffer (String bufferName) {
+        if (ourBuffers.size() == 0)
+            throw new RuntimeException("no buffer is currently opened");
+        for (int i = ourBuffers.size() - 1; i!=-1; --i) {
+            if (!ourBuffers.get(i).getName().equals(bufferName))
+                return ourBuffers.get(i);
+        }
+        //todo check what if there is only 1 buffer
+        return null;
     }
 }

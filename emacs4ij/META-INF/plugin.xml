@@ -16,18 +16,23 @@
 
   <actions>
     <!-- Add your actions here -->
-      <action id="org.jetbrains.emacs4ij.ExecuteElispCommand" class="org.jetbrains.emacs4ij.ExecuteElispCommandAction"
+      <action id="org.jetbrains.emacs4ij.OpenCommandEditor" class="org.jetbrains.emacs4ij.OpenCommandEditor"
               text="Execute _elisp command" description="Execute elisp command" icon="icons/emacs.png">
           <add-to-group group-id="MainToolBar" anchor="last"/>
           <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
+      </action>
+
+      <action id="EvaluateCommand" class="org.jetbrains.emacs4ij.EvaluateCommand" text="EvaluateCommand">
+          <keyboard-shortcut keymap="$default" first-keystroke="ENTER"/>
       </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
     <!-- Declare the application level service -->
-    <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService">
-    </applicationService>
+    <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
+    <applicationService serviceInterface="org.jetbrains.emacs4ij.PluginService" serviceImplementation="org.jetbrains.emacs4ij.PluginService"/>
+
 
   </extensions>
 </idea-plugin>
