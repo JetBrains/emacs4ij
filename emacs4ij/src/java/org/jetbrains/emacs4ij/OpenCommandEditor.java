@@ -5,11 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.EditorTextField;
-import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 import javax.swing.*;
 

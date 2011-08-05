@@ -12,6 +12,9 @@
 
   <project-components>
     <!-- Add your project components here -->
+      <component>
+          <implementation-class>org.jetbrains.emacs4ij.MyProjectComponent</implementation-class>
+      </component>
   </project-components>
 
   <actions>

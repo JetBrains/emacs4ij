@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
@@ -16,9 +15,11 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaEditor extends LispObject implements LispBuffer {
+    private String myName;
     private Editor myEditor;
 
-    public IdeaEditor (Editor editor) {
+    public IdeaEditor (String name,Editor editor) {
+        myName = name;
         myEditor = editor;
     }
 
@@ -34,7 +35,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     @Override
     public String getName() {
-        return FileDocumentManager.getInstance().getFile(myEditor.getDocument()).getName();
+        return myName;
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.EditorTextField;
@@ -50,8 +51,9 @@ public class EvaluateCommand extends AnAction {
         }
         String parameterValue = input.getEditor().getDocument().getText();
         try {
+            Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
             Parser parser = new Parser();
-            LispObject lispObject = parser.parseLine(parameterValue).evaluate(Environment.ourGlobal);
+            LispObject lispObject = parser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(lispObject.toString(), "Evaluation result");
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
