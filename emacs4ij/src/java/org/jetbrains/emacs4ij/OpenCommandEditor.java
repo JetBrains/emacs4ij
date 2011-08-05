@@ -1,13 +1,11 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.ui.EditorTextField;
 
 import javax.swing.*;
+import java.awt.event.KeyEvent;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,17 +20,16 @@ public class OpenCommandEditor extends AnAction {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
+        //test if we are not already in emacs editor line
+        if (editor.isOneLineMode())
+            return;
         JComponent editorHeaderComponent = editor.getHeaderComponent();
-        EditorTextField input = ServiceManager.getService(PluginService.class).getInput();
         if (editorHeaderComponent == null) {
-            if (input.getEditor() != null) {
-                if (!input.getEditor().equals(editor))
-                    editor.setHeaderComponent(input);
-            } else
-                editor.setHeaderComponent(input);
-        } else {
-            //todo check for != !editor.getHeaderComponent().equals(myInput) => close that, open mine
+            EditorTextField input = new EditorTextField();
+            editor.setHeaderComponent(input);
+            EvaluateCommand command = new EvaluateCommand();
+            command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
+            input.grabFocus();
         }
-        input.grabFocus();
     }
 }

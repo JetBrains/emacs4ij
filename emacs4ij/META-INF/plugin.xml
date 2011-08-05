@@ -24,17 +24,12 @@
           <add-to-group group-id="MainToolBar" anchor="last"/>
           <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
       </action>
-
-      <action id="EvaluateCommand" class="org.jetbrains.emacs4ij.EvaluateCommand" text="EvaluateCommand">
-          <keyboard-shortcut keymap="$default" first-keystroke="ENTER"/>
-      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
     <!-- Add your extensions here -->
     <!-- Declare the application level service -->
     <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
-    <applicationService serviceInterface="org.jetbrains.emacs4ij.PluginService" serviceImplementation="org.jetbrains.emacs4ij.PluginService"/>
 
 
   </extensions>

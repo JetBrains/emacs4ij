@@ -10,7 +10,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-//import com.intellij.openapi.editor.Editor;
 
 /**
  * Created by IntelliJ IDEA.
