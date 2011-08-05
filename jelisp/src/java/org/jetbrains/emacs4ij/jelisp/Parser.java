@@ -167,7 +167,7 @@ public class Parser extends Observable {
         }
         if (getCurrentChar() == ';')
             return lispObject;
-        throw new UnknownCodeBlockException();
+        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
     }
 
     private LispObject parseQuote() throws LispException {
@@ -178,13 +178,7 @@ public class Parser extends Observable {
         } catch (EndOfLineException ignored) {
 
         }
-
         LispObject lispObject = parseObject();
-        /*if (lispObject instanceof LispList) {
-            if (((LispList) lispObject).car() instanceof LispSymbol)
-                if (((LispSymbol)(((LispList) lispObject).car())).equals(new LispSymbol("quote")))
-                return lispObject;
-        }*/
         return new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), lispObject));
     }
 
@@ -220,7 +214,7 @@ public class Parser extends Observable {
         if (lispObject == LispSymbol.ourNil) {
             lispObject = parseSymbol();
             if (lispObject == LispSymbol.ourNil)
-                throw new UnknownCodeBlockException();
+                throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex, getNextIndexOf('\n')));
         }
 
         return lispObject;

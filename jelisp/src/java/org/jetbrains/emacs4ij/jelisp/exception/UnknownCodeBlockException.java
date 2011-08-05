@@ -8,11 +8,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class UnknownCodeBlockException extends LispException {
-    /*public UnknownCodeBlockException(int position) {
-        super("Unknown code block", position);
-    }*/
-
-    public UnknownCodeBlockException() {
-        super("Unknown code block");
+    public UnknownCodeBlockException(String block) {
+        super("Unknown code block: " + block);
     }
 }

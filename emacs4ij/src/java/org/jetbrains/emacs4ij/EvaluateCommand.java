@@ -30,6 +30,8 @@ public class EvaluateCommand extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
         EditorTextField input = ServiceManager.getService(PluginService.class).getInput();
+        if (input.getEditor() == null)
+            return;
 
         if (emacsHomeService.getEmacsHome() == null || emacsHomeService.getEmacsHome().equals("")) {
             Messages.showInfoMessage("You should choose Emacs home directory!", "Emacs4ij");

@@ -18,10 +18,6 @@ import javax.swing.*;
  */
 public class OpenCommandEditor extends AnAction {
 
-    private void evaluate () {
-
-    }
-
     public void actionPerformed(AnActionEvent e) {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
@@ -29,11 +25,13 @@ public class OpenCommandEditor extends AnAction {
         JComponent editorHeaderComponent = editor.getHeaderComponent();
         EditorTextField input = ServiceManager.getService(PluginService.class).getInput();
         if (editorHeaderComponent == null) {
-            editor.setHeaderComponent(input);
-            //registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, myInput);
+            if (input.getEditor() != null) {
+                if (!input.getEditor().equals(editor))
+                    editor.setHeaderComponent(input);
+            } else
+                editor.setHeaderComponent(input);
         } else {
             //todo check for != !editor.getHeaderComponent().equals(myInput) => close that, open mine
-            // todo
         }
         input.grabFocus();
     }
