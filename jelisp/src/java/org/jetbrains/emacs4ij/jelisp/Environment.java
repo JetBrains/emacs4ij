@@ -68,6 +68,16 @@ public class Environment {
         mySymbols.put("get", new LispSymbol("get", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("put", new LispSymbol("put", LispSymbol.FunctionType.BuiltIn));
 
+        mySymbols.put("current-buffer", new LispSymbol("current-buffer", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("buffer-size", new LispSymbol("buffer-size", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("buffer-name", new LispSymbol("buffer-name", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("get-buffer", new LispSymbol("get-buffer", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("set-buffer", new LispSymbol("set-buffer", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("switch-to-buffer", new LispSymbol("switch-to-buffer", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("other-buffer", new LispSymbol("other-buffer", LispSymbol.FunctionType.BuiltIn));
+
+
+
         //findAndRegisterEmacsFunction(ourFinder);
 
         mySymbols.put("nil", LispSymbol.ourNil);

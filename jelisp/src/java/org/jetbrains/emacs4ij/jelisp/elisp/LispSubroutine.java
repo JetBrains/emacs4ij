@@ -16,7 +16,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class LispSubroutine {
-    private static Class[] builtins = new Class[]{BuiltinsCore.class, BuiltinsList.class, BuiltinsSymbol.class, BuiltinsCheck.class};
+    private static Class[] builtins = new Class[]{BuiltinsBuffer.class, BuiltinsCore.class, BuiltinsList.class, BuiltinsSymbol.class, BuiltinsCheck.class};
     private static Class[] specialForms = new Class[] {SpecialForms.class};
 
     private LispSubroutine() {}
