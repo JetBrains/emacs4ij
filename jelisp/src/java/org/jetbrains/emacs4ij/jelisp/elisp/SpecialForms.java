@@ -206,7 +206,7 @@ public abstract class SpecialForms {
                    variable.setVariableDocumentation(docString);
             }
         }
-        environment.defineSymbol(variable);
+        environment.getGlobalEnvironment().defineSymbol(variable);
         return args.get(0);
     }
     @Subroutine(value = "defun", min = 2)
@@ -216,7 +216,7 @@ public abstract class SpecialForms {
         for (int i=1; i!=args.size(); ++i)
             functionCell.add(args.get(i));
         f.setFunction(functionCell);
-        Environment.ourGlobal.defineSymbol(f);
+        environment.getGlobalEnvironment().defineSymbol(f);
         return args.get(0);
     }
 
