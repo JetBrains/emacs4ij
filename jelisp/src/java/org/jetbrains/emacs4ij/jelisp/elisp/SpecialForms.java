@@ -215,7 +215,7 @@ public abstract class SpecialForms {
         for (int i=1; i!=args.size(); ++i)
             functionCell.add(args.get(i));
         f.setFunction(functionCell);
-        environment.defineSymbol(f);
+        Environment.ourGlobal.defineSymbol(f);
         return args.get(0);
     }
 

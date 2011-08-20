@@ -473,4 +473,11 @@ public class EvaluatorTest {
             throw e;
         }
     }
+
+    @Test
+    public void testDefunInsideLet() {
+        evaluateString("(let ((x 2)) (defun one () 1))");
+        LispObject result = evaluateString("(one)");
+        Assert.assertEquals(new LispInteger(1), result);
+    }
 }
