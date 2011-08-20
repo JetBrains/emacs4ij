@@ -480,4 +480,10 @@ public class EvaluatorTest {
         LispObject result = evaluateString("(one)");
         Assert.assertEquals(new LispInteger(1), result);
     }
+
+    @Test
+    public void testDoubleDefvar() {
+        evaluateString("(defvar a 1)");
+        evaluateString("(defvar a 2 \"doc\")");
+    }
 }

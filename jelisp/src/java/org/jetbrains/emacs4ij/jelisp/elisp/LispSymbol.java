@@ -244,8 +244,8 @@ public class LispSymbol extends LispAtom {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    public LispString getVariableDocumentation () {
-        return (LispString) getProperty("variable-documentation");
+    public LispObject getVariableDocumentation () {
+        return getProperty("variable-documentation");
     }
 
     public void setVariableDocumentation (LispString value) {

@@ -201,7 +201,8 @@ public abstract class SpecialForms {
                 variable.setValue(args.get(1).evaluate(environment));
             if (args.size() == 3) {
                 LispString docString = (LispString) args.get(2);
-                if (!(variable.getVariableDocumentation().equals(docString)))
+                LispObject docObject = variable.getVariableDocumentation();
+                if (docObject != LispSymbol.ourNil && !(docObject.equals(docString)))
                    variable.setVariableDocumentation(docString);
             }
         }
