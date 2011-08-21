@@ -211,7 +211,9 @@ public abstract class SpecialForms {
     }
     @Subroutine(value = "defun", min = 2)
     public static LispObject defineFunction(Environment environment, List<LispObject> args) {
-        LispSymbol f = (LispSymbol)args.get(0);
+        String name = ((LispSymbol) args.get(0)).getName();
+        LispSymbol symbol = environment.find(name);
+        LispSymbol f = symbol != null ? symbol : (LispSymbol) args.get(0);
         LispList functionCell = new LispList(new LispSymbol("lambda"));
         for (int i=1; i!=args.size(); ++i)
             functionCell.add(args.get(i));

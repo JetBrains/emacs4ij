@@ -493,4 +493,12 @@ public class EvaluatorTest {
         LispObject result = evaluateString("one");
         Assert.assertEquals(new LispInteger(1), result);
     }
+
+    @Test
+    public void testSymbolWithValueAndFunctionCells() {
+        evaluateString("(defvar a 1)");
+        evaluateString("(defun a () 2)");
+        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("(a)"));
+    }
 }
