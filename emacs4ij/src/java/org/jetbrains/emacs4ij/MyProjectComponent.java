@@ -22,7 +22,8 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        myEnvironment = new Environment(Environment.ourGlobal);
+        Environment global = new Environment();
+        myEnvironment = new Environment(global);
         myProject = project;
     }
 

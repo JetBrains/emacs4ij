@@ -201,21 +201,24 @@ public abstract class SpecialForms {
                 variable.setValue(args.get(1).evaluate(environment));
             if (args.size() == 3) {
                 LispString docString = (LispString) args.get(2);
-                if (!(variable.getVariableDocumentation().equals(docString)))
+                LispObject docObject = variable.getVariableDocumentation();
+                if (docObject != LispSymbol.ourNil && !(docObject.equals(docString)))
                    variable.setVariableDocumentation(docString);
             }
         }
-        environment.defineSymbol(variable);
+        environment.getGlobalEnvironment().defineSymbol(variable);
         return args.get(0);
     }
     @Subroutine(value = "defun", min = 2)
     public static LispObject defineFunction(Environment environment, List<LispObject> args) {
-        LispSymbol f = (LispSymbol)args.get(0);
+        String name = ((LispSymbol) args.get(0)).getName();
+        LispSymbol symbol = environment.find(name);
+        LispSymbol f = symbol != null ? symbol : (LispSymbol) args.get(0);
         LispList functionCell = new LispList(new LispSymbol("lambda"));
         for (int i=1; i!=args.size(); ++i)
             functionCell.add(args.get(i));
         f.setFunction(functionCell);
-        environment.defineSymbol(f);
+        environment.getGlobalEnvironment().defineSymbol(f);
         return args.get(0);
     }
 

@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.sun.istack.internal.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -24,13 +25,23 @@ public class Environment {
     private Environment myOuterEnv;
 
     public static String ourEmacsPath = "";
-    public static final Environment ourGlobal = new Environment(null);
+    private final Environment myGlobalEnvironment;
 
-    public Environment (Environment outerEnv) {
+    /**
+     * Constructor for global environment
+     */
+    public Environment() {
+        myGlobalEnvironment = this;
+        setGlobal();
+    }
+
+    public Environment (@NotNull final Environment outerEnv) {
         myOuterEnv = outerEnv;
-        if (myOuterEnv == null) {
-            setGlobal();
-        }
+        myGlobalEnvironment = outerEnv.getGlobalEnvironment();
+    }
+
+    public Environment getGlobalEnvironment() {
+        return myGlobalEnvironment;
     }
 
     private void setGlobal() {
