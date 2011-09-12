@@ -20,7 +20,7 @@ public class BuiltinsBufferTest {
 
     @Before
     public void setUp() {
-        environment = new Environment(Environment.ourGlobal);
+        environment = new Environment(new Environment());
     }
 
     private List<LispObject> p(LispObject... objects) {

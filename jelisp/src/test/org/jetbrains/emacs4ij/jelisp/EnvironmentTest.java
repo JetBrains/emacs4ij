@@ -23,7 +23,7 @@ public class EnvironmentTest {
 
     @Before
     public void setUp() throws Exception {
-        e = new Environment(Environment.ourGlobal);
+        e = new Environment(new Environment());
     }
 
     @Test

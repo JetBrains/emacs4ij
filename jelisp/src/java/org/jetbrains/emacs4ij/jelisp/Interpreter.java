@@ -13,7 +13,7 @@ public class Interpreter {
 
     public static LispObject interpret (String line) {
         Parser parser = new Parser();
-        Environment environment = new Environment(Environment.ourGlobal);
+        Environment environment = new Environment(new Environment());
         return parser.parseLine(line).evaluate(environment);
     }
 }

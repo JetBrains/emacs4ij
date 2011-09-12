@@ -22,7 +22,7 @@ public class EvaluatorTest {
     @Before
     public void setUp() {
         Environment.ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
-        environment = new Environment(Environment.ourGlobal);
+        environment = new Environment(new Environment());
     }
 
     private LispObject evaluateString (String lispCode) throws LispException {
@@ -472,5 +472,33 @@ public class EvaluatorTest {
             System.out.println(e.getMessage());
             throw e;
         }
+    }
+
+    @Test
+    public void testDefunInsideLet() {
+        evaluateString("(let ((x 2)) (defun one () 1))");
+        LispObject result = evaluateString("(one)");
+        Assert.assertEquals(new LispInteger(1), result);
+    }
+
+    @Test
+    public void testDoubleDefvar() {
+        evaluateString("(defvar a 1)");
+        evaluateString("(defvar a 2 \"doc\")");
+    }
+
+    @Test
+    public void testDefvarInsideLet() {
+        evaluateString("(let ((x 2)) (defvar one 1))");
+        LispObject result = evaluateString("one");
+        Assert.assertEquals(new LispInteger(1), result);
+    }
+
+    @Test
+    public void testSymbolWithValueAndFunctionCells() {
+        evaluateString("(defvar a 1)");
+        evaluateString("(defun a () 2)");
+        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("(a)"));
     }
 }
