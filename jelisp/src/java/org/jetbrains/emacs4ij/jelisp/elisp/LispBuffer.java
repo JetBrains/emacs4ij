@@ -12,6 +12,9 @@ public interface LispBuffer extends LObject {
     public String getName();
     public int getSize();
     public int point();
-
-
+    public int pointMin();
+    public int pointMax();
+    public int bufferEnd(double parameter);
+    public String gotoChar(int position);
+    public String forwardChar (int shift);
 }

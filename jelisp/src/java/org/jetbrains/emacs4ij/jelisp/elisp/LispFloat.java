@@ -25,6 +25,10 @@ public class LispFloat extends LispNumber{
         this.myData = myData;
     }
 
+    public double getData() {
+        return myData;
+    }
+
     @Override
     public String toString() {
         return "LispFloat{" +

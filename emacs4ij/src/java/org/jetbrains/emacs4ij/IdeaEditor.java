@@ -40,11 +40,46 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     @Override
     public int getSize() {
-        return myEditor.getCaretModel().getOffset();
+        return myEditor.getDocument().getTextLength();
     }
 
     @Override
     public int point() {
-        return myEditor.getCaretModel().getOffset();
+        return myEditor.logicalPositionToOffset(myEditor.getCaretModel().getLogicalPosition()) + 1;
+    }
+
+    @Override
+    public int pointMin() {
+        return 1;
+    }
+
+    @Override
+    public int pointMax() {
+        return getSize()+1;
+    }
+
+    @Override
+    public int bufferEnd(double parameter) {
+        return (parameter > 0) ? pointMax() : pointMin();
+    }
+
+    @Override
+    public String gotoChar (int position) {
+        String message = "";
+        if (position < pointMin()) {
+            position = pointMin();
+            message = "Beginning of buffer";
+        }
+        else if (position > pointMax()) {
+            position = pointMax();
+            message = "End of buffer";
+        }
+        myEditor.getCaretModel().moveToOffset(position-1);
+        return message;
+    }
+
+    @Override
+    public String forwardChar (int shift) {
+        return gotoChar(point() + shift);
     }
 }

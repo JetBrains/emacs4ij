@@ -21,7 +21,7 @@ public class EvaluatorTest {
 
     @Before
     public void setUp() {
-        Environment.ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
+        Environment.ourEmacsPath = "/usr/share/emacs/23.2";
         environment = new Environment(new Environment());
     }
 

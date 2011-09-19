@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.sun.istack.internal.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -78,6 +78,7 @@ public class Environment {
         mySymbols.put("get", new LispSymbol("get", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("put", new LispSymbol("put", LispSymbol.FunctionType.BuiltIn));
 
+        mySymbols.put("bufferp", new LispSymbol("bufferp", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("current-buffer", new LispSymbol("current-buffer", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("buffer-size", new LispSymbol("buffer-size", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("buffer-name", new LispSymbol("buffer-name", LispSymbol.FunctionType.BuiltIn));
@@ -85,8 +86,13 @@ public class Environment {
         mySymbols.put("set-buffer", new LispSymbol("set-buffer", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("switch-to-buffer", new LispSymbol("switch-to-buffer", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("other-buffer", new LispSymbol("other-buffer", LispSymbol.FunctionType.BuiltIn));
-
-
+        mySymbols.put("point", new LispSymbol("point", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("point-min", new LispSymbol("point-min", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("point-max", new LispSymbol("point-max", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
+        mySymbols.put("goto-char", new LispSymbol("goto-char", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("forward-char", new LispSymbol("forward-char", LispSymbol.FunctionType.BuiltIn));
+        mySymbols.put("backward-char", new LispSymbol("backward-char", LispSymbol.FunctionType.BuiltIn));
 
         //findAndRegisterEmacsFunction(ourFinder);
 
@@ -183,15 +189,16 @@ public class Environment {
         myBuffers.add(newCurrentBuffer);
     }
 
-    private LispBuffer getBufferByName(String bufferName) {
+    private LispObject getBufferByName(String bufferName) {
         for (int i=0; i!= myBuffers.size(); ++i) {
             if (myBuffers.get(i).getName().equals(bufferName))
                 myBuffers.get(i);
         }
-        throw new EnvironmentException("the buffer " + bufferName + " is not registered!");
+        return LispSymbol.ourNil;
+        //throw new EnvironmentException("the buffer " + bufferName + " is not registered!");
     }
 
-    public LispBuffer getBuffer (String bufferName) {
+    public LispObject getBuffer (String bufferName) {
         return getBufferByName(bufferName);
     }
 

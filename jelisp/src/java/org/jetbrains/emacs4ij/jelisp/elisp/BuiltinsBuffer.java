@@ -110,10 +110,66 @@ public abstract class BuiltinsBuffer {
         return null;
     }
 
+    @Subroutine(value = "point", max = 0)
+    public static LObject point (Environment environment, List<LispObject> args) {
+        return new LispInteger(environment.getCurrentBuffer().point());
+    }
 
+    @Subroutine(value = "point-min", max = 0)
+    public static LObject pointMin (Environment environment, List<LispObject> args) {
+        return new LispInteger(environment.getCurrentBuffer().pointMin());
+    }
 
+    @Subroutine(value = "point-max", max = 0)
+    public static LObject pointMax (Environment environment, List<LispObject> args) {
+        return new LispInteger(environment.getCurrentBuffer().pointMax());
+    }
 
+    @Subroutine(value = "buffer-end", exact = 1)
+    public static LObject bufferEnd (Environment environment, List<LispObject> args) {
+        if (!(args.get(0) instanceof LispNumber))
+            throw new WrongTypeArgument("LispNumber (LispInteger, LispFloat)", args.get(0).getClass().toString());
+        double p = (args.get(0) instanceof LispInteger) ? (double) ((LispInteger)args.get(0)).getData() : ((LispFloat)args.get(0)).getData();
+        return new LispInteger(environment.getCurrentBuffer().bufferEnd(p));
+    }
 
+    //todo: interactive, accepts integer OR MARKER
+    @Subroutine(value = "goto-char", exact = 1)
+    public static LObject gotoChar (Environment environment, List<LispObject> args) {
+        if (!(args.get(0) instanceof LispInteger))
+            throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
+        environment.getCurrentBuffer().gotoChar(((LispInteger)args.get(0)).getData());
+        return args.get(0);
+    }
 
+    //todo: interactive, bound to C-f, <right>
+    @Subroutine(value = "forward-char", max = 1)
+    public static LObject forwardChar (Environment environment, List<LispObject> args) {
+        int shift = 1;
+        if (!args.isEmpty()) {
+            if (!(args.get(0) instanceof LispInteger))
+                throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
+            shift = ((LispInteger)args.get(0)).getData();
+        }
+        String message = environment.getCurrentBuffer().forwardChar(shift);
+        if (message.equals(""))
+            return LispSymbol.ourNil;
+        return new LispSymbol(message);
+    }
+
+    //todo: interactive, bound to C-b, <left>
+    @Subroutine(value = "backward-char", max = 1)
+    public static LObject backwardChar (Environment environment, List<LispObject> args) {
+        int shift = 1;
+        if (!args.isEmpty()) {
+            if (!(args.get(0) instanceof LispInteger))
+                throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
+            shift = ((LispInteger)args.get(0)).getData();
+        }
+        String message = environment.getCurrentBuffer().forwardChar(-shift);
+        if (message.equals(""))
+            return LispSymbol.ourNil;
+        return new LispSymbol(message);
+    }
 
 }

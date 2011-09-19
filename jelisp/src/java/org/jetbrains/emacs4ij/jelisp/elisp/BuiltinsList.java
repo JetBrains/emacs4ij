@@ -47,7 +47,7 @@ public abstract class BuiltinsList {
         }
         throw new WrongTypeArgument("LispList", args.get(1).getClass().toString());
     }
-    @Subroutine("list")
+    @Subroutine(value = "list")
     public static LispObject list (Environment environment, List<LispObject> args) {
         LispList list = new LispList(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;

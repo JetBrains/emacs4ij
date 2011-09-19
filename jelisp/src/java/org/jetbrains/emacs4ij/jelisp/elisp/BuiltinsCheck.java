@@ -31,4 +31,8 @@ public abstract class BuiltinsCheck {
         //TODO : what returns the real symbol-function
         return ((args.get(0) instanceof LispString) && (args.get(0).toString().contains("<# subr"))) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
+    @Subroutine(value = "bufferp", exact = 1)
+    public static LispObject bufferp (Environment environment, List<LispObject> args) {
+        return (args.get(0) instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;
+    }
 }

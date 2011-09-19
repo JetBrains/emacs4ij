@@ -20,7 +20,7 @@ public abstract class BuiltinsCore {
         for (LispObject lispObject: args) {
             if (lispObject.equals(LispSymbol.ourNil))
                 break;
-            ans += ((LispInteger)lispObject).getMyData();
+            ans += ((LispInteger)lispObject).getData();
         }
         return new LispInteger(ans);
     }
@@ -28,7 +28,7 @@ public abstract class BuiltinsCore {
     public static LispObject multiply (Environment environment, List<LispObject> args) {
         int ans = 1;
         for (LispObject lispObject: args) {
-            ans *= ((LispInteger)lispObject).getMyData();
+            ans *= ((LispInteger)lispObject).getData();
         }
         return new LispInteger(ans);
     }

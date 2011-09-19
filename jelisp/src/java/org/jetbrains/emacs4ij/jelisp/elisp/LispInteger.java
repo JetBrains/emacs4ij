@@ -16,7 +16,7 @@ public class LispInteger extends LispNumber {
         this.myData = myData;
     }
 
-    public int getMyData() {
+    public int getData() {
         return myData;
     }
 

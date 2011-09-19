@@ -19,4 +19,5 @@ public abstract class LispNumber extends LispAtom {
     public LispObject evaluate(Environment environment) {
         return this;
     }
+
 }

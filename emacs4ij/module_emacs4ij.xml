@@ -2,9 +2,9 @@
 <project name="module_emacs4ij" default="compile.module.emacs4ij">
   <dirname property="module.emacs4ij.basedir" file="${ant.file.module_emacs4ij}"/>
   
-  <property name="module.jdk.home.emacs4ij" value="${jdk.home.idea_ic-107.322}"/>
-  <property name="module.jdk.bin.emacs4ij" value="${jdk.bin.idea_ic-107.322}"/>
-  <property name="module.jdk.classpath.emacs4ij" value="jdk.classpath.idea_ic-107.322"/>
+  <property name="module.jdk.home.emacs4ij" value="${jdk.home.idea_ic-107.587}"/>
+  <property name="module.jdk.bin.emacs4ij" value="${jdk.bin.idea_ic-107.587}"/>
+  <property name="module.jdk.classpath.emacs4ij" value="jdk.classpath.idea_ic-107.587"/>
   
   <property name="compiler.args.emacs4ij" value="${compiler.args}"/>
   
@@ -23,7 +23,6 @@
   <path id="emacs4ij.runtime.production.module.classpath">
     <pathelement location="${emacs4ij.output.dir}"/>
     <pathelement location="${jelisp.output.dir}"/>
-    <path refid="library.idea10.classpath"/>
   </path>
   
   <path id="emacs4ij.module.classpath">
@@ -39,7 +38,6 @@
     <pathelement location="${jelisp.testoutput.dir}"/>
     <pathelement location="${jelisp.output.dir}"/>
     <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
-    <path refid="library.idea10.classpath"/>
   </path>
   
   
@@ -78,7 +76,10 @@
     </copy>
 
     <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/icons">
-      <fileset dir="${module.emacs4ij.basedir}/icons" />
+      <fileset dir="${module.emacs4ij.basedir}/icons">
+        <!--patternset refid="compiler.resources"/-->
+        <type type="file"/>
+      </fileset>
     </copy>
   </target>
   
