@@ -23,7 +23,7 @@ public abstract class SpecialForms {
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
-        for (LispObject var: varList.getData()) {
+        for (LObject var: varList.getData()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
                 LispList valueForm = ((LispList) var).cdr();
@@ -131,7 +131,7 @@ public abstract class SpecialForms {
                 continue;
             LispObject condition = ((LispList) clause).car().evaluate(environment);
             if (condition != LispSymbol.ourNil) {
-                List<LispObject> data = ((LispList) clause).cdr().getData();
+                List<LObject> data = ((LispList) clause).cdr().getData();
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
                     result = data.get(k).evaluate(environment);

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,18 +24,18 @@ public class BuiltinsBufferTest {
         environment = new Environment(new Environment());
     }
 
-    private List<LispObject> p(LispObject... objects) {
+    private List<LObject> p(LObject... objects) {
         return Arrays.asList(objects);
     }
 
-    @Test
+    @Test  (expected = EnvironmentException.class)
     public void testBufferSize() {
        // LispBuffer b = new LispBuffer("buffer1");
         LispObject lispObject = BuiltinsBuffer.bufferSize(environment, p(LispSymbol.ourNil));
         Assert.assertEquals(new LispInteger(0), lispObject);
     }
 
-    @Test
+    @Test (expected = EnvironmentException.class)
     public void testCurrentBuffer () {
         LispBuffer currentBuffer = BuiltinsBuffer.getCurrentBuffer(environment, null);
         Assert.assertEquals("*scratch*", currentBuffer.getName());

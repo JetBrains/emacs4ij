@@ -33,7 +33,7 @@ public abstract class BuiltinsCore {
         return new LispInteger(ans);
     }
     @Subroutine(value = "set", exact = 2)
-    public static LispObject set (Environment environment, List<LispObject> args) {
+    public static LObject set (Environment environment, List<LispObject> args) {
         LispSymbol variable;
         String varName = ((LispSymbol)args.get(0)).getName();
         try {

@@ -18,6 +18,26 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     private String myName;
     private Editor myEditor;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IdeaEditor that = (IdeaEditor) o;
+
+        if (myEditor != null ? !myEditor.equals(that.myEditor) : that.myEditor != null) return false;
+        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = myName != null ? myName.hashCode() : 0;
+        result = 31 * result + (myEditor != null ? myEditor.hashCode() : 0);
+        return result;
+    }
+
     public IdeaEditor (String name,Editor editor) {
         myName = name;
         myEditor = editor;

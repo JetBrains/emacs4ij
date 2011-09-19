@@ -8,7 +8,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LObject {
-
     public String getName();
     public int getSize();
     public int point();

@@ -31,7 +31,7 @@ public class LispSymbol extends LispAtom {
     }
 
     private String myName = null;
-    private LispObject myValue = ourVoid;
+    private LObject myValue = ourVoid;
     private LispObject myFunction = ourVoid;
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
 
@@ -50,7 +50,7 @@ public class LispSymbol extends LispAtom {
         throw new RuntimeException("Invalid initialization of custom function " + myName + ", type " + functionType.getValue());
     }
 
-    public LispSymbol (String myName, LispObject value) {
+    public LispSymbol (String myName, LObject value) {
         this.myName = myName;
         myValue = value;
     }
@@ -59,7 +59,7 @@ public class LispSymbol extends LispAtom {
         return myName;
     }
 
-    public LispObject getValue() {
+    public LObject getValue() {
         return myValue;
     }
 
@@ -124,7 +124,7 @@ public class LispSymbol extends LispAtom {
         return lispObject;
     }
 
-    public LispObject evaluateFunction (Environment environment, List<LispObject> args) {
+    public LispObject evaluateFunction (Environment environment, List<LObject> args) {
 
         if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
             return LispSubroutine.evaluate(this, environment, args);
@@ -134,7 +134,7 @@ public class LispSymbol extends LispAtom {
             args.set(i, args.get(i).evaluate(environment));
         }
 
-        List<LispObject> functionData = ((LispList)myFunction).getData();
+        List<LObject> functionData = ((LispList)myFunction).getData();
         if (!functionData.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("unsupported custom function " + functionData.get(0).toString());
         LinkedHashMap<LispSymbol, String> arguments = readMyArguments((LispList) functionData.get(1));
@@ -162,7 +162,7 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    private Environment substituteArguments (Environment environment, List<LispObject> args, LinkedHashMap<LispSymbol, String> arguments) {
+    private Environment substituteArguments (Environment environment, List<LObject> args, LinkedHashMap<LispSymbol, String> arguments) {
         int nRequiredArguments = 0;
         for (Map.Entry<LispSymbol, String> arg: arguments.entrySet()) {
             if (arg.getValue().equals("required"))
@@ -175,13 +175,13 @@ public class LispSymbol extends LispAtom {
         List<LispSymbol> keys = new ArrayList<LispSymbol>(arguments.keySet());
         if (!arguments.isEmpty()) {
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
-                LispObject argValue = args.get(i);
+                LObject argValue = args.get(i);
                 LispSymbol argName =  keys.get(i);
                 if (!arguments.get(argName).equals("rest")) {
                     inner.defineSymbol(new LispSymbol(argName.getName(), argValue));
                     continue;
                 }
-                List<LispObject> rest = args.subList(i, argsSize);
+                List<LObject> rest = args.subList(i, argsSize);
                 inner.defineSymbol(new LispSymbol(argName.getName(), new LispList(rest)));
                 for (int k = i+1; k!=keys.size(); ++k)
                     inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
@@ -198,7 +198,7 @@ public class LispSymbol extends LispAtom {
         if (args.isEmpty())
             return arguments;
 
-        List<LispObject> data = args.getData();
+        List<LObject> data = args.getData();
         String type = "required";
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
             LispSymbol argName = (LispSymbol)data.get(i);

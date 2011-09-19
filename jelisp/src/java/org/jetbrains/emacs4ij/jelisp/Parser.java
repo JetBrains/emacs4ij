@@ -179,7 +179,7 @@ public class Parser extends Observable {
 
         }
         LispObject lispObject = parseObject();
-        return new LispList(Arrays.<LispObject>asList(new LispSymbol("quote"), lispObject));
+        return new LispList(Arrays.<LObject>asList(new LispSymbol("quote"), lispObject));
     }
 
     private LispObject parseObject() throws LispException {

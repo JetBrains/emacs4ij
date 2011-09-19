@@ -1,10 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 
 import java.io.File;
@@ -189,22 +186,21 @@ public class Environment {
         myBuffers.add(newCurrentBuffer);
     }
 
-    private LispObject getBufferByName(String bufferName) {
+    private LObject getBufferByName(String bufferName) {
         for (int i=0; i!= myBuffers.size(); ++i) {
             if (myBuffers.get(i).getName().equals(bufferName))
-                myBuffers.get(i);
+                return myBuffers.get(i);
         }
         return LispSymbol.ourNil;
         //throw new EnvironmentException("the buffer " + bufferName + " is not registered!");
     }
 
-    public LispObject getBuffer (String bufferName) {
+    public LObject getBuffer (String bufferName) {
         return getBufferByName(bufferName);
     }
 
     public LispBuffer getOtherBuffer () {
         if (myBuffers.size() < 2)
-            //todo: what to return here?
             return getCurrentBuffer();
         return myBuffers.get(myBuffers.size() - 2);
     }

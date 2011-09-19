@@ -16,7 +16,7 @@ public abstract class BuiltinsList {
     private BuiltinsList() {}
 
     @Subroutine(value = "car", exact = 1)
-    public static LispObject car (Environment environment, List<LispObject> args) {
+    public static LObject car (Environment environment, List<LispObject> args) {
         if (!(args.get(0) instanceof LispList))
             throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
         return ((LispList) args.get(0)).car();
@@ -29,7 +29,7 @@ public abstract class BuiltinsList {
         return (cdr.isEmpty()) ? LispSymbol.ourNil : cdr;
     }
     @Subroutine(value = "car-safe", exact = 1)
-    public static LispObject carSafe (Environment environment, List<LispObject> args) {
+    public static LObject carSafe (Environment environment, List<LispObject> args) {
         if (args.get(0) instanceof LispList)
             return ((LispList) args.get(0)).car();
         return LispSymbol.ourNil;
@@ -48,7 +48,7 @@ public abstract class BuiltinsList {
         throw new WrongTypeArgument("LispList", args.get(1).getClass().toString());
     }
     @Subroutine(value = "list")
-    public static LispObject list (Environment environment, List<LispObject> args) {
+    public static LispObject list (Environment environment, List<LObject> args) {
         LispList list = new LispList(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
     }

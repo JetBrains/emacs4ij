@@ -18,21 +18,21 @@ import java.util.List;
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
 public class LispList extends LispObject {
-    private ArrayList<LispObject> myData = null;
+    private ArrayList<LObject> myData = null;
 
     public LispList() {
-        myData = new ArrayList<LispObject>();
+        myData = new ArrayList<LObject>();
     }
 
-    public LispList (LispObject ... objects) {
-        myData = new ArrayList<LispObject>(Arrays.asList(objects));
+    public LispList (LObject ... objects) {
+        myData = new ArrayList<LObject>(Arrays.asList(objects));
     }
 
-    public LispList (List<LispObject> data) {
-        myData = new ArrayList<LispObject>(data);
+    public LispList (List<LObject> data) {
+        myData = new ArrayList<LObject>(data);
     }
 
-    public void add (LispObject lispObject) {
+    public void add (LObject lispObject) {
         if (lispObject == null)
             return;
         myData.add(lispObject);
@@ -49,7 +49,7 @@ public class LispList extends LispObject {
             list += ")";
             return new LispString(list);
         }
-        for (LispObject lispObject: myData) {
+        for (LObject lispObject: myData) {
             list += lispObject.toLispString() + " ";
         }
         list = list.trim();
@@ -77,12 +77,12 @@ public class LispList extends LispObject {
         if (symbol == null || symbol.getFunction().equals(LispSymbol.ourVoid))
             throw new VoidFunctionException(fun.getName());
 
-        List<LispObject> data = cdr().getData();
+        List<LObject> data = cdr().getData();
 
         return symbol.evaluateFunction(environment, data);
     }
 
-    public List<LispObject> getData() {
+    public List<LObject> getData() {
         return myData;
     }
 
@@ -101,7 +101,7 @@ public class LispList extends LispObject {
         Object list = o;
         if (getClass() != o.getClass()) {
             if (o.getClass() == ArrayList.class) {
-                list = new LispList((List<LispObject>)o);
+                list = new LispList((List<LObject>)o);
             } else {
                 return false;
             }
@@ -117,7 +117,7 @@ public class LispList extends LispObject {
         return myData != null ? myData.hashCode() : 0;
     }
 
-    public LispObject car () {
+    public LObject car () {
         return ((myData.size() == 0) ? LispSymbol.ourNil : myData.get(0)) ;
     }
 

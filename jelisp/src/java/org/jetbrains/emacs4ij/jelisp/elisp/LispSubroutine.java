@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 
@@ -21,7 +22,7 @@ public abstract class LispSubroutine {
 
     private LispSubroutine() {}
 
-    public static LispObject evaluate(LispSymbol f, Environment environment, List<LispObject> args) {
+    public static LispObject evaluate(LispSymbol f, Environment environment, List<LObject> args) {
         Class[] subroutines = null;
         String type = null;
         if (f.is(LispSymbol.FunctionType.SpecialForm)) {
@@ -60,6 +61,8 @@ public abstract class LispSubroutine {
                     } catch (InvocationTargetException e) {
                         if (e.getTargetException() instanceof LispException)
                             throw (LispException) e.getTargetException();
+                        if (e.getTargetException() instanceof EnvironmentException)
+                            throw (EnvironmentException) e.getTargetException();
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                         throw new RuntimeException(e.getMessage());
                     }
