@@ -1,102 +1,142 @@
+package org.jetbrains.emacs4ij;
+
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.IdeaEditor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
  * User: kate
- * Date: 9/19/11
- * Time: 2:54 PM
+ * Date: 9/22/11
+ * Time: 3:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BufferTestCase extends CodeInsightFixtureTestCase {
+public class BufferTest extends CodeInsightFixtureTestCase {
     Environment myEnvironment;
-    Parser myParser;
+    Parser myParser = new Parser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     HashMap<String, IdeaEditor> myTests;
-    ArrayList<String> myTestFiles;
+    String[]  myTestFiles;
 
-    @Override
+    @Before
     public void setUp() throws Exception {
         super.setUp();
+        myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaEditor>();
-        myTestFiles = new ArrayList<String>();
-        myTestFiles.add("1.txt");
-        myTestFiles.add("2.txt");
-
         myEnvironment = new Environment(new Environment());
-        myParser = new Parser();
-
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             myTests.put(fileName, new IdeaEditor(fileName, getEditor()));
             myEnvironment.defineBuffer(new IdeaEditor(fileName, getEditor()));
         }
-
-        /*FileEditorManager editorManager = FileEditorManager.getInstance(getProject());
-        VirtualFile[] openFiles = editorManager.getOpenFiles();
-        Editor q = editorManager.getSelectedTextEditor(); */
     }
 
-    private LispObject eval (String lispCode) {
+    private LObject eval (String lispCode) {
         return myParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
     @Test
     public void testCurrentBuffer() {
-        LispObject lispObject = eval("(current-buffer)");
-        Assert.assertEquals(myTests.get(myTestFiles.get(myTestFiles.size()-1)), lispObject);
+        LObject lispObject = eval("(current-buffer)");
+        Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), lispObject);
     }
 
     @Test
     public void testBufferp() {
-        LispObject lispObject = eval("(bufferp (current-buffer))");
+        LObject lispObject = eval("(bufferp (current-buffer))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
-    @Test (expected = WrongNumberOfArgumentsException.class)
+    @Test
     public void testBufferpWrongNargs() {
-        //eval("(bufferp)");
         try {
             eval("(bufferp)");
         } catch (WrongNumberOfArgumentsException e) {
+            //success
         }
     }
 
     @Test
     public void testGetBufferByName() {
-        LispObject lispObject = eval("(get-buffer \"1.txt\")");
+        LObject lispObject = eval("(get-buffer \"1.txt\")");
         Assert.assertEquals(myTests.get("1.txt"), lispObject);
     }
 
     @Test
     public void testGetBufferByBuffer() {
-        LispObject lispObject = eval("(get-buffer (current-buffer))");
-        Assert.assertEquals(myTests.get(myTestFiles.get(myTestFiles.size()-1)), lispObject);
+        LObject lispObject = eval("(get-buffer (current-buffer))");
+        Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length-1]), lispObject);
     }
 
     @Test
     public void testBufferSize() {
-        LispObject lispObject = eval("(buffer-size)");
-        Assert.assertEquals(new LispInteger(28), lispObject);
+        LObject currentBufferSizeAnonymous = eval("(buffer-size)");
+        LObject currentBufferSize = eval("(buffer-size (current-buffer))");
+        Assert.assertEquals(currentBufferSize, currentBufferSizeAnonymous);
+    }
+
+    @Test
+    public void testBufferSizeNil() {
+        LObject currentBufferSizeAnonymous = eval("(buffer-size nil)");
+        LObject currentBufferSize = eval("(buffer-size (current-buffer))");
+        Assert.assertEquals(currentBufferSize, currentBufferSizeAnonymous);
     }
 
     @Test
     public void testBufferName () {
-        LispObject lispObject = eval("(buffer-name (get-buffer \"1.txt\"))");
+        LObject lispObject = eval("(buffer-name (get-buffer \"1.txt\"))");
         Assert.assertEquals(new LispString("1.txt"), lispObject);
     }
+
+    @Test
+    public void testOtherBuffer_SingleBuffer () {
+        while (myEnvironment.getBuffersSize() != 1)
+            myEnvironment.closeCurrentBuffer();
+        LObject lispObject = eval("(other-buffer)");
+        Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
+    }
+
+    @Test
+    public void testOtherBuffer_NoBuffers () {
+        myEnvironment.closeAllBuffers();
+        try {
+            eval("(other-buffer)");
+        } catch (RuntimeException e) {
+            Assert.assertEquals("no buffer is currently opened", e.getMessage());
+            return;
+        }
+        Assert.assertEquals(1, 0);
+    }
+
+    @Test
+    public void testOtherBuffer_NoParameters3buffers () {
+        LObject lispObject = eval("(other-buffer)");
+        Assert.assertEquals(myEnvironment.getBufferByIndex(myEnvironment.getBuffersSize()-2), lispObject);
+    }
+
+    @Test
+    public void testOtherBuffer_NotBufferParameter () {
+        LObject lispObject = eval("(other-buffer 1)");
+        Assert.assertEquals(myEnvironment.getBufferByIndex(myEnvironment.getBuffersSize()-2), lispObject);
+    }
+
+    @Test
+    public void testOtherBuffer_BufferParameter () {
+        LObject lispObject = eval("(other-buffer (get-buffer \""+ myTestFiles[0] +"\" ))");
+        Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
+    }
+
+
 
     /*@Ignore
     public void testSwitchToBufferByName () {
@@ -108,15 +148,15 @@ public class BufferTestCase extends CodeInsightFixtureTestCase {
     public void testSwitchToBufferByBuffer () {
         LispObject lispObject = eval("(switch-to-buffer (get-buffer \"2.txt\"))");
         Assert.assertEquals(new LispString("2.txt"), lispObject);
-    }  /*
-
-
-
+    } */
 
 /*
         mySymbols.put("set-buffer", new LispSymbol("set-buffer", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("switch-to-buffer", new LispSymbol("switch-to-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("other-buffer", new LispSymbol("other-buffer", LispSymbol.FunctionType.BuiltIn));
+   */
+
+
+    /*
         mySymbols.put("point", new LispSymbol("point", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("point-min", new LispSymbol("point-min", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("point-max", new LispSymbol("point-max", LispSymbol.FunctionType.BuiltIn));

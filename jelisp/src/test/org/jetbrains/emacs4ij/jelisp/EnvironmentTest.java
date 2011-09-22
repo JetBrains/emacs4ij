@@ -5,10 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.File;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +36,8 @@ public class EnvironmentTest {
         e.defineSymbol(new LispSymbol("a", new LispInteger(6)));
         Assert.assertEquals(new LispInteger(6), (e.find("a")).getValue());
     }
+
+
     /*
     @Test
     public void testGetFunctionFromFile() {
@@ -54,7 +53,7 @@ public class EnvironmentTest {
         CustomFunction finder = (CustomFunction) e.find(Environment.ourFinder.getName(), Environment.SymbolType.FUNCTION, "");
         Assert.assertEquals(Environment.ourFinder, finder.getName());
     }
-    */
+
     @Ignore
     @Test
     public void findir() {
@@ -66,6 +65,5 @@ public class EnvironmentTest {
             else
                 System.out.println(f.getName());
         }
-    }
-
+    }    */
 }

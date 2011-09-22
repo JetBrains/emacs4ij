@@ -3,9 +3,10 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 
@@ -104,7 +105,7 @@ public class Environment {
        // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
     }
 
-    private void indexEmacsSources() {
+    /*private void indexEmacsSources() {
         if (ourEmacsPath.equals("")) {
             ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3";
             //TODO:
@@ -125,7 +126,7 @@ public class Environment {
         }
 
 
-    }
+    }   */
 
     public LispObject find(String name, String methodName) {
         return find(name, methodName, null);
@@ -152,13 +153,10 @@ public class Environment {
     //============================= buffer processing =====================================
 
     public void defineBuffer (LispBuffer buffer) {
-        try {
-            if (getIndexByName(buffer.getName()) > -1) {
-                throw new DoubleBufferException("double "+buffer.getName());
-            }
-        } catch (EnvironmentException e)  {
-            myBuffers.add(buffer);
+        if (getIndexByName(buffer.getName()) != -1) {
+            throw new DoubleBufferException("double "+buffer.getName());
         }
+        myBuffers.add(buffer);
     }
 
     public LispBuffer getCurrentBuffer () {
@@ -172,7 +170,7 @@ public class Environment {
             if (myBuffers.get(i).getName().equals(bufferName))
                 return i;
         }
-        throw new EnvironmentException("the buffer " + bufferName + " is not registered!");
+        return -1;
     }
 
     public void setCurrentBuffer (String bufferName) {
@@ -181,23 +179,26 @@ public class Environment {
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
             return;
         int newCurrentBufferIndex = getIndexByName(bufferName);
-        LispBuffer newCurrentBuffer = myBuffers.get(newCurrentBufferIndex);
-        myBuffers.remove(newCurrentBufferIndex);
-        myBuffers.add(newCurrentBuffer);
+        if (newCurrentBufferIndex == -1)
+            throw new EnvironmentException("this buffer is not opened");
+        //LispBuffer newCurrentBuffer = myBuffers.get(newCurrentBufferIndex);
+
+        Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
+        //myBuffers.remove(newCurrentBufferIndex);
+        //myBuffers.add(newCurrentBuffer);
     }
 
-    private LObject getBufferByName(String bufferName) {
+    public LObject getBufferByName(String bufferName) {
         for (int i=0; i!= myBuffers.size(); ++i) {
             if (myBuffers.get(i).getName().equals(bufferName))
                 return myBuffers.get(i);
         }
         return LispSymbol.ourNil;
-        //throw new EnvironmentException("the buffer " + bufferName + " is not registered!");
     }
 
-    public LObject getBuffer (String bufferName) {
+   /* public LObject getBuffer (String bufferName) {
         return getBufferByName(bufferName);
-    }
+    }                   */
 
     public LispBuffer getOtherBuffer () {
         if (myBuffers.size() < 2)
@@ -212,8 +213,7 @@ public class Environment {
             if (!myBuffers.get(i).getName().equals(bufferName))
                 return myBuffers.get(i);
         }
-        //todo check what if there is only 1 buffer
-        return null;
+        throw new NoBufferException(bufferName);
     }
 
     public int getBuffersSize() {
@@ -223,6 +223,19 @@ public class Environment {
     public void closeBuffer(String bufferName) {
         int toRemove = getIndexByName(bufferName);
         myBuffers.remove(toRemove);
+    }
+
+    public void closeCurrentBuffer () {
+        myBuffers.remove(getCurrentBuffer());
+    }
+
+
+    public void closeAllBuffers () {
+        myBuffers.clear();
+    }
+
+    public LispBuffer getBufferByIndex (int index) {
+        return myBuffers.get(index);
     }
 
     public void printBuffers() {

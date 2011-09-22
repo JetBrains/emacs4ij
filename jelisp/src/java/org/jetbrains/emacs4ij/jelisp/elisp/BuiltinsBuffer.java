@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
 import java.util.List;
@@ -50,14 +51,19 @@ public abstract class BuiltinsBuffer {
         if (!(arg instanceof LispString) && !(arg instanceof LispBuffer))
             throw new WrongTypeArgument("LispString or LispBuffer", arg.getClass().toString());
 
-        return (arg instanceof LispString) ? environment.getBuffer(args.get(0).toString()) : arg;
+        return (arg instanceof LispString) ? environment.getBufferByName(args.get(0).toString()) : arg;
     }
 
+    /* (other-buffer &optional BUFFER VISIBLE-OK FRAME)
+         Return most recently selected buffer other than BUFFER.
+Buffers not visible in windows are preferred to visible buffers, unless optional second argument VISIBLE-OK is non-nil.
+If the optional third argument FRAME is non-nil, use that frame's buffer list instead of the selected frame's buffer list.
+If no other buffer exists, the buffer `*scratch*' is returned.
+If BUFFER is omitted or nil, some interesting buffer is returned.
+     */
     @Subroutine(value = "other-buffer", max = 1)
     public static LispBuffer otherBuffer (Environment environment, List<LObject> args) {
-        if (args.size() == 1 && !(args.get(0) instanceof LispBuffer))
-            throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
-        if (args.size() == 0)
+        if ((args.size() == 1 && !(args.get(0) instanceof LispBuffer)) || (args.size() == 0))
             return environment.getOtherBuffer();
         return environment.getOtherBuffer(((LispBuffer)args.get(0)).getName());
     }
@@ -72,7 +78,11 @@ public abstract class BuiltinsBuffer {
      */
     @Subroutine(value = "set-buffer", exact = 1)
     public static LObject setBuffer (Environment environment, List<LObject> args) {
-        return getBuffer(environment, args);
+        LObject lispObject = getBuffer(environment, args);
+        if (lispObject.equals(LispSymbol.ourNil)) {
+            throw new NoBufferException(args.get(0).toString());
+        }
+        return lispObject;
     }
 
     /*
@@ -106,26 +116,37 @@ public abstract class BuiltinsBuffer {
     //todo: interactive
     @Subroutine(value = "switch-to-buffer", min = 1, max = 2)
     public static LObject switchToBuffer (Environment environment, List<LObject> args) {
-        //TODO: make it ok
-        /*
+
         LObject b = args.get(0);
+        boolean noRecord = false;
+        if (args.size()>1) {
+            if (!(args.get(1).equals(LispSymbol.ourNil)))
+                noRecord = true;
+        }
         if (b.equals(LispSymbol.ourNil)) {
+            if (!noRecord) {
+                //todo: switch Editor
+            }
             return environment.getOtherBuffer();    
         }
         if (b instanceof LispString) {
-            LObject buf = environment.getBuffer(((LispString)b).toString());
+            LObject buf = environment.getBufferByName(b.toString());
             if (buf.equals(LispSymbol.ourNil)) {
-                // todo: create a new buffer with that name.  Interactively, if
-                   // `confirm-nonexistent-file-or-buffer' is non-nil, request
-                   // confirmation before creating a new buffer
-
-
+                return new LispString("It is not allowed to create files this way.");
+                // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
+                //? : where to create a buffer?
             }
-
-            
-        }   */
-
-
+            if (!noRecord) {
+                //todo: switch Editor
+            }
+            return buf;
+        }
+        if (b instanceof LispBuffer) {
+            if (!noRecord) {
+                //todo: switch Editor
+            }
+            return b;
+        }
         if (args.size() == 1 && !(args.get(0) instanceof LispBuffer))
             throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
         return null;

@@ -2,6 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +32,6 @@ public class BuiltinsBufferTest {
 
     @Test  (expected = EnvironmentException.class)
     public void testBufferSize() {
-       // LispBuffer b = new LispBuffer("buffer1");
         LispObject lispObject = BuiltinsBuffer.bufferSize(environment, p(LispSymbol.ourNil));
         Assert.assertEquals(new LispInteger(0), lispObject);
     }
@@ -40,4 +41,15 @@ public class BuiltinsBufferTest {
         LispBuffer currentBuffer = BuiltinsBuffer.getCurrentBuffer(environment, null);
         Assert.assertEquals("*scratch*", currentBuffer.getName());
     }
+
+    @Test (expected = WrongTypeArgument.class)
+    public void testSetBufferWrongType() {
+        BuiltinsBuffer.setBuffer(environment, p(new LispInteger(5)));
+    }
+
+    @Test (expected = NoBufferException.class)
+    public void testSetBufferNoBuffer() {
+        BuiltinsBuffer.setBuffer(environment, p(new LispString("hello.lisp")));
+    }
+
 }
