@@ -5,9 +5,11 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,6 +80,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LObject lispObject = eval("(get-buffer (current-buffer))");
         Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), lispObject);
     }
+
+    @Test
+    public void testGetBuffer_NonExistent() {
+        LObject lispObject = eval("(get-buffer \"test.txt\")");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
 
     @Test
     public void testBufferSize() {
@@ -195,42 +204,144 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , fileEditorManager.getSelectedTextEditor());
     }
 
-
-
-
-    /*@Test
-    public void testSwitchToBuffer () {
-
-        LObject lispObject = eval("(switch-to-buffer)");
-
-    }     */
-
-
-    /*@Ignore
-    public void testSwitchToBufferByName () {
-        LispObject lispObject = eval("(switch-to-buffer \"1.txt\")");
-        Assert.assertEquals(new LispString("1.txt"), lispObject);
+    @Test
+    public void testSetBuffer_String () {
+        LObject lispObject = eval("(set-buffer \"" + myTestFiles[0] + "\")");
+        Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
     }
 
-    @Ignore
-    public void testSwitchToBufferByBuffer () {
-        LispObject lispObject = eval("(switch-to-buffer (get-buffer \"2.txt\"))");
-        Assert.assertEquals(new LispString("2.txt"), lispObject);
-    } */
+    @Test
+    public void testSetBuffer_Buffer () {
+        LObject lispObject = eval("(set-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
+    }
 
-/*
-        mySymbols.put("set-buffer", new LispSymbol("set-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("switch-to-buffer", new LispSymbol("switch-to-buffer", LispSymbol.FunctionType.BuiltIn));
-   */
+    @Test
+    public void testSetBuffer_WrongParameter () {
+        try {
+            eval("(set-buffer 5)");
+        } catch (WrongTypeArgument e) {
+            return;
+        }
+        Assert.assertEquals(0, 1);
+    }
+
+    @Test
+    public void testPoint() {
+        LObject lispObject = eval("(point)");
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        int point = fileEditorManager.getSelectedTextEditor().logicalPositionToOffset(fileEditorManager.getSelectedTextEditor().getCaretModel().getLogicalPosition()) + 1;
+        Assert.assertEquals(new LispInteger(point), lispObject);
+    }
+
+    @Test
+    public void testPointMin() {
+        LObject lispObject = eval("(point-min)");
+        Assert.assertEquals(new LispInteger(1), lispObject);
+    }
+
+    @Test
+    public void testPointMax() {
+        LObject lispObject = eval("(point-max)");
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        int pointMax = fileEditorManager.getSelectedTextEditor().getDocument().getTextLength()+1;
+        Assert.assertEquals(new LispInteger(pointMax), lispObject);
+    }
+
+    @Test
+    public void testGoToChar () {
+        LObject lispObject = eval("(goto-char 5)");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().point(), 5);
+    }
+
+    @Test
+    public void testGoToChar_End () {
+        LObject lispObject = eval("(goto-char 50)");
+        Assert.assertEquals(new LispInteger(50), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMax(), myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testGoToChar_Begin () {
+        LObject lispObject = eval("(goto-char -50)");
+        Assert.assertEquals(new LispInteger(-50), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMin(), myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testForwardChar_NoParam () {
+        int from = myEnvironment.getCurrentBuffer().point();
+        LObject lispObject = eval("(forward-char)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(from+1, myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testForwardChar () {
+        int from = myEnvironment.getCurrentBuffer().point();
+        LObject lispObject = eval("(forward-char 5)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(from+5, myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testForwardChar_End () {
+        LObject lispObject = eval("(forward-char 50)");
+        Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMax(), myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testForwardChar_Begin () {
+        LObject lispObject = eval("(forward-char -50)");
+        Assert.assertEquals(new LispSymbol("Beginning of buffer"), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMin(), myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testBackwardChar_NoParam () {
+        myEnvironment.getCurrentBuffer().forwardChar(2);
+        int from = myEnvironment.getCurrentBuffer().point();
+        LObject lispObject = eval("(backward-char)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(from-1, myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testBackwardChar () {
+        myEnvironment.getCurrentBuffer().forwardChar(3);
+        int from = myEnvironment.getCurrentBuffer().point();
+        LObject lispObject = eval("(backward-char 2)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(from-2, myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testBackwardChar_End () {
+        LObject lispObject = eval("(backward-char 50)");
+        Assert.assertEquals(new LispSymbol("Beginning of buffer"), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMin(), myEnvironment.getCurrentBuffer().point());
+    }
+
+    @Test
+    public void testBackwardChar_Begin () {
+        LObject lispObject = eval("(backward-char -50)");
+        Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMax(), myEnvironment.getCurrentBuffer().point());
+    }
+
+
+
+
+
 
 
     /*
-        mySymbols.put("point", new LispSymbol("point", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("point-min", new LispSymbol("point-min", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("point-max", new LispSymbol("point-max", LispSymbol.FunctionType.BuiltIn));
+
         mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
-        mySymbols.put("goto-char", new LispSymbol("goto-char", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("forward-char", new LispSymbol("forward-char", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("backward-char", new LispSymbol("backward-char", LispSymbol.FunctionType.BuiltIn));
-     */
+
+         */
+
+
 }
