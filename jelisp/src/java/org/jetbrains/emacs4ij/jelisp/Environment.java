@@ -22,6 +22,8 @@ public class Environment {
     private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
     private Environment myOuterEnv;
 
+    private boolean selectionManagedBySubroutine = false;
+
     public static String ourEmacsPath = "";
     private final Environment myGlobalEnvironment;
 
@@ -36,6 +38,14 @@ public class Environment {
     public Environment (@NotNull final Environment outerEnv) {
         myOuterEnv = outerEnv;
         myGlobalEnvironment = outerEnv.getGlobalEnvironment();
+    }
+
+    public boolean isSelectionManagedBySubroutine() {
+        return selectionManagedBySubroutine;
+    }
+
+    public void setSelectionManagedBySubroutine(boolean selectionManagedBySubroutine) {
+        this.selectionManagedBySubroutine = selectionManagedBySubroutine;
     }
 
     public Environment getGlobalEnvironment() {
@@ -181,11 +191,7 @@ public class Environment {
         int newCurrentBufferIndex = getIndexByName(bufferName);
         if (newCurrentBufferIndex == -1)
             throw new EnvironmentException("this buffer is not opened");
-        //LispBuffer newCurrentBuffer = myBuffers.get(newCurrentBufferIndex);
-
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
-        //myBuffers.remove(newCurrentBufferIndex);
-        //myBuffers.add(newCurrentBuffer);
     }
 
     public LObject getBufferByName(String bufferName) {
@@ -243,6 +249,14 @@ public class Environment {
             System.out.print(myBuffers.get(i).getName()+"; ");
         }
         System.out.println();
+    }
+
+    public String[] getBuffersNames () {
+        String[] buffersNames = new String[getBuffersSize()];
+        for (int i=0; i!=getBuffersSize(); ++i) {
+            buffersNames[i] = myBuffers.get(i).getName();
+        }
+        return buffersNames;
     }
 
 }

@@ -1,6 +1,9 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
@@ -17,6 +20,11 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 public class IdeaEditor extends LispObject implements LispBuffer {
     private String myName;
     private Editor myEditor;
+
+    public IdeaEditor (String name,Editor editor) {
+        myName = name;
+        myEditor = editor;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -38,9 +46,8 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         return result;
     }
 
-    public IdeaEditor (String name,Editor editor) {
-        myName = name;
-        myEditor = editor;
+    public Editor getEditor() {
+        return myEditor;
     }
 
     @Override
@@ -101,5 +108,16 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     @Override
     public String forwardChar (int shift) {
         return gotoChar(point() + shift);
+    }
+
+    @Override
+    public void setBufferActive () {
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());
+        VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
+        for (VirtualFile file: openedFiles) {
+            if (file.getName().equals(myName)) {
+                fileEditorManager.openTextEditor(new OpenFileDescriptor(myEditor.getProject(), file), true);
+            }
+        }
     }
 }

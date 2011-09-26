@@ -1,13 +1,14 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
-import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,7 +76,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testGetBufferByBuffer() {
         LObject lispObject = eval("(get-buffer (current-buffer))");
-        Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length-1]), lispObject);
+        Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), lispObject);
     }
 
     @Test
@@ -136,6 +137,73 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
     }
 
+    @Test
+    public void testEnvironment_GetBuffersNames() {
+        String[] buffersNames = myEnvironment.getBuffersNames();
+        Assert.assertArrayEquals(myTestFiles, buffersNames);
+    }
+
+    @Test
+    public void testSwitchToBuffer_NoArgs() {
+        try {
+            eval("(switch-to-buffer)");
+        } catch (WrongNumberOfArgumentsException e) {
+            //success
+            return;
+        }
+        Assert.assertEquals(0, 1);
+    }
+
+    @Test
+    public void testSwitchToBuffer_Nil() {
+        LObject lispObject = eval("(switch-to-buffer nil)");
+        Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().getEditor() , fileEditorManager.getSelectedTextEditor());
+    }
+
+    @Test
+    public void testSwitchToBuffer_ExistentString() {
+        LObject lispObject = eval("(switch-to-buffer \"" + myTestFiles[0] + "\")");
+        Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().getEditor() , fileEditorManager.getSelectedTextEditor());
+
+    }
+
+    @Test
+    public void testSwitchToBuffer_NonExistentString() {
+        LObject lispObject = eval("(switch-to-buffer \"test.txt\")");
+        Assert.assertEquals(new LispString("It is not allowed to create files this way."), lispObject);
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().getEditor() , fileEditorManager.getSelectedTextEditor());
+    }
+
+    @Test
+    public void testSwitchToBuffer_Buffer() {
+        LObject lispObject = eval("(switch-to-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        Assert.assertEquals(myEnvironment.getCurrentBuffer(), lispObject);
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        Assert.assertEquals(myEnvironment.getCurrentBuffer().getEditor() , fileEditorManager.getSelectedTextEditor());
+    }
+
+    @Test
+    public void testSwitchToBuffer_ExistentString_NoRecord() {
+        LObject lispObject = eval("(switch-to-buffer \"" + myTestFiles[0] + "\" 5)");
+        Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
+        Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , fileEditorManager.getSelectedTextEditor());
+    }
+
+
+
+
+    /*@Test
+    public void testSwitchToBuffer () {
+
+        LObject lispObject = eval("(switch-to-buffer)");
+
+    }     */
 
 
     /*@Ignore

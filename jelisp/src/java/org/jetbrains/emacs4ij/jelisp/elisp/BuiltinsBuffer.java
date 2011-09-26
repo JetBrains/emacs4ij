@@ -116,40 +116,43 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
     //todo: interactive
     @Subroutine(value = "switch-to-buffer", min = 1, max = 2)
     public static LObject switchToBuffer (Environment environment, List<LObject> args) {
-
         LObject b = args.get(0);
         boolean noRecord = false;
         if (args.size()>1) {
             if (!(args.get(1).equals(LispSymbol.ourNil)))
                 noRecord = true;
         }
+        environment.setSelectionManagedBySubroutine(true);
         if (b.equals(LispSymbol.ourNil)) {
+            LispBuffer buffer = environment.getOtherBuffer();
+            buffer.setBufferActive();
             if (!noRecord) {
-                //todo: switch Editor
+                environment.setCurrentBuffer(buffer.getName());
             }
-            return environment.getOtherBuffer();    
+            return buffer;
         }
         if (b instanceof LispString) {
-            LObject buf = environment.getBufferByName(b.toString());
-            if (buf.equals(LispSymbol.ourNil)) {
+            LObject buffer = environment.getBufferByName(b.toString());
+            if (buffer.equals(LispSymbol.ourNil)) {
                 return new LispString("It is not allowed to create files this way.");
                 // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
                 //? : where to create a buffer?
             }
+            ((LispBuffer)buffer).setBufferActive();
             if (!noRecord) {
-                //todo: switch Editor
+                environment.setCurrentBuffer(((LispBuffer)buffer).getName());
             }
-            return buf;
+            return buffer;
         }
         if (b instanceof LispBuffer) {
+            //todo:  If the selected window is the minibuffer window or dedicated to its buffer, use `pop-to-buffer' for displaying the buffer.
+            ((LispBuffer)b).setBufferActive();
             if (!noRecord) {
-                //todo: switch Editor
+                environment.setCurrentBuffer(((LispBuffer)b).getName());
             }
             return b;
         }
-        if (args.size() == 1 && !(args.get(0) instanceof LispBuffer))
-            throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
-        return null;
+        throw new WrongTypeArgument("LispBuffer or LispString or nil", args.get(0).getClass().toString());
     }
 
     @Subroutine(value = "point", max = 0)

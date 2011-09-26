@@ -68,7 +68,10 @@ public class MyProjectComponent implements ProjectComponent {
                     return;
                 }
                 try {
-                    myEnvironment.setCurrentBuffer(fileEditorManagerEvent.getNewFile().getName());
+                    if (!(myEnvironment.isSelectionManagedBySubroutine()))
+                        myEnvironment.setCurrentBuffer(fileEditorManagerEvent.getNewFile().getName());
+                    else myEnvironment.setSelectionManagedBySubroutine(false);
+
                     System.out.print("select: ");
                     myEnvironment.printBuffers();
                 } catch (EnvironmentException e) {
