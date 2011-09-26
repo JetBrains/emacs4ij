@@ -12,6 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -216,6 +217,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
     }
 
+    @Ignore
+    @Test
+    public void testSetBuffer_InProgn () {
+        //todo: (progn (set-buffer "0.txt") (buffer-name)) => "1.txt"; but outside progn (buffer-name) => "3.txt"
+        //throw new RuntimeException("not implemented!");
+    }
+
     @Test
     public void testSetBuffer_WrongParameter () {
         try {
@@ -331,17 +339,5 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMax(), myEnvironment.getCurrentBuffer().point());
     }
 
-
-
-
-
-
-
-    /*
-
-        mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
-
-         */
-
-
+    //mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
 }

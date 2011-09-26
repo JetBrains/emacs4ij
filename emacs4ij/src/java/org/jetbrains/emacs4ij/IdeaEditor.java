@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
@@ -56,7 +57,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LispObject evaluate(Environment environment) {
+    public LObject evaluate(Environment environment) {
         throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
     }
 

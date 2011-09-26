@@ -51,7 +51,7 @@ public class LispString extends LispAtom {
     /**
      * no parameters required
      */
-    public LispObject evaluate(Environment environment) {
+    public LObject evaluate(Environment environment) {
         return this;
     }
 }

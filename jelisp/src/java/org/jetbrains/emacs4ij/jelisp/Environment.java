@@ -1,7 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
@@ -65,6 +68,7 @@ public class Environment {
         mySymbols.put("if", new LispSymbol("if", LispSymbol.FunctionType.SpecialForm));
         mySymbols.put("while", new LispSymbol("while", LispSymbol.FunctionType.SpecialForm));
         mySymbols.put("cond", new LispSymbol("cond", LispSymbol.FunctionType.SpecialForm));
+        mySymbols.put("progn", new LispSymbol("progn", LispSymbol.FunctionType.SpecialForm));
 
         mySymbols.put("+", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
         mySymbols.put("*", new LispSymbol("*", LispSymbol.FunctionType.BuiltIn));
@@ -138,7 +142,7 @@ public class Environment {
 
     }   */
 
-    public LispObject find(String name, String methodName) {
+    public LObject find(String name, String methodName) {
         return find(name, methodName, null);
     }
 
@@ -146,7 +150,7 @@ public class Environment {
         return (LispSymbol) find(name, "", null);
     }
 
-    public LispObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
+    public LObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
         LispSymbol lispObject = mySymbols.get(name);
         if (lispObject != null)
             return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);

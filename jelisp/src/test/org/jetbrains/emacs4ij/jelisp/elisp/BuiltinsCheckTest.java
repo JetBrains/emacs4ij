@@ -24,7 +24,7 @@ public class BuiltinsCheckTest {
         environment = new Environment(new Environment());
     }
 
-    private List<LispObject> p(LispObject... objects) {
+    private List<LObject> p(LObject... objects) {
         return Arrays.asList(objects);
     }
 
@@ -54,7 +54,10 @@ public class BuiltinsCheckTest {
 
     @Test
     public void testSubrp() throws Exception {
-        //todo: implement
+        //TODO: non nil
+
+        LispObject lispObject = BuiltinsCheck.subrp(environment, p(new LispInteger(1)));
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
 }

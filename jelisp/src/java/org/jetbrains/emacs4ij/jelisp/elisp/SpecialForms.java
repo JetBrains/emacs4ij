@@ -27,7 +27,7 @@ public abstract class SpecialForms {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
                 LispList valueForm = ((LispList) var).cdr();
-                LispObject value = valueForm.car().evaluate(inner);
+                LObject value = valueForm.car().evaluate(inner);
                 symbol.setValue(value);
 
                 if (isStar)
@@ -55,7 +55,7 @@ public abstract class SpecialForms {
             }
     }
 
-    private static LispObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
+    private static LObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
         /* (let(*) VARLIST BODY...)
         Bind variables according to VARLIST then eval BODY.
         The value of the last form in BODY is returned.
@@ -70,7 +70,7 @@ public abstract class SpecialForms {
         bindLetVariables(isStar, inner, varList);
 
         // eval body
-        LispObject result = LispSymbol.ourNil;
+        LObject result = LispSymbol.ourNil;
         for (int i=1; i!=args.size(); ++i) {
             result = args.get(i).evaluate(inner);
         }
@@ -78,27 +78,27 @@ public abstract class SpecialForms {
     }
 
     @Subroutine(value = "quote", exact = 1)
-    public static LispObject quote(Environment environment, List<LispObject> args) {
+    public static LObject quote(Environment environment, List<LispObject> args) {
         return args.get(0);
     }
     
     @Subroutine("defmacro")
-    public static LispObject defineMacro (Environment environment, List<LispObject> args) {
+    public static LObject defineMacro (Environment environment, List<LispObject> args) {
         throw new NotImplementedException();
     }
 
     @Subroutine("let")
-    public static LispObject let (Environment environment, List<LispObject> args) {
+    public static LObject let (Environment environment, List<LispObject> args) {
         return executeLet(false, environment, args);
     }
 
     @Subroutine("let*")
-    public static LispObject letStar (Environment environment, List<LispObject> args) {
+    public static LObject letStar (Environment environment, List<LispObject> args) {
         return executeLet(true, environment, args);
     }
 
     @Subroutine("interactive")
-    public static LispObject interactive(Environment environment, List<LispObject> args) {
+    public static LObject interactive(Environment environment, List<LispObject> args) {
         throw new NotImplementedException();
 
         /*if (args.size() > 1) {
@@ -107,7 +107,7 @@ public abstract class SpecialForms {
         if (args.size() == 1) {
             LispObject a = args.get(0);
             if (!(a instanceof LispString)) {
-                LispObject result = a.evaluate(environment);
+                LObject result = a.evaluate(environment);
                 if (result instanceof LispList)
                     return result;
                 throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
@@ -118,8 +118,8 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("cond")
-    public static LispObject cond(Environment environment, List<LispObject> args) {
-        LispObject result = LispSymbol.ourNil;
+    public static LObject cond(Environment environment, List<LispObject> args) {
+        LObject result = LispSymbol.ourNil;
         for (int i=0; i!=args.size(); ++i) {
             LispObject clause = args.get(i);
             if (!(clause instanceof LispList)) {
@@ -129,7 +129,7 @@ public abstract class SpecialForms {
             }
             if (((LispList) clause).isEmpty())
                 continue;
-            LispObject condition = ((LispList) clause).car().evaluate(environment);
+            LObject condition = ((LispList) clause).car().evaluate(environment);
             if (condition != LispSymbol.ourNil) {
                 List<LObject> data = ((LispList) clause).cdr().getData();
                 result = condition;
@@ -141,9 +141,9 @@ public abstract class SpecialForms {
         return result;
     }
     @Subroutine(value = "while", min = 1)
-    public static LispObject lispWhile(Environment environment, List<LispObject> args) {
+    public static LObject lispWhile(Environment environment, List<LispObject> args) {
         Environment inner = new Environment(environment);
-        LispObject condition = args.get(0).evaluate(inner);
+        LObject condition = args.get(0).evaluate(inner);
         while (condition != LispSymbol.ourNil) {
             for (int i = 1; i != args.size(); ++i)
                 args.get(i).evaluate(inner);
@@ -152,22 +152,22 @@ public abstract class SpecialForms {
         return condition;
     }
     @Subroutine(value = "if", min = 1)
-    public static LispObject lispIf(Environment environment, List<LispObject> args) {
-        LispObject condition = args.get(0).evaluate(environment);
+    public static LObject lispIf(Environment environment, List<LispObject> args) {
+        LObject condition = args.get(0).evaluate(environment);
         if (condition != LispSymbol.ourNil) {
             if (args.size() > 1)
                 return args.get(1).evaluate(environment);
             return LispSymbol.ourT;
         }
-        LispObject result = LispSymbol.ourNil;
+        LObject result = LispSymbol.ourNil;
         for (int i=2; i<args.size(); ++i) {
             result = args.get(i).evaluate(environment);
         }
         return result;
     }
     @Subroutine("and")
-    public static LispObject lispAnd(Environment environment, List<LispObject> args) {
-        LispObject result = LispSymbol.ourT;
+    public static LObject lispAnd(Environment environment, List<LispObject> args) {
+        LObject result = LispSymbol.ourT;
         for (int i=0; i!=args.size(); ++i) {
             result = args.get(i).evaluate(environment);
             if (result == LispSymbol.ourNil)
@@ -176,18 +176,18 @@ public abstract class SpecialForms {
         return result;
     }
     @Subroutine("or")
-    public static LispObject lispOr(Environment environment, List<LispObject> args) {
+    public static LObject lispOr(Environment environment, List<LispObject> args) {
         for (int i=0; i!=args.size(); ++i) {
-            LispObject result = args.get(i).evaluate(environment);
+            LObject result = args.get(i).evaluate(environment);
             if (result != LispSymbol.ourNil)
                 return result;
         }
         return LispSymbol.ourNil;
     }
     @Subroutine(value = "defvar", min = 1, max = 3)
-    public static LispObject defineVariable(Environment environment, List<LispObject> args) {
+    public static LObject defineVariable(Environment environment, List<LispObject> args) {
         String name = ((LispSymbol) args.get(0)).getName();
-        LispSymbol  variable = environment.find(name);
+        LispSymbol variable = environment.find(name);
         if (variable == null) {
             variable = (LispSymbol) args.get(0);
             if (args.size() > 1)
@@ -210,7 +210,7 @@ public abstract class SpecialForms {
         return args.get(0);
     }
     @Subroutine(value = "defun", min = 2)
-    public static LispObject defineFunction(Environment environment, List<LispObject> args) {
+    public static LObject defineFunction(Environment environment, List<LispObject> args) {
         String name = ((LispSymbol) args.get(0)).getName();
         LispSymbol symbol = environment.find(name);
         LispSymbol f = symbol != null ? symbol : (LispSymbol) args.get(0);
@@ -334,6 +334,17 @@ public abstract class SpecialForms {
             }
         }
         return args;
+    }
+
+    @Subroutine("progn")
+    public static LObject progn (Environment environment, List<LObject> args) {
+        Environment inner = new Environment(environment);
+
+        LObject result = LispSymbol.ourNil;
+        for (int i=0; i!=args.size(); ++i) {
+            result = args.get(i).evaluate(inner);
+        }
+        return result;
     }
 
 }

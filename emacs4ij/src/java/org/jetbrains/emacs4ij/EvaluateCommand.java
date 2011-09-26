@@ -8,7 +8,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 
 import javax.swing.*;
 
@@ -50,7 +50,7 @@ public class EvaluateCommand extends AnAction {
         try {
             Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
             Parser parser = new Parser();
-            LispObject lispObject = parser.parseLine(parameterValue).evaluate(environment);
+            LObject lispObject = parser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(lispObject.toString(), "Evaluation result");
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");

@@ -16,8 +16,9 @@ import java.util.List;
 public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
+    //TODO: symbol-function <subroutine> must return LispObject subroutine
     @Subroutine(value = "symbol-function", exact = 1)
-    public static LispObject symbolFunction(Environment environment, List<LispObject> args) {
+    public static LObject symbolFunction(Environment environment, List<LObject> args) {
         if (!(args.get(0) instanceof LispSymbol))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString());
         try {
@@ -28,7 +29,7 @@ public abstract class BuiltinsSymbol {
         }
     }
     @Subroutine(value = "get", exact = 2)
-    public static LispObject get(Environment environment, List<LispObject> args) {
+    public static LObject get(Environment environment, List<LObject> args) {
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString() + " and " + args.get(1).getClass().toString());
         LispSymbol symbol = (LispSymbol) args.get(0);
@@ -36,12 +37,12 @@ public abstract class BuiltinsSymbol {
         return environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, property);
     }
     @Subroutine(value = "put", exact = 3)
-    public static LispObject put(Environment environment, List<LispObject> args) {
+    public static LObject put(Environment environment, List<LObject> args) {
         if ((!(args.get(0) instanceof LispSymbol)) || (!(args.get(1) instanceof LispSymbol)))
             throw new WrongTypeArgument("LispSymbol", args.get(0).getClass().toString() + " and " + args.get(1).getClass().toString());
         LispSymbol symbol = (LispSymbol) args.get(0);
         LispSymbol property = (LispSymbol) args.get(1);
-        LispObject value = args.get(2);
+        LObject value = args.get(2);
         environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LispObject.class}, property, value);
         return value;
     }

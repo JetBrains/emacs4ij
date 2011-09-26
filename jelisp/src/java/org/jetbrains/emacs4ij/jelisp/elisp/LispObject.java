@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 public abstract class LispObject implements LObject {
 
     @Override
-    public LispObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
+    public LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
         try {
             Method m = this.getClass().getMethod(methodName, parameterTypes);
             LispObject result = (LispObject) m.invoke(this, methodParameters);

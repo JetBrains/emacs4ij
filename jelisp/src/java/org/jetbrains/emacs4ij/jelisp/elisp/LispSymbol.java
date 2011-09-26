@@ -63,7 +63,7 @@ public class LispSymbol extends LispAtom {
         return myValue;
     }
 
-    public void setValue(LispObject myValue) {
+    public void setValue(LObject myValue) {
         this.myValue = myValue;
     }
 
@@ -117,14 +117,14 @@ public class LispSymbol extends LispAtom {
     /**
      * takes Environment
      */
-    public LispObject evaluate(Environment environment) {
-        LispObject lispObject = environment.find(myName, "getValue");
+    public LObject evaluate(Environment environment) {
+        LObject lispObject = environment.find(myName, "getValue");
         if (lispObject == null || lispObject.equals(LispSymbol.ourVoid))
             throw new VoidVariableException(myName);
         return lispObject;
     }
 
-    public LispObject evaluateFunction (Environment environment, List<LObject> args) {
+    public LObject evaluateFunction (Environment environment, List<LObject> args) {
 
         if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
             return LispSubroutine.evaluate(this, environment, args);
@@ -151,7 +151,7 @@ public class LispSymbol extends LispAtom {
                 if (((LispList)functionData.get(index)).car().equals(new LispSymbol("interactive")))
                     ++index;
             }
-            LispObject result = LispSymbol.ourNil;
+            LObject result = LispSymbol.ourNil;
             for (; index != functionData.size(); ++index) {
                 result = functionData.get(index).evaluate(inner);
             }

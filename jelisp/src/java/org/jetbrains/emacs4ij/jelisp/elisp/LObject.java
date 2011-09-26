@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 public interface LObject {
     LispString toLispString();
 
-    LispObject evaluate(Environment environment);
+    LObject evaluate(Environment environment);
 
-    LispObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters);
+    LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters);
 }

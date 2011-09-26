@@ -63,7 +63,7 @@ public class LispList extends LispObject {
      * @param environment@return the result of last function execution
      */
     @Override
-    public LispObject evaluate(Environment environment) {
+    public LObject evaluate(Environment environment) {
         if (isEmpty())
             return LispSymbol.ourNil;
 

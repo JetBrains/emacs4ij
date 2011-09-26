@@ -38,8 +38,7 @@ public class BuiltinsBufferTest {
 
     @Test (expected = EnvironmentException.class)
     public void testCurrentBuffer () {
-        LispBuffer currentBuffer = BuiltinsBuffer.getCurrentBuffer(environment, null);
-        Assert.assertEquals("*scratch*", currentBuffer.getName());
+        BuiltinsBuffer.getCurrentBuffer(environment, null);
     }
 
     @Test (expected = WrongTypeArgument.class)
