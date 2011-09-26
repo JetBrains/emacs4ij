@@ -17,12 +17,14 @@ public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
     @Subroutine(value = "current-buffer", max = 0)
-    public static LispBuffer getCurrentBuffer(Environment environment, List<LObject> args) {
+    public static LispBuffer getCurrentBuffer(Environment environment) {
         return environment.getCurrentBuffer();
     }
 
     @Subroutine(value = "buffer-size", max = 1)
     public static LispObject bufferSize(Environment environment, List<LObject> args) {
+
+
         if (args.size() == 1 && !(args.get(0) instanceof LispBuffer) && !(args.get(0).equals(LispSymbol.ourNil)))
             throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
         LispBuffer buffer = (args.size() == 0 || args.get(0).equals(LispSymbol.ourNil)) ? environment.getCurrentBuffer() : (LispBuffer) args.get(0);

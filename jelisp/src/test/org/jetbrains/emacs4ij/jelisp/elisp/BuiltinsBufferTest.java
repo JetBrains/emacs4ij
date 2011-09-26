@@ -38,7 +38,7 @@ public class BuiltinsBufferTest {
 
     @Test (expected = EnvironmentException.class)
     public void testCurrentBuffer () {
-        BuiltinsBuffer.getCurrentBuffer(environment, null);
+        BuiltinsBuffer.getCurrentBuffer(environment);
     }
 
     @Test (expected = WrongTypeArgument.class)

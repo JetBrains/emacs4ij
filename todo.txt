@@ -1,9 +1,14 @@
+- symbol-function: subroutine lisp object
+- progn environment, set-buffer
+- interactive
+- minibuffer
+- buffer markers
+
 2. changeable Emacs location
 3. defmacro
 4. defcustom
 5. index Emacs sources and load them on start
 6. next-buffer
-7. minibuffer implementation
-8. interactive
 
+when idea project is loaded should all the files be read as buffers?
 

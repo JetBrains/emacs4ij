@@ -14,52 +14,53 @@ import java.util.List;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
-    @Subroutine(value = "+")
-    public static LispObject plus (Environment environment, List<LispObject> args) {
+    //todo: accept FLOAT and MARKERS
+    @Subroutine("+")
+    public static LispInteger plus (@Optional List<LispInteger> args) {
         int ans = 0;
-        for (LispObject lispObject: args) {
-            if (lispObject.equals(LispSymbol.ourNil))
-                break;
-            ans += ((LispInteger)lispObject).getData();
-        }
-        return new LispInteger(ans);
-    }
-    @Subroutine(value = "*")
-    public static LispObject multiply (Environment environment, List<LispObject> args) {
-        int ans = 1;
-        for (LispObject lispObject: args) {
-            ans *= ((LispInteger)lispObject).getData();
-        }
-        return new LispInteger(ans);
-    }
-    @Subroutine(value = "set", exact = 2)
-    public static LObject set (Environment environment, List<LispObject> args) {
-        LispSymbol variable;
-        String varName = ((LispSymbol)args.get(0)).getName();
-        try {
-            variable = environment.find(varName);
-            if (!variable.getValue().equals(args.get(1))) {
-                variable.setValue(args.get(1));
-                environment.defineSymbol(variable);
+        if (args != null) {
+            for (LispInteger lispObject: args) {
+                ans += lispObject.getData();
             }
-        } catch (RuntimeException e) {
-            variable = new LispSymbol(varName, args.get(1));
-            environment.defineSymbol(variable);
         }
-        return variable.getValue();
+        return new LispInteger(ans);
     }
-    @Subroutine(value = "eq", exact = 2)
-    public static LispObject eq (Environment environment, List<LispObject> args) {
-        if (args.get(0).equals(args.get(1)))
+    //todo: accept FLOAT and MARKERS
+    @Subroutine("*")
+    public static LispInteger multiply (List<LispInteger> args) {
+        int ans = 1;
+        for (LispInteger lispObject: args) {
+            ans *= lispObject.getData();
+        }
+        return new LispInteger(ans);
+    }
+
+    @Subroutine("set")
+    public static LObject set (Environment environment, LispSymbol variable, LObject value) {
+        LispSymbol envVar = environment.find(variable.getName());
+        if (envVar == null) {
+            environment.defineSymbol(new LispSymbol(variable.getName(), value));
+        } else if (!envVar.getValue().equals(value)) {
+            envVar.setValue(value);
+            environment.defineSymbol(envVar);
+        }
+        return value;
+    }
+
+    @Subroutine("eq")
+    public static LispObject eq (LObject one, LObject two) {
+        if (one.equals(two))
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
-    @Subroutine(value = "null", exact = 1)
-    public static LispObject lispNull (Environment environment, List<LispObject> args) {
-        return (args.get(0) == LispSymbol.ourNil) ? LispSymbol.ourT : LispSymbol.ourNil;
+
+    @Subroutine(value = "null")
+    public static LispObject lispNull (LObject lObject) {
+        return lObject.equals(LispSymbol.ourNil) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Subroutine(value = "not", exact = 1)
-    public static LispObject lispNot (Environment environment, List<LispObject> args) {
-        return lispNull(environment, args);
+
+    @Subroutine(value = "not")
+    public static LispObject lispNot (LObject lObject) {
+        return lispNull(lObject);
     }
 }

@@ -30,8 +30,15 @@ public class BuiltinsCoreTest {
 
     @Test
     public void testPlus() throws LispException {
-        LObject LObject = evaluateString("(+ 2 2)");
-        Assert.assertEquals(new LispInteger(4), LObject);
+        LObject lispObject = evaluateString("(+ 2 2)");
+        Assert.assertEquals(new LispInteger(4), lispObject);
+    }
+
+    @Test
+    public void testPlusEmpty () {
+        LObject lispObject = evaluateString("(+)");
+        Assert.assertEquals(new LispInteger(0), lispObject);
+
     }
 
     @Test
@@ -44,29 +51,29 @@ public class BuiltinsCoreTest {
     public void testSetVar() throws LispException {
         LObject value = evaluateString("(set 'var (+ 2 3))");
         Assert.assertEquals("set return value assertion", new LispInteger(5), value);
-        LObject LObject = evaluateString("var");
-        Assert.assertEquals(new LispInteger(5), LObject);
+        LObject lispObject = evaluateString("var");
+        Assert.assertEquals(new LispInteger(5), lispObject);
     }
 
     @Test
     public void testEq() {
-        LObject LObject = evaluateString("(eq 5 5)");
-        Assert.assertEquals(LispSymbol.ourT, LObject);
+        LObject lispObject = evaluateString("(eq 5 5)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test
     public void testNull () {
-        LObject LObject = evaluateString("(null 5)");
-        Assert.assertEquals(LispSymbol.ourNil, LObject);
-        LObject = evaluateString("(null nil)");
-        Assert.assertEquals(LispSymbol.ourT, LObject);
+        LObject lispObject = evaluateString("(null 5)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(null nil)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test
     public void testLispNot() throws Exception {
-        LObject LObject = evaluateString("(not 5)");
-        Assert.assertEquals(LispSymbol.ourNil, LObject);
-        LObject = evaluateString("(not nil)");
-        Assert.assertEquals(LispSymbol.ourT, LObject);
+        LObject lispObject = evaluateString("(not 5)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(not nil)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 }
