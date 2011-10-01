@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -47,6 +48,7 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispInteger(4), LObject);
     }
 
+    @Ignore
     @Test
     public void testSetVar() throws LispException {
         LObject value = evaluateString("(set 'var (+ 2 3))");
@@ -75,5 +77,11 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(not nil)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
+    public void testTest() {
+        LObject lispObject = evaluateString("(test 1 2 3)");
+        Assert.assertNull(lispObject);
     }
 }

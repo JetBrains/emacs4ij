@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 /**
  * Created by IntelliJ IDEA.
@@ -23,19 +24,103 @@ public abstract class LispSubroutine {
 
     private LispSubroutine() {}
 
-    private static int optionalParameters (Annotation[][] parameterAnnotations) {
-        return 0;
+    private static boolean isOptional (Annotation[] parameterAnnotations) {
+        for (Annotation a: parameterAnnotations) {
+            if (a instanceof Optional) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private static String expectedType (Type[] parameterType) {
-        return "";
+    private static void setOptional(ArgumentsList arguments, Annotation[][] parametersAnnotations, Type[] parametersTypes) {
+        boolean optional = false;
+        int nRequiredParameters = parametersAnnotations.length;
+        for (int i=0; i!=parametersAnnotations.length; ++i) {
+            if (!optional) {
+                if (isOptional(parametersAnnotations[i])) {
+                    nRequiredParameters = i;
+                    optional = true;
+                }
+            arguments.add(optional);
+            }
+        }
+        arguments.setRequiredSize(nRequiredParameters);
     }
 
-    private static String gotType (List<LObject> args) {
-        return "";
+    private static ArgumentsList parseAndCheckArguments (Method m, Environment environment, List<LObject> args) {
+        Type[] parametersTypes = m.getGenericParameterTypes();
+        Annotation[][] parametersAnnotations = m.getParameterAnnotations();
+        if (parametersAnnotations.length != parametersTypes.length) {
+            throw new RuntimeException("Parameters types and annotations lengths do not match!");
+        }
+        ArgumentsList arguments = new ArgumentsList();
+
+        setOptional(arguments, parametersAnnotations, parametersTypes);
+
+        // check arguments number
+        int nActual = args.size();
+        if (parametersTypes[0].equals(Environment.class)) {
+            ++nActual;
+            arguments.setValue(0, environment);
+        }
+
+        if ((nActual < arguments.getRequiredSize()) || (nActual > parametersTypes.length && !m.isVarArgs()))
+            throw new WrongNumberOfArgumentsException(m.getAnnotation(Subroutine.class).value() + nActual);
+
+        // check arguments types
+        int argsCounter = 0;
+
+        for (int i=0; i != arguments.getSize(); ++i) {
+            Type expectedType = parametersTypes[i];
+            if (i==0 && expectedType.equals(Environment.class))
+                continue;
+            if (ParameterizedType.class.isInstance(expectedType)) {
+                Type rawType = ((ParameterizedType) expectedType).getRawType();
+                Type expectedTypeArguments = ((ParameterizedType) expectedType).getActualTypeArguments()[0];
+                if (((Class)rawType).isInstance(args.get(argsCounter))) {
+                    Type actualTypeArguments = ((ParameterizedType) (Type)args.get(argsCounter).getClass()).getActualTypeArguments()[0];
+                    if (!expectedTypeArguments.equals(actualTypeArguments)) {
+                        throw new WrongTypeArgument(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
+                    }
+                    arguments.setValue(i, args.get(argsCounter));
+                    ++argsCounter;
+                } else {
+                    if (arguments.isOptional(i))
+                        break;
+                    throw new WrongTypeArgument(expectedType.toString(), args.get(argsCounter).toString());
+                }
+            } else if (((Class)expectedType).isArray()) {
+                Class componentType = ((Class)expectedType).getComponentType();
+                ArrayList array = new ArrayList();
+                while (argsCounter != args.size() && componentType.isInstance(args.get(argsCounter))) {
+                    array.add(args.get(argsCounter));
+                    ++argsCounter;
+                }
+
+                /*if (parametersTypes.length == 1) {
+                    arguments.setValues(array.toArray());
+                    break;
+                } else */
+                //Object[] qqq = array.toArray();
+                arguments.setValue(i, array.toArray());
+
+            }
+
+            else {
+                if (!(((Class)expectedType).isInstance(args.get(argsCounter)))) {
+                    if (arguments.isOptional(i))
+                        break;
+                    throw new WrongTypeArgument(((Class)expectedType).getSimpleName(), args.get(argsCounter).toString());
+                }
+                arguments.setValue(i, args.get(argsCounter));
+                ++argsCounter;
+            }
+        }
+        return arguments;
     }
 
-    public static LispObject evaluate(LispSymbol f, Environment environment, List<LObject> args) {
+    public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
         Class[] subroutines = null;
         String type = null;
         if (f.is(LispSymbol.FunctionType.SpecialForm)) {
@@ -52,6 +137,7 @@ public abstract class LispSubroutine {
         if (subroutines == null)
             throw new RuntimeException("invalid usage of symbol evaluation: " + f.getName());
 
+
         for (Class c: subroutines) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {
@@ -59,85 +145,21 @@ public abstract class LispSubroutine {
                 if (annotation == null)
                     continue;
                 if (annotation.value().equals(f.getName())) {
-
-                    Type[] parameterType = m.getGenericParameterTypes();
-                    Annotation[][] parameterAnnotations = m.getParameterAnnotations();
-                    if ((args.size() < optionalParameters(parameterAnnotations)) || (args.size() > parameterType.length))
-                        throw new WrongNumberOfArgumentsException(f.getName() + args.size());
-                    for (int i=0; i!=args.size(); ++i) {
-
-                        if (parameterType[i] instanceof ParameterizedType) {
-                            Type actualType = ((ParameterizedType) parameterType[0]).getActualTypeArguments()[0];
-                            Type rawType = ((ParameterizedType) parameterType[0]).getRawType();
-                            if (rawType.getClass().equals(args.get(0).getClass())) {         //or is instance?
-                                for
-
-
-                            } else {
-                                throw new WrongTypeArgument(expectedType(parameterType), gotType(args));
-                            }
-
-                        }
-                    }
-
-
-
+                    ArgumentsList arguments = parseAndCheckArguments(m, environment, args);
                     try {
-                        return (LispObject) m.invoke(null, environment, args);
+                        ArrayList<LispInteger> t = new ArrayList<LispInteger>();
+                        t.add(new LispInteger(1));
+                        t.add(new LispInteger(2));
+                        t.add(new LispInteger(3));
+                        //return (LObject) m.invoke(null, new Object[]{t.toArray()});
+                        Object[] q = arguments.getValues();
+                        return (LObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     } catch (InvocationTargetException e) {
                         e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                     }
-
                 }
-               /*     try {
-                        Type[] parameterTypes = m.getGenericParameterTypes();
-
-                        //if (args.size() != )
-                        for (Type parameterType: parameterTypes) {
-
-                            if (((Class)parameterType).isInstance(q)) {
-                                    System.out.println("yo");
-
-                                }
-
-                            if (parameterType instanceof ParameterizedType) {
-                                Type inner = ((ParameterizedType) parameterType).getActualTypeArguments()[0];
-                                if (((Class)inner).isInstance(q)) {
-                                    System.out.println("yo");
-
-                                }
-
-
-                            }
-                        }
-
-
-                        Annotation[][] aa = m.getParameterAnnotations();
-
-
-                        if (annotation.exact() != -1) {
-                            if (args.size() != annotation.exact())
-                                throw new WrongNumberOfArgumentsException(f.getName());
-                        } else {
-                            if ((annotation.min() != -1 && args.size() < annotation.min()) || (annotation.max() != -1 && args.size() > annotation.max()))
-                                throw new WrongNumberOfArgumentsException(f.getName());
-
-                        }
-                        return (LispObject) m.invoke(null, environment, args);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        throw new RuntimeException(e.getMessage());
-                    } catch (InvocationTargetException e) {
-                        if (e.getTargetException() instanceof LispException)
-                            throw (LispException) e.getTargetException();
-                        if (e.getTargetException() instanceof EnvironmentException)
-                            throw (EnvironmentException) e.getTargetException();
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        throw new RuntimeException(e.getMessage());
-                    }  */
-
             }
         }
 

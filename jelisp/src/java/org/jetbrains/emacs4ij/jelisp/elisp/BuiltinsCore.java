@@ -2,8 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -14,9 +12,14 @@ import java.util.List;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
+    @Subroutine("test")
+    public static LispObject test (LispInteger a, @Optional LispInteger b, LispInteger c) {
+        return null;
+    }
+
     //todo: accept FLOAT and MARKERS
     @Subroutine("+")
-    public static LispInteger plus (@Optional List<LispInteger> args) {
+    public static LispInteger plus (@Optional LispInteger... args) {
         int ans = 0;
         if (args != null) {
             for (LispInteger lispObject: args) {
@@ -27,7 +30,7 @@ public abstract class BuiltinsCore {
     }
     //todo: accept FLOAT and MARKERS
     @Subroutine("*")
-    public static LispInteger multiply (List<LispInteger> args) {
+    public static LispInteger multiply (@Optional LispInteger... args) {
         int ans = 1;
         for (LispInteger lispObject: args) {
             ans *= lispObject.getData();

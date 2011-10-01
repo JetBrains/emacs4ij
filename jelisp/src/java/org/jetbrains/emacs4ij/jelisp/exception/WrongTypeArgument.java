@@ -8,7 +8,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class WrongTypeArgument extends LispException {
-    public WrongTypeArgument (String expectedType, String gotType) {
-        super("Wrong type argument: expected " + expectedType + ", got " + gotType);
+    public WrongTypeArgument (String expectedType, String gotValue) {
+        super("Wrong type argument: " + expectedType + " " + gotValue);
     }
 }

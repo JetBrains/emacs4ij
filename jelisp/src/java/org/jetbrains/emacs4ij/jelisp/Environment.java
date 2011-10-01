@@ -56,6 +56,9 @@ public class Environment {
     }
 
     private void setGlobal() {
+
+        mySymbols.put("test", new LispSymbol("test", LispSymbol.FunctionType.BuiltIn));
+
         mySymbols.put("quote", new LispSymbol("quote", LispSymbol.FunctionType.SpecialForm));
         mySymbols.put("defun", new LispSymbol("defun", LispSymbol.FunctionType.SpecialForm));
         mySymbols.put("defvar", new LispSymbol("defvar", LispSymbol.FunctionType.SpecialForm));
