@@ -1,13 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,70 +53,24 @@ public class Environment {
         return myGlobalEnvironment;
     }
 
+    private void setSubroutines (Class[] subroutineContainers, LispSymbol.FunctionType type) {
+        for (Class subroutineContainer: subroutineContainers) {
+            Method[] methods = subroutineContainer.getMethods();
+            for (Method m: methods) {
+                Subroutine annotation = m.getAnnotation(Subroutine.class);
+                if (annotation == null)
+                    continue;
+                String name = annotation.value();
+                mySymbols.put(name, new LispSymbol(name, type));
+            }
+        }
+    }
+
     private void setGlobal() {
-
-        mySymbols.put("test", new LispSymbol("test", LispSymbol.FunctionType.BuiltIn));
-
-        mySymbols.put("quote", new LispSymbol("quote", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("defun", new LispSymbol("defun", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("defvar", new LispSymbol("defvar", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("defmacro", new LispSymbol("defmacro", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("let", new LispSymbol("let", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("let*", new LispSymbol("let*", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("interactive", new LispSymbol("interactive", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("or", new LispSymbol("or", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("and", new LispSymbol("and", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("if", new LispSymbol("if", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("while", new LispSymbol("while", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("cond", new LispSymbol("cond", LispSymbol.FunctionType.SpecialForm));
-        mySymbols.put("progn", new LispSymbol("progn", LispSymbol.FunctionType.SpecialForm));
-
-        mySymbols.put("+", new LispSymbol("+", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("*", new LispSymbol("*", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("set", new LispSymbol("set", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("eq", new LispSymbol("eq", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("car", new LispSymbol("car", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("cdr", new LispSymbol("cdr", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("car-safe", new LispSymbol("car-safe", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("cdr-safe", new LispSymbol("cdr-safe", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("memq", new LispSymbol("memq", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("list", new LispSymbol("list", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("null", new LispSymbol("null", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("not", new LispSymbol("not", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("stringp", new LispSymbol("stringp", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("subrp", new LispSymbol("subrp", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("symbolp", new LispSymbol("symbolp", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("integerp", new LispSymbol("integerp", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("symbol-function", new LispSymbol("symbol-function", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("get", new LispSymbol("get", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("put", new LispSymbol("put", LispSymbol.FunctionType.BuiltIn));
-
-        mySymbols.put("bufferp", new LispSymbol("bufferp", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("current-buffer", new LispSymbol("current-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("buffer-size", new LispSymbol("buffer-size", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("buffer-name", new LispSymbol("buffer-name", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("get-buffer", new LispSymbol("get-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("set-buffer", new LispSymbol("set-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("switch-to-buffer", new LispSymbol("switch-to-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("other-buffer", new LispSymbol("other-buffer", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("point", new LispSymbol("point", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("point-min", new LispSymbol("point-min", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("point-max", new LispSymbol("point-max", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
-        mySymbols.put("goto-char", new LispSymbol("goto-char", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("forward-char", new LispSymbol("forward-char", LispSymbol.FunctionType.BuiltIn));
-        mySymbols.put("backward-char", new LispSymbol("backward-char", LispSymbol.FunctionType.BuiltIn));
-
-        //findAndRegisterEmacsFunction(ourFinder);
-
-        mySymbols.put("nil", LispSymbol.ourNil);
-        mySymbols.put("t", LispSymbol.ourT);
-        mySymbols.put("void", LispSymbol.ourVoid);
-        mySymbols.put("load-history", new LispSymbol("load-history", LispSymbol.ourNil));
-        mySymbols.put("fill-column", new LispSymbol("fill-column", new LispInteger(70)));
-
-
-
+        Class[] lispBuiltIns = LispSubroutine.getBuiltInsClasses();
+        setSubroutines(lispBuiltIns, LispSymbol.FunctionType.BuiltIn);
+        Class[] lispSpecialForms = LispSubroutine.getSpecialFormsClasses();
+        setSubroutines(lispSpecialForms, LispSymbol.FunctionType.SpecialForm);
        // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
     }
 

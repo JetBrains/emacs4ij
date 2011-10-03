@@ -19,8 +19,8 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class LispSubroutine {
-    private static Class[] builtins = new Class[]{BuiltinsBuffer.class, BuiltinsCore.class, BuiltinsList.class, BuiltinsSymbol.class, BuiltinsCheck.class};
-    private static Class[] specialForms = new Class[] {SpecialForms.class};
+    private static Class[] myBuiltIns = new Class[]{BuiltinsBuffer.class, BuiltinsCore.class, BuiltinsList.class, BuiltinsSymbol.class, BuiltinsCheck.class};
+    private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 
     private LispSubroutine() {}
 
@@ -31,6 +31,14 @@ public abstract class LispSubroutine {
             }
         }
         return false;
+    }
+
+    public static Class[] getBuiltInsClasses () {
+        return myBuiltIns;
+    }
+
+    public static Class[] getSpecialFormsClasses () {
+        return mySpecialForms;
     }
 
     private static void setOptional(ArgumentsList arguments, Annotation[][] parametersAnnotations, Type[] parametersTypes) {
@@ -124,11 +132,11 @@ public abstract class LispSubroutine {
         Class[] subroutines = null;
         String type = null;
         if (f.is(LispSymbol.FunctionType.SpecialForm)) {
-            subroutines = specialForms;
+            subroutines = mySpecialForms;
             type = LispSymbol.FunctionType.SpecialForm.getValue();
         }
         if (f.is(LispSymbol.FunctionType.BuiltIn)) {
-            subroutines = builtins;
+            subroutines = myBuiltIns;
             type = LispSymbol.FunctionType.BuiltIn.getValue();
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));
