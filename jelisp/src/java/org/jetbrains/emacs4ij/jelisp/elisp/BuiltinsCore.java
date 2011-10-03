@@ -63,12 +63,12 @@ public abstract class BuiltinsCore {
         return LispSymbol.ourNil;
     }
 
-    @Subroutine(value = "null")
+    @Subroutine("null")
     public static LispObject lispNull (LObject lObject) {
         return lObject.equals(LispSymbol.ourNil) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
 
-    @Subroutine(value = "not")
+    @Subroutine("not")
     public static LispObject lispNot (LObject lObject) {
         return lispNull(lObject);
     }

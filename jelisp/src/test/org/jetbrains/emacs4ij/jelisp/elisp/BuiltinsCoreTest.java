@@ -21,7 +21,8 @@ public class BuiltinsCoreTest {
     @Before
     public void setUp() throws Exception {
         Environment.ourEmacsPath = "/usr/share/emacs/23.2";
-        environment = new Environment(new Environment());
+        Environment global = new Environment();
+        environment = new Environment(global);
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

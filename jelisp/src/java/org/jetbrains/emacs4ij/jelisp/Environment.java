@@ -67,6 +67,8 @@ public class Environment {
     }
 
     private void setGlobal() {
+        mySymbols.put("nil", LispSymbol.ourNil);
+        mySymbols.put("t", LispSymbol.ourT);
         Class[] lispBuiltIns = LispSubroutine.getBuiltInsClasses();
         setSubroutines(lispBuiltIns, LispSymbol.FunctionType.BuiltIn);
         Class[] lispSpecialForms = LispSubroutine.getSpecialFormsClasses();

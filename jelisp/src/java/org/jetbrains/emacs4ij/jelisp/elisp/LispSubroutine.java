@@ -5,10 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -50,10 +47,15 @@ public abstract class LispSubroutine {
                     nRequiredParameters = i;
                     optional = true;
                 }
-            arguments.add(optional);
             }
+            arguments.add(optional);
         }
         arguments.setRequiredSize(nRequiredParameters);
+    }
+
+
+    private static <T> T[] customizeArrayList(Class<T> type, ArrayList array) {
+        return (T[]) array.toArray((LObject[]) Array.newInstance(type, 0));
     }
 
     private static ArgumentsList parseAndCheckArguments (Method m, Environment environment, List<LObject> args) {
@@ -83,7 +85,7 @@ public abstract class LispSubroutine {
             Type expectedType = parametersTypes[i];
             if (i==0 && expectedType.equals(Environment.class))
                 continue;
-            if (ParameterizedType.class.isInstance(expectedType)) {
+            if (ParameterizedType.class.isInstance(expectedType)) { //List<>
                 Type rawType = ((ParameterizedType) expectedType).getRawType();
                 Type expectedTypeArguments = ((ParameterizedType) expectedType).getActualTypeArguments()[0];
                 if (((Class)rawType).isInstance(args.get(argsCounter))) {
@@ -98,24 +100,16 @@ public abstract class LispSubroutine {
                         break;
                     throw new WrongTypeArgument(expectedType.toString(), args.get(argsCounter).toString());
                 }
-            } else if (((Class)expectedType).isArray()) {
+            } else if (((Class)expectedType).isArray()) { //Object...
                 Class componentType = ((Class)expectedType).getComponentType();
                 ArrayList array = new ArrayList();
                 while (argsCounter != args.size() && componentType.isInstance(args.get(argsCounter))) {
                     array.add(args.get(argsCounter));
                     ++argsCounter;
                 }
-
-                /*if (parametersTypes.length == 1) {
-                    arguments.setValues(array.toArray());
-                    break;
-                } else */
-                //Object[] qqq = array.toArray();
-                arguments.setValue(i, array.toArray());
-
+                arguments.setValue(i, customizeArrayList(componentType, array));
             }
-
-            else {
+            else { // one by one
                 if (!(((Class)expectedType).isInstance(args.get(argsCounter)))) {
                     if (arguments.isOptional(i))
                         break;
@@ -155,11 +149,6 @@ public abstract class LispSubroutine {
                 if (annotation.value().equals(f.getName())) {
                     ArgumentsList arguments = parseAndCheckArguments(m, environment, args);
                     try {
-                        ArrayList<LispInteger> t = new ArrayList<LispInteger>();
-                        t.add(new LispInteger(1));
-                        t.add(new LispInteger(2));
-                        t.add(new LispInteger(3));
-                        //return (LObject) m.invoke(null, new Object[]{t.toArray()});
                         Object[] q = arguments.getValues();
                         return (LObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
