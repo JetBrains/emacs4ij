@@ -1,8 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
-
 import java.util.List;
 
 /**
@@ -15,40 +12,33 @@ import java.util.List;
 public abstract class BuiltinsList {
     private BuiltinsList() {}
 
-    @Subroutine(value = "car", exact = 1)
-    public static LObject car (Environment environment, List<LispObject> args) {
-        if (!(args.get(0) instanceof LispList))
-            throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
-        return ((LispList) args.get(0)).car();
+    @Subroutine("car")
+    public static LObject car (LispList arg) {
+        return arg.car();
     }
-    @Subroutine(value = "cdr", exact = 1)
-    public static LispObject cdr (Environment environment, List<LispObject> args) {
-        if (!(args.get(0) instanceof LispList))
-            throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
-        LispList cdr = ((LispList) args.get(0)).cdr();
+    @Subroutine("cdr")
+    public static LispObject cdr (LispList arg) {
+        LispList cdr = arg.cdr();
         return (cdr.isEmpty()) ? LispSymbol.ourNil : cdr;
     }
-    @Subroutine(value = "car-safe", exact = 1)
-    public static LObject carSafe (Environment environment, List<LispObject> args) {
-        if (args.get(0) instanceof LispList)
-            return ((LispList) args.get(0)).car();
+    @Subroutine("car-safe")
+    public static LObject carSafe (LObject arg) {
+        if (arg instanceof LispList)
+            return ((LispList)arg).car();
         return LispSymbol.ourNil;
     }
-    @Subroutine(value = "cdr-safe", exact = 1)
-    public static LispObject cdrSafe (Environment environment, List<LispObject> args) {
-        if (args.get(0) instanceof LispList)
-            return ((LispList) args.get(0)).cdr();
+    @Subroutine("cdr-safe")
+    public static LispObject cdrSafe (LObject arg) {
+        if (arg instanceof LispList)
+            return ((LispList) arg).cdr();
         return LispSymbol.ourNil;
     }
-    @Subroutine(value = "memq", exact = 2)
-    public static LispObject memq (Environment environment, List<LispObject> args) {
-        if (args.get(1) instanceof LispList) {
-            return ((LispList) args.get(1)).memq(args.get(0));
-        }
-        throw new WrongTypeArgument("LispList", args.get(1).getClass().toString());
+    @Subroutine("memq")
+    public static LispObject memq (LObject element, LispList list) {
+        return list.memq(element);
     }
-    @Subroutine(value = "list")
-    public static LispObject list (Environment environment, List<LObject> args) {
+    @Subroutine("list")
+    public static LispObject list (List<LObject> args) {
         LispList list = new LispList(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
     }

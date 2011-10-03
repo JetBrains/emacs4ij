@@ -4,8 +4,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -16,28 +14,24 @@ import java.util.List;
 public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
-    @Subroutine(value = "current-buffer", max = 0)
+    @Subroutine("current-buffer")
     public static LispBuffer getCurrentBuffer(Environment environment) {
         return environment.getCurrentBuffer();
     }
 
-    @Subroutine(value = "buffer-size", max = 1)
-    public static LispObject bufferSize(Environment environment, List<LObject> args) {
-
-
-        if (args.size() == 1 && !(args.get(0) instanceof LispBuffer) && !(args.get(0).equals(LispSymbol.ourNil)))
-            throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
-        LispBuffer buffer = (args.size() == 0 || args.get(0).equals(LispSymbol.ourNil)) ? environment.getCurrentBuffer() : (LispBuffer) args.get(0);
-        if (buffer.equals(LispSymbol.ourNil))
-            throw new RuntimeException("no buffer is currently opened");
+    //TODO: accept ourNil
+    @Subroutine("buffer-size")
+    public static LispObject bufferSize(Environment environment, @Optional LispBuffer buffer) {
+        if (buffer == null || buffer.equals(LispSymbol.ourNil))
+            buffer = environment.getCurrentBuffer();
         return new LispInteger(buffer.getSize());
     }
 
-    @Subroutine(value = "buffer-name", max = 1)
-    public static LispObject bufferName (Environment environment, List<LObject> args) {
-        if (args.size() == 1 && !(args.get(0) instanceof LispBuffer))
-            throw new WrongTypeArgument("LispBuffer", args.get(0).getClass().toString());
-        LispBuffer buffer = (args.size() == 0 || args.get(0).equals(LispSymbol.ourNil)) ? environment.getCurrentBuffer() : (LispBuffer) args.get(0);
+    //TODO: accept ourNil
+    @Subroutine("buffer-name")
+    public static LispObject bufferName (Environment environment, @Optional LispBuffer buffer) {
+        if (buffer == null)
+            buffer = environment.getCurrentBuffer();
         return new LispString(buffer.getName());
     }
 
@@ -47,13 +41,10 @@ public abstract class BuiltinsBuffer {
     If BUFFER-OR-NAME is a string and there is no buffer with that name, return nil.
     If BUFFER-OR-NAME is a buffer, return it as given.
     */
-    @Subroutine(value = "get-buffer", exact = 1)
-    public static LObject getBuffer (Environment environment, List<LObject> args) {
-        LObject arg = args.get(0);
-        if (!(arg instanceof LispString) && !(arg instanceof LispBuffer))
-            throw new WrongTypeArgument("LispString or LispBuffer", arg.getClass().toString());
-
-        return (arg instanceof LispString) ? environment.getBufferByName(args.get(0).toString()) : arg;
+    //TODO: LispBuffer or LispString. nil not allowed
+    @Subroutine("get-buffer")
+    public static LObject getBuffer (Environment environment, LObject bufferOrName) {
+        return (bufferOrName instanceof LispString) ? environment.getBufferByName(bufferOrName.toString()) : bufferOrName;
     }
 
     /* (other-buffer &optional BUFFER VISIBLE-OK FRAME)
@@ -63,11 +54,12 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
 If no other buffer exists, the buffer `*scratch*' is returned.
 If BUFFER is omitted or nil, some interesting buffer is returned.
      */
-    @Subroutine(value = "other-buffer", max = 1)
-    public static LispBuffer otherBuffer (Environment environment, List<LObject> args) {
-        if ((args.size() == 1 && !(args.get(0) instanceof LispBuffer)) || (args.size() == 0))
+    //TODO:  accept nil as buffer
+    @Subroutine("other-buffer")
+    public static LispBuffer otherBuffer (Environment environment, @Optional LispBuffer buffer) {
+        if (buffer == null || buffer.equals(LispSymbol.ourNil))
             return environment.getOtherBuffer();
-        return environment.getOtherBuffer(((LispBuffer)args.get(0)).getName());
+        return environment.getOtherBuffer(buffer.getName());
     }
 
     /*
@@ -78,11 +70,11 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
     This function does not display the buffer, so its effect ends when the current command terminates.
     Use `switch-to-buffer' or `pop-to-buffer' to switch buffers permanently.
      */
-    @Subroutine(value = "set-buffer", exact = 1)
-    public static LObject setBuffer (Environment environment, List<LObject> args) {
-        LObject lispObject = getBuffer(environment, args);
+    @Subroutine("set-buffer")
+    public static LObject setBuffer (Environment environment, LObject bufferOrName) {
+        LObject lispObject = getBuffer(environment, bufferOrName);
         if (lispObject.equals(LispSymbol.ourNil)) {
-            throw new NoBufferException(args.get(0).toString());
+            throw new NoBufferException(bufferOrName.toString());
         }
         return lispObject;
     }
@@ -116,16 +108,17 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
     messing with the window-buffer correspondences.
      */
     //todo: interactive
-    @Subroutine(value = "switch-to-buffer", min = 1, max = 2)
-    public static LObject switchToBuffer (Environment environment, List<LObject> args) {
-        LObject b = args.get(0);
+    //todo: bufferOrName = LispBuffer or LispString or nil
+    @Subroutine("switch-to-buffer")
+    public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
+
         boolean noRecord = false;
-        if (args.size()>1) {
-            if (!(args.get(1).equals(LispSymbol.ourNil)))
+        if (noRecordObject != null) {
+            if (!(noRecordObject.equals(LispSymbol.ourNil)))
                 noRecord = true;
         }
         environment.setSelectionManagedBySubroutine(true);
-        if (b.equals(LispSymbol.ourNil)) {
+        if (bufferOrName.equals(LispSymbol.ourNil)) {
             LispBuffer buffer = environment.getOtherBuffer();
             buffer.setBufferActive();
             if (!noRecord) {
@@ -133,8 +126,8 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
             }
             return buffer;
         }
-        if (b instanceof LispString) {
-            LObject buffer = environment.getBufferByName(b.toString());
+        if (bufferOrName instanceof LispString) {
+            LObject buffer = environment.getBufferByName(bufferOrName.toString());
             if (buffer.equals(LispSymbol.ourNil)) {
                 return new LispString("It is not allowed to create files this way.");
                 // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
@@ -146,74 +139,63 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
             }
             return buffer;
         }
-        if (b instanceof LispBuffer) {
+        if (bufferOrName instanceof LispBuffer) {
             //todo:  If the selected window is the minibuffer window or dedicated to its buffer, use `pop-to-buffer' for displaying the buffer.
-            ((LispBuffer)b).setBufferActive();
+            ((LispBuffer)bufferOrName).setBufferActive();
             if (!noRecord) {
-                environment.setCurrentBuffer(((LispBuffer)b).getName());
+                environment.setCurrentBuffer(((LispBuffer)bufferOrName).getName());
             }
-            return b;
+            return bufferOrName;
         }
-        throw new WrongTypeArgument("LispBuffer or LispString or nil", args.get(0).getClass().toString());
+        throw new WrongTypeArgument("LispBuffer or LispString or nil", bufferOrName.getClass().toString());
     }
 
-    @Subroutine(value = "point", max = 0)
-    public static LObject point (Environment environment, List<LObject> args) {
+    @Subroutine("point")
+    public static LObject point (Environment environment) {
         return new LispInteger(environment.getCurrentBuffer().point());
     }
 
-    @Subroutine(value = "point-min", max = 0)
-    public static LObject pointMin (Environment environment, List<LObject> args) {
+    @Subroutine("point-min")
+    public static LObject pointMin (Environment environment) {
         return new LispInteger(environment.getCurrentBuffer().pointMin());
     }
 
-    @Subroutine(value = "point-max", max = 0)
-    public static LObject pointMax (Environment environment, List<LObject> args) {
+    @Subroutine("point-max")
+    public static LObject pointMax (Environment environment) {
         return new LispInteger(environment.getCurrentBuffer().pointMax());
     }
 
-    @Subroutine(value = "buffer-end", exact = 1)
-    public static LObject bufferEnd (Environment environment, List<LObject> args) {
-        if (!(args.get(0) instanceof LispNumber))
-            throw new WrongTypeArgument("LispNumber (LispInteger, LispFloat)", args.get(0).getClass().toString());
-        double p = (args.get(0) instanceof LispInteger) ? (double) ((LispInteger)args.get(0)).getData() : ((LispFloat)args.get(0)).getData();
-        return new LispInteger(environment.getCurrentBuffer().bufferEnd(p));
+    @Subroutine("buffer-end")
+    public static LObject bufferEnd (Environment environment, LispNumber arg) {
+        return new LispInteger(environment.getCurrentBuffer().bufferEnd((Double)arg.getData()));
     }
 
     //todo: interactive, accepts integer OR MARKER
-    @Subroutine(value = "goto-char", exact = 1)
-    public static LObject gotoChar (Environment environment, List<LObject> args) {
-        if (!(args.get(0) instanceof LispInteger))
-            throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
-        environment.getCurrentBuffer().gotoChar(((LispInteger)args.get(0)).getData());
-        return args.get(0);
+    @Subroutine("goto-char")
+    public static LObject gotoChar (Environment environment, LispInteger pos) {
+        environment.getCurrentBuffer().gotoChar(pos.getData());
+        return pos;
     }
 
     //todo: interactive, bound to C-f, <right>
-    @Subroutine(value = "forward-char", max = 1)
-    public static LObject forwardChar (Environment environment, List<LObject> args) {
-        int shift = 1;
-        if (!args.isEmpty()) {
-            if (!(args.get(0) instanceof LispInteger))
-                throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
-            shift = ((LispInteger)args.get(0)).getData();
+    @Subroutine("forward-char")
+    public static LObject forwardChar (Environment environment, @Optional LispInteger shift) {
+        if (shift == null) {
+            shift = new LispInteger(1);
         }
-        String message = environment.getCurrentBuffer().forwardChar(shift);
+        String message = environment.getCurrentBuffer().forwardChar(shift.getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);
     }
 
     //todo: interactive, bound to C-b, <left>
-    @Subroutine(value = "backward-char", max = 1)
-    public static LObject backwardChar (Environment environment, List<LObject> args) {
-        int shift = 1;
-        if (!args.isEmpty()) {
-            if (!(args.get(0) instanceof LispInteger))
-                throw new WrongTypeArgument("LispInteger", args.get(0).getClass().toString());
-            shift = ((LispInteger)args.get(0)).getData();
+    @Subroutine("backward-char")
+    public static LObject backwardChar (Environment environment, @Optional LispInteger shift) {
+        if (shift == null) {
+            shift = new LispInteger(1);
         }
-        String message = environment.getCurrentBuffer().forwardChar(-shift);
+        String message = environment.getCurrentBuffer().forwardChar(-shift.getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);

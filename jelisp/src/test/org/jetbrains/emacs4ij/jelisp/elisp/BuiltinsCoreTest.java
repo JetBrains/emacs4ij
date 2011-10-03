@@ -30,9 +30,27 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testPlus() throws LispException {
+    public void testPlusInteger() throws LispException {
         LObject lispObject = evaluateString("(+ 2 2)");
         Assert.assertEquals(new LispInteger(4), lispObject);
+    }
+
+    @Test
+    public void testPlusFloat () {
+        LObject lispObject = evaluateString("(+ 2 2.0)");
+        Assert.assertEquals(new LispFloat(4), lispObject);
+    }
+
+    @Test
+    public void testPlusSimple () {
+        LispNumber n = BuiltinsCore.plus(new LispInteger(5), new LispFloat(6.6));
+        Assert.assertEquals(new LispFloat(11.6), n);
+    }
+
+    @Test
+    public void testMultiplySimple () {
+        LispNumber n = BuiltinsCore.multiply(new LispInteger(5), new LispFloat(2.0));
+        Assert.assertEquals(new LispFloat(10), n);
     }
 
     @Test

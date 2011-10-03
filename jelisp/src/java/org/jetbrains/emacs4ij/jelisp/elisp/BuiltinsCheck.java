@@ -1,9 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
-
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -14,26 +10,26 @@ import java.util.List;
 public abstract class BuiltinsCheck {
     private BuiltinsCheck() {}
 
-    @Subroutine(value = "stringp", exact = 1)
-    public static LispObject stringp (Environment environment, List<LObject> args) {
-        return (args.get(0) instanceof LispString) ? LispSymbol.ourT : LispSymbol.ourNil;
+    @Subroutine("stringp")
+    public static LispObject stringp (LObject arg) {
+        return (arg instanceof LispString) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Subroutine(value = "symbolp", exact = 1)
-    public static LispObject symbolp (Environment environment, List<LObject> args) {
-        return (args.get(0) instanceof LispSymbol) ? LispSymbol.ourT : LispSymbol.ourNil;
+    @Subroutine("symbolp")
+    public static LispObject symbolp (LObject arg) {
+        return (arg instanceof LispSymbol) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Subroutine(value = "integerp", exact = 1)
-    public static LispObject integerp (Environment environment, List<LObject> args) {
-        return (args.get(0) instanceof LispInteger) ? LispSymbol.ourT : LispSymbol.ourNil;
+    @Subroutine("integerp")
+    public static LispObject integerp (LObject arg) {
+        return (arg instanceof LispInteger) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Subroutine(value = "subrp", exact = 1)
-    public static LispObject subrp (Environment environment, List<LObject> args) {
-        if (!(args.get(0) instanceof LispSymbol))
+    @Subroutine("subrp")
+    public static LispObject subrp (LObject arg) {
+        if (!(arg instanceof LispSymbol))
             return LispSymbol.ourNil;
-        return ((LispSymbol)(args.get(0))).is(LispSymbol.FunctionType.BuiltIn) ? LispSymbol.ourT : LispSymbol.ourNil;
+        return ((LispSymbol)(arg)).is(LispSymbol.FunctionType.BuiltIn) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
-    @Subroutine(value = "bufferp", exact = 1)
-    public static LispObject bufferp (Environment environment, List<LObject> args) {
-        return (args.get(0) instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;
+    @Subroutine("bufferp")
+    public static LispObject bufferp (LObject arg) {
+        return (arg instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;
     }
 }

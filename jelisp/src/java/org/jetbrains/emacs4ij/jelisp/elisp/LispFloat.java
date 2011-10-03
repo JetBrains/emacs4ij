@@ -13,20 +13,15 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * TODO: To test whether a floating point value is a NaN, compare it with itself using =.
  * That returns nil for a NaN, and t for any other floating point value.
  */
-public class LispFloat extends LispNumber{
+public class LispFloat extends LispNumber<Double> {
 
     public static final LispFloat ourPositiveInfinity = new LispFloat(Double.POSITIVE_INFINITY);
     public static final LispFloat ourNegativeInfinity = new LispFloat(Double.NEGATIVE_INFINITY);
     public static final LispFloat ourNaN = new LispFloat(Double.NaN);
 
-    private double myData;
 
-    public LispFloat(double myData) {
-        this.myData = myData;
-    }
-
-    public double getData() {
-        return myData;
+    public LispFloat(double data) {
+        myData = data;
     }
 
     @Override

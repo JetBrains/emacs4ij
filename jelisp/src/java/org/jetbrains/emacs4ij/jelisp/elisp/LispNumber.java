@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,7 +12,25 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  *
  * base class for elisp numbers
  */
-public abstract class LispNumber extends LispAtom {
+public abstract class LispNumber<T> extends LispAtom {
+    protected T myData;
+
+    public T getData() {
+        return myData;
+    }
+
+    public static <T> LispNumber newInstance (T data) {
+        if (data instanceof Integer)
+            return new LispInteger((Integer)data);
+        if (data instanceof Double)
+            return new LispFloat((Double)data);
+        throw new LispException("Invalid LispNumber instantiation!");
+    }
+
+    /*public void setData(T myData) {
+        this.myData = myData;
+    }   */
+
     @Override
     /**
      * no parameters required

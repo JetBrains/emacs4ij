@@ -17,25 +17,31 @@ public abstract class BuiltinsCore {
         return null;
     }
 
-    //todo: accept FLOAT and MARKERS
+    //todo: accept MARKERS
     @Subroutine("+")
-    public static LispInteger plus (@Optional LispInteger... args) {
-        int ans = 0;
+    public static LispNumber plus (@Optional LispNumber... args) {
+        double ans = 0.0;
+        boolean isDouble = false;
         if (args != null) {
-            for (LispInteger lispObject: args) {
-                ans += lispObject.getData();
+            for (LispNumber lispObject: args) {
+                if (!isDouble && (lispObject.getData() instanceof Double))
+                    isDouble = true;
+                ans += (lispObject instanceof LispInteger) ? ((Integer)lispObject.getData()).doubleValue() : (Double)lispObject.getData();
             }
         }
-        return new LispInteger(ans);
+        return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
     }
-    //todo: accept FLOAT and MARKERS
+    //todo: accept MARKERS
     @Subroutine("*")
-    public static LispInteger multiply (@Optional LispInteger... args) {
-        int ans = 1;
-        for (LispInteger lispObject: args) {
-            ans *= lispObject.getData();
+    public static LispNumber multiply (@Optional LispNumber... args) {
+        double ans = 1;
+        boolean isDouble = false;
+        for (LispNumber lispObject: args) {
+            if (!isDouble && (lispObject.getData() instanceof Double))
+                    isDouble = true;
+            ans *= (lispObject instanceof LispInteger) ? ((Integer)lispObject.getData()).doubleValue() : (Double)lispObject.getData();
         }
-        return new LispInteger(ans);
+        return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
     }
 
     @Subroutine("set")

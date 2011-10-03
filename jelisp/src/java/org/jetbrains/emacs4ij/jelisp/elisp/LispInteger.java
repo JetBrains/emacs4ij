@@ -9,15 +9,11 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  *
  * elisp integer number = 13, 1355, -7979, etc
  */
-public class LispInteger extends LispNumber {
-    private int myData;
+public class LispInteger extends LispNumber<Integer> {
+    //private int myData;
 
-    public LispInteger(int myData) {
-        this.myData = myData;
-    }
-
-    public int getData() {
-        return myData;
+    public LispInteger(int data) {
+        myData = data;
     }
 
     @Override
@@ -46,5 +42,4 @@ public class LispInteger extends LispNumber {
     public LispString toLispString() {
         return new LispString(Integer.toString(myData));
     }
-
 }

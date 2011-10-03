@@ -13,6 +13,9 @@ import java.lang.annotation.Target;
  * To change this template use File | Settings | File Templates.
  */
 
+/*
+ * all parameters are optional after first usage of this annotation
+ */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Optional {

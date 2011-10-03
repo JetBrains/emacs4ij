@@ -125,7 +125,7 @@ public class LispList extends LispObject {
         return ((myData.size() < 2) ? new LispList() : new LispList(myData.subList(1, myData.size())));
     }
 
-    public LispObject memq (LispObject element) {
+    public LispObject memq (LObject element) {
         for (int i=0; i!=myData.size(); ++i) {
             if (myData.get(i).equals(element)) {
                 return new LispList(myData.subList(i, myData.size()));

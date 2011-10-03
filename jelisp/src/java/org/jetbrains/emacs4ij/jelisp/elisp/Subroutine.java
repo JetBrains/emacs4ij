@@ -17,7 +17,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subroutine {
     String value();
-    int min() default -1;
-    int max() default -1;
-    int exact() default -1;
 }
