@@ -4,10 +4,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Assert;
@@ -339,5 +336,26 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getCurrentBuffer().pointMax(), myEnvironment.getCurrentBuffer().point());
     }
 
-    //mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
+    //todo:: test mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
+
+    //==== markers ====
+
+    @Test
+    public void testPointMarkerOk() {
+        LObject lispObject = eval("(point-marker)");
+        LispBuffer currentBuffer = (LispBuffer) eval("(current-buffer)");
+        Assert.assertEquals(new LispMarker(currentBuffer.point(), currentBuffer), lispObject);
+    }
+
+    @Test
+    public void testPointMarkerInvalid () {
+        try {
+            eval("(point-marker)");
+        } catch (WrongNumberOfArgumentsException e) {
+            //sucess
+        }
+    }
+
+
+
 }
