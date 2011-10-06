@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 /**
@@ -13,13 +14,15 @@ public class ArgumentsList {
     private class Argument {
         private boolean myOptional = false;
         private Object myValue = null;
+        private Type myType = null;
 
         public Argument (Object value) {
             myValue = value;
         }
 
-        public Argument (boolean optional) {
+        public Argument (boolean optional, Type type) {
             myOptional = optional;
+            myType = type;
         }
 
         public void setValue (Object value) {
@@ -32,6 +35,10 @@ public class ArgumentsList {
 
         public Object getValue () {
             return myValue;
+        }
+
+        public Type getType () {
+            return myType;
         }
     }
 
@@ -56,8 +63,8 @@ public class ArgumentsList {
         return myList.get(index).isOptional();
     }
 
-    public void add (boolean optional) {
-        myList.add(new Argument(optional));
+    public void add (boolean optional, Type type) {
+        myList.add(new Argument(optional, type));
     }
 
     public int getSize () {
@@ -73,11 +80,15 @@ public class ArgumentsList {
         return values;
     }
 
-    public void setValues (Object[] values) {
+    public Type getType (int index) {
+        return myList.get(index).getType();
+    }
+
+    /*public void setValues (Object[] values) {
         myList = new ArrayList<Argument>();
         myRequiredSize = values.length;
         for (int i=0; i!=values.length; ++i) {
             myList.add(new Argument(values[i]));
         }
-    }
+    } */
 }

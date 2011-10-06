@@ -1,7 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import java.util.List;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -38,7 +36,9 @@ public abstract class BuiltinsList {
         return list.memq(element);
     }
     @Subroutine("list")
-    public static LispObject list (List<LObject> args) {
+    public static LispObject list (@Optional LObject... args) {
+        if (args == null)
+            return LispSymbol.ourNil;
         LispList list = new LispList(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
     }

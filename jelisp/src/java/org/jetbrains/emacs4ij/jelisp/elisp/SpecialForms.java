@@ -9,16 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Kate
- * Date: 7/16/11
- * Time: 2:47 PM
- * To change this template use File | Settings | File Templates.
- *
- * in fact it is a kind of builtin function
- */
+* Created by IntelliJ IDEA.
+* User: Kate
+* Date: 7/16/11
+* Time: 2:47 PM
+* To change this template use File | Settings | File Templates.
+*
+* in fact it is a kind of builtin function
+*/
 public abstract class SpecialForms {
-    
+
     private SpecialForms() {}
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
@@ -55,24 +55,12 @@ public abstract class SpecialForms {
             }
     }
 
-    private static LObject executeLet (boolean isStar, Environment environment, List<LispObject> args) {
-        /* (let(*) VARLIST BODY...)
-        Bind variables according to VARLIST then eval BODY.
-        The value of the last form in BODY is returned.
-        Each element of VARLIST is a symbol (which is bound to nil)
-        or a list (SYMBOL VALUEFORM) (which binds SYMBOL to the value of VALUEFORM).
-
-        let:  All the VALUEFORMs are evalled before any symbols are bound.
-        let*: Each VALUEFORM can refer to the symbols already bound by this VARLIST.
-        */
+    private static LObject executeLet (boolean isStar, Environment environment, LispList varList, LObject... body) {
         Environment inner = new Environment(environment);
-        LispList varList = (LispList) args.get(0);
         bindLetVariables(isStar, inner, varList);
-
-        // eval body
         LObject result = LispSymbol.ourNil;
-        for (int i=1; i!=args.size(); ++i) {
-            result = args.get(i).evaluate(inner);
+        for (LObject bodyForm: body) {
+            result = bodyForm.evaluate(inner);
         }
         return result;
     }
@@ -81,20 +69,20 @@ public abstract class SpecialForms {
     public static LObject quote(LObject arg) {
         return arg;
     }
-    
+
     @Subroutine("defmacro")
     public static LObject defineMacro (Environment environment, List<LispObject> args) {
         throw new NotImplementedException();
     }
 
     @Subroutine("let")
-    public static LObject let (Environment environment, List<LispObject> args) {
-        return executeLet(false, environment, args);
+    public static LObject let (Environment environment, LispList varList, @Optional LObject... body) {
+        return executeLet(false, environment, varList, body);
     }
 
     @Subroutine("let*")
-    public static LObject letStar (Environment environment, List<LispObject> args) {
-        return executeLet(true, environment, args);
+    public static LObject letStar (Environment environment, LispList varList, @Optional LObject... body) {
+        return executeLet(true, environment, varList, body);
     }
 
     @Subroutine("interactive")
@@ -102,29 +90,29 @@ public abstract class SpecialForms {
         throw new NotImplementedException();
 
         /*if (args.size() > 1) {
-            throw new WrongNumberOfArgumentsException("interactive");
-        }
-        if (args.size() == 1) {
-            LispObject a = args.get(0);
-            if (!(a instanceof LispString)) {
-                LObject result = a.evaluate(environment);
-                if (result instanceof LispList)
-                    return result;
-                throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
-            }
-            return null;//processInteractiveString((LispString) a, environment);
-        }
-        return LispSymbol.ourNil; */
+throw new WrongNumberOfArgumentsException("interactive");
+}
+if (args.size() == 1) {
+LispObject a = args.get(0);
+if (!(a instanceof LispString)) {
+LObject result = a.evaluate(environment);
+if (result instanceof LispList)
+return result;
+throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
+}
+return null;//processInteractiveString((LispString) a, environment);
+}
+return LispSymbol.ourNil; */
     }
 
     @Subroutine("cond")
-    public static LObject cond (Environment environment, @Optional List<LispObject> args) {
+    public static LObject cond (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
 
         LObject result = LispSymbol.ourNil;
-        for (int i=0; i!=args.size(); ++i) {
-            LispObject clause = args.get(i);
+        for (int i=0; i!=args.length; ++i) {
+            LObject clause = args[i];
             if (!(clause instanceof LispList)) {
                 if (clause.equals(LispSymbol.ourNil))
                     continue;
@@ -138,25 +126,26 @@ public abstract class SpecialForms {
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
                     result = data.get(k).evaluate(environment);
-                return result;
+                if (!result.equals(LispSymbol.ourNil))
+                    return result;
             }
         }
         return result;
     }
     @Subroutine("while")
-    public static LObject lispWhile(Environment environment, LObject cond, @Optional List<LispObject> body) {
+    public static LObject lispWhile(Environment environment, LObject cond, @Optional LObject... body) {
         Environment inner = new Environment(environment);
         LObject condition = cond.evaluate(inner);
         while (condition != LispSymbol.ourNil) {
             if (body != null)
-                for (int i = 0; i != body.size(); ++i)
-                    body.get(i).evaluate(inner);
+                for (LObject bodyForm: body)
+                    bodyForm.evaluate(inner);
             condition = cond.evaluate(inner);
         }
         return condition;
     }
     @Subroutine(value = "if")
-    public static LObject lispIf(Environment environment, LObject cond, LObject then, @Optional List<LispObject> elseBody) {
+    public static LObject lispIf (Environment environment, LObject cond, LObject then, @Optional LObject... elseBody) {
         LObject condition = cond.evaluate(environment);
         if (condition != LispSymbol.ourNil) {
             return then.evaluate(environment);
@@ -165,19 +154,19 @@ public abstract class SpecialForms {
             return LispSymbol.ourNil;
 
         LObject result = LispSymbol.ourNil;
-        for (int i=0; i<elseBody.size(); ++i) {
-            result = elseBody.get(i).evaluate(environment);
+        for (LObject bodyForm: elseBody) {
+            result = bodyForm.evaluate(environment);
         }
         return result;
     }
 
     @Subroutine("and")
-    public static LObject lispAnd(Environment environment, @Optional List<LispObject> args) {
-        if (args == null)
+    public static LObject lispAnd(Environment environment, @Optional LObject... conditions) {
+        if (conditions == null)
             return LispSymbol.ourT;
         LObject result = LispSymbol.ourT;
-        for (int i=0; i!=args.size(); ++i) {
-            result = args.get(i).evaluate(environment);
+        for (LObject condition: conditions) {
+            result = condition.evaluate(environment);
             if (result == LispSymbol.ourNil)
                 return result;
         }
@@ -185,11 +174,11 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("or")
-    public static LObject lispOr(Environment environment, @Optional List<LispObject> args) {
-        if (args == null)
+    public static LObject lispOr(Environment environment, @Optional LObject... conditions) {
+        if (conditions == null)
             return LispSymbol.ourNil;
-        for (int i=0; i!=args.size(); ++i) {
-            LObject result = args.get(i).evaluate(environment);
+        for (LObject condition: conditions) {
+            LObject result = condition.evaluate(environment);
             if (result != LispSymbol.ourNil)
                 return result;
         }
@@ -219,14 +208,13 @@ public abstract class SpecialForms {
         return name;
     }
 
-    //todo: (defun NAME ARGLIST [DOCSTRING] BODY...)
     @Subroutine(value = "defun")
-    public static LObject defineFunction(Environment environment, LispSymbol name, List<LispObject> argList) {
+    public static LObject defineFunction(Environment environment, LispSymbol name, LObject... body) {
         LispSymbol symbol = environment.find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         LispList functionCell = new LispList(new LispSymbol("lambda"));
-        for (int i=0; i!=argList.size(); ++i)
-            functionCell.add(argList.get(i));
+        for (LObject bodyForm: body)
+            functionCell.add(bodyForm);
         f.setFunction(functionCell);
         environment.getGlobalEnvironment().defineSymbol(f);
         return name;
@@ -274,7 +262,7 @@ public abstract class SpecialForms {
                 case 'C': // -- Command name: symbol with interactive function definition.
                     //list of possible commands beginning from [what was printed] and ability to retype
                     break;
-                case 'd': // -- Value of point as number.  Does not do I/O.
+                case 'd': // -- Value of point as number. Does not do I/O.
                     break;
                 case 'D': // -- Directory name.
                     parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
@@ -300,7 +288,7 @@ public abstract class SpecialForms {
                     parameter = getParameter(command.substring(1) + System.getProperty("user.home"));
                     args.add(new LispString(parameter));
                     break;
-                case 'i': // -- Ignored, i.e. always nil.  Does not do I/O.
+                case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
                     args.add(LispSymbol.ourNil);
                     break;
                 case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
@@ -308,22 +296,22 @@ public abstract class SpecialForms {
                     break;
                 case 'K': // -- Key sequence to be redefined (do not downcase the last event).
                     break;
-                case 'm': // -- Value of mark as number.  Does not do I/O.
+                case 'm': // -- Value of mark as number. Does not do I/O.
 
                     break;
-                case 'M': // -- Any string.  Inherits the current input method.
+                case 'M': // -- Any string. Inherits the current input method.
                     break;
                 case 'n': // -- Number read using minibuffer.
                     break;
                 case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
                     break;
-                case 'p': // -- Prefix arg converted to number.  Does not do I/O.
+                case 'p': // -- Prefix arg converted to number. Does not do I/O.
                     break;
-                case 'P': // -- Prefix arg in raw form.  Does not do I/O.
+                case 'P': // -- Prefix arg in raw form. Does not do I/O.
                     break;
-                case 'r': // -- Region: point and mark as 2 numeric args, smallest first.  Does no I/O.
+                case 'r': // -- Region: point and mark as 2 numeric args, smallest first. Does no I/O.
                     break;
-                case 's': // -- Any string.  Does not inherit the current input method.
+                case 's': // -- Any string. Does not inherit the current input method.
                     break;
                 case 'S': // -- Any symbol.
                     break;
@@ -347,14 +335,14 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("progn")
-    public static LObject progn (Environment environment, @Optional List<LObject> args) {
+    public static LObject progn (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
 
         Environment inner = new Environment(environment);
         LObject result = LispSymbol.ourNil;
-        for (int i=0; i!=args.size(); ++i) {
-            result = args.get(i).evaluate(inner);
+        for (LObject arg: args) {
+            result = arg.evaluate(inner);
         }
         return result;
     }

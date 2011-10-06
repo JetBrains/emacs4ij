@@ -29,6 +29,12 @@ public class SpecialFormsTest {
         return parser.parseLine(lispCode).evaluate(environment);
     }
 
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
+    }
+
     @Test
     public void testQuote() throws Exception {
         LObject LObject = evaluateString("'5");
@@ -97,9 +103,26 @@ public class SpecialFormsTest {
         junit.framework.Assert.assertEquals(new LispInteger(15), cond);
     }
 
-    @Test (expected = WrongTypeArgument.class)
-    public void testCondWrongArg() {
-        evaluateString("(cond 5)");
+    @Test
+    public void testCondWrongArg1() {
+        try {
+            evaluateString("(cond (nil 10 15) 5)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof WrongTypeArgument))
+                Assert.fail(q.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testCondWrongArg2() throws Exception {
+        try {
+            evaluateString("(cond 5)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof WrongTypeArgument))
+                Assert.fail(q.getLocalizedMessage());
+        }
     }
 
     @Test
@@ -111,14 +134,24 @@ public class SpecialFormsTest {
 
     @Test
     public void testIfT () {
-        LObject LObject = evaluateString("(if t)");
-        junit.framework.Assert.assertEquals(LispSymbol.ourT, LObject);
+        try {
+            evaluateString("(if t)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof WrongNumberOfArgumentsException))
+                Assert.fail(q.getLocalizedMessage());
+        }
     }
 
     @Test
     public void testIfNil () {
-        LObject LObject = evaluateString("(if nil)");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        try {
+            evaluateString("(if nil)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof WrongNumberOfArgumentsException))
+                Assert.fail(q.getLocalizedMessage());
+        }
     }
 
     @Test
@@ -244,6 +277,13 @@ public class SpecialFormsTest {
         junit.framework.Assert.assertEquals("testFun return value assertion", new LispSymbol("ann"), value);
     }
 
+    @Test (expected = InvalidFunctionException.class)
+    public void testDefunFalseBody () {
+        LObject fun = evaluateString("(defun testFun 5)");
+        junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
+        evaluateString("(testFun)");
+    }
+
     @Test
     public void testFunctionSymbolArgumentsSubstitution() {
         evaluateString("(defun test (a) a)");
@@ -291,6 +331,43 @@ public class SpecialFormsTest {
         LObject lispObject = evaluateString("(progn 1 2 3)");
         Assert.assertEquals(new LispInteger(3), lispObject);
     }
+
+    @Test
+    public void testFunctionDocumentationNil () {
+        evaluateString("(defun a () \"doc\" 2)");
+        LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
+        Assert.assertEquals(LispSymbol.ourNil, doc);
+    }
+
+    @Test
+    public void testDocumentationNoDef () {
+        try {
+            evaluateString("(documentation 'a)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof VoidFunctionException))
+                Assert.fail(q.getLocalizedMessage());
+        }
+    }
+
+    @Test
+    public void testDocumentationString () {
+        evaluateString("(defun a () \"doc\" 2)");
+        LObject doc = evaluateString("(documentation 'a)");
+        Assert.assertEquals(new LispString("doc"), doc);
+    }
+
+    @Test
+    public void testDocumentationProperty () {
+        evaluateString("(defun a () 2)");
+        evaluateString("(put 'a 'function-documentation \"doc\")");
+        LObject doc = evaluateString("(documentation 'a)");
+        Assert.assertEquals(new LispString("doc"), doc);
+        doc = evaluateString("(documentation-property 'a 'function-documentation)");
+        Assert.assertEquals(new LispString("doc"), doc);
+    }
+
+    //todo: not string documentation
 
     @Ignore
     @Test

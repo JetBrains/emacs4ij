@@ -32,10 +32,16 @@ public class BuiltinsSymbolTest {
         return parser.parseLine(lispCode).evaluate(environment);
     }
 
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
+    }
+
     @Test
     public void testSymbolFunction () {
         LObject lispObject = evaluateString("(symbol-function '+)");
-        Assert.assertEquals(new LispString("#<subr +>"), lispObject);
+        Assert.assertEquals(new LispString("#<subr +>"), lispObject.toLispString());
     }
 
     @Test (expected = VoidVariableException.class)
@@ -43,9 +49,15 @@ public class BuiltinsSymbolTest {
         evaluateString("(symbol-function a)");
     }
 
-    @Test (expected = VoidFunctionException.class)
+    @Test
     public void testSymbolFunctionVoidFun() {
-        evaluateString("(symbol-function 'a)");
+        try {
+            evaluateString("(symbol-function 'a)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof VoidFunctionException))
+                org.junit.Assert.fail(q.getLocalizedMessage());
+        }
     }
 
     @Test (expected = WrongTypeArgument.class)
