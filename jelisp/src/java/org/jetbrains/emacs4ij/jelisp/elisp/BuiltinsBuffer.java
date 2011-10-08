@@ -19,47 +19,46 @@ public abstract class BuiltinsBuffer {
         return environment.getCurrentBuffer();
     }
 
-    //TODO: accept ourNil
     @Subroutine("buffer-size")
-    public static LispObject bufferSize(Environment environment, @Optional LispBuffer buffer) {
+    public static LispObject bufferSize(Environment environment, @Optional LObject buffer) {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getCurrentBuffer();
-        return new LispInteger(buffer.getSize());
+        if (!(buffer instanceof LispBuffer))
+            throw new WrongTypeArgument("LispBuffer", buffer.getClass().getSimpleName());
+        return new LispInteger(((LispBuffer)buffer).getSize());
     }
 
-    //TODO: accept ourNil
     @Subroutine("buffer-name")
-    public static LispObject bufferName (Environment environment, @Optional LispBuffer buffer) {
-        if (buffer == null)
+    public static LispObject bufferName (Environment environment, @Optional LObject buffer) {
+        if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getCurrentBuffer();
-        return new LispString(buffer.getName());
+        if (!(buffer instanceof LispBuffer))
+            throw new WrongTypeArgument("LispBuffer", buffer.getClass().getSimpleName());
+        return new LispString(((LispBuffer)buffer).getName());
     }
 
-    /* (get-buffer BUFFER-OR-NAME)
-    Return the buffer named BUFFER-OR-NAME.
-    BUFFER-OR-NAME must be either a string or a buffer.
-    If BUFFER-OR-NAME is a string and there is no buffer with that name, return nil.
-    If BUFFER-OR-NAME is a buffer, return it as given.
-    */
-    //TODO: LispBuffer or LispString. nil not allowed
     @Subroutine("get-buffer")
     public static LObject getBuffer (Environment environment, LObject bufferOrName) {
-        return (bufferOrName instanceof LispString) ? environment.getBufferByName(bufferOrName.toString()) : bufferOrName;
+        if (bufferOrName instanceof  LispString) {
+            return environment.getBufferByName(bufferOrName.toString());
+        }
+        if (bufferOrName instanceof LispBuffer) {
+            return bufferOrName;
+        }
+        throw new WrongTypeArgument("buffer or name", bufferOrName.getClass().getSimpleName());
     }
 
     /* (other-buffer &optional BUFFER VISIBLE-OK FRAME)
          Return most recently selected buffer other than BUFFER.
 Buffers not visible in windows are preferred to visible buffers, unless optional second argument VISIBLE-OK is non-nil.
 If the optional third argument FRAME is non-nil, use that frame's buffer list instead of the selected frame's buffer list.
-If no other buffer exists, the buffer `*scratch*' is returned.
-If BUFFER is omitted or nil, some interesting buffer is returned.
+
      */
-    //TODO:  accept nil as buffer
     @Subroutine("other-buffer")
-    public static LispBuffer otherBuffer (Environment environment, @Optional LispBuffer buffer) {
-        if (buffer == null || buffer.equals(LispSymbol.ourNil))
+    public static LispBuffer otherBuffer (Environment environment, @Optional LObject buffer) {
+        if (buffer == null || !(buffer instanceof LispBuffer))
             return environment.getOtherBuffer();
-        return environment.getOtherBuffer(buffer.getName());
+        return environment.getOtherBuffer(((LispBuffer)buffer).getName());
     }
 
     /*
@@ -108,7 +107,6 @@ If BUFFER is omitted or nil, some interesting buffer is returned.
     messing with the window-buffer correspondences.
      */
     //todo: interactive
-    //todo: bufferOrName = LispBuffer or LispString or nil
     @Subroutine("switch-to-buffer")
     public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
 

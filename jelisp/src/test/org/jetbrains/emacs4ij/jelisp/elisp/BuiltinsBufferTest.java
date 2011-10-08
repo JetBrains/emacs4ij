@@ -3,9 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -28,21 +26,9 @@ public class BuiltinsBufferTest {
     }            */
 
 
-    @Ignore
-    @Test  (expected = EnvironmentException.class)
-    public void testBufferSize() {
-        //TODO LispObject lispObject = BuiltinsBuffer.bufferSize(environment, LispSymbol.ourNil);
-        //Assert.assertEquals(new LispInteger(0), lispObject);
-    }
-
     @Test (expected = EnvironmentException.class)
     public void testCurrentBuffer () {
         BuiltinsBuffer.getCurrentBuffer(environment);
-    }
-
-    @Test (expected = WrongTypeArgument.class)
-    public void testSetBufferWrongType() {
-        BuiltinsBuffer.setBuffer(environment, new LispInteger(5));
     }
 
     @Test (expected = NoBufferException.class)

@@ -42,6 +42,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
     }
 
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
+    }
+
     private LObject eval (String lispCode) {
         return myParser.parseLine(lispCode).evaluate(myEnvironment);
     }
@@ -85,6 +91,25 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
+    @Test
+    public void testGetBuffer_Nil() {
+        try {
+            eval("(get-buffer nil)");
+            Assert.assertEquals(0, 1);
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
+        }
+    }
+
+    @Test
+    public void testSetBufferWrongType() {
+        try {
+            eval("(set-buffer 5)");
+            Assert.assertEquals(0, 1);
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
+        }
+    }
 
     @Test
     public void testBufferSize() {
@@ -107,6 +132,15 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testBufferName_Nil () {
+        LObject currentBufferName = eval("(buffer-name (current-buffer))");
+        LObject lispObject = eval("(buffer-name)");
+        Assert.assertEquals(currentBufferName, lispObject);
+        lispObject = eval("(buffer-name nil)");
+        Assert.assertEquals(currentBufferName, lispObject);
+    }
+
+    @Test
     public void testOtherBuffer_SingleBuffer () {
         while (myEnvironment.getBuffersSize() != 1)
             myEnvironment.closeCurrentBuffer();
@@ -120,7 +154,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             eval("(other-buffer)");
         } catch (RuntimeException e) {
-            Assert.assertEquals("no buffer is currently opened", e.getMessage());
+            Assert.assertEquals("no buffer is currently opened", getCause(e).getMessage());
             return;
         }
         Assert.assertEquals(1, 0);
@@ -225,10 +259,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void testSetBuffer_WrongParameter () {
         try {
             eval("(set-buffer 5)");
-        } catch (WrongTypeArgument e) {
-            return;
+            Assert.assertEquals(0, 1);
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
         }
-        Assert.assertEquals(0, 1);
     }
 
     @Test

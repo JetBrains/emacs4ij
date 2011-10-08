@@ -53,11 +53,6 @@ public abstract class LispSubroutine {
         arguments.setRequiredSize(nRequiredParameters);
     }
 
-
-    private static <T> T[] customizeArrayList(Class<T> type, ArrayList array) {
-        return (T[]) array.toArray((LObject[]) Array.newInstance(type, 0));
-    }
-
     private static ArgumentsList parseArguments (Method m, Environment environment, List<LObject> args) {
         Type[] parametersTypes = m.getGenericParameterTypes();
         Annotation[][] parametersAnnotations = m.getParameterAnnotations();
@@ -65,10 +60,8 @@ public abstract class LispSubroutine {
             throw new RuntimeException("Parameters types and annotations lengths do not match!");
         }
         ArgumentsList arguments = new ArgumentsList();
-
         setOptional(arguments, parametersAnnotations, parametersTypes);
 
-        // check arguments number
         int nActual = args.size();
         if (parametersTypes.length != 0) {
             if (parametersTypes[0].equals(Environment.class)) {
@@ -83,58 +76,78 @@ public abstract class LispSubroutine {
         return arguments;
     }
 
-    private static void checkArguments (ArgumentsList arguments, List<LObject> args, boolean checkTypes) {
-        int argsCounter = 0;
+    private static int checkParameterizedType (ParameterizedType expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+        Type rawType = expectedType.getRawType();
+        Type expectedTypeArguments = expectedType.getActualTypeArguments()[0];
+        try {
+            if (((Class)rawType).isInstance(args.get(argsCounter))) {
+                Type actualTypeArguments = ((ParameterizedType) (Type)args.get(argsCounter).getClass()).getActualTypeArguments()[0];
+                if (!expectedTypeArguments.equals(actualTypeArguments)) {
+                    throw new WrongTypeArgument(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
+                }
+                arguments.setValue(i, args.get(argsCounter));
+                return argsCounter + 1;
+            } else {
+                if (arguments.isOptional(i))
+                    return -1;
+                throw new WrongTypeArgument(expectedType.toString(), args.get(argsCounter).toString());
+            }
+        } catch (IndexOutOfBoundsException e) {
+            if (arguments.isOptional(i))
+                return -1;
+            throw new RuntimeException("wrong arg N check!");
+        }
+    }
 
+    private static <T> T[] customizeArrayList(Class<T> type, ArrayList array) {
+        return (T[]) array.toArray((LObject[]) Array.newInstance(type, 0));
+    }
+
+    private static int checkArray (Class expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+        Class componentType = expectedType.getComponentType();
+        ArrayList array = new ArrayList();
+        while (argsCounter != args.size()) {
+            if (!componentType.isInstance(args.get(argsCounter)))
+                throw new WrongTypeArgument(componentType.toString(), args.get(argsCounter).toString());
+            array.add(args.get(argsCounter));
+            ++argsCounter;
+        }
+        arguments.setValue(i, customizeArrayList(componentType, array));
+        return argsCounter;
+    }
+
+    private static int checkSingleArgument (Class expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+        try {
+            if (!(expectedType.isInstance(args.get(argsCounter)))) {
+                if (arguments.isOptional(i))
+                    return -1;
+                throw new WrongTypeArgument(expectedType.getSimpleName(), args.get(argsCounter).toString());
+            }
+            arguments.setValue(i, args.get(argsCounter));
+            return argsCounter + 1;
+        } catch (IndexOutOfBoundsException e) {
+            if (arguments.isOptional(i))
+                return -1;
+            throw new RuntimeException("wrong arg N check!");
+        }
+    }
+
+    private static void checkArguments (ArgumentsList arguments, List<LObject> args) {
+        int argsCounter = 0;
         for (int i=0; i != arguments.getSize(); ++i) {
             Type expectedType = arguments.getType(i);
             if (i==0 && expectedType.equals(Environment.class))
                 continue;
-            if (ParameterizedType.class.isInstance(expectedType)) { //List<>
-                Type rawType = ((ParameterizedType) expectedType).getRawType();
-                Type expectedTypeArguments = ((ParameterizedType) expectedType).getActualTypeArguments()[0];
-                try {
-                if (((Class)rawType).isInstance(args.get(argsCounter))) {
-                    Type actualTypeArguments = ((ParameterizedType) (Type)args.get(argsCounter).getClass()).getActualTypeArguments()[0];
-                    if (!expectedTypeArguments.equals(actualTypeArguments)) {
-                        throw new WrongTypeArgument(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
-                    }
-                    arguments.setValue(i, args.get(argsCounter));
-                    ++argsCounter;
-                } else {
-                    if (arguments.isOptional(i))
-                        break;
-                    throw new WrongTypeArgument(expectedType.toString(), args.get(argsCounter).toString());
-                }
-                } catch (IndexOutOfBoundsException e) {
-                    if (!arguments.isOptional(i))
-                        throw new RuntimeException("wrong arg N check!");
-                }
-            } else if (((Class)expectedType).isArray()) { //Object...
-                Class componentType = ((Class)expectedType).getComponentType();
-                ArrayList array = new ArrayList();
-                while (argsCounter != args.size()) {
-                    if (!componentType.isInstance(args.get(argsCounter)))
-                        throw new WrongTypeArgument(componentType.toString(), args.get(argsCounter).toString());
-                    array.add(args.get(argsCounter));
-                    ++argsCounter;
-                }
-                arguments.setValue(i, customizeArrayList(componentType, array));
+            if (ParameterizedType.class.isInstance(expectedType)) {
+                argsCounter = checkParameterizedType((ParameterizedType) expectedType, arguments, args, argsCounter, i);
+            } else if (((Class)expectedType).isArray()) {
+                argsCounter = checkArray((Class) expectedType, arguments, args, argsCounter, i);
             }
-            else { // one by one
-                try {
-                if (!(((Class)expectedType).isInstance(args.get(argsCounter)))) {
-                    if (arguments.isOptional(i))
-                        continue;
-                    throw new WrongTypeArgument(((Class)expectedType).getSimpleName(), args.get(argsCounter).toString());
-                }
-                arguments.setValue(i, args.get(argsCounter));
-                ++argsCounter;
-                } catch (IndexOutOfBoundsException e) {
-                    if (!arguments.isOptional(i))
-                        throw new RuntimeException("wrong arg N check!");
-                }
+            else {
+                argsCounter = checkSingleArgument((Class) expectedType, arguments, args, argsCounter, i);
             }
+            if (argsCounter == -1)
+                break;
         }
     }
 
@@ -163,7 +176,7 @@ public abstract class LispSubroutine {
                     continue;
                 if (annotation.value().equals(f.getName())) {
                     ArgumentsList arguments = parseArguments(m, environment, args);
-                    checkArguments(arguments, args, (type.equals(LispSymbol.FunctionType.BuiltIn)));
+                    checkArguments(arguments, args);
                     try {
                         return (LObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
