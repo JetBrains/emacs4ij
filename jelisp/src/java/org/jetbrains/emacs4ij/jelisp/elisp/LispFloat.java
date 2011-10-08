@@ -26,14 +26,7 @@ public class LispFloat extends LispNumber<Double> {
 
     @Override
     public String toString() {
-        return "LispFloat{" +
-                "myData=" + myData +
-                '}';
-    }
-
-    @Override
-    public LispString toLispString() {
-        return new LispString(Double.toString(myData));
+        return Double.toString(myData);
     }
 
     @Override

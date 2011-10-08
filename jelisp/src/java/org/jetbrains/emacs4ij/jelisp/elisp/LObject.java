@@ -10,7 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public interface LObject {
-    LispString toLispString();
+   // LispString toLispString();
 
     LObject evaluate(Environment environment);
 

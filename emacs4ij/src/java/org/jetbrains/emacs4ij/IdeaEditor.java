@@ -9,7 +9,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,9 +50,8 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         return myEditor;
     }
 
-    @Override
-    public LispString toLispString() {
-        throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
+    public String toString() {
+        return "#<buffer " + myName + ">";
     }
 
     @Override

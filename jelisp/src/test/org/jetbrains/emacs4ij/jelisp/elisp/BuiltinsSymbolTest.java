@@ -41,7 +41,7 @@ public class BuiltinsSymbolTest {
     @Test
     public void testSymbolFunction () {
         LObject lispObject = evaluateString("(symbol-function '+)");
-        Assert.assertEquals(new LispString("#<subr +>"), lispObject.toLispString());
+        Assert.assertEquals(new LispString("#<subr +>"), new LispString(lispObject.toString()));
     }
 
     @Test (expected = VoidVariableException.class)

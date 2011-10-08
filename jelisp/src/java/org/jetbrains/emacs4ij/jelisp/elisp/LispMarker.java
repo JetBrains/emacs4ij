@@ -62,11 +62,6 @@ public class LispMarker extends LispObject {
     }
 
     @Override
-    public LispString toLispString() {
-        return new LispString(toString());
-    }
-
-    @Override
     public String toString() {
         if (myBuffer == null)
             return "#<marker in no buffer>";

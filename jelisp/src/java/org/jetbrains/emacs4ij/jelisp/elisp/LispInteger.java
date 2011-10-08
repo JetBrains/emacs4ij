@@ -18,9 +18,7 @@ public class LispInteger extends LispNumber<Integer> {
 
     @Override
     public String toString() {
-        return "LispInteger{" +
-                "myData=" + myData +
-                '}';
+        return Integer.toString(myData);
     }
 
     @Override
@@ -38,8 +36,4 @@ public class LispInteger extends LispNumber<Integer> {
         return myData;
     }
 
-    @Override
-    public LispString toLispString() {
-        return new LispString(Integer.toString(myData));
-    }
 }

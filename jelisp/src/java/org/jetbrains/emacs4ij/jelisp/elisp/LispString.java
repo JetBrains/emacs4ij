@@ -18,12 +18,13 @@ public class LispString extends LispAtom {
         myData = data.replaceAll("\\\\\"", "\"");
     }
 
+    public String getData() {
+        return myData;
+    }
+
     @Override
     public String toString() {
-        return myData;
-        /*return "LispString{" +
-                "myData='" + myData + '\'' +
-                '}';*/
+        return '"' + myData + '"';
     }
 
     @Override
@@ -40,11 +41,6 @@ public class LispString extends LispAtom {
     @Override
     public int hashCode() {
         return myData != null ? myData.hashCode() : 0;
-    }
-
-    @Override
-    public LispString toLispString() {
-        return new LispString('"' + myData + '"');
     }
 
     @Override

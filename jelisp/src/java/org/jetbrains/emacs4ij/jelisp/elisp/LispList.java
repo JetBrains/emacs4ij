@@ -42,21 +42,6 @@ public class LispList extends LispObject {
         return ((myData == null) || myData.isEmpty());
     }
 
-    @Override
-    public LispString toLispString() {
-        String list = "(";
-        if (isEmpty()) {
-            list += ")";
-            return new LispString(list);
-        }
-        for (LObject lispObject: myData) {
-            list += lispObject.toLispString() + " ";
-        }
-        list = list.trim();
-        list += ")";
-        return new LispString(list);
-    }
-
     /**
      *
      *
@@ -88,9 +73,13 @@ public class LispList extends LispObject {
 
     @Override
     public String toString() {
-        return "LispList{" +
-                "myData=" + myData +
-                '}';
+        if (isEmpty())
+            return "()";
+        String list = "(";
+        for (LObject lispObject: myData) {
+            list += lispObject.toString() + " ";
+        }
+        return list.trim() + ")";
     }
 
     @Override

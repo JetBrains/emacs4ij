@@ -89,11 +89,6 @@ public class Lambda extends LispObject {
     }
 
     @Override
-    public LispString toLispString() {
-        return new LispString(toString());
-    }
-
-    @Override
     public LObject evaluate(Environment environment) {
         throw new RuntimeException("wrong usage");
     }

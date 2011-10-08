@@ -86,9 +86,11 @@ public class LispSymbol extends LispAtom {
 
     @Override
     public String toString() {
-        return "LispSymbol{" +
-                "myName='" + myName + '\'' +
-                '}';
+        if (myFunction.equals(ourVoid))
+            return myName;
+        if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
+            return "#<subr " + myName + '>';
+        return myFunction.toString();
     }
 
     public boolean is (FunctionType functionType) {
@@ -114,13 +116,6 @@ public class LispSymbol extends LispAtom {
         result = 31 * result + (myFunction != null ? myFunction.hashCode() : 0);
         result = 31 * result + (myProperties != null ? myProperties.hashCode() : 0);
         return result;
-    }
-
-    @Override
-    public LispString toLispString() {
-        if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
-            return (LispString)myFunction;
-        return new LispString(myName);
     }
 
     @Override

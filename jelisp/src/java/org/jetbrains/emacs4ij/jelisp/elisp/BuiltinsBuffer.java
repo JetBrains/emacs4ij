@@ -40,7 +40,7 @@ public abstract class BuiltinsBuffer {
     @Subroutine("get-buffer")
     public static LObject getBuffer (Environment environment, LObject bufferOrName) {
         if (bufferOrName instanceof  LispString) {
-            return environment.getBufferByName(bufferOrName.toString());
+            return environment.getBufferByName(((LispString)bufferOrName).getData());
         }
         if (bufferOrName instanceof LispBuffer) {
             return bufferOrName;
@@ -125,7 +125,7 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
             return buffer;
         }
         if (bufferOrName instanceof LispString) {
-            LObject buffer = environment.getBufferByName(bufferOrName.toString());
+            LObject buffer = environment.getBufferByName(((LispString) bufferOrName).getData());
             if (buffer.equals(LispSymbol.ourNil)) {
                 return new LispString("It is not allowed to create files this way.");
                 // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
