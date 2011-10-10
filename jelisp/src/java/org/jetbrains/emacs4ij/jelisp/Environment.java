@@ -53,7 +53,8 @@ public class Environment {
         return myGlobalEnvironment;
     }
 
-    private void setSubroutines (Class[] subroutineContainers, LispSymbol.FunctionType type) {
+    private void setSubroutines () {
+        Class[] subroutineContainers = LispSubroutine.getSubroutineClasses();
         for (Class subroutineContainer: subroutineContainers) {
             Method[] methods = subroutineContainer.getMethods();
             for (Method m: methods) {
@@ -61,7 +62,7 @@ public class Environment {
                 if (annotation == null)
                     continue;
                 String name = annotation.value();
-                mySymbols.put(name, new LispSymbol(name, type));
+                mySymbols.put(name, LispSymbol.newSubroutine(name));
             }
         }
     }
@@ -69,10 +70,7 @@ public class Environment {
     private void setGlobal() {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
-        Class[] lispBuiltIns = LispSubroutine.getBuiltInsClasses();
-        setSubroutines(lispBuiltIns, LispSymbol.FunctionType.BuiltIn);
-        Class[] lispSpecialForms = LispSubroutine.getSpecialFormsClasses();
-        setSubroutines(lispSpecialForms, LispSymbol.FunctionType.SpecialForm);
+        setSubroutines();
        // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
     }
 

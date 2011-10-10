@@ -78,7 +78,7 @@ internal-doc-file-name. У меня он находится в
             if (!funPropValue.equals(LispSymbol.ourNil))
                 return funPropValue;
 
-            if (f.is(LispSymbol.FunctionType.Custom)) {
+            if (f.isCustom()) {
                 f.castToLambda(environment);
                 return ((Lambda)f.getFunction()).getDocString();
             }

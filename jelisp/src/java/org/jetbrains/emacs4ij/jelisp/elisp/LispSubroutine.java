@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
@@ -7,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 /**
  * Created by IntelliJ IDEA.
@@ -30,12 +32,8 @@ public abstract class LispSubroutine {
         return false;
     }
 
-    public static Class[] getBuiltInsClasses () {
-        return myBuiltIns;
-    }
-
-    public static Class[] getSpecialFormsClasses () {
-        return mySpecialForms;
+    public static Class[] getSubroutineClasses () {
+        return (Class[]) ArrayUtils.addAll(myBuiltIns, mySpecialForms);
     }
 
     private static void setOptional(ArgumentsList arguments, Annotation[][] parametersAnnotations, Type[] parametersTypes) {
@@ -152,22 +150,7 @@ public abstract class LispSubroutine {
     }
 
     public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
-        Class[] subroutines = null;
-        LispSymbol.FunctionType type = LispSymbol.FunctionType.SpecialForm;
-        if (f.is(LispSymbol.FunctionType.SpecialForm)) {
-            subroutines = mySpecialForms;
-        }
-        if (f.is(LispSymbol.FunctionType.BuiltIn)) {
-            subroutines = myBuiltIns;
-            type = LispSymbol.FunctionType.BuiltIn;
-            for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
-                args.set(i, args.get(i).evaluate(environment));
-            }
-        }
-        if (subroutines == null)
-            throw new RuntimeException("invalid usage of symbol evaluation: " + f.getName());
-
-
+        Class[] subroutines = getSubroutineClasses();
         for (Class c: subroutines) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {
@@ -175,6 +158,11 @@ public abstract class LispSubroutine {
                 if (annotation == null)
                     continue;
                 if (annotation.value().equals(f.getName())) {
+                    if (Arrays.asList(myBuiltIns).contains(c)) {
+                        for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+                            args.set(i, args.get(i).evaluate(environment));
+                        }
+                    }
                     ArgumentsList arguments = parseArguments(m, environment, args);
                     checkArguments(arguments, args);
                     try {
@@ -187,6 +175,6 @@ public abstract class LispSubroutine {
                 }
             }
         }
-        throw new RuntimeException("unknown " + type.getValue() + " " + f.getName());
+        throw new RuntimeException("unknown subroutine " + f.getName());
     }
 }

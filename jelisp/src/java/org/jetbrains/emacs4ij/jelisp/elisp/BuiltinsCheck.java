@@ -26,8 +26,7 @@ public abstract class BuiltinsCheck {
     public static LispObject subrp (LObject arg) {
         if (!(arg instanceof LispSymbol))
             return LispSymbol.ourNil;
-        return ((LispSymbol)(arg)).is(LispSymbol.FunctionType.BuiltIn)  ||
-                ((LispSymbol)(arg)).is(LispSymbol.FunctionType.SpecialForm)? LispSymbol.ourT : LispSymbol.ourNil;
+        return ((LispSymbol)(arg)).isSubroutine() ? LispSymbol.ourT : LispSymbol.ourNil;
     }
     @Subroutine("bufferp")
     public static LispObject bufferp (LObject arg) {

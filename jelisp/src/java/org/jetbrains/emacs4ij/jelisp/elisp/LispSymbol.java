@@ -20,16 +20,6 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
 
-    public enum FunctionType {SpecialForm ("special form"), BuiltIn ("builtin function"), Custom ("custom function");
-        private final String myValue;
-        FunctionType (String value) {
-            myValue = value;
-        }
-        public String getValue() {
-            return myValue;
-        }
-    }
-
     private String myName = null;
     private LObject myValue = ourVoid;
     private LispObject myFunction = ourVoid;
@@ -40,14 +30,10 @@ public class LispSymbol extends LispAtom {
         this.myName = myName;
     }
 
-    public LispSymbol (String myName, FunctionType functionType) {
-        this.myName = myName;
-        if (functionType.equals(FunctionType.BuiltIn) || functionType.equals(FunctionType.SpecialForm)) {
-            myFunction = new LispString("#<subr " + myName + ">");
-            setProperty("function-type", new LispString(functionType.getValue()));
-            return;
-        }
-        throw new RuntimeException("Invalid initialization of custom function " + myName + ", type " + functionType.getValue());
+    public static LispSymbol newSubroutine (String myName) {
+        LispSymbol subroutine = new LispSymbol(myName);
+        subroutine.myFunction = new LispString("#<subr " + myName + ">");
+        return subroutine;
     }
 
     public LispSymbol (String myName, LObject value) {
@@ -71,16 +57,11 @@ public class LispSymbol extends LispAtom {
         return myFunction;
     }
 
-    public boolean castToLambda (Environment environment) {
-        if (is(FunctionType.Custom)) {
-            myFunction = new Lambda((LispList) myFunction, environment);
-            return true;
-        }
-        return false;
+    public void castToLambda (Environment environment) {
+        myFunction = new Lambda((LispList) myFunction, environment);
     }
 
     public void setFunction(LispObject myFunction) {
-        setProperty("function-type", new LispString(FunctionType.Custom.getValue()));
         this.myFunction = myFunction;
     }
 
@@ -88,15 +69,17 @@ public class LispSymbol extends LispAtom {
     public String toString() {
         if (myFunction.equals(ourVoid))
             return myName;
-        if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
+        if (isSubroutine())
             return "#<subr " + myName + '>';
         return myFunction.toString();
     }
 
-    public boolean is (FunctionType functionType) {
+    public boolean isSubroutine () {
+        return (myFunction instanceof LispString);
+    }
 
-        LispObject fType = getProperty("function-type");
-        return !fType.equals(ourNil) && fType.equals(new LispString(functionType.getValue()));
+    public boolean isCustom() {
+        return ((myFunction instanceof LispList) || (myFunction instanceof Lambda));
     }
 
     @Override
@@ -131,7 +114,7 @@ public class LispSymbol extends LispAtom {
     }
 
     public LObject evaluateFunction (Environment environment, List<LObject> args) {
-        if (is(FunctionType.BuiltIn) || is(FunctionType.SpecialForm))
+        if (isSubroutine())
             return LispSubroutine.evaluate(this, environment, args);
 
         for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
