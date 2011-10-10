@@ -50,7 +50,7 @@ public class BuiltinsSymbolTest {
     }
 
     @Test
-    public void testSymbolFunctionVoidFun() {
+    public void testSymbolFunctionVoidFunNonExistentSymbol() {
         try {
             evaluateString("(symbol-function 'a)");
         } catch (Exception e) {
@@ -59,6 +59,20 @@ public class BuiltinsSymbolTest {
                 org.junit.Assert.fail(q.getLocalizedMessage());
         }
     }
+
+    @Test
+    public void testSymbolFunctionVoidFunExistingSymbol() {
+        try {
+            evaluateString("(defvar a 10)");
+            evaluateString("(symbol-function 'a)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof VoidFunctionException))
+                org.junit.Assert.fail(q.getLocalizedMessage());
+        }
+    }
+
+
 
     @Test (expected = WrongTypeArgument.class)
     public void testSymbolFunctionWrongArg() {

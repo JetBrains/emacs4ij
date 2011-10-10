@@ -94,8 +94,9 @@ public class LispSymbol extends LispAtom {
     }
 
     public boolean is (FunctionType functionType) {
+
         LispObject fType = getProperty("function-type");
-        return fType.equals(new LispString(functionType.getValue()));
+        return !fType.equals(ourNil) && fType.equals(new LispString(functionType.getValue()));
     }
 
     @Override

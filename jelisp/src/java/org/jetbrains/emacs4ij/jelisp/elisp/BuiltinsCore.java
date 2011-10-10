@@ -12,11 +12,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
-    @Subroutine("test")
-    public static LispObject test (LispInteger a, @Optional LispInteger b, LispInteger c) {
-        return null;
-    }
-
     //todo: accept MARKERS
     @Subroutine("+")
     public static LispNumber plus (@Optional LispNumber... args) {

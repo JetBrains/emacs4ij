@@ -96,9 +96,4 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
-    @Test
-    public void testTest() {
-        LObject lispObject = evaluateString("(test 1 2 3)");
-        Assert.assertNull(lispObject);
-    }
 }

@@ -1,6 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.Parser;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -11,37 +15,54 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class BuiltinsCheckTest {
+    private Environment environment;
 
-     @Test
+    @Before
+    public void setUp() throws Exception {
+        Environment.ourEmacsPath = "/usr/share/emacs/23.2";
+        Environment global = new Environment();
+        environment = new Environment(global);
+    }
+
+    private LObject evaluateString (String lispCode) throws LispException {
+        Parser parser = new Parser();
+        return parser.parseLine(lispCode).evaluate(environment);
+    }
+
+    @Test
     public void testStringp() throws Exception {
-        LispObject lispObject = BuiltinsCheck.stringp(new LispString("hello"));
+        LObject lispObject = evaluateString("(stringp \"hello\")");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = BuiltinsCheck.stringp(new LispSymbol("hello"));
+        lispObject = evaluateString("(stringp 'hello)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
     @Test
     public void testSymbolp() throws Exception {
-        LispObject lispObject = BuiltinsCheck.symbolp(new LispString("hello"));
+        LObject lispObject = evaluateString("(symbolp \"hello\")");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = BuiltinsCheck.symbolp(new LispSymbol("hello"));
+        lispObject = evaluateString("(symbolp 'hello)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test
     public void testIntegerp() throws Exception {
-        LispObject lispObject = BuiltinsCheck.integerp(new LispInteger(1));
+        LObject lispObject = evaluateString("(integerp 1)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = BuiltinsCheck.integerp(new LispSymbol("hello"));
+        lispObject = evaluateString("(integerp 'hello)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
     @Test
     public void testSubrp() throws Exception {
-        //TODO: non nil
-
-        LispObject lispObject = BuiltinsCheck.subrp(new LispInteger(1));
+        LObject lispObject = evaluateString("(subrp 1)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(subrp 'if)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(subrp (symbol-function 'if))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(subrp (symbol-function 'put))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
 }

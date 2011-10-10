@@ -16,8 +16,8 @@ public abstract class BuiltinsSymbol {
 
     @Subroutine("symbol-function")
     public static LObject symbolFunction(Environment environment, LispSymbol arg) {
-        LObject f = environment.find(arg.getName());
-        if (f == null)
+        LispSymbol f = environment.find(arg.getName());
+        if (f == null || f.getFunction().equals(LispSymbol.ourVoid))
             throw new VoidFunctionException(arg.getName());
         return f;
     }
