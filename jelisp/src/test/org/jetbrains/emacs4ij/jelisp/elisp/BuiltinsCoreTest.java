@@ -75,7 +75,7 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testEq() {
+    public void testEqNumbers() {
         LObject lispObject = evaluateString("(eq 5 5)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }

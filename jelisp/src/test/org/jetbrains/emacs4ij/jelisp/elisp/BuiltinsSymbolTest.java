@@ -72,8 +72,6 @@ public class BuiltinsSymbolTest {
         }
     }
 
-
-
     @Test (expected = WrongTypeArgument.class)
     public void testSymbolFunctionWrongArg() {
         evaluateString("(symbol-function 5)");

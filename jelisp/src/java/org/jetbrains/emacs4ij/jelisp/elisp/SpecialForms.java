@@ -338,7 +338,6 @@ return LispSymbol.ourNil; */
     public static LObject progn (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
-
         Environment inner = new Environment(environment);
         LObject result = LispSymbol.ourNil;
         for (LObject arg: args) {

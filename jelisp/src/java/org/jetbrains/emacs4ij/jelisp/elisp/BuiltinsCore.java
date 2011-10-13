@@ -51,10 +51,27 @@ public abstract class BuiltinsCore {
         return value;
     }
 
-    @Subroutine("eq")
-    public static LispObject eq (LObject one, LObject two) {
+    @Subroutine("equal")
+    public static LispObject equal (LObject one, LObject two) {
         if (one.equals(two))
             return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
+    /* eq returns t if object1 and object2 are integers with the same value.
+    Also, since symbol names are normally unique, if the arguments are symbols with the same name, they are eq.
+    For other types (e.g., lists, vectors, strings), two arguments with the same contents or elements are not necessarily eq to each
+    other: they are eq only if they are the same object, meaning that a change in the contents of one will be reflected by the
+    same change in the contents of the other.
+    * */
+
+    @Subroutine("eq")
+    public static LispObject eq (LObject one, LObject two) {
+        if (one == two) return LispSymbol.ourT;
+        if (one.getClass() != two.getClass()) return LispSymbol.ourNil;
+        if (one instanceof LispNumber) {
+            return (((LispNumber) one).getData()  == ((LispNumber) two).getData()) ? LispSymbol.ourT : LispSymbol.ourNil;
+        }
         return LispSymbol.ourNil;
     }
 

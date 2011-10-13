@@ -69,7 +69,7 @@ public class MyProjectComponent implements ProjectComponent {
                 }
                 try {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
-                        myEnvironment.setCurrentBuffer(fileEditorManagerEvent.getNewFile().getName());
+                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     else myEnvironment.setSelectionManagedBySubroutine(false);
 
                     System.out.print("select: ");

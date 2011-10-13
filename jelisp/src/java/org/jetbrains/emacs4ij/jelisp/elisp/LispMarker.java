@@ -17,13 +17,19 @@ public class LispMarker extends LispObject {
     public LispMarker () {
         myPosition = 0;
         myBuffer = null;
-        myInsertionType = null;
+        myInsertionType = LispSymbol.ourNil;
     }
 
     public LispMarker (int position, LispBuffer buffer) {
         myPosition = position;
         myBuffer = buffer;
         myInsertionType = LispSymbol.ourNil;
+    }
+
+    public LispMarker (LispMarker marker) {
+        myPosition = marker.myPosition;
+        myBuffer = marker.myBuffer;
+        myInsertionType = marker.myInsertionType;
     }
 
     public LispSymbol getInsertionType() {
@@ -65,9 +71,15 @@ public class LispMarker extends LispObject {
     public String toString() {
         if (myBuffer == null)
             return "#<marker in no buffer>";
-        return "#<marker at " + myPosition + " in " + myBuffer.getName() +
-                ", myInsertionType=" + myInsertionType +
-                '>';
+        return "#<marker at " + myPosition + " in " + myBuffer.getName() + '>';
+    }
+
+    public int getPosition() {
+        return myPosition;
+    }
+
+    public void setPosition(int myPosition) {
+        this.myPosition = myPosition;
     }
 
     @Override

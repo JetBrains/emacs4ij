@@ -330,6 +330,9 @@ public class SpecialFormsTest {
     public void testProgn() throws Exception {
         LObject lispObject = evaluateString("(progn 1 2 3)");
         Assert.assertEquals(new LispInteger(3), lispObject);
+        evaluateString("(progn (defvar pvar 50))");
+        lispObject = evaluateString("pvar");
+        Assert.assertEquals(new LispInteger(50), lispObject);
     }
 
     @Test

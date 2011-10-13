@@ -16,13 +16,13 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("current-buffer")
     public static LispBuffer getCurrentBuffer(Environment environment) {
-        return environment.getCurrentBuffer();
+        return environment.getBufferCurrentForEditing();
     }
 
     @Subroutine("buffer-size")
     public static LispObject bufferSize(Environment environment, @Optional LObject buffer) {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
-            buffer = environment.getCurrentBuffer();
+            buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
             throw new WrongTypeArgument("LispBuffer", buffer.getClass().getSimpleName());
         return new LispInteger(((LispBuffer)buffer).getSize());
@@ -31,7 +31,7 @@ public abstract class BuiltinsBuffer {
     @Subroutine("buffer-name")
     public static LispObject bufferName (Environment environment, @Optional LObject buffer) {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
-            buffer = environment.getCurrentBuffer();
+            buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
             throw new WrongTypeArgument("LispBuffer", buffer.getClass().getSimpleName());
         return new LispString(((LispBuffer)buffer).getName());
@@ -40,7 +40,10 @@ public abstract class BuiltinsBuffer {
     @Subroutine("get-buffer")
     public static LObject getBuffer (Environment environment, LObject bufferOrName) {
         if (bufferOrName instanceof  LispString) {
-            return environment.getBufferByName(((LispString)bufferOrName).getData());
+            LispBuffer buffer = environment.findBuffer(((LispString)bufferOrName).getData());
+            if (buffer == null)
+                return LispSymbol.ourNil;
+            return buffer;
         }
         if (bufferOrName instanceof LispBuffer) {
             return bufferOrName;
@@ -48,12 +51,7 @@ public abstract class BuiltinsBuffer {
         throw new WrongTypeArgument("buffer or name", bufferOrName.getClass().getSimpleName());
     }
 
-    /* (other-buffer &optional BUFFER VISIBLE-OK FRAME)
-         Return most recently selected buffer other than BUFFER.
-Buffers not visible in windows are preferred to visible buffers, unless optional second argument VISIBLE-OK is non-nil.
-If the optional third argument FRAME is non-nil, use that frame's buffer list instead of the selected frame's buffer list.
-
-     */
+    // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
     @Subroutine("other-buffer")
     public static LispBuffer otherBuffer (Environment environment, @Optional LObject buffer) {
         if (buffer == null || !(buffer instanceof LispBuffer))
@@ -61,52 +59,19 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
         return environment.getOtherBuffer(((LispBuffer)buffer).getName());
     }
 
-    /*
-    (set-buffer BUFFER-OR-NAME)
-    Make buffer BUFFER-OR-NAME current for editing operations.
-    BUFFER-OR-NAME may be a buffer or the name of an existing buffer.
-    See also `save-excursion' when you want to make a buffer current temporarily.
-    This function does not display the buffer, so its effect ends when the current command terminates.
-    Use `switch-to-buffer' or `pop-to-buffer' to switch buffers permanently.
-     */
     @Subroutine("set-buffer")
     public static LObject setBuffer (Environment environment, LObject bufferOrName) {
         LObject lispObject = getBuffer(environment, bufferOrName);
         if (lispObject.equals(LispSymbol.ourNil)) {
             throw new NoBufferException(bufferOrName.toString());
         }
+        if (!environment.isMainEnvironment()) {
+            environment.setBufferCurrentForEditing((LispBuffer)lispObject);
+        }
         return lispObject;
     }
 
-    /*
-    switch-to-buffer is an interactive built-in function in `C source code'.
-
-    It is bound to C-x b, <menu-bar> <buffer> <select-named-buffer>.
-
-    (switch-to-buffer BUFFER-OR-NAME &optional NORECORD)
-
-    Make BUFFER-OR-NAME current and display it in selected window.
-    BUFFER-OR-NAME may be a buffer, a string (a buffer name), or
-    nil.  Return the buffer switched to.
-
-    If BUFFER-OR-NAME is a string and does not identify an existing
-    buffer, create a new buffer with that name.  Interactively, if
-    `confirm-nonexistent-file-or-buffer' is non-nil, request
-    confirmation before creating a new buffer.  If BUFFER-OR-NAME is
-    nil, switch to buffer returned by `other-buffer'.
-
-    Optional second arg NORECORD non-nil means do not put this buffer
-    at the front of the list of recently selected ones.  This
-    function returns the buffer it switched to as a Lisp object.
-
-    If the selected window is the minibuffer window or dedicated to
-    its buffer, use `pop-to-buffer' for displaying the buffer.
-
-    WARNING: This is NOT the way to work on another buffer temporarily
-    within a Lisp program!  Use `set-buffer' instead.  That avoids
-    messing with the window-buffer correspondences.
-     */
-    //todo: interactive
+    //todo: interactive, bound to C-x b, <menu-bar> <buffer> <select-named-buffer>
     @Subroutine("switch-to-buffer")
     public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
 
@@ -120,20 +85,20 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
             LispBuffer buffer = environment.getOtherBuffer();
             buffer.setBufferActive();
             if (!noRecord) {
-                environment.setCurrentBuffer(buffer.getName());
+                environment.switchToBuffer(buffer.getName());
             }
             return buffer;
         }
         if (bufferOrName instanceof LispString) {
-            LObject buffer = environment.getBufferByName(((LispString) bufferOrName).getData());
-            if (buffer.equals(LispSymbol.ourNil)) {
+            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
+            if (buffer == null) {
                 return new LispString("It is not allowed to create files this way.");
                 // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
                 //? : where to create a buffer?
             }
-            ((LispBuffer)buffer).setBufferActive();
+            buffer.setBufferActive();
             if (!noRecord) {
-                environment.setCurrentBuffer(((LispBuffer)buffer).getName());
+                environment.switchToBuffer(buffer.getName());
             }
             return buffer;
         }
@@ -141,7 +106,7 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
             //todo:  If the selected window is the minibuffer window or dedicated to its buffer, use `pop-to-buffer' for displaying the buffer.
             ((LispBuffer)bufferOrName).setBufferActive();
             if (!noRecord) {
-                environment.setCurrentBuffer(((LispBuffer)bufferOrName).getName());
+                environment.switchToBuffer(((LispBuffer) bufferOrName).getName());
             }
             return bufferOrName;
         }
@@ -150,28 +115,28 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
 
     @Subroutine("point")
     public static LObject point (Environment environment) {
-        return new LispInteger(environment.getCurrentBuffer().point());
+        return new LispInteger(environment.getBufferCurrentForEditing().point());
     }
 
     @Subroutine("point-min")
     public static LObject pointMin (Environment environment) {
-        return new LispInteger(environment.getCurrentBuffer().pointMin());
+        return new LispInteger(environment.getBufferCurrentForEditing().pointMin());
     }
 
     @Subroutine("point-max")
     public static LObject pointMax (Environment environment) {
-        return new LispInteger(environment.getCurrentBuffer().pointMax());
+        return new LispInteger(environment.getBufferCurrentForEditing().pointMax());
     }
 
     @Subroutine("buffer-end")
     public static LObject bufferEnd (Environment environment, LispNumber arg) {
-        return new LispInteger(environment.getCurrentBuffer().bufferEnd((Double)arg.getData()));
+        return new LispInteger(environment.getBufferCurrentForEditing().bufferEnd((Double)arg.getData()));
     }
 
     //todo: interactive, accepts integer OR MARKER
     @Subroutine("goto-char")
     public static LObject gotoChar (Environment environment, LispInteger pos) {
-        environment.getCurrentBuffer().gotoChar(pos.getData());
+        environment.getBufferCurrentForEditing().gotoChar(pos.getData());
         return pos;
     }
 
@@ -181,7 +146,7 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
         if (shift == null) {
             shift = new LispInteger(1);
         }
-        String message = environment.getCurrentBuffer().forwardChar(shift.getData());
+        String message = environment.getBufferCurrentForEditing().forwardChar(shift.getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);
@@ -193,7 +158,7 @@ If the optional third argument FRAME is non-nil, use that frame's buffer list in
         if (shift == null) {
             shift = new LispInteger(1);
         }
-        String message = environment.getCurrentBuffer().forwardChar(-shift.getData());
+        String message = environment.getBufferCurrentForEditing().forwardChar(-shift.getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);

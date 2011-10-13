@@ -158,7 +158,7 @@ public abstract class LispSubroutine {
                 if (annotation == null)
                     continue;
                 if (annotation.value().equals(f.getName())) {
-                    if (Arrays.asList(myBuiltIns).contains(c)) {
+                    if (!Arrays.asList(mySpecialForms).contains(c)) {
                         for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                             args.set(i, args.get(i).evaluate(environment));
                         }

@@ -22,7 +22,7 @@ public class Environment {
     private HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
     private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
     private Environment myOuterEnv;
-
+    private LispBuffer myBufferCurrentForEditing = null;
     private boolean selectionManagedBySubroutine = false;
 
     public static String ourEmacsPath = "";
@@ -72,6 +72,10 @@ public class Environment {
         mySymbols.put("t", LispSymbol.ourT);
         setSubroutines();
        // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
+    }
+
+    public boolean isMainEnvironment () {
+        return (myOuterEnv.equals(myGlobalEnvironment));
     }
 
     /*private void indexEmacsSources() {
@@ -128,7 +132,7 @@ public class Environment {
         myBuffers.add(buffer);
     }
 
-    public LispBuffer getCurrentBuffer () {
+    private LispBuffer getCurrentBuffer () {
         if (myBuffers.size() == 0)
             throw new EnvironmentException("no buffer is currently opened");
         return myBuffers.get(myBuffers.size() - 1);
@@ -142,7 +146,11 @@ public class Environment {
         return -1;
     }
 
-    public void setCurrentBuffer (String bufferName) {
+    public void switchToBuffer(String bufferName) {
+        if (!isMainEnvironment()) {
+            myOuterEnv.switchToBuffer(bufferName);
+            return;
+        }
         if (myBuffers.size() == 0)
             throw new EnvironmentException("no buffer is currently opened");
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
@@ -153,17 +161,27 @@ public class Environment {
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
     }
 
-    public LObject getBufferByName(String bufferName) {
-        for (int i=0; i!= myBuffers.size(); ++i) {
-            if (myBuffers.get(i).getName().equals(bufferName))
-                return myBuffers.get(i);
-        }
-        return LispSymbol.ourNil;
+    public void setBufferCurrentForEditing (LispBuffer buffer) {
+        myBufferCurrentForEditing = buffer;
     }
 
-   /* public LObject getBuffer (String bufferName) {
-        return getBufferByName(bufferName);
-    }                   */
+    public LispBuffer getBufferCurrentForEditing() {
+        if (myBufferCurrentForEditing == null) {
+            return getCurrentBuffer();
+        }
+        return myBufferCurrentForEditing;
+    }
+
+
+    public LispBuffer findBuffer (String bufferName) {
+        for (LispBuffer buffer: myBuffers) {
+            if (buffer.getName().equals(bufferName))
+                return buffer;
+        }
+        if (myOuterEnv != null)
+            return myOuterEnv.findBuffer(bufferName);
+        return null;
+    }
 
     public LispBuffer getOtherBuffer () {
         if (myBuffers.size() < 2)
@@ -194,7 +212,6 @@ public class Environment {
         myBuffers.remove(getCurrentBuffer());
     }
 
-
     public void closeAllBuffers () {
         myBuffers.clear();
     }
@@ -217,5 +234,7 @@ public class Environment {
         }
         return buffersNames;
     }
+
+
 
 }
