@@ -40,14 +40,10 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("set")
-    public static LObject set (Environment environment, LispSymbol variable, LObject value) {
-        LispSymbol envVar = environment.find(variable.getName());
-        if (envVar == null) {
-            environment.defineSymbol(new LispSymbol(variable.getName(), value));
-        } else if (!envVar.getValue().equals(value)) {
-            envVar.setValue(value);
-            environment.defineSymbol(envVar);
-        }
+    public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
+        LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
+        variable.setValue(value);
+        environment.setVariable(variable);
         return value;
     }
 
@@ -71,6 +67,12 @@ public abstract class BuiltinsCore {
         if (one.getClass() != two.getClass()) return LispSymbol.ourNil;
         if (one instanceof LispNumber) {
             return (((LispNumber) one).getData()  == ((LispNumber) two).getData()) ? LispSymbol.ourT : LispSymbol.ourNil;
+        }
+        if (one instanceof LispSymbol) {
+            return ((LispSymbol) one).getName().equals(((LispSymbol) two).getName()) ? LispSymbol.ourT : LispSymbol.ourNil;
+        }
+        if ((one instanceof LispString) && (((LispString) one).getData().equals(""))) {
+            return ((LispString) two).getData().equals("") ? LispSymbol.ourT : LispSymbol.ourNil;
         }
         return LispSymbol.ourNil;
     }

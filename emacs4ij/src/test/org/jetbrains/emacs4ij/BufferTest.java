@@ -425,5 +425,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(m1, lispObject);
     }
 
+    @Test
+    public void testEq() {
+        LObject lispObject = eval("(eq (point-marker) (point-marker))");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = eval("(equal (point-marker) (point-marker))");
+        junit.framework.Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
 
 }

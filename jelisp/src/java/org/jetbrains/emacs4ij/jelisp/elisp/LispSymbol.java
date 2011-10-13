@@ -28,6 +28,7 @@ public class LispSymbol extends LispAtom {
 
     public LispSymbol(String myName) {
         this.myName = myName;
+        myFunction = ourVoid;
     }
 
     public static LispSymbol newSubroutine (String myName) {
@@ -39,6 +40,7 @@ public class LispSymbol extends LispAtom {
     public LispSymbol (String myName, LObject value) {
         this.myName = myName;
         myValue = value;
+        myFunction = ourVoid;
     }
 
     public String getName() {
@@ -67,7 +69,7 @@ public class LispSymbol extends LispAtom {
 
     @Override
     public String toString() {
-        if (myFunction.equals(ourVoid))
+        if (myFunction == null || myFunction.equals(ourVoid))
             return myName;
         if (isSubroutine())
             return "#<subr " + myName + '>';

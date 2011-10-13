@@ -187,36 +187,34 @@ return LispSymbol.ourNil; */
 
     @Subroutine("defvar")
     public static LObject defineVariable(Environment environment, LispSymbol name, @Optional LObject initValue, LispString docString) {
-        LispSymbol variable = environment.find(name.getName());
+        LispSymbol variable = environment.getMainEnvironment().find(name.getName());
         if (variable == null) {
-            variable = name;
-            if (initValue != null)
-                variable.setValue(initValue.evaluate(environment));
-            if (docString != null) {
-                variable.setVariableDocumentation(docString);
-            }
-        } else {
-            if (variable.getValue().equals(LispSymbol.ourVoid) && (initValue != null))
-                variable.setValue(initValue.evaluate(environment));
-            if (docString != null) {
-                LispObject docObject = variable.getVariableDocumentation();
-                if (docObject != LispSymbol.ourNil && !(docObject.equals(docString)))
-                   variable.setVariableDocumentation(docString);
-            }
+            LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue.evaluate(environment);
+            name.setValue(value);
+            if (docString != null)
+                name.setVariableDocumentation(docString);
+            environment.getMainEnvironment().defineSymbol(name);
+            return name;
         }
-        environment.getGlobalEnvironment().defineSymbol(variable);
-        return name;
+        if (variable.getValue().equals(LispSymbol.ourVoid)) {
+            LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue.evaluate(environment);
+            variable.setValue(value);
+        }
+        if (docString != null)
+            variable.setVariableDocumentation(docString);
+        environment.getMainEnvironment().defineSymbol(variable);
+        return variable;
     }
 
     @Subroutine(value = "defun")
     public static LObject defineFunction(Environment environment, LispSymbol name, LObject... body) {
-        LispSymbol symbol = environment.find(name.getName());
+        LispSymbol symbol = environment.getMainEnvironment().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         LispList functionCell = new LispList(new LispSymbol("lambda"));
         for (LObject bodyForm: body)
             functionCell.add(bodyForm);
         f.setFunction(functionCell);
-        environment.getGlobalEnvironment().defineSymbol(f);
+        environment.getMainEnvironment().defineSymbol(f);
         return name;
     }
 
@@ -344,6 +342,24 @@ return LispSymbol.ourNil; */
             result = arg.evaluate(inner);
         }
         return result;
+    }
+
+    @Subroutine("setq")
+    public static LObject setq (Environment environment, @Optional LObject... args) {
+        if (args == null)
+            return LispSymbol.ourNil;
+        Environment inner = new Environment(environment);
+        int index = 0;
+        LObject value = LispSymbol.ourNil;
+        while (index < args.length) {
+            if (!(args[index] instanceof LispSymbol))
+                throw new WrongTypeArgument("symbolp", args[index].getClass().getSimpleName());
+            value = (index+1 == args.length) ? LispSymbol.ourNil : args[index+1].evaluate(inner);
+            ((LispSymbol) args[index]).setValue(value);
+            environment.setVariable((LispSymbol) args[index]);
+            index += 2;
+        }
+        return value;
     }
 
 }

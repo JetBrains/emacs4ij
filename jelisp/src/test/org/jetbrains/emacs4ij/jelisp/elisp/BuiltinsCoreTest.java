@@ -75,9 +75,46 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testEqNumbers() {
+    public void testEq() {
         LObject lispObject = evaluateString("(eq 5 5)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(eq 'foo 'foo)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(eq \"qwa\" \"qwa\")");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(eq \"\" \"\")");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(eq '(1 (2 (3))) '(1 (2 (3))))");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        evaluateString("(setq foo '(1 (2 (3))))");
+        lispObject = evaluateString("(eq foo foo)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(eq foo '(1 (2 (3))))");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        //todo: (eq [(1 2) 3] [(1 2) 3]) ⇒ nil
+        //todo: (eq (make-symbol "foo") 'foo) ⇒ nil
+    }
+
+    @Test
+    public void testEqual() {
+        LObject lispObject = evaluateString("(equal 5 5)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(equal 'foo 'foo)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(equal \"qwa\" \"qwa\")");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(equal \"qwa\" \"QWA\")");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(equal \"\" \"\")");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(equal '(1 (2 (3))) '(1 (2 (3))))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        evaluateString("(setq foo '(1 (2 (3))))");
+        lispObject = evaluateString("(equal foo foo)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(equal foo '(1 (2 (3))))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        //todo: (equal [(1 2) 3] [(1 2) 3]) ⇒ t
     }
 
     @Test

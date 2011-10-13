@@ -49,8 +49,14 @@ public class Environment {
         this.selectionManagedBySubroutine = selectionManagedBySubroutine;
     }
 
-    public Environment getGlobalEnvironment() {
+    private Environment getGlobalEnvironment() {
         return myGlobalEnvironment;
+    }
+
+    public Environment getMainEnvironment () {
+        if (myOuterEnv.equals(myGlobalEnvironment))
+            return this;
+        return myOuterEnv.getMainEnvironment();
     }
 
     private void setSubroutines () {
@@ -123,6 +129,26 @@ public class Environment {
         mySymbols.put(symbol.getName(), symbol);
     }
 
+    private boolean containsSymbol (String name) {
+        return mySymbols.containsKey(name);
+    }
+
+    public void setVariable(LispSymbol symbol) {
+        if (myOuterEnv == null)
+            throw new RuntimeException("You are not allowed to change global environment!");
+        if (isMainEnvironment() || containsSymbol(symbol.getName())) {
+            LispSymbol variable = mySymbols.get(symbol.getName());
+            if (variable == null) {
+                defineSymbol(symbol);
+                return;
+            }
+            variable.setValue(symbol.getValue());
+            defineSymbol(variable);
+            return;
+        }
+        myOuterEnv.setVariable(symbol);
+    }
+
     //============================= buffer processing =====================================
 
     public void defineBuffer (LispBuffer buffer) {
@@ -174,12 +200,14 @@ public class Environment {
 
 
     public LispBuffer findBuffer (String bufferName) {
+        if (!isMainEnvironment())
+            return myOuterEnv.findBuffer(bufferName);
         for (LispBuffer buffer: myBuffers) {
             if (buffer.getName().equals(bufferName))
                 return buffer;
         }
-        if (myOuterEnv != null)
-            return myOuterEnv.findBuffer(bufferName);
+        /*if (myOuterEnv != null)
+            return myOuterEnv.findBuffer(bufferName);*/
         return null;
     }
 

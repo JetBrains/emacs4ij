@@ -370,6 +370,50 @@ public class SpecialFormsTest {
         Assert.assertEquals(new LispString("doc"), doc);
     }
 
+    @Test
+    public void testSetqNil() {
+        LObject lispObject = evaluateString("(setq)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testSetqOverrideValue () {
+        LObject lispObject = evaluateString("(defvar a 10 \"doc\")");
+        Assert.assertEquals(new LispSymbol("a"), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(10), lispObject);
+        lispObject = evaluateString("(setq a 20)");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("(get 'a 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), lispObject);
+    }
+
+    @Test
+    public void testSetqMostLocalExistingBinding_Binding () {
+        LObject lispObject = evaluateString("(setq a 20)");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("(let ((a)) (setq a 15) a)");
+        Assert.assertEquals(new LispInteger(15), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+    }
+
+    @Test
+    public void testSetqMostLocalExistingBinding_NoBinding () {
+        LObject lispObject = evaluateString("(setq a 20)");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(20), lispObject);
+        lispObject = evaluateString("(let () (setq a 15) a)");
+        Assert.assertEquals(new LispInteger(15), lispObject);
+        lispObject = evaluateString("a");
+        Assert.assertEquals(new LispInteger(15), lispObject);
+    }
+
     //todo: not string documentation
 
     @Ignore
