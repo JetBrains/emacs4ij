@@ -54,8 +54,17 @@ public class LispSymbol extends LispAtom {
         this.myValue = myValue;
     }
 
-    public LispObject getFunction() {
-        return myFunction;
+    public FunctionCell getFunction() {
+        if (myFunction == null)
+            return null;
+        if (isCustom())
+            return new FunctionCell(toString(), FunctionCell.Type.CustomFunction);
+        if (isSubroutine()) {
+            if (isBuiltIn())
+                return new FunctionCell(toString(), FunctionCell.Type.BuiltIn);
+            return new FunctionCell(toString(), FunctionCell.Type.SpecialForm);
+        }
+        throw new RuntimeException("unknown function type: " + myName);
     }
 
     public void castToLambda (Environment environment) {
@@ -82,7 +91,7 @@ public class LispSymbol extends LispAtom {
     public boolean isBuiltIn () {
         if (!isSubroutine())
             return false;
-        for (Class c: LispSubroutine.getSubroutineClasses()) {
+        for (Class c: LispSubroutine.getSpecialFormsClasses()) {
             for (Method m: c.getMethods()) {
                 Subroutine annotation = m.getAnnotation(Subroutine.class);
                 if (annotation == null)
@@ -176,5 +185,11 @@ public class LispSymbol extends LispAtom {
 
     public void setVariableDocumentation (LispString value) {
         setProperty("variable-documentation", value);
+    }
+
+    public LispObject getCustomFunctionDocumentation () {
+        if (myFunction instanceof Lambda)
+            return ((Lambda) myFunction).getDocString();
+        throw new RuntimeException("invalid function call");
     }
 }

@@ -16,7 +16,7 @@ public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
     @Subroutine("symbol-function")
-    public static LObject symbolFunction(Environment environment, LispSymbol arg) {
+    public static FunctionCell symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
         if (f == null || f.getFunction() == null)
             throw new VoidFunctionException(arg.getName());
@@ -89,7 +89,7 @@ internal-doc-file-name. У меня он находится в
 
             if (f.isCustom()) {
                 f.castToLambda(environment);
-                return ((Lambda)f.getFunction()).getDocString();
+                return f.getCustomFunctionDocumentation();
             }
 
             return null;

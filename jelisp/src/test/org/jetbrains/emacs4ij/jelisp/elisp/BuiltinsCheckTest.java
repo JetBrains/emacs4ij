@@ -70,9 +70,15 @@ public class BuiltinsCheckTest {
         evaluateString("(defun f () )");
         LObject lispObject = evaluateString("(functionp 'f)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(functionp (symbol-function 'f))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+      //  lispObject = evaluateString("(functionp (lambda () 1))");
+      //  Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'subrp))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'if))");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = evaluateString("(functionp  'subrp)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 

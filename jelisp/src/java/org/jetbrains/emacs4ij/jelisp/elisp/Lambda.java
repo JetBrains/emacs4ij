@@ -136,7 +136,7 @@ public class Lambda extends LispObject {
         return evaluateBody(substituteArguments(environment, args));
     }
 
-    public LObject getDocString () {
+    public LispObject getDocString () {
         return myDocString == null ? LispSymbol.ourNil : myDocString;
     }
 }
