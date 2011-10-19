@@ -28,6 +28,13 @@ public abstract class BuiltinsCheck {
             return LispSymbol.ourNil;
         return ((LispSymbol)(arg)).isSubroutine() ? LispSymbol.ourT : LispSymbol.ourNil;
     }
+    @Subroutine("functionp")
+    public static LispObject functionp (LObject arg) {
+        if (!(arg instanceof LispSymbol))
+            return LispSymbol.ourNil;
+        return ((LispSymbol)(arg)).isSubroutine() ? LispSymbol.ourT : LispSymbol.ourNil;
+    }
+
     @Subroutine("bufferp")
     public static LispObject bufferp (LObject arg) {
         return (arg instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;

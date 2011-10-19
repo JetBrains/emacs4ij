@@ -57,12 +57,25 @@ public class BuiltinsCheckTest {
     public void testSubrp() throws Exception {
         LObject lispObject = evaluateString("(subrp 1)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(subrp 'if)");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(subrp (symbol-function 'if))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(subrp 'if)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(subrp (symbol-function 'put))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
+
+    @Test
+    public void testFunctionp () {
+        evaluateString("(defun f () )");
+        LObject lispObject = evaluateString("(functionp 'f)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(functionp (symbol-function 'subrp))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(functionp (symbol-function 'if))");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+
 
 }

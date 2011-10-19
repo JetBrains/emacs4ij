@@ -36,6 +36,10 @@ public abstract class LispSubroutine {
         return (Class[]) ArrayUtils.addAll(myBuiltIns, mySpecialForms);
     }
 
+    public static Class[] getSpecialFormsClasses () {
+        return mySpecialForms;
+    }
+
     private static void setOptional(ArgumentsList arguments, Annotation[][] parametersAnnotations, Type[] parametersTypes) {
         boolean optional = false;
         int nRequiredParameters = parametersAnnotations.length;

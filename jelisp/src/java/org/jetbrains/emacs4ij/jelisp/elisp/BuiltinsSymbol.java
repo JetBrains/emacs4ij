@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,9 +18,17 @@ public abstract class BuiltinsSymbol {
     @Subroutine("symbol-function")
     public static LObject symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
-        if (f == null || f.getFunction().equals(LispSymbol.ourVoid))
+        if (f == null || f.getFunction() == null)
             throw new VoidFunctionException(arg.getName());
-        return f;
+        return f.getFunction();
+    }
+
+    @Subroutine("symbol-value")
+    public static LObject symbolValue (Environment environment, LispSymbol arg) {
+        LispSymbol symbol = environment.find(arg.getName());
+        if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
+            throw new VoidVariableException(arg.getName());
+        return symbol.getValue();
     }
 
     @Subroutine("get")

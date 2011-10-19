@@ -91,4 +91,22 @@ public class BuiltinsSymbolTest {
         LObject lispObject = evaluateString("(get 'a 'p1)");
         Assert.assertEquals(new LispSymbol("v1"), lispObject);
     }
+
+    @Test
+    public void testSymbolValueInteger() {
+        evaluateString("(set 'a 5)");
+        LObject lispObject = evaluateString("(symbol-value 'a)");
+        Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testSymbolValueVoid() {
+        try {
+            evaluateString("(symbol-value 'a)");
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof VoidVariableException);
+            return;
+        }
+        Assert.assertTrue(false);
+    }
 }

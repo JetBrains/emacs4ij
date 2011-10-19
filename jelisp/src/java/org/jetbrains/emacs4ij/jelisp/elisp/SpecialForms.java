@@ -66,7 +66,12 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("quote")
-    public static LObject quote(LObject arg) {
+    public static LObject quote(Environment environment, LObject arg) {
+        if (arg instanceof LispSymbol) {
+            LispSymbol symbol = environment.find(((LispSymbol) arg).getName());
+            if (symbol != null)
+                return symbol;
+        }
         return arg;
     }
 
@@ -121,7 +126,7 @@ return LispSymbol.ourNil; */
             if (((LispList) clause).isEmpty())
                 continue;
             LObject condition = ((LispList) clause).car().evaluate(environment);
-            if (condition != LispSymbol.ourNil) {
+            if (!condition.equals(LispSymbol.ourNil)) {
                 List<LObject> data = ((LispList) clause).cdr().getData();
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
@@ -179,7 +184,7 @@ return LispSymbol.ourNil; */
             return LispSymbol.ourNil;
         for (LObject condition: conditions) {
             LObject result = condition.evaluate(environment);
-            if (result != LispSymbol.ourNil)
+            if (!result.equals(LispSymbol.ourNil))
                 return result;
         }
         return LispSymbol.ourNil;

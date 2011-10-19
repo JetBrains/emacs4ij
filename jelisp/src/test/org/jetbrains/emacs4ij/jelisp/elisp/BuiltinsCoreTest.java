@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,6 +73,40 @@ public class BuiltinsCoreTest {
         Assert.assertEquals("set return value assertion", new LispInteger(5), value);
         LObject lispObject = evaluateString("var");
         Assert.assertEquals(new LispInteger(5), lispObject);
+    }
+
+    @Test
+    public void testSetBindings() {
+        LObject lispObject = evaluateString("(set 'one 1)");
+        Assert.assertEquals(new LispInteger(1), lispObject);
+        lispObject = evaluateString("(set 'two 'one)");
+        Assert.assertEquals(new LispSymbol("one"), lispObject);
+        lispObject = evaluateString("(set two 2)");
+        Assert.assertEquals(new LispInteger(2), lispObject);
+        lispObject = evaluateString("one");
+        Assert.assertEquals(new LispInteger(2), lispObject);
+        lispObject = evaluateString("(let ((one 1)) (set 'one 3) one)");
+        Assert.assertEquals(new LispInteger(3), lispObject);
+        lispObject = evaluateString("one");
+        Assert.assertEquals(new LispInteger(2), lispObject);
+    }
+
+    @Test (expected = WrongTypeArgument.class)
+    public void testSetSymbols() {
+        LObject lispObject = evaluateString("(set 'x 1)");
+        Assert.assertEquals(new LispInteger(1), lispObject);
+        lispObject = evaluateString("(set 'y 'x)");
+        Assert.assertEquals(new LispSymbol("x"), lispObject);
+        lispObject = evaluateString("y");
+        LispSymbol x = new LispSymbol("x", new LispInteger(1));
+        Assert.assertEquals(x, lispObject);
+
+        lispObject = evaluateString("(symbol-value y)");
+        Assert.assertEquals(new LispInteger(1), lispObject);
+        lispObject = evaluateString("(symbol-value 'y)");
+        Assert.assertEquals(new LispSymbol("x"), lispObject);
+        //must throw WrongTypeArgument
+        evaluateString("(symbol-value x)");
     }
 
     @Test

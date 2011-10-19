@@ -284,6 +284,12 @@ public class SpecialFormsTest {
         evaluateString("(testFun)");
     }
 
+    @Ignore
+    @Test
+    public void testDefunVoidBody () {
+        //todo
+    }
+
     @Test
     public void testFunctionSymbolArgumentsSubstitution() {
         evaluateString("(defun test (a) a)");

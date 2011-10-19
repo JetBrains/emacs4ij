@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,13 +23,12 @@ public class LispSymbol extends LispAtom {
 
     private String myName = null;
     private LObject myValue = ourVoid;
-    private LispObject myFunction = ourVoid;
+    private LispObject myFunction = null;
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
 
 
     public LispSymbol(String myName) {
         this.myName = myName;
-        myFunction = ourVoid;
     }
 
     public static LispSymbol newSubroutine (String myName) {
@@ -40,7 +40,6 @@ public class LispSymbol extends LispAtom {
     public LispSymbol (String myName, LObject value) {
         this.myName = myName;
         myValue = value;
-        myFunction = ourVoid;
     }
 
     public String getName() {
@@ -69,7 +68,7 @@ public class LispSymbol extends LispAtom {
 
     @Override
     public String toString() {
-        if (myFunction == null || myFunction.equals(ourVoid))
+        if (myFunction == null)
             return myName;
         if (isSubroutine())
             return "#<subr " + myName + '>';
@@ -78,6 +77,22 @@ public class LispSymbol extends LispAtom {
 
     public boolean isSubroutine () {
         return (myFunction instanceof LispString);
+    }
+
+    public boolean isBuiltIn () {
+        if (!isSubroutine())
+            return false;
+        for (Class c: LispSubroutine.getSubroutineClasses()) {
+            for (Method m: c.getMethods()) {
+                Subroutine annotation = m.getAnnotation(Subroutine.class);
+                if (annotation == null)
+                    continue;
+                if (annotation.value().equals(myName)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public boolean isCustom() {
@@ -109,10 +124,12 @@ public class LispSymbol extends LispAtom {
      * takes Environment
      */
     public LObject evaluate(Environment environment) {
-        LObject lispObject = environment.find(myName, "getValue");
-        if (lispObject == null || lispObject.equals(LispSymbol.ourVoid))
+        if (equals(ourNil) || equals(ourT) || equals(ourVoid))
+            return this;
+        LispSymbol symbol = environment.find(myName);
+        if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
             throw new VoidVariableException(myName);
-        return lispObject;
+        return symbol.getValue();
     }
 
     public LObject evaluateFunction (Environment environment, List<LObject> args) {
