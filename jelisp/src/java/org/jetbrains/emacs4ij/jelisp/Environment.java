@@ -263,6 +263,10 @@ public class Environment {
         return buffersNames;
     }
 
+    public LispString getDefaultDirectory () {
+        return new LispString(getBufferCurrentForEditing().getDefaultDirectory());
+    }
+
 
 
 }

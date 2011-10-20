@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,7 +224,7 @@ return LispSymbol.ourNil; */
         return name;
     }
 
-    private String getParameter (String message, boolean noMatch) {
+    private String getParameter (String message, String parameterStartValue, boolean noMatch) {
         //TODO get Editor; save old header; read parameter from text field; set old header back
 
         //if noMatch then wait 1sec and delete msg
@@ -236,6 +237,7 @@ return LispSymbol.ourNil; */
         for (int i = 0, commandsLength = commands.length; i < commandsLength; i++) {
             String command = commands[i];
             String parameter = "";
+            String parameterStartValue = null;
             String message = command.substring(1);
             boolean noMatch = false;
             char codeLetter = command.charAt(0);
@@ -243,7 +245,7 @@ return LispSymbol.ourNil; */
             switch (codeLetter) {
                 case 'a': // -- Function name: symbol with a function definition. todo: Completion
                     while (true) {
-                        parameter = getParameter(message, noMatch);
+                        parameter = getParameter(message, parameterStartValue, noMatch);
                         LispSymbol f = environment.find(parameter);
                         if (f != null) {
                             if (f.isFunction()) {
@@ -252,7 +254,7 @@ return LispSymbol.ourNil; */
                                 break;
                             }
                         }
-                        message = command.substring(1) + parameter;
+                        parameterStartValue = parameter;
                         noMatch = true;
                     }
                     break;
@@ -260,13 +262,13 @@ return LispSymbol.ourNil; */
                     String currentBufferName = environment.getBufferCurrentForEditing().getName();
                     message = command.substring(1)+ " (default " + currentBufferName + ") : ";
                     while (true) {
-                        parameter = getParameter(message, noMatch);
+                        parameter = getParameter(message, parameterStartValue, noMatch);
                         if (parameter.equals(""))
                             parameter = currentBufferName;
                         else {
                             LispBuffer b = environment.findBuffer(parameter);
                             if (b == null) {
-                                message = command.substring(1)+ " (default " + currentBufferName + ") : " + parameter;
+                                parameterStartValue = parameter;
                                 noMatch = true;
                                 continue;
                             }
@@ -276,7 +278,7 @@ return LispSymbol.ourNil; */
                     }
                     break;
                 case 'B': // -- Name of buffer, possibly nonexistent. todo: Completion
-                    parameter = getParameter(command.substring(1)+ " (default " + environment.getBufferCurrentForEditing().getName() + ") :", noMatch);
+                    parameter = getParameter(command.substring(1)+ " (default " + environment.getBufferCurrentForEditing().getName() + ") :", parameterStartValue, noMatch);
                     if (parameter.equals(""))
                         parameter = environment.getBufferCurrentForEditing().getName();
                     args.add(new LispString(parameter));
@@ -285,14 +287,35 @@ return LispSymbol.ourNil; */
                     //ascii code of first key pressed
                     //TODO: keyEvent
                     break;
-                case 'C': // -- Command name: symbol with interactive function definition.
-                    //list of possible commands beginning from [what was printed] and ability to retype
+                case 'C': // -- Command name: symbol with interactive function definition. todo: Completion
+                    while (true) {
+                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        LispSymbol cmd = environment.find(parameter);
+                        if (cmd != null)
+                            if (BuiltinsCheck.commandp(environment, cmd, null).equals(LispSymbol.ourT)) {
+                                LispSymbol c = new LispSymbol(parameter, cmd.getFunction());
+                                args.add(c);
+                                break;
+                            }
+                        parameterStartValue = parameter;
+                        noMatch = true;
+                    }
                     break;
                 case 'd': // -- Value of point as number. Does not do I/O.
+                    args.add(new LispInteger(environment.getBufferCurrentForEditing().point()));
                     break;
-                case 'D': // -- Directory name.
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), noMatch);
-                    args.add(new LispString(parameter));
+                case 'D': // -- Directory name. todo: Completion
+                    parameterStartValue = environment.getDefaultDirectory().getData();
+                    while (true) {
+                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        File dir = new File(parameter);
+                        if (dir.exists() && dir.isDirectory()) {
+                            args.add(new LispString(parameter));
+                            break;
+                        }
+                        parameterStartValue = parameter;
+                        noMatch = true;
+                    }
                     break;
                 case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
                           // If used more than once, the Nth `e' returns the Nth parametrized event.
@@ -300,18 +323,18 @@ return LispSymbol.ourNil; */
                     //if no event: (error "command must be bound to an event with parameters")
                     break;
                 case 'f': // -- Existing file name.
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), noMatch);
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     //list of existing files beginning from [what was printed] and ability to retype
 
                     break;
                 case 'F': // -- Possibly nonexistent file name. -- no check
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), noMatch);
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     if (parameter.equals(System.getProperty("user.home")))
                         parameter += "#scratch.lisp#";
                     args.add(new LispString(parameter));
                     break;
                 case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), noMatch);
+                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     args.add(new LispString(parameter));
                     break;
                 case 'i': // -- Ignored, i.e. always nil. Does not do I/O.

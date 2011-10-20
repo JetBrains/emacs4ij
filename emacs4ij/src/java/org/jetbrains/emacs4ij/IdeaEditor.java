@@ -20,10 +20,13 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 public class IdeaEditor extends LispObject implements LispBuffer {
     private String myName;
     private Editor myEditor;
+    //buffer-local elisp variables
+    private String myDefaultDirectory;
 
-    public IdeaEditor (String name,Editor editor) {
+    public IdeaEditor (String name, String path, Editor editor) {
         myName = name;
         myEditor = editor;
+        myDefaultDirectory = path;
     }
 
     @Override
@@ -118,5 +121,10 @@ public class IdeaEditor extends LispObject implements LispBuffer {
                 fileEditorManager.openTextEditor(new OpenFileDescriptor(myEditor.getProject(), file), true);
             }
         }
+    }
+
+    @Override
+    public String getDefaultDirectory() {
+        return myDefaultDirectory;
     }
 }

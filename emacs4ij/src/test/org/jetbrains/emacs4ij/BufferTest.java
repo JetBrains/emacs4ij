@@ -36,8 +36,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myEnvironment = new Environment(new Environment());
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
-            myTests.put(fileName, new IdeaEditor(fileName, getEditor()));
-            myEnvironment.defineBuffer(new IdeaEditor(fileName, getEditor()));
+            myTests.put(fileName, new IdeaEditor(fileName, myTestsPath, getEditor()));
+            myEnvironment.defineBuffer(new IdeaEditor(fileName, myTestsPath, getEditor()));
         }
     }
 
@@ -431,6 +431,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         junit.framework.Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = eval("(equal (point-marker) (point-marker))");
         junit.framework.Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
+    public void testDefaultDirectory () {
+        LObject lispObject = eval("default-directory");
+        Assert.assertEquals(new LispString(myTestsPath), lispObject);
     }
 
 }

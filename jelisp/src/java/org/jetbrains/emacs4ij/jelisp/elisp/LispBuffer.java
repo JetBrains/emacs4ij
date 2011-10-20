@@ -21,4 +21,6 @@ public interface LispBuffer extends LObject {
     public String forwardChar (int shift);
     public void setBufferActive ();
 
+    public String getDefaultDirectory();
+
 }

@@ -428,9 +428,22 @@ public class SpecialFormsTest {
         throw new RuntimeException("not implemented");
     }
 
-    @Ignore
     @Test
-    public void testInteractive() throws Exception {
-        throw new RuntimeException("not implemented");
+    public void testInteractive_a() throws Exception {
+        evaluateString("(defun g () (message \"plus = %d\" (+ 6 5)))");
+        /*
+        (defun f (fun) (interactive "aFunction: ") (funcall fun))
+(defun f (buf) (interactive "bBuffer: ") (message "%s" (buffer-name (get-buffer buf))))
+(defun f (buf) (interactive "BBuffer: ") (message "%s" (buffer-name (get-buffer buf))))
+(defun f (ch)  (interactive "cCharacter: ") (message "%s" ch))
+(commandp f)
+(defun f (cmd) (interactive "CCommand: ") (funcall cmd))
+(defun f (p) (interactive "dPoint: ") (message "%d" p))
+default-directory
+(progn (set-buffer "test1.lisp") default-directory)
+
+(defun f (dir) (interactive "DDirectory: ") (message "%s" dir))
+         */
+
     }
 }

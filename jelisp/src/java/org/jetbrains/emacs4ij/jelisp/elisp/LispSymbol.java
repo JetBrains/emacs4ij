@@ -117,11 +117,6 @@ public class LispSymbol extends LispAtom {
         return myFunction != null;
     }
 
-    public void setValueFromFunctionCell() {
-        myValue = myFunction;
-        myFunction = null;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -149,6 +144,8 @@ public class LispSymbol extends LispAtom {
     public LObject evaluate(Environment environment) {
         if (equals(ourNil) || equals(ourT) || equals(ourVoid))
             return this;
+        if (myName.equals("default-directory"))
+            return environment.getDefaultDirectory();
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
             throw new VoidVariableException(myName);
