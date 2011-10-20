@@ -246,5 +246,11 @@ public class ParserTest {
         LispObject lispObject = p.parseLine("test");
         Assert.assertEquals(new LispSymbol("test"), lispObject);
     }
+
+    @Test
+    public void testParseVector() {
+        LispObject lispObject = p.parseLine("[1 \"hello\" anna ['q]]");
+        Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(new LispList(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
+    }
 }
 

@@ -139,4 +139,8 @@ public class Lambda extends LispObject {
     public LispObject getDocString () {
         return myDocString == null ? LispSymbol.ourNil : myDocString;
     }
+
+    public boolean isInteractive() {
+        return myInteractive != null;
+    }
 }

@@ -52,11 +52,11 @@ public abstract class BuiltinsCheck {
         FunctionCell functionCell = null;
         if (function instanceof LispSymbol) {
             LispSymbol f = environment.find(((LispSymbol) function).getName());
-            if (f == null || f.getFunction() == null)
+            if (f == null || f.getFunctionCell() == null)
                 return LispSymbol.ourNil;
             if (f.isSubroutine())
                 return LispSymbol.ourNil;
-            functionCell = f.getFunction();
+            functionCell = f.getFunctionCell();
         }
         if (functionCell == null) {
             try {
@@ -74,5 +74,38 @@ public abstract class BuiltinsCheck {
     @Subroutine("bufferp")
     public static LispObject bufferp (LObject arg) {
         return (arg instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;
+    }
+
+    @Subroutine("commandp")
+    public static LispSymbol commandp (Environment environment, LObject function, @Optional LObject forCallInteractively) {
+        if (function instanceof LispSymbol) {
+            if (!(((LispSymbol) function).getProperty("interactive-form").equals(LispSymbol.ourNil)))
+                return LispSymbol.ourT;
+            if (((LispSymbol) function).isFunction()) {
+                ((LispSymbol) function).castToLambda(environment);
+                return commandp(environment, ((LispSymbol) function).getFunction(), forCallInteractively);
+            }
+
+            //todo: ability to check primitive functions!!!
+            //todo: autoload objects
+            // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
+        }
+        if (function instanceof Lambda) {
+            return ((Lambda) function).isInteractive() ? LispSymbol.ourT : LispSymbol.ourNil;
+        }
+
+        if (forCallInteractively == null || forCallInteractively.equals(LispSymbol.ourNil)) {
+            // do not accept keyboard macros: string and vector
+            return LispSymbol.ourNil;
+        }
+        if (function instanceof LispString) {
+            //todo: check
+            return LispSymbol.ourNil;
+        }
+        if (function instanceof LispVector) {
+            //todo: check
+            return LispSymbol.ourNil;
+        }
+        return LispSymbol.ourNil;
     }
 }

@@ -59,7 +59,7 @@ public class LispList extends LispObject {
             throw new InvalidFunctionException(car().toString());
         }
         LispSymbol symbol = environment.getMainEnvironment().find(fun.getName());
-        if (symbol == null || symbol.getFunction() == null)
+        if (symbol == null || symbol.getFunctionCell() == null)
             throw new VoidFunctionException(fun.getName());
 
         List<LObject> data = cdr().getData();

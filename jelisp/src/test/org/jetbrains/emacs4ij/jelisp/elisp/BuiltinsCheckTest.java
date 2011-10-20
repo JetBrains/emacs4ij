@@ -72,8 +72,8 @@ public class BuiltinsCheckTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'f))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
-      //  lispObject = evaluateString("(functionp (lambda () 1))");
-      //  Assert.assertEquals(LispSymbol.ourT, lispObject);
+      //  todo: lispObject = evaluateString("(functionp (lambda () 1))");
+      //  todo: Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'subrp))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'if))");
@@ -82,6 +82,14 @@ public class BuiltinsCheckTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
+    @Test
+    public void testCommandp () {
+        evaluateString("(defun f () (interactive) )");
+        LObject lispObject = evaluateString("(commandp 'f)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(commandp 1)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
 
 
 }

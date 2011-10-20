@@ -18,9 +18,9 @@ public abstract class BuiltinsSymbol {
     @Subroutine("symbol-function")
     public static FunctionCell symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
-        if (f == null || f.getFunction() == null)
+        if (f == null || f.getFunctionCell() == null)
             throw new VoidFunctionException(arg.getName());
-        return f.getFunction();
+        return f.getFunctionCell();
     }
 
     @Subroutine("symbol-value")
@@ -81,7 +81,7 @@ internal-doc-file-name. У меня он находится в
             LispSymbol f = environment.find(name);
             if (f == null)
                 throw new VoidFunctionException(name);
-            if (f.getFunction() == null)
+            if (f.getFunctionCell() == null)
                 throw new VoidFunctionException(name);
             LObject funPropValue = documentationProperty(environment, f, new LispSymbol("function-documentation"), null);
             if (!funPropValue.equals(LispSymbol.ourNil))

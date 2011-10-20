@@ -126,7 +126,9 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(eq foo '(1 (2 (3))))");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        //todo: (eq [(1 2) 3] [(1 2) 3]) ⇒ nil
+        lispObject = evaluateString("(eq [(1 2) 3] [(1 2) 3])");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+
         //todo: (eq (make-symbol "foo") 'foo) ⇒ nil
     }
 
@@ -149,7 +151,8 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(equal foo '(1 (2 (3))))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
-        //todo: (equal [(1 2) 3] [(1 2) 3]) ⇒ t
+        lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test

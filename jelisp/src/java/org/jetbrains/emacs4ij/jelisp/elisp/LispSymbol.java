@@ -54,7 +54,7 @@ public class LispSymbol extends LispAtom {
         this.myValue = myValue;
     }
 
-    public FunctionCell getFunction() {
+    public FunctionCell getFunctionCell() {
         if (myFunction == null)
             return null;
         if (isCustom())
@@ -68,7 +68,12 @@ public class LispSymbol extends LispAtom {
     }
 
     public void castToLambda (Environment environment) {
-        myFunction = new Lambda((LispList) myFunction, environment);
+        if (myFunction instanceof LispList)
+            myFunction = new Lambda((LispList) myFunction, environment);
+    }
+
+    public LObject getFunction () {
+        return myFunction;
     }
 
     public void setFunction(LispObject myFunction) {
@@ -106,6 +111,15 @@ public class LispSymbol extends LispAtom {
 
     public boolean isCustom() {
         return ((myFunction instanceof LispList) || (myFunction instanceof Lambda));
+    }
+
+    public boolean isFunction() {
+        return myFunction != null;
+    }
+
+    public void setValueFromFunctionCell() {
+        myValue = myFunction;
+        myFunction = null;
     }
 
     @Override

@@ -21,7 +21,7 @@ public class Parser extends Observable {
     private int myCurrentIndex = 0;
     private String myLispCode;
     //TODO: to enum or hashmap
-    private char[] mySeparators = new char[] {')', '"', ' ', ';', '\n', '\t'};
+    private char[] mySeparators = new char[] {']', ')', '"', ' ', ';', '\n', '\t'};
 
     private void advance() throws EndOfLineException {
         if (myCurrentIndex == myLispCode.length())
@@ -65,6 +65,30 @@ public class Parser extends Observable {
         }
         advanceTo(getMyCurrentIndex() + 1);
         return list;
+    }
+
+    private LispObject parseVector() throws LispException {
+        LispVector vector = new LispVector();
+        while (true) {
+            try {
+                while (getCurrentChar() != ']') {
+                    if ((getCurrentChar() == ' ') || (getCurrentChar() == '\n') || (getCurrentChar() == '\t')) {
+                        advance();
+                        continue;
+                    }
+                    vector.add(parseObject());
+                }
+                break;
+            } catch (EndOfLineException e) {
+                if (countObservers() == 0)
+                    throw new MissingClosingBracketException();
+                setChanged();
+                notifyObservers(new MissingClosingBracketException());
+                clearChanged();
+            }
+        }
+        advanceTo(getMyCurrentIndex() + 1);
+        return vector;
     }
 
     private int getNextDoubleQuoteIndex (int from) {
@@ -202,6 +226,11 @@ public class Parser extends Observable {
         if (getCurrentChar() == '(') {
             advance();
             return parseList();
+        }
+
+        if (getCurrentChar() == '[') {
+            advance();
+            return parseVector();
         }
 
         if (getCurrentChar() == ';') {

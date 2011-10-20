@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.ui.EditorTextField;
 
@@ -23,6 +25,7 @@ public class OpenCommandEditor extends AnAction {
         //test if we are not already in emacs editor line
         if (editor.isOneLineMode())
             return;
+
         JComponent editorHeaderComponent = editor.getHeaderComponent();
         if (editorHeaderComponent == null) {
             EditorTextField input = new EditorTextField();

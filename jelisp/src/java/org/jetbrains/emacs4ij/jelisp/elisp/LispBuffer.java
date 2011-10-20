@@ -20,4 +20,5 @@ public interface LispBuffer extends LObject {
     public String gotoChar(int position);
     public String forwardChar (int shift);
     public void setBufferActive ();
+
 }
