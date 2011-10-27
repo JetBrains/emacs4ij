@@ -1,14 +1,20 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.EditorTextField;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,12 +24,16 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaEditor extends LispObject implements LispBuffer {
-    private String myName;
-    private Editor myEditor;
+    protected String myName;
+    protected Editor myEditor;
+    protected Environment myEnvironment;
     //buffer-local elisp variables
     private String myDefaultDirectory;
 
-    public IdeaEditor (String name, String path, Editor editor) {
+    protected IdeaEditor() {}
+
+    public IdeaEditor (Environment environment, String name, String path, Editor editor) {
+        myEnvironment = environment;
         myName = name;
         myEditor = editor;
         myDefaultDirectory = path;
@@ -51,6 +61,11 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     public Editor getEditor() {
         return myEditor;
+    }
+
+    @Override
+    public void setEditor(Editor editor) {
+        myEditor = editor;
     }
 
     public String toString() {
@@ -112,8 +127,65 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         return gotoChar(point() + shift);
     }
 
+    protected void setHeaderBufferActive () {
+        final EditorTextField input = new EditorTextField();
+        LispBuffer buffer = myEnvironment.findBuffer(myName);
+        if (buffer == null)
+            throw new RuntimeException("buffer " + myName + " doesn't exist!");
+        final Editor editor = myEnvironment.getBufferCurrentForEditing().getEditor();
+
+
+        if (EventQueue.isDispatchThread()) {
+            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                @Override
+                public void run() {
+                    editor.setHeaderComponent(input);
+                }
+            });
+
+        } else EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runReadAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        editor.setHeaderComponent(input);
+                    }
+                });
+            }
+        });
+
+       /* ApplicationManager.getApplication().runReadAction(new Runnable() {
+            @Override
+            public void run() {
+                editor.setHeaderComponent(input);
+            }
+        });  */
+
+        setEditor(input.getEditor());
+        myEnvironment.updateBuffer(this);
+        EvaluateCommand command = new EvaluateCommand();
+        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
+        grabFocus();
+    }
+
+    @Override
+    public void grabFocus () {
+        if (!((this instanceof LispMiniBuffer) || (myName.equals(OpenCommandEditor.ourScratch))))
+            throw new RuntimeException("LispBuffer.grabFocus() wrong usage!");
+        myEnvironment.switchToBuffer(myName);
+        myEnvironment.printBuffers();
+        if (myEditor == null)
+            throw new RuntimeException("null editor!");
+        myEditor.getContentComponent().grabFocus();
+    }
+
     @Override
     public void setBufferActive () {
+        if (myName.equals(OpenCommandEditor.ourScratch) || this instanceof LispMiniBuffer) {
+            setHeaderBufferActive();
+            return;
+        }
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {

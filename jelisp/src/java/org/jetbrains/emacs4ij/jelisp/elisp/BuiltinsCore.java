@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
 /**
  * Created by IntelliJ IDEA.
@@ -85,5 +86,16 @@ public abstract class BuiltinsCore {
     @Subroutine("not")
     public static LispObject lispNot (LObject lObject) {
         return lispNull(lObject);
+    }
+
+    @Subroutine("call-interactively")
+    public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
+        if (!BuiltinsCheck.commandp(environment, function, null).equals(LispSymbol.ourT))
+            throw new WrongTypeArgument("commandp", function.getName());
+        //read args
+        //assign args
+        //invoke function
+        return null;
+
     }
 }

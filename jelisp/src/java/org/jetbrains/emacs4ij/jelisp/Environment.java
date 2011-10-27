@@ -158,6 +158,10 @@ public class Environment {
         myBuffers.add(buffer);
     }
 
+    public void updateBuffer (LispBuffer buffer) {
+        myBuffers.set(getIndexByName(buffer.getName()), buffer);
+    }
+
     private LispBuffer getCurrentBuffer () {
         if (myBuffers.size() == 0)
             throw new EnvironmentException("no buffer is currently opened");
@@ -268,5 +272,13 @@ public class Environment {
     }
 
 
+    //========== mini buffer ==========================
+
+    public LispMiniBuffer getMiniBuffer () {
+        LispMiniBuffer miniBuffer = (LispMiniBuffer) findBuffer(" *Minibuf-0*");
+        if (miniBuffer == null)
+            throw new RuntimeException("mini buffer does not exist!");
+        return miniBuffer;
+    }
 
 }

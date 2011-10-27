@@ -1,11 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,9 +16,9 @@ import java.util.List;
 *
 * in fact it is a kind of builtin function
 */
-public abstract class SpecialForms {
+public class SpecialForms {
 
-    private SpecialForms() {}
+    public SpecialForms() {}
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
@@ -89,26 +87,6 @@ public abstract class SpecialForms {
     @Subroutine("let*")
     public static LObject letStar (Environment environment, LispList varList, @Optional LObject... body) {
         return executeLet(true, environment, varList, body);
-    }
-
-    @Subroutine("interactive")
-    public static LObject interactive(Environment environment, List<LispObject> args) {
-        throw new NotImplementedException();
-
-        /*if (args.size() > 1) {
-throw new WrongNumberOfArgumentsException("interactive");
-}
-if (args.size() == 1) {
-LispObject a = args.get(0);
-if (!(a instanceof LispString)) {
-LObject result = a.evaluate(environment);
-if (result instanceof LispList)
-return result;
-throw new WrongTypeArgument("LispList", args.get(0).getClass().toString());
-}
-return null;//processInteractiveString((LispString) a, environment);
-}
-return LispSymbol.ourNil; */
     }
 
     @Subroutine("cond")
@@ -224,15 +202,105 @@ return LispSymbol.ourNil; */
         return name;
     }
 
-    private String getParameter (String message, String parameterStartValue, boolean noMatch) {
-        //TODO get Editor; save old header; read parameter from text field; set old header back
+    private static class ParameterConsumer implements Runnable {
+        private SpecialFormInteractive myInteractive;
+        private Thread myThread;
+        private LispList myArguments;
 
-        //if noMatch then wait 1sec and delete msg
-        throw new NotImplementedException();
+        public ParameterConsumer (SpecialFormInteractive interactive) {
+            myInteractive = interactive;
+            myArguments = new LispList();
+            myThread = new Thread(this);
+            myThread.start();
+        }
+
+        public LispList getArguments() {
+            return myArguments;
+        }
+
+        public void interrupt () {
+            myThread.interrupt();
+        }
+
+         public void join () {
+            try {
+                myThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        public void yield () {
+
+        }
+
+        @Override
+        public void run() {
+            while (!myInteractive.isFinished()) {
+                myArguments.add(myInteractive.getArgument());
+            }
+        }
     }
 
-    private LispList processInteractiveString (LispString interactiveString, Environment environment) {
-        String[] commands = interactiveString.toString().split("\n");
+    private static class ParameterProducer implements Runnable {
+        private SpecialFormInteractive myInteractive;
+        private Thread myThread;
+        public ParameterProducer (SpecialFormInteractive interactive) {
+            myInteractive = interactive;
+            myThread = new Thread(this);
+            myThread.start();
+        }
+
+        public void join () {
+            try {
+                myThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+
+        @Override
+        public void run() {
+            while (!myInteractive.isFinished()) {
+                myInteractive.putArgument();
+            }
+        }
+    }
+
+    @Subroutine("interactive")
+    public LObject interactive(Environment environment, @Optional LObject args) {
+        if (args == null)
+            return LispSymbol.ourNil;
+        if (args instanceof LispList) {
+            args = args.evaluate(environment);
+            if (args instanceof LispList)
+                return args;
+        }
+        if (args instanceof LispString) {
+            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
+            ParameterConsumer consumer = new ParameterConsumer(interactive);
+            Thread.yield();
+            while (!interactive.isFinished()) {
+                interactive.putArgument();
+            }
+
+            return consumer.getArguments();
+        }
+        throw new WrongTypeArgument("listp", args.toString());
+    }
+
+    /*
+    private static String getParameter (Environment e, String prompt, String parameterStartValue, boolean noMatch) {
+        LispMiniBuffer miniBuffer = e.getMiniBuffer();
+        miniBuffer.readArgument(prompt, parameterStartValue, noMatch);
+
+        return null;
+        //if noMatch then wait 1sec and delete msg
+        //throw new NotImplementedException();
+    }
+
+    private static LispList processInteractiveString (LispString interactiveString, Environment environment) {
+        String[] commands = interactiveString.getData().split("\n");
         LispList args = new LispList();
         for (int i = 0, commandsLength = commands.length; i < commandsLength; i++) {
             String command = commands[i];
@@ -242,10 +310,12 @@ return LispSymbol.ourNil; */
             boolean noMatch = false;
             char codeLetter = command.charAt(0);
 
+
+
             switch (codeLetter) {
                 case 'a': // -- Function name: symbol with a function definition. todo: Completion
                     while (true) {
-                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
                         LispSymbol f = environment.find(parameter);
                         if (f != null) {
                             if (f.isFunction()) {
@@ -262,7 +332,7 @@ return LispSymbol.ourNil; */
                     String currentBufferName = environment.getBufferCurrentForEditing().getName();
                     message = command.substring(1)+ " (default " + currentBufferName + ") : ";
                     while (true) {
-                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
                         if (parameter.equals(""))
                             parameter = currentBufferName;
                         else {
@@ -278,7 +348,7 @@ return LispSymbol.ourNil; */
                     }
                     break;
                 case 'B': // -- Name of buffer, possibly nonexistent. todo: Completion
-                    parameter = getParameter(command.substring(1)+ " (default " + environment.getBufferCurrentForEditing().getName() + ") :", parameterStartValue, noMatch);
+                    parameter = getParameter(environment, command.substring(1)+ " (default " + environment.getBufferCurrentForEditing().getName() + ") :", parameterStartValue, noMatch);
                     if (parameter.equals(""))
                         parameter = environment.getBufferCurrentForEditing().getName();
                     args.add(new LispString(parameter));
@@ -289,7 +359,7 @@ return LispSymbol.ourNil; */
                     break;
                 case 'C': // -- Command name: symbol with interactive function definition. todo: Completion
                     while (true) {
-                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
                         LispSymbol cmd = environment.find(parameter);
                         if (cmd != null)
                             if (BuiltinsCheck.commandp(environment, cmd, null).equals(LispSymbol.ourT)) {
@@ -307,7 +377,7 @@ return LispSymbol.ourNil; */
                 case 'D': // -- Directory name. todo: Completion
                     parameterStartValue = environment.getDefaultDirectory().getData();
                     while (true) {
-                        parameter = getParameter(message, parameterStartValue, noMatch);
+                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
                         File dir = new File(parameter);
                         if (dir.exists() && dir.isDirectory()) {
                             args.add(new LispString(parameter));
@@ -323,18 +393,18 @@ return LispSymbol.ourNil; */
                     //if no event: (error "command must be bound to an event with parameters")
                     break;
                 case 'f': // -- Existing file name.
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
+                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     //list of existing files beginning from [what was printed] and ability to retype
 
                     break;
                 case 'F': // -- Possibly nonexistent file name. -- no check
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
+                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     if (parameter.equals(System.getProperty("user.home")))
                         parameter += "#scratch.lisp#";
                     args.add(new LispString(parameter));
                     break;
                 case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
-                    parameter = getParameter(command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
+                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
                     args.add(new LispString(parameter));
                     break;
                 case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
@@ -382,6 +452,8 @@ return LispSymbol.ourNil; */
         }
         return args;
     }
+
+    */
 
     @Subroutine("progn")
     public static LObject progn (Environment environment, @Optional LObject... args) {

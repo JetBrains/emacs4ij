@@ -170,10 +170,12 @@ public abstract class LispSubroutine {
                     ArgumentsList arguments = parseArguments(m, environment, args);
                     checkArguments(arguments, args);
                     try {
-                        return (LObject) m.invoke(null, arguments.getValues());
+                        return (LObject) m.invoke(c.newInstance(), arguments.getValues());
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     } catch (InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    } catch (InstantiationException e) {
                         throw new RuntimeException(e);
                     }
                 }

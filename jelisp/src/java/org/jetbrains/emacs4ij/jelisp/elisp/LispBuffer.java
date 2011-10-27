@@ -11,6 +11,7 @@ import com.intellij.openapi.editor.Editor;
  */
 public interface LispBuffer extends LObject {
     public Editor getEditor();
+    public void setEditor (Editor editor);
     public String getName();
     public int getSize();
     public int point();
@@ -20,6 +21,7 @@ public interface LispBuffer extends LObject {
     public String gotoChar(int position);
     public String forwardChar (int shift);
     public void setBufferActive ();
+    public void grabFocus();
 
     public String getDefaultDirectory();
 

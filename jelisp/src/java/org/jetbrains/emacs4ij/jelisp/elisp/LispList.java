@@ -123,4 +123,10 @@ public class LispList extends LispObject {
         return LispSymbol.ourNil;
     }
 
+    public int size() {
+        if (isEmpty())
+            return 0;
+        return myData.size();
+    }
+
 }

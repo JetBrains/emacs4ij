@@ -36,8 +36,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myEnvironment = new Environment(new Environment());
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
-            myTests.put(fileName, new IdeaEditor(fileName, myTestsPath, getEditor()));
-            myEnvironment.defineBuffer(new IdeaEditor(fileName, myTestsPath, getEditor()));
+            myTests.put(fileName, new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
+            myEnvironment.defineBuffer(new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
         }
     }
 

@@ -24,6 +24,12 @@ public class MyProjectComponent implements ProjectComponent {
     public MyProjectComponent(Project project) {
         Environment global = new Environment();
         myEnvironment = new Environment(global);
+
+        IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
+        myEnvironment.defineBuffer(miniBuffer);
+        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, OpenCommandEditor.ourScratch, project.getProjectFilePath(), null);
+        myEnvironment.defineBuffer(scratchBuffer);
+
         myProject = project;
     }
 
@@ -48,7 +54,7 @@ public class MyProjectComponent implements ProjectComponent {
         myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                myEnvironment.defineBuffer(new IdeaEditor(virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor()));
+                myEnvironment.defineBuffer(new IdeaEditor(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor()));
                 System.out.print("open: ");
                 myEnvironment.printBuffers();
             }

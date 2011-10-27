@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 import javax.swing.*;
 
@@ -47,14 +48,32 @@ public class EvaluateCommand extends AnAction {
                 Environment.ourEmacsPath = emacsHomeService.getEmacsHome();
         }
         String parameterValue = editor.getDocument().getText();
-        try {
-            Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-            Parser parser = new Parser();
-            LObject lispObject = parser.parseLine(parameterValue).evaluate(environment);
-            Messages.showInfoMessage(lispObject.toString(), "Evaluation result");
-        } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
+        Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+        String bufferName = environment.getBufferCurrentForEditing().getName();
+        if (bufferName.equals(OpenCommandEditor.ourScratch)) {
+            try {
+                Parser parser = new Parser();
+                LObject result = parser.parseLine(parameterValue).evaluate(environment);
+                Messages.showInfoMessage(result.toString(), "Evaluation result");
+            } catch (RuntimeException exc) {
+                Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
+            }
+            //todo close header
+        } else if (bufferName.equals(OpenCommandEditor.ourMiniBuffer)) {
+            try {
+                LispMiniBuffer miniBuffer = (LispMiniBuffer) environment.findBuffer(OpenCommandEditor.ourMiniBuffer);
+                if (miniBuffer == null) {
+                    throw new RuntimeException("execute mini buffer command in nowhere!");
+                }
+                LObject result = miniBuffer.onReadInput();
+                if (result != null)
+                    Messages.showInfoMessage(result.toString(), "Evaluation result");
+            } catch (RuntimeException exc) {
+                Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
+            }
         }
-        //todo close header
+
+
+
     }
 }
