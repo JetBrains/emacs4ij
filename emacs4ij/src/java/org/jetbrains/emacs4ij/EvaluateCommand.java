@@ -72,8 +72,5 @@ public class EvaluateCommand extends AnAction {
                 Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
             }
         }
-
-
-
     }
 }

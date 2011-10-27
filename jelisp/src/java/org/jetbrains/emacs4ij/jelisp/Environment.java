@@ -149,6 +149,21 @@ public class Environment {
         myOuterEnv.setVariable(symbol);
     }
 
+    public void updateFunction (LispSymbol symbol) {
+        if (myOuterEnv == null)
+            throw new RuntimeException("You are not allowed to change global environment!");
+        if (isMainEnvironment() || containsSymbol(symbol.getName())) {
+            LispSymbol function = mySymbols.get(symbol.getName());
+            if (function == null) {
+                throw new RuntimeException("Trying to update nonexistent function!");
+            }
+            defineSymbol(symbol);
+            return;
+        }
+        myOuterEnv.updateFunction(symbol);
+
+    }
+
     //============================= buffer processing =====================================
 
     public void defineBuffer (LispBuffer buffer) {

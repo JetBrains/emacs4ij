@@ -143,4 +143,14 @@ public class Lambda extends LispObject {
     public boolean isInteractive() {
         return myInteractive != null;
     }
+
+    public String getInteractiveString () {
+        LispList args = myInteractive.cdr();
+        if (args.isEmpty())
+            return null;
+        if (args.getData().get(0) instanceof LispString) {
+            return ((LispString) args.getData().get(0)).getData();
+        }
+        return null;
+    }
 }

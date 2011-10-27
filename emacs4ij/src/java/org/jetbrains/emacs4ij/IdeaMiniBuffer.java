@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,7 +24,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     private LObject myDefaultValue;
     private SpecialFormInteractive myInteractive;
     private String myPrompt;
-
+    private LispSymbol myCommand;
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
         myName = " *Minibuf-" + number + '*';
@@ -86,13 +87,21 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         write(myPrompt);
     }
 
+    private void hide () {
+        LispBuffer buffer = myEnvironment.getOtherBuffer();
+        buffer.setBufferActive();
+    }
+
     @Override
-    public void readCommand(LObject defaultValue) {
+    public void readCommand(LObject defaultValue, String startValue, boolean noMatch) {
         myStatus = MiniBufferStatus.READ_COMMAND;
         myDefaultValue = defaultValue;
-        write(ourEvalPrompt);
+        String text = ourEvalPrompt + (startValue == null ? "" : startValue) + (noMatch ? " [No match]" : "");
+        write(text);
+        int cursorPosition = ourEvalPrompt.length() + (startValue == null ? 0 : startValue.length());
+        gotoChar(cursorPosition);
         //todo unchangeable prompt
-        setBufferActive();
+        setHeaderBufferActive();
     }
 
     @Override
@@ -100,10 +109,12 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myStatus = MiniBufferStatus.READ_ARG;
         myInteractive = interactive;
         String text = myInteractive.getPrompt() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
+        int cursorPosition = text.length();
         if (myInteractive.isNoMatch()) {
             text += " [No Match]";
         }
         write(text);
+        gotoChar(cursorPosition);
         setBufferActive();
     }
 
@@ -150,18 +161,29 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
                     if (BuiltinsCheck.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
+                        //myStatus = MiniBufferStatus.READ_ARG;
+                        //return BuiltinsCore.callInteractively(myEnvironment, cmd, null, null); instead of next code
+
+                        cmd.castToLambda(myEnvironment);
+                        String interactiveString = cmd.getInteractiveString();
+                        if (interactiveString == null || interactiveString.equals(""))
+                            return cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
+                        myCommand = cmd;
+                        SpecialFormInteractive interactive = new SpecialFormInteractive(myEnvironment, interactiveString);
                         myStatus = MiniBufferStatus.READ_ARG;
-                        return BuiltinsCore.callInteractively(myEnvironment, cmd, null, null);
+                        interactive.readNextArgument();
                     }
-                //todo: no match
-                readCommand(myDefaultValue);
+                //todo: show "no match" message
+                readCommand(myDefaultValue, parameter, true);
                 break;
             case READ_ARG:
                 myInteractive.onReadParameter(readParameter());
                 if (myInteractive.isFinished()) {
-
-
-                }
+                    myStatus = MiniBufferStatus.READ_COMMAND;
+                    hide();
+                    return myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
+                } else
+                    myInteractive.readNextArgument();
             case FREE:
                 break;
         }

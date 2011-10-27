@@ -68,8 +68,10 @@ public class LispSymbol extends LispAtom {
     }
 
     public void castToLambda (Environment environment) {
-        if (myFunction instanceof LispList)
+        if (myFunction instanceof LispList) {
             myFunction = new Lambda((LispList) myFunction, environment);
+            environment.updateFunction(this);
+        }
     }
 
     public LObject getFunction () {
@@ -202,5 +204,13 @@ public class LispSymbol extends LispAtom {
         if (myFunction instanceof Lambda)
             return ((Lambda) myFunction).getDocString();
         throw new RuntimeException("invalid function call");
+    }
+
+    public String getInteractiveString () {
+        if (!isFunction())
+            return null;
+        if (myFunction instanceof Lambda)
+            return ((Lambda) myFunction).getInteractiveString();
+        return null;
     }
 }

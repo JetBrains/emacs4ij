@@ -132,8 +132,12 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         LispBuffer buffer = myEnvironment.findBuffer(myName);
         if (buffer == null)
             throw new RuntimeException("buffer " + myName + " doesn't exist!");
-        final Editor editor = myEnvironment.getBufferCurrentForEditing().getEditor();
 
+        LispBuffer currentBuffer = myEnvironment.getBufferCurrentForEditing();
+        if (currentBuffer.getName().equals(myName))
+            return;
+
+        final Editor editor = myEnvironment.getBufferCurrentForEditing().getEditor();
 
         if (EventQueue.isDispatchThread()) {
             ApplicationManager.getApplication().runReadAction(new Runnable() {
@@ -142,7 +146,6 @@ public class IdeaEditor extends LispObject implements LispBuffer {
                     editor.setHeaderComponent(input);
                 }
             });
-
         } else EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

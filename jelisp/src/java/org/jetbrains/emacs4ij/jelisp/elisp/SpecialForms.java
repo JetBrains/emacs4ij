@@ -16,9 +16,9 @@ import java.util.List;
 *
 * in fact it is a kind of builtin function
 */
-public class SpecialForms {
+public abstract class SpecialForms {
 
-    public SpecialForms() {}
+    private SpecialForms() {}
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
@@ -202,73 +202,8 @@ public class SpecialForms {
         return name;
     }
 
-    private static class ParameterConsumer implements Runnable {
-        private SpecialFormInteractive myInteractive;
-        private Thread myThread;
-        private LispList myArguments;
-
-        public ParameterConsumer (SpecialFormInteractive interactive) {
-            myInteractive = interactive;
-            myArguments = new LispList();
-            myThread = new Thread(this);
-            myThread.start();
-        }
-
-        public LispList getArguments() {
-            return myArguments;
-        }
-
-        public void interrupt () {
-            myThread.interrupt();
-        }
-
-         public void join () {
-            try {
-                myThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
-        public void yield () {
-
-        }
-
-        @Override
-        public void run() {
-            while (!myInteractive.isFinished()) {
-                myArguments.add(myInteractive.getArgument());
-            }
-        }
-    }
-
-    private static class ParameterProducer implements Runnable {
-        private SpecialFormInteractive myInteractive;
-        private Thread myThread;
-        public ParameterProducer (SpecialFormInteractive interactive) {
-            myInteractive = interactive;
-            myThread = new Thread(this);
-            myThread.start();
-        }
-
-        public void join () {
-            try {
-                myThread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-        }
-
-        @Override
-        public void run() {
-            while (!myInteractive.isFinished()) {
-                myInteractive.putArgument();
-            }
-        }
-    }
-
     @Subroutine("interactive")
-    public LObject interactive(Environment environment, @Optional LObject args) {
+    public static LObject interactive(Environment environment, @Optional LObject args) {
         if (args == null)
             return LispSymbol.ourNil;
         if (args instanceof LispList) {
@@ -277,27 +212,21 @@ public class SpecialForms {
                 return args;
         }
         if (args instanceof LispString) {
-            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
-            ParameterConsumer consumer = new ParameterConsumer(interactive);
-            Thread.yield();
-            while (!interactive.isFinished()) {
-                interactive.putArgument();
-            }
+            //TODO: interactively read the arguments
+            /*SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
+            synchronized (interactive) {
+                while (!interactive.isFinished()) {
+                    LObject a = interactive.getArgument();
+                    System.out.println(a);
+                }
+            }*/
 
-            return consumer.getArguments();
+            return null;
         }
         throw new WrongTypeArgument("listp", args.toString());
     }
 
     /*
-    private static String getParameter (Environment e, String prompt, String parameterStartValue, boolean noMatch) {
-        LispMiniBuffer miniBuffer = e.getMiniBuffer();
-        miniBuffer.readArgument(prompt, parameterStartValue, noMatch);
-
-        return null;
-        //if noMatch then wait 1sec and delete msg
-        //throw new NotImplementedException();
-    }
 
     private static LispList processInteractiveString (LispString interactiveString, Environment environment) {
         String[] commands = interactiveString.getData().split("\n");

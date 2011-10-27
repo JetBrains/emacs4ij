@@ -8,7 +8,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispMiniBuffer extends LispBuffer {
-    public void readCommand (LObject defaultValue);
+    public void readCommand (LObject defaultValue, String startValue, boolean noMatch);
     public void readArgument (SpecialFormInteractive interactive);
     public LObject onReadInput ();
 }
