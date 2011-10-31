@@ -223,6 +223,7 @@ public abstract class BuiltinsBuffer {
         return lastBuffer;
     }
 
+    //todo: it's a compiled lisp function
     @Subroutine("last-buffer")
     public static LispBuffer lastBuffer (Environment environment, @Optional LObject buffer, LObject visibleOk, LObject frame) {
         if (buffer == null || !(buffer instanceof LispBuffer)) {
@@ -231,7 +232,22 @@ public abstract class BuiltinsBuffer {
         return environment.lastBuffer(((LispBuffer) buffer).getName());
     }
 
+    @Subroutine("generate-new-buffer-name")
+    public static LispString generateNewBufferName (Environment environment, LispString startingName, @Optional LispString ignore) {
+        String result = startingName.getData();
+        for (int n = 2; ; ++n) {
+            if (!environment.containsBuffer(result))
+                return new LispString(result);
+            else if (ignore != null && result.equals(ignore.getData()))
+                return ignore;
+            result = startingName.getData() + '<' + n + '>';
+        }
+    }
 
-
+    @Subroutine("generate-new-buffer")
+    public static LispBuffer generateNewBuffer (Environment environment, LispString startingName) {
+        LispString name = generateNewBufferName(environment, startingName, null);
+        return environment.createBuffer(name.getData());
+    }
 
 }

@@ -500,7 +500,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testUnburyBuffer () {
-        LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        LObject lastBuffer = eval("(last-buffer)");
         LObject unburiedBuffer = eval("(unbury-buffer)");
         Assert.assertEquals(lastBuffer, unburiedBuffer);
     }
@@ -522,6 +522,23 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LObject lispObject = eval("(get-buffer-create \"test.txt\")");
         myEnvironment.createBuffer("test.txt");
         Assert.assertEquals(myEnvironment.createBuffer("test.txt"), lispObject);
+    }
+
+    @Test
+    public void testGenerateNewBufferName () {
+        LObject name = eval("(generate-new-buffer-name \"1.txt\")");
+        Assert.assertEquals(new LispString("1.txt<2>"), name);
+        name = eval("(generate-new-buffer-name \"5.txt\")");
+        Assert.assertEquals(new LispString("5.txt"), name);
+        name = eval("(generate-new-buffer-name \"1.txt\" \"1.txt\")");
+        Assert.assertEquals(new LispString("1.txt"), name);
+    }
+
+    @Test
+    public void testGenerateNewBuffer () {
+        LObject newBuffer = eval("(generate-new-buffer \"1.txt\")");
+        LispBuffer buffer = myEnvironment.createBuffer("1.txt<2>");
+        Assert.assertEquals(buffer, newBuffer);
     }
 }
 

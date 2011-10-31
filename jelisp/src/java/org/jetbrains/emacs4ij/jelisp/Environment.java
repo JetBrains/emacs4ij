@@ -35,8 +35,15 @@ public class Environment {
      * Constructor for global environment
      * @param bufferFactory
      */
-    public Environment (LispBufferFactory bufferFactory) {
+    public Environment (@NotNull LispBufferFactory bufferFactory) {
         this.myBufferFactory = bufferFactory;
+        myGlobalEnvironment = this;
+        setGlobal();
+    }
+
+    //for test only!!!
+    public Environment () {
+        this.myBufferFactory = null;
         myGlobalEnvironment = this;
         setGlobal();
     }
@@ -354,6 +361,10 @@ public class Environment {
                 return noSpace.get(i);
         //todo: create and return *scratch*
         throw new NoOpenedBufferException();
+    }
+
+    public boolean containsBuffer (String bufferName) {
+        return findBuffer(bufferName) != null;
     }
 
     //========== mini buffer ==========================
