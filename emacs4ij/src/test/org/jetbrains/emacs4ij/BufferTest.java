@@ -35,7 +35,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaEditor>();
-        myEnvironment = new Environment(new Environment());
+        myEnvironment = new Environment(new Environment(new BufferCreator()));
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             myTests.put(fileName, new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
@@ -498,12 +498,30 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myTestFiles[1], ((LispBuffer) lastBuffer).getName());
     }
 
-
     @Test
     public void testUnburyBuffer () {
         LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
         LObject unburiedBuffer = eval("(unbury-buffer)");
         Assert.assertEquals(lastBuffer, unburiedBuffer);
+    }
+
+    @Test
+    public void testGetBufferCreateByName() {
+        LObject lispObject = eval("(get-buffer-create \"1.txt\")");
+        Assert.assertEquals(myTests.get("1.txt"), lispObject);
+    }
+
+    @Test
+    public void testGetBufferCreateByBuffer() {
+        LObject lispObject = eval("(get-buffer-create (current-buffer))");
+        Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), lispObject);
+    }
+
+    @Test
+    public void testGetBufferCreate_NonExistent() {
+        LObject lispObject = eval("(get-buffer-create \"test.txt\")");
+        myEnvironment.createBuffer("test.txt");
+        Assert.assertEquals(myEnvironment.createBuffer("test.txt"), lispObject);
     }
 }
 

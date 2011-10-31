@@ -29,10 +29,14 @@ public class Environment {
     public static String ourEmacsPath = "";
     private final Environment myGlobalEnvironment;
 
+    private final LispBufferFactory myBufferFactory;
+
     /**
      * Constructor for global environment
+     * @param bufferFactory
      */
-    public Environment() {
+    public Environment (LispBufferFactory bufferFactory) {
+        this.myBufferFactory = bufferFactory;
         myGlobalEnvironment = this;
         setGlobal();
     }
@@ -40,6 +44,17 @@ public class Environment {
     public Environment (@NotNull final Environment outerEnv) {
         myOuterEnv = outerEnv;
         myGlobalEnvironment = outerEnv.getGlobalEnvironment();
+        myBufferFactory = outerEnv.getBufferFactory();
+    }
+
+    private LispBufferFactory getBufferFactory() {
+        return myBufferFactory;
+    }
+
+    public LispBuffer createBuffer (String bufferName) {
+        LispBuffer buffer = myBufferFactory.createBuffer(bufferName, this);
+        //getMainEnvironment().defineBuffer(buffer);
+        return buffer;
     }
 
     public boolean isSelectionManagedBySubroutine() {
@@ -69,6 +84,8 @@ public class Environment {
                 if (annotation == null)
                     continue;
                 String name = annotation.value();
+                if (mySymbols.containsKey(name))
+                    throw new RuntimeException("Duplicate symbol: " + name + '!');
                 mySymbols.put(name, LispSymbol.newSubroutine(name));
             }
         }

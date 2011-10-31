@@ -51,6 +51,19 @@ public abstract class BuiltinsBuffer {
         throw new WrongTypeArgument("buffer or name", bufferOrName.getClass().getSimpleName());
     }
 
+    @Subroutine("get-buffer-create")
+    public static LObject getBufferCreate (Environment environment, LObject bufferOrName) {
+        if (bufferOrName instanceof LispBuffer)
+            return bufferOrName;
+        if (bufferOrName instanceof LispString) {
+            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
+            if (buffer != null)
+                return buffer;
+            return environment.createBuffer(((LispString) bufferOrName).getData());
+        }
+        throw new WrongTypeArgument("buffer-or-name", bufferOrName.getClass().getSimpleName());
+    }
+
     // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
     @Subroutine("other-buffer")
     public static LispBuffer otherBuffer (Environment environment, @Optional LObject buffer) {
@@ -217,6 +230,8 @@ public abstract class BuiltinsBuffer {
         }
         return environment.lastBuffer(((LispBuffer) buffer).getName());
     }
+
+
 
 
 }

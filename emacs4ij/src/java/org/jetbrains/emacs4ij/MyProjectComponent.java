@@ -22,7 +22,7 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        Environment global = new Environment();
+        Environment global = new Environment(new BufferCreator());
         myEnvironment = new Environment(global);
 
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
