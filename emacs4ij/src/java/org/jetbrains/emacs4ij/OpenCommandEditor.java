@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
 import javax.swing.*;
 
@@ -17,24 +18,25 @@ import javax.swing.*;
  * To change this template use File | Settings | File Templates.
  */
 public class OpenCommandEditor extends AnAction {
-    public static final String ourScratch = "*sratch*";
+    public static final String ourScratch = "*scratch*";
     public static final String ourMiniBuffer = " *Minibuf-0*";
 
     private void openBuffer(Environment environment, String bufferName) {
         LispBuffer buffer = environment.findBuffer(bufferName);
         if (buffer == null)
-            throw new RuntimeException("buffer " + bufferName + " doesn't exist!");
+            throw new NoBufferException(bufferName);
 
         if (buffer instanceof IdeaMiniBuffer)
             ((IdeaMiniBuffer)buffer).setReadCommandStatus();
-
+        IdeaEditor.headerOpened((IdeaEditor)buffer);
         buffer.setBufferActive();
     }
 
     private void grabFocus (Environment environment, String bufferName) {
         LispBuffer buffer = environment.findBuffer(bufferName);
         if (buffer == null)
-            throw new RuntimeException("buffer " + bufferName + " doesn't exist!");
+            throw new NoBufferException(bufferName);
+        IdeaEditor.headerOpened((IdeaEditor)buffer);
         buffer.grabFocus();
     }
 
@@ -42,21 +44,20 @@ public class OpenCommandEditor extends AnAction {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-
         JComponent editorHeaderComponent = editor.getHeaderComponent();
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-
+        String currentBufferName = environment.getBufferCurrentForEditing().getName();
         if (editorHeaderComponent == null) {
-            if (environment.getBufferCurrentForEditing().getName().equals(ourScratch)) {
+            if (currentBufferName.equals(ourScratch)) {
                 openBuffer(environment, ourMiniBuffer);
-            } else if (!(environment.getBufferCurrentForEditing().getName().equals(ourMiniBuffer))) {
+            } else if (!(currentBufferName.equals(ourMiniBuffer))) {
                 openBuffer(environment, ourScratch);
             }
         } else {
-            if (environment.getBufferCurrentForEditing().getName().equals(ourScratch)) {
+            if (currentBufferName.equals(ourScratch)) {
                 grabFocus(environment, ourMiniBuffer);
 
-            } else if (!(environment.getBufferCurrentForEditing().getName().equals(ourMiniBuffer))) {
+            } else if (!(currentBufferName.equals(ourMiniBuffer))) {
                 grabFocus(environment, ourScratch);
             }
         }

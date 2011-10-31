@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public class Environment {
 
     private LispBuffer getCurrentBuffer () {
         if (myBuffers.size() == 0)
-            throw new EnvironmentException("no buffer is currently opened");
+            throw new NoOpenedBufferException();
         return myBuffers.get(myBuffers.size() - 1);
     }
 
@@ -197,7 +198,7 @@ public class Environment {
             return;
         }
         if (myBuffers.size() == 0)
-            throw new EnvironmentException("no buffer is currently opened");
+            throw new NoOpenedBufferException();
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
             return;
         int newCurrentBufferIndex = getIndexByName(bufferName);
@@ -217,7 +218,6 @@ public class Environment {
         return myBufferCurrentForEditing;
     }
 
-
     public LispBuffer findBuffer (String bufferName) {
         if (!isMainEnvironment())
             return myOuterEnv.findBuffer(bufferName);
@@ -230,24 +230,63 @@ public class Environment {
         return null;
     }
 
+    public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
+        Environment main = getMainEnvironment();
+        ArrayList<LispBuffer> noSpace = new ArrayList<LispBuffer>();
+        for (LispBuffer buffer: main.myBuffers) {
+            if (buffer.getName().charAt(0) != ' ')
+                noSpace.add(buffer);
+        }
+        return noSpace;
+    }
+
+    public LispBuffer getFirstBufferWithNameNotBeginningWithSpace () {
+        Environment main = getMainEnvironment();
+        for (LispBuffer buffer: main.myBuffers) {
+            if (buffer.getName().charAt(0) != ' ')
+                return buffer;
+        }
+        throw new NoBufferException("Buffer with name not beginning with space");
+    }
+
+    public ArrayList<LispBuffer> getBuffers () {
+        return myBuffers;
+    }
+
     public LispBuffer getOtherBuffer () {
-        if (myBuffers.size() < 2)
-            return getCurrentBuffer();
-        return myBuffers.get(myBuffers.size() - 2);
+        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
+        if (noSpace.isEmpty()) {
+            //TODO: create and return scratch =)
+            throw new NoOpenedBufferException();
+        }
+        if (noSpace.size() == 1) {
+            return noSpace.get(0);
+        }
+        return noSpace.get(noSpace.size() - 2);
     }
 
     public LispBuffer getOtherBuffer (String bufferName) {
-        if (myBuffers.size() == 0)
-            throw new RuntimeException("no buffer is currently opened");
-        for (int i = myBuffers.size() - 1; i!=-1; --i) {
-            if (!myBuffers.get(i).getName().equals(bufferName))
-                return myBuffers.get(i);
+        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
+        if (noSpace.isEmpty())
+            throw new NoOpenedBufferException();
+        for (int i = noSpace.size() - 1; i!=-1; --i) {
+            if (!noSpace.get(i).getName().equals(bufferName))
+                return noSpace.get(i);
         }
         throw new NoBufferException(bufferName);
     }
 
     public int getBuffersSize() {
         return myBuffers.size();
+    }
+
+    public LispList getBufferList() {
+        Environment main = getMainEnvironment();
+        LispList bufferList = new LispList();
+        for (LispBuffer buffer: main.myBuffers) {
+            bufferList.add(buffer);
+        }
+        return bufferList;
     }
 
     public void closeBuffer(String bufferName) {

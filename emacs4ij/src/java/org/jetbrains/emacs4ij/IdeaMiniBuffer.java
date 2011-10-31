@@ -88,7 +88,8 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     }
 
     private void hide () {
-        LispBuffer buffer = myEnvironment.getOtherBuffer();
+        IdeaEditor buffer = (IdeaEditor) myEnvironment.getFirstBufferWithNameNotBeginningWithSpace();
+        IdeaEditor.headerClosed(this);
         buffer.setBufferActive();
     }
 
@@ -166,8 +167,10 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
 
                         cmd.castToLambda(myEnvironment);
                         String interactiveString = cmd.getInteractiveString();
-                        if (interactiveString == null || interactiveString.equals(""))
+                        if (interactiveString == null || interactiveString.equals("")) {
+                            hide();
                             return cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
+                        }
                         myCommand = cmd;
                         SpecialFormInteractive interactive = new SpecialFormInteractive(myEnvironment, interactiveString);
                         myStatus = MiniBufferStatus.READ_ARG;

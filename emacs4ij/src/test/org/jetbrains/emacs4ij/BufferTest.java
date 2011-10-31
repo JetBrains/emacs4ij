@@ -5,6 +5,7 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Assert;
@@ -153,7 +154,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             eval("(other-buffer)");
         } catch (RuntimeException e) {
-            Assert.assertEquals("no buffer is currently opened", getCause(e).getMessage());
+            Assert.assertEquals(new NoOpenedBufferException().getMessage(), getCause(e).getMessage());
             return;
         }
         Assert.assertEquals(1, 0);
@@ -439,4 +440,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispString(myTestsPath), lispObject);
     }
 
+    @Test
+    public void testBufferList () {
+        LObject lispObject = eval("(buffer-list)");
+        Assert.assertEquals(myEnvironment.getBufferList(), lispObject);
+    }
 }

@@ -74,7 +74,6 @@ public abstract class BuiltinsBuffer {
     //todo: interactive, bound to C-x b, <menu-bar> <buffer> <select-named-buffer>
     @Subroutine("switch-to-buffer")
     public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
-
         boolean noRecord = false;
         if (noRecordObject != null) {
             if (!(noRecordObject.equals(LispSymbol.ourNil)))
@@ -162,6 +161,13 @@ public abstract class BuiltinsBuffer {
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);
+    }
+
+    @Subroutine("buffer-list")
+    public static LObject bufferList (Environment environment, @Optional LObject frame) {
+        //TODO: If frame is a frame, this returns frame's local buffer list.
+        // If frame is nil or omitted, the fundamental buffer list is used: the buffers appear in order of most recent display or selection, regardless of which frames they were displayed on.
+        return environment.getBufferList();
     }
 
 }

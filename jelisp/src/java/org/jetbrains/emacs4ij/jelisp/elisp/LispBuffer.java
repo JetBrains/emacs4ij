@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,6 +23,11 @@ public interface LispBuffer extends LObject {
     public String forwardChar (int shift);
     public void setBufferActive ();
     public void grabFocus();
+
+    public Environment getEnvironment();
+    public String getHeaderName();
+    public void closeHeader();
+
 
     public String getDefaultDirectory();
 
