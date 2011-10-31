@@ -331,14 +331,13 @@ public class Environment {
     }
 
     public LispBuffer lastBuffer (String bufferName) {
-        Environment main = getMainEnvironment();
-        for (int i=0; i!=main.myBuffers.size(); ++i)
-            if (!main.myBuffers.get(i).getName().equals(bufferName))
-                return main.myBuffers.get(i);
+        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
+        for (int i=0; i!=noSpace.size(); ++i)
+            if (!noSpace.get(i).getName().equals(bufferName))
+                return noSpace.get(i);
         //todo: create and return *scratch*
         throw new NoOpenedBufferException();
     }
-
 
     //========== mini buffer ==========================
 

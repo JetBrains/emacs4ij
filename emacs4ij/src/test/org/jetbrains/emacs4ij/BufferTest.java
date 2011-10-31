@@ -498,6 +498,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myTestFiles[1], ((LispBuffer) lastBuffer).getName());
     }
 
+
+    @Test
+    public void testUnburyBuffer () {
+        LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        LObject unburiedBuffer = eval("(unbury-buffer)");
+        Assert.assertEquals(lastBuffer, unburiedBuffer);
+    }
 }
 
 

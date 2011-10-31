@@ -196,11 +196,27 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourNil;
     }
 
+    /*
+    unbury-buffer
+
+    This command switches to the last buffer in the local buffer list of the selected frame.
+    More precisely, it calls the function switch-to-buffer (see Displaying Buffers), to display the buffer returned by last-buffer, see above, in the selected window.
+     */
+    //todo: it is a command
+    @Subroutine("unbury-buffer")
+    public static LObject unburyBuffer (Environment environment) {
+        LispBuffer lastBuffer = lastBuffer(environment, null, null, null);
+        switchToBuffer(environment, lastBuffer, null);
+        return lastBuffer;
+    }
+
     @Subroutine("last-buffer")
-    public static LObject lastBuffer (Environment environment, @Optional LObject buffer, LObject visibleOk, LObject frame) {
+    public static LispBuffer lastBuffer (Environment environment, @Optional LObject buffer, LObject visibleOk, LObject frame) {
         if (buffer == null || !(buffer instanceof LispBuffer)) {
             return environment.lastBuffer();
         }
         return environment.lastBuffer(((LispBuffer) buffer).getName());
     }
+
+
 }
