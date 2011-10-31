@@ -67,7 +67,7 @@ public class MyProjectComponent implements ProjectComponent {
                 IdeaEditor newBuffer = new IdeaEditor(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
                 myEnvironment.defineBuffer(newBuffer);
                 System.out.print("open: ");
-                setHeaders(newBuffer);
+                //setHeaders(newBuffer);
                 myEnvironment.printBuffers();
             }
 
@@ -89,7 +89,7 @@ public class MyProjectComponent implements ProjectComponent {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
                         myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     else myEnvironment.setSelectionManagedBySubroutine(false);
-                    setHeaders((IdeaEditor)myEnvironment.getBufferCurrentForEditing());
+                    //setHeaders((IdeaEditor)myEnvironment.getBufferCurrentForEditing());
                     System.out.print("select: ");
                     myEnvironment.printBuffers();
                 } catch (EnvironmentException e) {

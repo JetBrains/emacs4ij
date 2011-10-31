@@ -157,24 +157,22 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         if (header == null)
             throw new NoBufferException(myName);
 
-        for (LispBuffer buffer: myEnvironment.getBuffersWithNameNotBeginningWithSpace()) {
+        LispBuffer currentBuffer = myEnvironment.getBufferCurrentForEditing();
+        if (currentBuffer.getName().equals(myName))
+            return;
+        currentBuffer.getEditor().setHeaderComponent(input);
+
+        /*for (LispBuffer buffer: myEnvironment.getBuffersWithNameNotBeginningWithSpace()) {
             if (buffer.getName().equals(myName))
                 continue;
             ((IdeaEditor)buffer).setHeader(input);
-        }
+        }  */
+
         setEditor(input.getEditor());
         myEnvironment.updateBuffer(this);
         EvaluateCommand command = new EvaluateCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
         grabFocus();
-
-/*        LispBuffer currentBuffer = myEnvironment.getBufferCurrentForEditing();
-        if (currentBuffer.getName().equals(myName))
-            return;
-
-        Editor editor = currentBuffer.getEditor();
-        editor.setHeaderComponent(input);*/
-
     }
 
     @Override
@@ -209,7 +207,6 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     }
 
     public void setHeader (IdeaEditor header) {
-        JComponent h = header.getEditor().getContentComponent();
         myEditor.setHeaderComponent(header.getEditor().getContentComponent());
         myEnvironment.updateBuffer(this);
     }
@@ -220,15 +217,11 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     }
 
     public String getHeaderName () {
-        JComponent header = null;
         try {
-        header = myEditor.getHeaderComponent();
+            return myEditor.getHeaderComponent().getName();
         } catch (NullPointerException e) {
             return "";
         }
-        /*if (header == null)
-            return "";*/
-        return header.getName();
     }
 
     public void closeHeader () {

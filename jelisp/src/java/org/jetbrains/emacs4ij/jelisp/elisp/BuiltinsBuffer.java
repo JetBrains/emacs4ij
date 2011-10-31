@@ -170,4 +170,29 @@ public abstract class BuiltinsBuffer {
         return environment.getBufferList();
     }
 
+    @Subroutine("bury-buffer")
+    public static LObject buryBuffer (Environment environment, @Optional LObject bufferOrName) {
+        LispBuffer buffer;
+        if (bufferOrName == null) {
+            buffer = environment.getBufferCurrentForEditing();
+        } else if (bufferOrName instanceof LispString) {
+            buffer = environment.findBuffer(((LispString) bufferOrName).getData());
+            if (buffer == null) {
+                throw new NoBufferException(((LispString) bufferOrName).getData());
+            }
+        } else if (bufferOrName instanceof LispBuffer) {
+            buffer = (LispBuffer) bufferOrName;
+        } else {
+            throw new WrongTypeArgument("stringp", bufferOrName.toString());
+        }
+
+        if (environment.getBufferCurrentForEditing().equals(buffer)) {
+            switchToBuffer(environment, LispSymbol.ourNil, null);
+        }
+
+        environment.buryBuffer(buffer);
+
+        return LispSymbol.ourNil;
+    }
+
 }

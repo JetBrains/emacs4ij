@@ -254,26 +254,21 @@ public class Environment {
     }
 
     public LispBuffer getOtherBuffer () {
-        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
-        if (noSpace.isEmpty()) {
-            //TODO: create and return scratch =)
-            throw new NoOpenedBufferException();
-        }
-        if (noSpace.size() == 1) {
-            return noSpace.get(0);
-        }
-        return noSpace.get(noSpace.size() - 2);
+        return getOtherBuffer(getBufferCurrentForEditing().getName());
     }
 
     public LispBuffer getOtherBuffer (String bufferName) {
         ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
         if (noSpace.isEmpty())
             throw new NoOpenedBufferException();
+        if (noSpace.size() == 1) {
+            return noSpace.get(0);
+        }
         for (int i = noSpace.size() - 1; i!=-1; --i) {
             if (!noSpace.get(i).getName().equals(bufferName))
                 return noSpace.get(i);
         }
-        throw new NoBufferException(bufferName);
+        throw new RuntimeException("other-buffer " + bufferName);
     }
 
     public int getBuffersSize() {
@@ -323,6 +318,12 @@ public class Environment {
 
     public LispString getDefaultDirectory () {
         return new LispString(getBufferCurrentForEditing().getDefaultDirectory());
+    }
+
+    public void buryBuffer (LispBuffer buffer) {
+        Environment main = getMainEnvironment();
+        main.myBuffers.remove(buffer);
+        main.myBuffers.add(0, buffer);
     }
 
 

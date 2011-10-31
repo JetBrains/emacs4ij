@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -445,4 +446,37 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LObject lispObject = eval("(buffer-list)");
         Assert.assertEquals(myEnvironment.getBufferList(), lispObject);
     }
+
+    @Test
+    public void testBuryBuffer_Current () {
+        LispBuffer current = myEnvironment.getBufferCurrentForEditing();
+        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        buffers.remove(current);
+        buffers.add(0, current);
+        eval("(bury-buffer)");
+        Assert.assertEquals(buffers, myEnvironment.getBuffers());
+    }
+
+    @Test
+    public void testBuryBuffer_String () {
+        LispBuffer current = myEnvironment.findBuffer(myTestFiles[1]);
+        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        buffers.remove(current);
+        buffers.add(0, current);
+        eval("(bury-buffer \"" + myTestFiles[1] + "\")");
+        Assert.assertEquals(buffers, myEnvironment.getBuffers());
+    }
+
+    @Test
+    public void testBuryBuffer_Buffer () {
+        LispBuffer current = myEnvironment.findBuffer(myTestFiles[1]);
+        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        buffers.remove(current);
+        buffers.add(0, current);
+        eval("(bury-buffer (get-buffer \"" + myTestFiles[1] + "\"))");
+        Assert.assertEquals(buffers, myEnvironment.getBuffers());
+    }
+
 }
+
+
