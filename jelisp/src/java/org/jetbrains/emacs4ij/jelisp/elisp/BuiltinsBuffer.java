@@ -170,6 +170,7 @@ public abstract class BuiltinsBuffer {
         return environment.getBufferList();
     }
 
+    //todo: it is a command
     @Subroutine("bury-buffer")
     public static LObject buryBuffer (Environment environment, @Optional LObject bufferOrName) {
         LispBuffer buffer;
@@ -195,4 +196,11 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourNil;
     }
 
+    @Subroutine("last-buffer")
+    public static LObject lastBuffer (Environment environment, @Optional LObject buffer, LObject visibleOk, LObject frame) {
+        if (buffer == null || !(buffer instanceof LispBuffer)) {
+            return environment.lastBuffer();
+        }
+        return environment.lastBuffer(((LispBuffer) buffer).getName());
+    }
 }

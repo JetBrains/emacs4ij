@@ -477,6 +477,27 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(buffers, myEnvironment.getBuffers());
     }
 
+    @Test
+    public void testLastBuffer () {
+        LObject lastBuffer = eval("(last-buffer)");
+        Assert.assertTrue(lastBuffer instanceof LispBuffer);
+        Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+    }
+
+    @Test
+    public void testLastBuffer_Integer () {
+        LObject lastBuffer = eval("(last-buffer 1)");
+        Assert.assertTrue(lastBuffer instanceof LispBuffer);
+        Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+    }
+
+    @Test
+    public void testLastBuffer_Other () {
+        LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        Assert.assertTrue(lastBuffer instanceof LispBuffer);
+        Assert.assertEquals(myTestFiles[1], ((LispBuffer) lastBuffer).getName());
+    }
+
 }
 
 

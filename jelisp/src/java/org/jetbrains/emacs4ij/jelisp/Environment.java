@@ -136,7 +136,7 @@ public class Environment {
 
     public void setVariable(LispSymbol symbol) {
         if (myOuterEnv == null)
-            throw new RuntimeException("You are not allowed to change global environment!");
+            throw new EnvironmentException("You are not allowed to change global environment!");
         if (isMainEnvironment() || containsSymbol(symbol.getName())) {
             LispSymbol variable = mySymbols.get(symbol.getName());
             if (variable == null) {
@@ -152,11 +152,11 @@ public class Environment {
 
     public void updateFunction (LispSymbol symbol) {
         if (myOuterEnv == null)
-            throw new RuntimeException("You are not allowed to change global environment!");
+            throw new EnvironmentException("You are not allowed to change global environment!");
         if (isMainEnvironment() || containsSymbol(symbol.getName())) {
             LispSymbol function = mySymbols.get(symbol.getName());
             if (function == null) {
-                throw new RuntimeException("Trying to update nonexistent function!");
+                throw new EnvironmentException("Trying to update nonexistent function!");
             }
             defineSymbol(symbol);
             return;
@@ -324,6 +324,19 @@ public class Environment {
         Environment main = getMainEnvironment();
         main.myBuffers.remove(buffer);
         main.myBuffers.add(0, buffer);
+    }
+
+    public LispBuffer lastBuffer () {
+        return lastBuffer("");
+    }
+
+    public LispBuffer lastBuffer (String bufferName) {
+        Environment main = getMainEnvironment();
+        for (int i=0; i!=main.myBuffers.size(); ++i)
+            if (!main.myBuffers.get(i).getName().equals(bufferName))
+                return main.myBuffers.get(i);
+        //todo: create and return *scratch*
+        throw new NoOpenedBufferException();
     }
 
 
