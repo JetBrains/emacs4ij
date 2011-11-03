@@ -22,6 +22,8 @@ import java.util.HashMap;
 public class Environment {
     private HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
     private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
+    private ArrayList<LispBuffer> myDeadBuffers = new ArrayList<LispBuffer>();
+
     private Environment myOuterEnv;
     private LispBuffer myBufferCurrentForEditing = null;
     private boolean selectionManagedBySubroutine = false;
@@ -31,11 +33,14 @@ public class Environment {
 
     private final LispBufferFactory myBufferFactory;
 
+    private final Object myProject;
+
     /**
      * Constructor for global environment
      * @param bufferFactory
      */
-    public Environment (@NotNull LispBufferFactory bufferFactory) {
+    public Environment (@NotNull LispBufferFactory bufferFactory, Object project) {
+        myProject = project;
         this.myBufferFactory = bufferFactory;
         myGlobalEnvironment = this;
         setGlobal();
@@ -44,6 +49,7 @@ public class Environment {
     //for test only!!!
     public Environment () {
         this.myBufferFactory = null;
+        myProject = null;
         myGlobalEnvironment = this;
         setGlobal();
     }
@@ -52,10 +58,15 @@ public class Environment {
         myOuterEnv = outerEnv;
         myGlobalEnvironment = outerEnv.getGlobalEnvironment();
         myBufferFactory = outerEnv.getBufferFactory();
+        myProject = outerEnv.getProject();
     }
 
     private LispBufferFactory getBufferFactory() {
         return myBufferFactory;
+    }
+
+    public Object getProject () {
+        return myProject;
     }
 
     public LispBuffer createBuffer (String bufferName) {
@@ -317,6 +328,19 @@ public class Environment {
         myBuffers.remove(getCurrentBuffer());
     }
 
+    public void killBuffer (String bufferName) {
+        LispBuffer buffer = findBuffer(bufferName);
+        if (buffer == null)
+            throw new NoBufferException(bufferName);
+        killBuffer(buffer);
+    }
+
+    public void killBuffer (LispBuffer buffer) {
+        buffer.kill();
+        myDeadBuffers.add(buffer);
+        myBuffers.remove(buffer);
+    }
+
     public void closeAllBuffers () {
         myBuffers.clear();
     }
@@ -365,6 +389,15 @@ public class Environment {
 
     public boolean containsBuffer (String bufferName) {
         return findBuffer(bufferName) != null;
+    }
+
+    public boolean isDead (String bufferName) {
+        Environment main = getMainEnvironment();
+        for (LispBuffer buffer: main.myDeadBuffers) {
+            if (buffer.getName().equals(bufferName))
+                return true;
+        }
+        return false;
     }
 
     //========== mini buffer ==========================

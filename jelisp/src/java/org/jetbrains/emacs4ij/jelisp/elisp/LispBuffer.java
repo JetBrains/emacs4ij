@@ -23,6 +23,8 @@ public interface LispBuffer extends LObject {
     public String forwardChar (int shift);
     public void setBufferActive ();
     public void grabFocus();
+    public boolean isAlive();
+    public void kill();
 
     public Environment getEnvironment();
     public String getHeaderName();

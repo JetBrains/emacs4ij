@@ -35,7 +35,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaEditor>();
-        myEnvironment = new Environment(new Environment(new BufferCreator()));
+        myEnvironment = new Environment(new Environment(new BufferCreator(), null));
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             myTests.put(fileName, new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
@@ -540,6 +540,36 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LispBuffer buffer = myEnvironment.createBuffer("1.txt<2>");
         Assert.assertEquals(buffer, newBuffer);
     }
+
+    @Test
+    public void testAlivePredicate () {
+        LObject lispObject = eval("(buffer-live-p (get-buffer \"1.txt\"))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = eval("(kill-buffer \"1.txt\")");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = eval("(buffer-live-p (get-buffer \"1.txt\"))");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        lispObject = eval("(buffer-live-p \"1.txt\")");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
+    public void testReplaceBufferInWindows () {
+        LObject lispObject = eval("(replace-buffer-in-windows)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), myTests.get(myTestFiles[1]));
+    }
+
+    @Test
+    public void testKillBuffer () {
+        LObject lispObject = eval("(kill-buffer \"3.txt\")");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = myEnvironment.getBufferCurrentForEditing();
+        Assert.assertEquals(myEnvironment.findBuffer(myTestFiles[1]), lispObject);
+        Assert.assertEquals(myEnvironment.getBuffersSize(), 2);
+        Assert.assertTrue(myEnvironment.isDead("3.txt"));
+    }
+
 }
 
 

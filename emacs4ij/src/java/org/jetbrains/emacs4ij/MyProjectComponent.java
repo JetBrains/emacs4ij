@@ -22,7 +22,7 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        Environment global = new Environment(new BufferCreator());
+        Environment global = new Environment(new BufferCreator(), project);
         myEnvironment = new Environment(global);
 
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
@@ -73,7 +73,10 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                myEnvironment.closeBuffer(virtualFile.getName());
+                if (!(myEnvironment.isSelectionManagedBySubroutine()))
+                    myEnvironment.killBuffer(virtualFile.getName());
+                else myEnvironment.setSelectionManagedBySubroutine(false);
+
                 System.out.print("close: ");
                 myEnvironment.printBuffers();
             }

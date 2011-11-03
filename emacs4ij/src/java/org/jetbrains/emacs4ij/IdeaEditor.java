@@ -32,6 +32,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     protected Environment myEnvironment;
     //buffer-local elisp variables
     private String myDefaultDirectory;
+    private boolean isAlive;
 
     protected IdeaEditor() {}
 
@@ -40,6 +41,16 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         myName = name;
         myEditor = editor;
         myDefaultDirectory = path;
+        isAlive = true;
+    }
+
+    public void kill () {
+        isAlive = false;
+        close();
+    }
+
+    public boolean isAlive() {
+        return isAlive;
     }
 
     @Override
@@ -180,6 +191,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         if (!((this instanceof LispMiniBuffer) || (myName.equals(OpenCommandEditor.ourScratch))))
             throw new RuntimeException("LispBuffer.grabFocus() wrong usage!");
         myEnvironment.switchToBuffer(myName);
+        System.out.print("grab focus: ");
         myEnvironment.printBuffers();
         if (myEditor == null)
             throw new RuntimeException("null editor!");
@@ -227,5 +239,19 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     public void closeHeader () {
         myEditor.setHeaderComponent(null);
         myEnvironment.updateBuffer(this);
+    }
+
+    public void close () {
+        if (myName.equals(OpenCommandEditor.ourScratch) || this instanceof LispMiniBuffer) {
+            //setHeaderBufferActive();
+            return;
+        }
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());
+        VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
+        for (VirtualFile file: openedFiles) {
+            if (file.getName().equals(myName)) {
+                fileEditorManager.closeFile(file);
+            }
+        }
     }
 }

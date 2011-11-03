@@ -14,6 +14,21 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
+    private static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LObject bufferOrName) {
+        if (bufferOrName == null || bufferOrName.equals(LispSymbol.ourNil))
+            return environment.getBufferCurrentForEditing();
+        if (bufferOrName instanceof LispString) {
+            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
+            if (buffer == null) {
+                throw new NoBufferException(((LispString) bufferOrName).getData());
+            }
+            return buffer;
+        }
+        if (bufferOrName instanceof LispBuffer)
+            return (LispBuffer) bufferOrName;
+        throw new WrongTypeArgument("buffer-or-name", bufferOrName.getClass().getSimpleName());
+    }
+
     @Subroutine("current-buffer")
     public static LispBuffer getCurrentBuffer(Environment environment) {
         return environment.getBufferCurrentForEditing();
@@ -248,6 +263,42 @@ public abstract class BuiltinsBuffer {
     public static LispBuffer generateNewBuffer (Environment environment, LispString startingName) {
         LispString name = generateNewBufferName(environment, startingName, null);
         return environment.createBuffer(name.getData());
+    }
+
+    //todo: interactive
+    @Subroutine("replace-buffer-in-windows")
+    public static LObject replaceBufferInWindows (Environment environment, @Optional LObject bufferOrName) {
+        //todo: replace given buffer in all windows where it is opened
+        if (bufferOrName == null)
+            bufferOrName = environment.getBufferCurrentForEditing();
+        switchToBuffer(environment, otherBuffer(environment, bufferOrName), null);
+        return LispSymbol.ourNil;
+    }
+
+
+    //todo: interactive, bound to C-x k
+    @Subroutine("kill-buffer")
+    public static LObject killBuffer (Environment environment, @Optional LObject bufferOrName) {
+        replaceBufferInWindows(environment, bufferOrName);
+
+        LispSymbol killBufferQueryFunctions = environment.find("kill-buffer-query-functions");
+        if (killBufferQueryFunctions != null) {
+            LObject functions = killBufferQueryFunctions.getValue();
+            if (functions != null && functions != LispSymbol.ourVoid) {
+                LObject evaluationResult = functions.evaluate(environment);
+                if (evaluationResult.equals(LispSymbol.ourNil))
+                    return new LispString("The buffer " + bufferOrName + " was not killed due to kill-buffer-query-functions.");
+            }
+        }
+        //todo: run hooks
+        //todo: Any processes that have this buffer as the `process-buffer' are killed with SIGHUP.
+
+        LispBuffer buffer = getBufferByBufferNameOrNil(environment, bufferOrName);
+        //todo: check if modified. If user decides not to kill the buffer, return nil
+
+        environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
+        environment.getMainEnvironment().killBuffer(buffer);
+        return LispSymbol.ourT;
     }
 
 }

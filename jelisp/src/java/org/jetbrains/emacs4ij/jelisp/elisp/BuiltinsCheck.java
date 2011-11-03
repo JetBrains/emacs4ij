@@ -108,4 +108,12 @@ public abstract class BuiltinsCheck {
         }
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("buffer-live-p")
+    public static LispSymbol bufferLivePredicate (LObject object) {
+        if (bufferp(object).equals(LispSymbol.ourT))
+            if (((LispBuffer)object).isAlive())
+                return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
 }
