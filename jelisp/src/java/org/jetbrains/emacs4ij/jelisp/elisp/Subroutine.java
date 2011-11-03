@@ -17,4 +17,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subroutine {
     String value();
+    boolean isCmd () default false;
 }

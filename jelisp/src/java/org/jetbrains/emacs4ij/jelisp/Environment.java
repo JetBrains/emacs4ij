@@ -104,7 +104,8 @@ public class Environment {
                 String name = annotation.value();
                 if (mySymbols.containsKey(name))
                     throw new RuntimeException("Duplicate symbol: " + name + '!');
-                mySymbols.put(name, LispSymbol.newSubroutine(name));
+                mySymbols.put(name, LispSymbol.newSubroutine(name, annotation.isCmd()));
+                //System.out.print(name + ' ');
             }
         }
     }

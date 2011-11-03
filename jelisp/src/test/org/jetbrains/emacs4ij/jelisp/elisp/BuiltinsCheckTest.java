@@ -91,5 +91,13 @@ public class BuiltinsCheckTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
+    @Test
+    public void testCommandp_BuiltIn () {
+        LObject lispObject = evaluateString("(commandp 'switch-to-buffer)");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+        lispObject = evaluateString("(commandp 'if)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
 
 }

@@ -43,7 +43,7 @@ public abstract class BuiltinsCheck {
             return LispSymbol.ourNil;
         if (function instanceof LispList) {
             try {
-                Lambda lambda = new Lambda((LispList) function, environment);
+                new Lambda((LispList) function, environment);
                 return LispSymbol.ourT;
             } catch (Exception e) {
                 return LispSymbol.ourNil;
@@ -81,9 +81,13 @@ public abstract class BuiltinsCheck {
         if (function instanceof LispSymbol) {
             if (!(((LispSymbol) function).getProperty("interactive-form").equals(LispSymbol.ourNil)))
                 return LispSymbol.ourT;
-            if (((LispSymbol) function).isFunction()) {
+            if (((LispSymbol) function).isCustom()) {
                 ((LispSymbol) function).castToLambda(environment);
                 return commandp(environment, ((LispSymbol) function).getFunction(), forCallInteractively);
+            }
+            if (((LispSymbol) function).isSubroutine()) {
+                if (((LispSymbol) function).isInteractive())
+                    return LispSymbol.ourT;
             }
 
             //todo: ability to check primitive functions!!!
