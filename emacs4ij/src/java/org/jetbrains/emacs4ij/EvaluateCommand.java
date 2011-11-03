@@ -11,8 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
-import javax.swing.*;
-
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -23,34 +21,21 @@ import javax.swing.*;
 public class EvaluateCommand extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
-        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
 
         if (editor == null)
             return;
 
-        if (emacsHomeService.getEmacsHome() == null || emacsHomeService.getEmacsHome().equals("")) {
-            Messages.showInfoMessage("You should choose Emacs home directory!", "Emacs4ij");
-            JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
-            fileChooser.setDialogTitle("Select Emacs home directory");
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (fileChooser.showOpenDialog(editor.getComponent()) == JFileChooser.APPROVE_OPTION) {
-                String emacsHome = fileChooser.getSelectedFile().getAbsolutePath();
-                emacsHomeService.setEmacsHome(emacsHome);
-                Environment.ourEmacsPath = emacsHome;
-            } else {
-                Messages.showErrorDialog("You didn't choose Emacs home directory!\nNo command evaluation will be done.", "Emacs4ij");
-                //todo close header
-                return;
-            }
-        } else {
-            if (Environment.ourEmacsPath.equals(""))
-                Environment.ourEmacsPath = emacsHomeService.getEmacsHome();
-        }
+        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+        if (!emacsHomeService.checkSetEmacsHome())
+            return;
+
         String parameterValue = editor.getDocument().getText();
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         String bufferName = environment.getBufferCurrentForEditing().getName();
-        if (bufferName.equals(OpenCommandEditor.ourScratch)) {
+
+        if (bufferName.equals(Environment.ourScratchBufferName)) {
             try {
                 Parser parser = new Parser();
                 LObject result = parser.parseLine(parameterValue).evaluate(environment);
@@ -59,15 +44,16 @@ public class EvaluateCommand extends AnAction {
                 Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
             }
             //todo close header
-        } else if (bufferName.equals(OpenCommandEditor.ourMiniBuffer)) {
+        } else if (bufferName.equals(Environment.ourMiniBufferName)) {
             try {
-                LispMiniBuffer miniBuffer = (LispMiniBuffer) environment.findBuffer(OpenCommandEditor.ourMiniBuffer);
+                LispMiniBuffer miniBuffer = (LispMiniBuffer) environment.findBuffer(Environment.ourMiniBufferName);
                 if (miniBuffer == null) {
                     throw new RuntimeException("execute mini buffer command in nowhere!");
                 }
                 LObject result = miniBuffer.onReadInput();
                 if (result != null)
                     Messages.showInfoMessage(result.toString(), "Evaluation result");
+                //todo close header
             } catch (RuntimeException exc) {
                 Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
             }

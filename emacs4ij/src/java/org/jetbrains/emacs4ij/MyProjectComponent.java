@@ -28,7 +28,7 @@ public class MyProjectComponent implements ProjectComponent {
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineBuffer(miniBuffer);
         String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, OpenCommandEditor.ourScratch, scratchDir, null);
+        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, Environment.ourScratchBufferName, scratchDir, null);
         myEnvironment.defineBuffer(scratchBuffer);
 
         myProject = project;

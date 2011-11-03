@@ -34,6 +34,9 @@ public class Environment {
     private final LispBufferFactory myBufferFactory;
 
     private final Object myProject;
+    public static final String ourMiniBufferName = " *Minibuf-0*";
+    public static final String ourScratchBufferName = "*scratch*";
+
 
     /**
      * Constructor for global environment
@@ -404,7 +407,7 @@ public class Environment {
     //========== mini buffer ==========================
 
     public LispMiniBuffer getMiniBuffer () {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer) findBuffer(" *Minibuf-0*");
+        LispMiniBuffer miniBuffer = (LispMiniBuffer) findBuffer(ourMiniBufferName);
         if (miniBuffer == null)
             throw new RuntimeException("mini buffer does not exist!");
         return miniBuffer;

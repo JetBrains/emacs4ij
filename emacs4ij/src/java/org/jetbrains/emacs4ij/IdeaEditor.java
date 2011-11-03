@@ -181,6 +181,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
         setEditor(input.getEditor());
         myEnvironment.updateBuffer(this);
+
         EvaluateCommand command = new EvaluateCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
         grabFocus();
@@ -188,7 +189,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     @Override
     public void grabFocus () {
-        if (!((this instanceof LispMiniBuffer) || (myName.equals(OpenCommandEditor.ourScratch))))
+        if (!isHeaderBuffer())
             throw new RuntimeException("LispBuffer.grabFocus() wrong usage!");
         myEnvironment.switchToBuffer(myName);
         System.out.print("grab focus: ");
@@ -198,9 +199,13 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         myEditor.getContentComponent().grabFocus();
     }
 
+    private boolean isHeaderBuffer () {
+        return (myName.equals(Environment.ourScratchBufferName) || this instanceof LispMiniBuffer);
+    }
+
     @Override
     public void setBufferActive () {
-        if (myName.equals(OpenCommandEditor.ourScratch) || this instanceof LispMiniBuffer) {
+        if (isHeaderBuffer()) {
             setHeaderBufferActive();
             return;
         }
@@ -242,7 +247,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     }
 
     public void close () {
-        if (myName.equals(OpenCommandEditor.ourScratch) || this instanceof LispMiniBuffer) {
+        if (isHeaderBuffer()) {
             //setHeaderBufferActive();
             return;
         }
