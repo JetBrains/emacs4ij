@@ -1,12 +1,10 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -44,33 +42,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
     }   */
 
-    private void write (final String text) {
-        if (myEditor == null)
-            return;
-        if (EventQueue.isDispatchThread()) {
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                myEditor.getDocument().setText(text);
-                gotoChar(pointMax());
-            }
-        });
-        }
-        else
-            EventQueue.invokeLater (new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                myEditor.getDocument().setText(text);
-                gotoChar(pointMax());
-            }
-        });
-                }
-            });
 
-    }
 
     public void setReadCommandStatus () {
         myStatus = MiniBufferStatus.READ_COMMAND;
@@ -88,9 +60,10 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     }
 
     private void hide () {
-        IdeaEditor buffer = (IdeaEditor) myEnvironment.getFirstBufferWithNameNotBeginningWithSpace();
-        IdeaEditor.headerClosed(this);
-        buffer.setBufferActive();
+
+        close();
+        //IdeaEditor buffer = (IdeaEditor) myEnvironment.getFirstBufferWithNameNotBeginningWithSpace();
+        //buffer.setBufferActive();
     }
 
     @Override

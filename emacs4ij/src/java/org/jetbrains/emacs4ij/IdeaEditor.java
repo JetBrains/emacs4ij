@@ -1,10 +1,10 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.EditorTextField;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
@@ -12,10 +12,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
-
-import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,11 +21,10 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaEditor extends LispObject implements LispBuffer {
-    protected static ArrayList<IdeaEditor> openedHeaders = new ArrayList<IdeaEditor>();
-
     protected String myName;
     protected Editor myEditor;
     protected Environment myEnvironment;
+
     //buffer-local elisp variables
     private String myDefaultDirectory;
     private boolean isAlive;
@@ -51,26 +46,6 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     public boolean isAlive() {
         return isAlive;
-    }
-
-    @Override
-    public Environment getEnvironment() {
-        return myEnvironment;
-    }
-
-    public static void headerOpened (IdeaEditor header) {
-        openedHeaders.add(header);
-    }
-
-    public static void headerClosed (IdeaEditor header) {
-        for (LispBuffer buffer: header.getEnvironment().getBuffers()) {
-            String headerName = buffer.getHeaderName();
-            if (headerName.equals(""))
-                continue;
-            if (headerName.equals(header.getName()))
-                buffer.closeHeader();
-        }
-        openedHeaders.remove(header);
     }
 
     @Override
@@ -161,41 +136,26 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         return gotoChar(point() + shift);
     }
 
-    protected void setHeaderBufferActive () {
-        final EditorTextField input = new EditorTextField();
-        input.setName(myName);
-        LispBuffer header = myEnvironment.findBuffer(myName);
-        if (header == null)
-            throw new NoBufferException(myName);
-
-        LispBuffer currentBuffer = myEnvironment.getBufferCurrentForEditing();
-        if (currentBuffer.getName().equals(myName))
+    protected void write (final String text) {
+        if (myEditor == null)
             return;
-        currentBuffer.getEditor().setHeaderComponent(input);
-
-        /*for (LispBuffer buffer: myEnvironment.getBuffersWithNameNotBeginningWithSpace()) {
-            if (buffer.getName().equals(myName))
-                continue;
-            ((IdeaEditor)buffer).setHeader(input);
-        }  */
-
-        setEditor(input.getEditor());
-        myEnvironment.updateBuffer(this);
-
-        EvaluateCommand command = new EvaluateCommand();
-        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
-        grabFocus();
+        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            @Override
+            public void run() {
+                myEditor.getDocument().setText(text);
+                gotoChar(pointMax());
+            }
+        });
     }
 
-    @Override
-    public void grabFocus () {
-        if (!isHeaderBuffer())
-            throw new RuntimeException("LispBuffer.grabFocus() wrong usage!");
-        myEnvironment.switchToBuffer(myName);
-        System.out.print("grab focus: ");
-        myEnvironment.printBuffers();
+    protected void setHeaderBufferActive () {
+        if (myEnvironment.getServiceBuffer(myName) == null)
+            throw new NoBufferException(myName);
         if (myEditor == null)
             throw new RuntimeException("null editor!");
+        if (!(this instanceof IdeaMiniBuffer))
+            write("");
+        myEnvironment.updateServiceBuffer(this);
         myEditor.getContentComponent().grabFocus();
     }
 
@@ -223,32 +183,17 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         return myDefaultDirectory;
     }
 
-    public void setHeader (IdeaEditor header) {
-        myEditor.setHeaderComponent(header.getEditor().getContentComponent());
-        myEnvironment.updateBuffer(this);
-    }
-
-    public void setHeader (JComponent header) {
-        myEditor.setHeaderComponent(header);
-        myEnvironment.updateBuffer(this);
-    }
-
-    public String getHeaderName () {
-        try {
-            return myEditor.getHeaderComponent().getName();
-        } catch (NullPointerException e) {
-            return "";
-        }
-    }
-
+    @Override
     public void closeHeader () {
-        myEditor.setHeaderComponent(null);
-        myEnvironment.updateBuffer(this);
+        LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
+        buffer.getEditor().setHeaderComponent(null);
+        myEnvironment.updateBuffer(buffer);
+        buffer.setBufferActive();
     }
 
     public void close () {
         if (isHeaderBuffer()) {
-            //setHeaderBufferActive();
+            closeHeader();
             return;
         }
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());

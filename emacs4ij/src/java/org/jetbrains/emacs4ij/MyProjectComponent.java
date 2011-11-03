@@ -26,10 +26,10 @@ public class MyProjectComponent implements ProjectComponent {
         myEnvironment = new Environment(global);
 
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
-        myEnvironment.defineBuffer(miniBuffer);
+        myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
         IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, Environment.ourScratchBufferName, scratchDir, null);
-        myEnvironment.defineBuffer(scratchBuffer);
+        myEnvironment.defineServiceBuffer(scratchBuffer);
 
         myProject = project;
     }
@@ -49,15 +49,6 @@ public class MyProjectComponent implements ProjectComponent {
     @NotNull
     public String getComponentName() {
         return "org.jetbrains.emacs4ij.MyProjectComponent";
-    }
-
-    private void setHeaders(IdeaEditor buffer) {
-
-       // IdeaEditor current = buffer;
-        for (IdeaEditor header: IdeaEditor.openedHeaders) {
-            buffer.setHeader(header);
-        //    current = header;
-        }
     }
 
     public void projectOpened() {

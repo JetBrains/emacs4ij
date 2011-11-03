@@ -4,8 +4,10 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+
+import java.awt.event.KeyEvent;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,14 +30,16 @@ public class OpenMiniBuffer extends AnAction {
 
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
-        IdeaMiniBuffer buffer = (IdeaMiniBuffer) environment.findBuffer(myName);
-        if (buffer == null)
-            throw new NoBufferException(myName);
-
+        IdeaMiniBuffer buffer = (IdeaMiniBuffer) environment.getMiniBuffer();
         buffer.setReadCommandStatus();
-        IdeaEditor.headerOpened(buffer);
+
+        EditorTextField input = new EditorTextField();
+        editor.setHeaderComponent(input);
+        buffer.setEditor(input.getEditor());
+
+        ExecuteCommand command = new ExecuteCommand();
+        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
 
         buffer.setBufferActive();
-
     }
 }

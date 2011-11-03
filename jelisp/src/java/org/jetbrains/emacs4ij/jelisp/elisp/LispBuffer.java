@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,8 +10,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LObject {
-    public Editor getEditor();
-    public void setEditor (Editor editor);
     public String getName();
     public int getSize();
     public int point();
@@ -21,16 +18,12 @@ public interface LispBuffer extends LObject {
     public int bufferEnd(double parameter);
     public String gotoChar(int position);
     public String forwardChar (int shift);
-    public void setBufferActive ();
-    public void grabFocus();
     public boolean isAlive();
     public void kill();
-
-    public Environment getEnvironment();
-    public String getHeaderName();
-    public void closeHeader();
-
-
     public String getDefaultDirectory();
 
+    public void setBufferActive ();
+    public Editor getEditor();
+    public void setEditor (Editor editor);
+    public void closeHeader();
 }

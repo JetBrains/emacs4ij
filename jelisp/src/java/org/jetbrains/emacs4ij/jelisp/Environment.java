@@ -23,6 +23,7 @@ public class Environment {
     private HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
     private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
     private ArrayList<LispBuffer> myDeadBuffers = new ArrayList<LispBuffer>();
+    private ArrayList<LispBuffer> myServiceBuffers = new ArrayList<LispBuffer>();
 
     private Environment myOuterEnv;
     private LispBuffer myBufferCurrentForEditing = null;
@@ -41,6 +42,7 @@ public class Environment {
     /**
      * Constructor for global environment
      * @param bufferFactory
+     * @param project
      */
     public Environment (@NotNull LispBufferFactory bufferFactory, Object project) {
         myProject = project;
@@ -207,14 +209,28 @@ public class Environment {
     //============================= buffer processing =====================================
 
     public void defineBuffer (LispBuffer buffer) {
-        if (getIndexByName(buffer.getName()) != -1) {
+        if (containsBuffer(buffer.getName())) {
             throw new DoubleBufferException("double "+buffer.getName());
         }
-        myBuffers.add(buffer);
+        if (!isDead(buffer.getName())) {
+            myBuffers.add(buffer);
+            return;
+        }
+        myDeadBuffers.remove(getIndexByName(myDeadBuffers, buffer.getName()));
     }
 
-    public void updateBuffer (LispBuffer buffer) {
-        myBuffers.set(getIndexByName(buffer.getName()), buffer);
+    public void defineServiceBuffer (LispBuffer buffer) {
+        if (!myOuterEnv.equals(myGlobalEnvironment))
+            throw new RuntimeException("You cannot define service buffers outside the main environment!");
+        myServiceBuffers.add(buffer);
+    }
+
+    public void updateBuffer(LispBuffer buffer) {
+        myBuffers.set(getIndexByName(myBuffers, buffer.getName()), buffer);
+    }
+
+    public void updateServiceBuffer (LispBuffer buffer) {
+        myServiceBuffers.set(getIndexByName(myServiceBuffers, buffer.getName()), buffer);
     }
 
     private LispBuffer getCurrentBuffer () {
@@ -223,9 +239,9 @@ public class Environment {
         return myBuffers.get(myBuffers.size() - 1);
     }
 
-    private int getIndexByName(String bufferName) {
-        for (int i=0; i!= myBuffers.size(); ++i) {
-            if (myBuffers.get(i).getName().equals(bufferName))
+    private int getIndexByName(ArrayList<LispBuffer> buffers, String bufferName) {
+        for (int i=0; i!= buffers.size(); ++i) {
+            if (buffers.get(i).getName().equals(bufferName))
                 return i;
         }
         return -1;
@@ -237,10 +253,11 @@ public class Environment {
             return;
         }
         if (myBuffers.size() == 0)
-            throw new NoOpenedBufferException();
+            return;
+            //throw new NoOpenedBufferException();
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
             return;
-        int newCurrentBufferIndex = getIndexByName(bufferName);
+        int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
             throw new EnvironmentException("this buffer is not opened");
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
@@ -269,7 +286,15 @@ public class Environment {
         return null;
     }
 
-    public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
+    public LispBuffer getServiceBuffer (String bufferName) {
+        Environment main = getMainEnvironment();
+        for (LispBuffer buffer: main.myServiceBuffers) {
+            if (buffer.getName().equals(bufferName))
+                return buffer;
+        }
+        return null;
+    }
+   /* public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
         Environment main = getMainEnvironment();
         ArrayList<LispBuffer> noSpace = new ArrayList<LispBuffer>();
         for (LispBuffer buffer: main.myBuffers) {
@@ -279,6 +304,18 @@ public class Environment {
         return noSpace;
     }
 
+    public LispBuffer getFirstNotServiceBuffer () {
+        Environment main = getMainEnvironment();
+        ArrayList<LispBuffer> myBuffers1 = main.myBuffers;
+        for (int i = myBuffers1.size() - 1; i != -1; --i) {
+            LispBuffer buffer = myBuffers1.get(i);
+            char start = buffer.getName().charAt(0);
+            if (start != ' ' && start != '*')
+                return buffer;
+        }
+        throw new NoOpenedBufferException();
+    }
+
     public LispBuffer getFirstBufferWithNameNotBeginningWithSpace () {
         Environment main = getMainEnvironment();
         for (LispBuffer buffer: main.myBuffers) {
@@ -286,7 +323,7 @@ public class Environment {
                 return buffer;
         }
         throw new NoBufferException("Buffer with name not beginning with space");
-    }
+    }*/
 
     public ArrayList<LispBuffer> getBuffers () {
         return myBuffers;
@@ -297,15 +334,15 @@ public class Environment {
     }
 
     public LispBuffer getOtherBuffer (String bufferName) {
-        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
-        if (noSpace.isEmpty())
+        //ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
+        if (myBuffers.isEmpty())
             throw new NoOpenedBufferException();
-        if (noSpace.size() == 1) {
-            return noSpace.get(0);
+        if (myBuffers.size() == 1) {
+            return myBuffers.get(0);
         }
-        for (int i = noSpace.size() - 1; i!=-1; --i) {
-            if (!noSpace.get(i).getName().equals(bufferName))
-                return noSpace.get(i);
+        for (int i = myBuffers.size() - 1; i!=-1; --i) {
+            if (!myBuffers.get(i).getName().equals(bufferName))
+                return myBuffers.get(i);
         }
         throw new RuntimeException("other-buffer " + bufferName);
     }
@@ -321,11 +358,6 @@ public class Environment {
             bufferList.add(buffer);
         }
         return bufferList;
-    }
-
-    public void closeBuffer(String bufferName) {
-        int toRemove = getIndexByName(bufferName);
-        myBuffers.remove(toRemove);
     }
 
     public void closeCurrentBuffer () {
@@ -383,10 +415,10 @@ public class Environment {
     }
 
     public LispBuffer lastBuffer (String bufferName) {
-        ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
-        for (int i=0; i!=noSpace.size(); ++i)
-            if (!noSpace.get(i).getName().equals(bufferName))
-                return noSpace.get(i);
+       // ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
+        for (int i=0; i!=myBuffers.size(); ++i)
+            if (!myBuffers.get(i).getName().equals(bufferName))
+                return myBuffers.get(i);
         //todo: create and return *scratch*
         throw new NoOpenedBufferException();
     }
@@ -407,7 +439,7 @@ public class Environment {
     //========== mini buffer ==========================
 
     public LispMiniBuffer getMiniBuffer () {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer) findBuffer(ourMiniBufferName);
+        LispMiniBuffer miniBuffer = (LispMiniBuffer) getServiceBuffer(ourMiniBufferName);
         if (miniBuffer == null)
             throw new RuntimeException("mini buffer does not exist!");
         return miniBuffer;
