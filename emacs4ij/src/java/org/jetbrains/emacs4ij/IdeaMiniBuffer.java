@@ -73,7 +73,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     public void readArgument(SpecialFormInteractive interactive) {
         myStatus = MiniBufferStatus.READ_ARG;
         myInteractive = interactive;
-        String text = myInteractive.getPrompt() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
+        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
         int cursorPosition = text.length();
         if (myInteractive.isNoMatch()) {
             text += " [No Match]";

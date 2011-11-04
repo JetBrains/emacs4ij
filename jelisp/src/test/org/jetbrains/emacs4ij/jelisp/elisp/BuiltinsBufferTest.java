@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ public class BuiltinsBufferTest {
     }            */
 
 
-    @Test (expected = EnvironmentException.class)
+    @Test (expected = NoOpenedBufferException.class)
     public void testCurrentBuffer () {
         BuiltinsBuffer.getCurrentBuffer(environment);
     }

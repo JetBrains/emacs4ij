@@ -38,6 +38,7 @@ public class Environment {
     public static final String ourMiniBufferName = " *Minibuf-0*";
     public static final String ourScratchBufferName = "*scratch*";
 
+    public static final String ourUnsetInteractiveString = "0";
 
     /**
      * Constructor for global environment
@@ -109,7 +110,9 @@ public class Environment {
                 String name = annotation.value();
                 if (mySymbols.containsKey(name))
                     throw new RuntimeException("Duplicate symbol: " + name + '!');
-                mySymbols.put(name, LispSymbol.newSubroutine(name, annotation.isCmd()));
+                if (annotation.isCmd() && annotation.interactive().equals(ourUnsetInteractiveString))
+                    throw new RuntimeException("Interactive string not set! Subroutine " + name);
+                mySymbols.put(name, LispSymbol.newSubroutine(name, annotation.isCmd(), annotation.interactive()));
                 //System.out.print(name + ' ');
             }
         }

@@ -100,7 +100,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: bound to C-x b, <menu-bar> <buffer> <select-named-buffer>
-    @Subroutine(value = "switch-to-buffer", isCmd = true)
+    @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer")
     public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
         boolean noRecord = false;
         if (noRecordObject != null) {
@@ -162,14 +162,14 @@ public abstract class BuiltinsBuffer {
 
     //todo: accepts integer OR MARKER
     //todo:  bound to <menu-bar> <edit> <goto> <go-to-pos>
-    @Subroutine(value = "goto-char", isCmd = true)
+    @Subroutine(value = "goto-char", isCmd = true, interactive = "nGoto char: ")
     public static LObject gotoChar (Environment environment, LispInteger pos) {
         environment.getBufferCurrentForEditing().gotoChar(pos.getData());
         return pos;
     }
 
     //todo: bound to C-f, <right>
-    @Subroutine(value = "forward-char", isCmd = true)
+    @Subroutine(value = "forward-char", isCmd = true, interactive = "")
     public static LObject forwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);
@@ -181,7 +181,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: bound to C-b, <left>
-    @Subroutine(value = "backward-char", isCmd = true)
+    @Subroutine(value = "backward-char", isCmd = true, interactive = "")
     public static LObject backwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);
@@ -199,7 +199,7 @@ public abstract class BuiltinsBuffer {
         return environment.getBufferList();
     }
 
-    @Subroutine(value = "bury-buffer", isCmd = true)
+    @Subroutine(value = "bury-buffer", isCmd = true, interactive = "")
     public static LObject buryBuffer (Environment environment, @Optional LObject bufferOrName) {
         LispBuffer buffer;
         if (bufferOrName == null) {
@@ -230,7 +230,7 @@ public abstract class BuiltinsBuffer {
     This command switches to the last buffer in the local buffer list of the selected frame.
     More precisely, it calls the function switch-to-buffer (see Displaying Buffers), to display the buffer returned by last-buffer, see above, in the selected window.
      */
-    @Subroutine(value = "unbury-buffer", isCmd = true)
+    @Subroutine(value = "unbury-buffer", isCmd = true, interactive = "")
     public static LObject unburyBuffer (Environment environment) {
         LispBuffer lastBuffer = lastBuffer(environment, null, null, null);
         switchToBuffer(environment, lastBuffer, null);
@@ -264,7 +264,7 @@ public abstract class BuiltinsBuffer {
         return environment.createBuffer(name.getData());
     }
 
-    @Subroutine(value = "replace-buffer-in-windows", isCmd = true)
+    @Subroutine(value = "replace-buffer-in-windows", isCmd = true, interactive = "bReplace buffer in windows")
     public static LObject replaceBufferInWindows (Environment environment, @Optional LObject bufferOrName) {
         //todo: replace given buffer in all windows where it is opened
         if (bufferOrName == null)
@@ -274,7 +274,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: interactive, bound to C-x k
-    @Subroutine(value="kill-buffer", isCmd = true)
+    @Subroutine(value="kill-buffer", isCmd = true, interactive = "bKill buffer")
     public static LObject killBuffer (Environment environment, @Optional LObject bufferOrName) {
         replaceBufferInWindows(environment, bufferOrName);
 

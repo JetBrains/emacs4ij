@@ -72,13 +72,11 @@ public class IdeaMiniBufferTest {
         Assert.assertEquals(new LispSymbol("s"), ret);
     }
 
-
     @Test
     public void testReturnDefault_NilSymbol () {
         LObject ret = myMiniBuffer.returnDefault (LispSymbol.ourNil);
         Assert.assertEquals(new LispSymbol(""), ret);
     }
-
 
     @Test
     public void testReturnDefault_EmptyList () {

@@ -25,17 +25,19 @@ public class LispSymbol extends LispAtom {
     private LObject myValue = ourVoid;
     private LispObject myFunction = null;
     private boolean isInteractive = false;
-    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
+    private String myInteractiveString;
 
+    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
     }
 
-    public static LispSymbol newSubroutine (String myName, boolean isCommand) {
+    public static LispSymbol newSubroutine (String myName, boolean isCommand, String interactiveString) {
         LispSymbol subroutine = new LispSymbol(myName);
         subroutine.myFunction = new LispString("#<subr " + myName + ">");
         subroutine.isInteractive = isCommand;
+        subroutine.myInteractiveString = interactiveString;
         return subroutine;
     }
 
@@ -217,6 +219,8 @@ public class LispSymbol extends LispAtom {
             return null;
         if (myFunction instanceof Lambda)
             return ((Lambda) myFunction).getInteractiveString();
+        if (isSubroutine())
+            return myInteractiveString;
         return null;
     }
 }
