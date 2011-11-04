@@ -35,9 +35,13 @@ public class EvaluateCode extends AnAction {
 
         try {
             Parser parser = new Parser();
+            String displayedBufferName = IdeaEditor.getDisplayedBufferName();
+
             LObject result = parser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(result.toString(), "Evaluation result");
-            environment.getBufferCurrentForEditing().closeHeader();
+
+            environment.findBuffer(displayedBufferName).closeHeader();
+
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
         }

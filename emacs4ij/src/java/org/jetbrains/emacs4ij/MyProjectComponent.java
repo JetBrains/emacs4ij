@@ -32,6 +32,7 @@ public class MyProjectComponent implements ProjectComponent {
         myEnvironment.defineServiceBuffer(scratchBuffer);
 
         myProject = project;
+        IdeaEditor.setProject(project);
     }
 
     public Environment getEnvironment() {

@@ -2,8 +2,10 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -25,6 +27,8 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     protected Editor myEditor;
     protected Environment myEnvironment;
 
+    private static Project ourProject;
+
     //buffer-local elisp variables
     private String myDefaultDirectory;
     private boolean isAlive;
@@ -37,6 +41,10 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         myEditor = editor;
         myDefaultDirectory = path;
         isAlive = true;
+    }
+
+    public static void setProject(Project project) {
+        ourProject = project;
     }
 
     public void kill () {
@@ -169,11 +177,11 @@ public class IdeaEditor extends LispObject implements LispBuffer {
             setHeaderBufferActive();
             return;
         }
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
             if (file.getName().equals(myName)) {
-                fileEditorManager.openTextEditor(new OpenFileDescriptor(myEditor.getProject(), file), true);
+                fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true);
             }
         }
     }
@@ -185,23 +193,33 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     @Override
     public void closeHeader () {
-        LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
-        buffer.getEditor().setHeaderComponent(null);
-        myEnvironment.updateBuffer(buffer);
-        buffer.setBufferActive();
+        if (myEditor.getHeaderComponent() == null)
+            return;
+        myEditor.setHeaderComponent(null);
+        myEnvironment.updateBuffer(this);
     }
 
     public void close () {
         if (isHeaderBuffer()) {
-            closeHeader();
+            LispBuffer displayedBuffer = myEnvironment.findBuffer(getDisplayedBufferName());
+            displayedBuffer.closeHeader();
             return;
         }
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myEditor.getProject());
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
             if (file.getName().equals(myName)) {
                 fileEditorManager.closeFile(file);
             }
+        }
+    }
+
+    public static String getDisplayedBufferName () {
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
+        try {
+            return ((EditorImpl)fileEditorManager.getSelectedTextEditor()).getVirtualFile().getName();
+        } catch (NullPointerException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -30,22 +30,20 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
         if (myEditor != null)
             myEditor.getDocument().setText(myPrompt);
-        myStatus = MiniBufferStatus.READ_COMMAND;
+        myStatus = MiniBufferStatus.FREE;
         myEnvironment = environment;
     }
 
-    /*public IdeaMiniBuffer (int number, EditorTextField editor, Environment environment) {
-        myName = " *Minibuf-" + number;
-        myEditor = (Editor) editor;
-        myStatus = MiniBufferStatus.READ_COMMAND;
-        myEnvironment = environment;
-        myPrompt = ourEvalPrompt;
-    }   */
-
-
-
     public void setReadCommandStatus () {
         myStatus = MiniBufferStatus.READ_COMMAND;
+    }
+
+    public MiniBufferStatus getStatus() {
+        return myStatus;
+    }
+
+    public void setFreeStatus() {
+        myStatus = MiniBufferStatus.FREE;
     }
 
     @Override
@@ -57,13 +55,6 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     public void setEditor(Editor editor) {
         super.setEditor(editor);
         write(myPrompt);
-    }
-
-    private void hide () {
-
-        close();
-        //IdeaEditor buffer = (IdeaEditor) myEnvironment.getFirstBufferWithNameNotBeginningWithSpace();
-        //buffer.setBufferActive();
     }
 
     @Override
@@ -121,6 +112,11 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         return myEditor.getDocument().getText().substring(myPrompt.length());
     }
 
+    public void hide() {
+        myStatus = MiniBufferStatus.FREE;
+        close();
+    }
+
     //todo: autocompletion while type
     @Override
     public LObject onReadInput () {
@@ -155,7 +151,6 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
             case READ_ARG:
                 myInteractive.onReadParameter(readParameter());
                 if (myInteractive.isFinished()) {
-                    myStatus = MiniBufferStatus.READ_COMMAND;
                     hide();
                     return myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
                 } else

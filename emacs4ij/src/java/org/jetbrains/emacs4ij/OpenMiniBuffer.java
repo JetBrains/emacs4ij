@@ -4,8 +4,10 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 
 import java.awt.event.KeyEvent;
 
@@ -30,16 +32,22 @@ public class OpenMiniBuffer extends AnAction {
 
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
-        IdeaMiniBuffer buffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-        buffer.setReadCommandStatus();
+        IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
+        miniBuffer.setReadCommandStatus();
 
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
-        buffer.setEditor(input.getEditor());
+        String name = ((EditorImpl)editor).getVirtualFile().getName();
+        LispBuffer parent = environment.findBuffer(name);
+        parent.setEditor(editor);
+        environment.updateBuffer(parent);
+        miniBuffer.setEditor(input.getEditor());
 
         ExecuteCommand command = new ExecuteCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
+        InterruptMiniBuffer imb = new InterruptMiniBuffer();
+        imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
 
-        buffer.setBufferActive();
+        miniBuffer.setBufferActive();
     }
 }

@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
@@ -38,6 +39,12 @@ public class OpenScratchBuffer extends AnAction {
 
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
+
+        String name = ((EditorImpl)editor).getVirtualFile().getName();
+        LispBuffer parent = environment.findBuffer(name);
+        parent.setEditor(editor);
+        environment.updateBuffer(parent);
+
         scratch.setEditor(input.getEditor());
 
         EvaluateCode command = new EvaluateCode();
