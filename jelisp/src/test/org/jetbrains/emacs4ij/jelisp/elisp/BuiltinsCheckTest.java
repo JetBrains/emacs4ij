@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Assert;
@@ -19,9 +20,9 @@ public class BuiltinsCheckTest {
 
     @Before
     public void setUp() throws Exception {
-        Environment.ourEmacsPath = "/usr/share/emacs/23.2";
-        Environment global = new Environment();
-        environment = new Environment(global);
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.initialize(null, null);
+        environment = new Environment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

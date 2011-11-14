@@ -93,7 +93,7 @@ public abstract class BuiltinsBuffer {
         if (lispObject.equals(LispSymbol.ourNil)) {
             throw new NoBufferException(bufferOrName.toString());
         }
-        if (!environment.isGlobalEnvironment()) {
+        if (!environment.isGlobalEnvironment() && !environment.isMainEnvironment()) {
             environment.setBufferCurrentForEditing((LispBuffer)lispObject);
         }
         return lispObject;

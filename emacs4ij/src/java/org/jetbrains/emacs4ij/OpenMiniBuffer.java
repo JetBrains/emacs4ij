@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 
 import java.awt.event.KeyEvent;
@@ -24,7 +25,7 @@ public class OpenMiniBuffer extends AnAction {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-        String myName = Environment.ourMiniBufferName;
+        String myName = GlobalEnvironment.ourMiniBufferName;
 
         String editorComponentName = editor.getContentComponent().getName();
         if (editorComponentName != null && editorComponentName.equals(myName))

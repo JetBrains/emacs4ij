@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.junit.Before;
@@ -18,7 +19,9 @@ public class BuiltinsBufferTest {
 
     @Before
     public void setUp() {
-        environment = new Environment(new Environment());
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.initialize(null, null);
+        environment = new Environment(GlobalEnvironment.getInstance());
     }
 
   /*  private List<LObject> p(LObject... objects) {

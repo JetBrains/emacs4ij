@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
@@ -35,11 +36,15 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaEditor>();
-        myEnvironment = new Environment(new Environment(new BufferCreator(), null));
+
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.initialize(new BufferCreator(), null);
+        myEnvironment = new Environment(GlobalEnvironment.getInstance());
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
-            myTests.put(fileName, new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
-            myEnvironment.defineBuffer(new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor()));
+            IdeaEditor buffer = new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor());
+            myTests.put(fileName, buffer);
+            myEnvironment.defineBuffer(buffer);
         }
     }
 

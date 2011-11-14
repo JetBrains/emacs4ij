@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 
@@ -58,7 +59,7 @@ public class LispList extends LispObject {
         } catch (ClassCastException e) {
             throw new InvalidFunctionException(car().toString());
         }
-        LispSymbol symbol = environment.getMainEnvironment().find(fun.getName());
+        LispSymbol symbol = GlobalEnvironment.getInstance().find(fun.getName());
         if (symbol == null || symbol.getFunctionCell() == null)
             throw new VoidFunctionException(fun.getName());
 

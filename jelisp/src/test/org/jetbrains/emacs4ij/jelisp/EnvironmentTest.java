@@ -20,7 +20,9 @@ public class EnvironmentTest {
 
     @Before
     public void setUp() throws Exception {
-        e = new Environment(new Environment());
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.initialize(null, null);
+        e = new Environment(GlobalEnvironment.getInstance());
     }
 
     @Test

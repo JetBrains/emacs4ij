@@ -7,6 +7,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
@@ -27,7 +28,7 @@ public class OpenScratchBuffer extends AnAction {
             return;
         if (editor.isOneLineMode())
             return;
-        String myName = Environment.ourScratchBufferName;
+        String myName = GlobalEnvironment.ourScratchBufferName;
         String editorComponentName = editor.getContentComponent().getName();
         if (editorComponentName != null && editorComponentName.equals(myName))
             return;

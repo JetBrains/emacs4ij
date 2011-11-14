@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -171,13 +172,13 @@ public abstract class SpecialForms {
 
     @Subroutine("defvar")
     public static LObject defineVariable(Environment environment, LispSymbol name, @Optional LObject initValue, LispString docString) {
-        LispSymbol variable = environment.getMainEnvironment().find(name.getName());
+        LispSymbol variable = GlobalEnvironment.getInstance().find(name.getName());
         if (variable == null) {
             LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue.evaluate(environment);
             name.setValue(value);
             if (docString != null)
                 name.setVariableDocumentation(docString);
-            environment.getMainEnvironment().defineSymbol(name);
+            GlobalEnvironment.getInstance().defineSymbol(name);
             return name;
         }
         if (variable.getValue().equals(LispSymbol.ourVoid)) {
@@ -186,19 +187,19 @@ public abstract class SpecialForms {
         }
         if (docString != null)
             variable.setVariableDocumentation(docString);
-        environment.getMainEnvironment().defineSymbol(variable);
+        GlobalEnvironment.getInstance().defineSymbol(variable);
         return variable;
     }
 
     @Subroutine(value = "defun")
     public static LObject defineFunction(Environment environment, LispSymbol name, LObject... body) {
-        LispSymbol symbol = environment.getMainEnvironment().find(name.getName());
+        LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         LispList functionCell = new LispList(new LispSymbol("lambda"));
         for (LObject bodyForm: body)
             functionCell.add(bodyForm);
         f.setFunction(functionCell);
-        environment.getMainEnvironment().defineSymbol(f);
+        GlobalEnvironment.getInstance().defineSymbol(f);
         return name;
     }
 

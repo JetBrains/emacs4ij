@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 
 /**
@@ -28,10 +28,10 @@ public class AutoComplete extends AnAction {
         if (!emacsHomeService.checkSetEmacsHome())
             return;
 
-        Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+       // Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
         try {
-            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
+            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) GlobalEnvironment.getInstance().getMiniBuffer();
             String parameter = miniBuffer.readParameter();
             if (miniBuffer.getStatus().equals(IdeaMiniBuffer.MiniBufferStatus.READ_COMMAND)) {
 

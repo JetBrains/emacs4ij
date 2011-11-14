@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,13 +23,13 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        Environment global = new Environment(new BufferCreator(), project);
-        myEnvironment = new Environment(global);
+        GlobalEnvironment.initialize(new BufferCreator(), project);
+        myEnvironment = new Environment(GlobalEnvironment.getInstance());
 
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, Environment.ourScratchBufferName, scratchDir, null);
+        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
         myEnvironment.defineServiceBuffer(scratchBuffer);
 
         myProject = project;

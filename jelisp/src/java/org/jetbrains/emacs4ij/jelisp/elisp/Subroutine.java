@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,5 +20,5 @@ import java.lang.annotation.Target;
 public @interface Subroutine {
     String value();
     boolean isCmd () default false;
-    String interactive () default Environment.ourUnsetInteractiveString;
+    String interactive () default GlobalEnvironment.ourUnsetInteractiveString;
 }
