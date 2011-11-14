@@ -166,9 +166,14 @@ public class LispSymbol extends LispAtom {
         if (isSubroutine())
             return LispSubroutine.evaluate(this, environment, args);
 
-        for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
-            args.set(i, args.get(i).evaluate(environment));
+        if (!environment.areArgumentsEvaluated()) {
+            for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+                args.set(i, args.get(i).evaluate(environment));
+            }
+        } else {
+            environment.setArgumentsEvaluated(false);
         }
+
         if (!(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList)myFunction, environment);
         }

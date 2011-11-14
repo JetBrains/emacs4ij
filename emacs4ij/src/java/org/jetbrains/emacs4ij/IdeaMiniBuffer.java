@@ -120,6 +120,11 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         close();
     }
 
+    //for test
+    public void appendText (String text) {
+        write (myEditor.getDocument().getText() + text);
+    }
+
     //todo: autocompletion while type
     @Override
     public LObject onReadInput () {

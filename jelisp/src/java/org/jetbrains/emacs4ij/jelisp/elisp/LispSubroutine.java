@@ -163,8 +163,12 @@ public abstract class LispSubroutine {
                     continue;
                 if (annotation.value().equals(f.getName())) {
                     if (!Arrays.asList(mySpecialForms).contains(c)) {
-                        for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
-                            args.set(i, args.get(i).evaluate(environment));
+                        if (!environment.areArgumentsEvaluated()) {
+                            for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+                                args.set(i, args.get(i).evaluate(environment));
+                            }
+                        } else {
+                            environment.setArgumentsEvaluated(false);
                         }
                     }
                     ArgumentsList arguments = parseArguments(m, environment, args);

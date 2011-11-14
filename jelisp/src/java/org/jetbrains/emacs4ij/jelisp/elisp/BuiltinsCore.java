@@ -3,6 +3,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -99,4 +102,13 @@ public abstract class BuiltinsCore {
 
     }
 
+    @Subroutine("funcall")
+    public static LObject functionCall (Environment environment, LObject function, @Optional LObject... args) {
+        environment.setArgumentsEvaluated(true);
+        ArrayList<LObject> data = new ArrayList<LObject>();
+        data.add(function);
+        Collections.addAll(data, args);
+        LispList funcall = new LispList(data);
+        return funcall.evaluate(environment);
+    }
 }

@@ -18,6 +18,7 @@ public class Environment {
     protected HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
     protected Environment myOuterEnv;
     private boolean mySelectionManagedBySubroutine = false;
+    private boolean myArgumentsEvaluated = false;
     protected LispBuffer myBufferCurrentForEditing = null;
 
     // for global environment
@@ -37,6 +38,14 @@ public class Environment {
 
     public boolean isSelectionManagedBySubroutine () {
         return mySelectionManagedBySubroutine;
+    }
+
+    public boolean areArgumentsEvaluated() {
+        return myArgumentsEvaluated;
+    }
+
+    public void setArgumentsEvaluated(boolean argumentsEvaluated) {
+        myArgumentsEvaluated = argumentsEvaluated;
     }
 
     public LObject find(String name, String methodName) {

@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
 import org.junit.Before;
@@ -29,6 +30,12 @@ public class BuiltinsCoreTest {
     private LObject evaluateString (String lispCode) throws LispException {
         Parser parser = new Parser();
         return parser.parseLine(lispCode).evaluate(environment);
+    }
+
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
     }
 
     @Test
@@ -170,6 +177,24 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(not nil)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
+    public void testFuncall () {
+        LObject result = evaluateString("(funcall '+ 1 2)");
+        Assert.assertEquals(new LispInteger(3), result);
+    }
+
+    @Test
+    public void testFuncallInvalid () {
+        try {
+            evaluateString("(funcall 0 1 2)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            Assert.assertTrue(q instanceof InvalidFunctionException);
+            return;
+        }
+        Assert.assertTrue(false);
     }
 
 }
