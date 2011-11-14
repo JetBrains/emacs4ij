@@ -93,7 +93,7 @@ public abstract class BuiltinsBuffer {
         if (lispObject.equals(LispSymbol.ourNil)) {
             throw new NoBufferException(bufferOrName.toString());
         }
-        if (!environment.isMainEnvironment()) {
+        if (!environment.isGlobalEnvironment()) {
             environment.setBufferCurrentForEditing((LispBuffer)lispObject);
         }
         return lispObject;
@@ -293,8 +293,12 @@ public abstract class BuiltinsBuffer {
         LispBuffer buffer = getBufferByBufferNameOrNil(environment, bufferOrName);
         //todo: check if modified. If user decides not to kill the buffer, return nil
 
-        environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
-        environment.getMainEnvironment().killBuffer(buffer);
+       // environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
+       // environment.getMainEnvironment().killBuffer(buffer);
+
+        environment.setSelectionManagedBySubroutine(true);
+        environment.killBuffer(buffer);
+
         return LispSymbol.ourT;
     }
 

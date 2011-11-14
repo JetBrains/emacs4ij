@@ -108,7 +108,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         throw new WrongTypeArgument("stringp", defaultValue.toString());
     }
 
-    private String readParameter () {
+    public String readParameter () {
         return myEditor.getDocument().getText().substring(myPrompt.length());
     }
 
