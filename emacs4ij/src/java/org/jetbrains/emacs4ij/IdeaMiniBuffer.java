@@ -28,8 +28,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myName = " *Minibuf-" + number + '*';
         myEditor = editor;
         myPrompt = ourEvalPrompt;
-        if (myEditor != null)
-            myEditor.getDocument().setText(myPrompt);
+        write(myPrompt);
         myStatus = MiniBufferStatus.FREE;
         myEnvironment = environment;
     }
@@ -64,7 +63,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         String text = ourEvalPrompt + (startValue == null ? "" : startValue) + (noMatch ? " [No match]" : "");
         write(text);
         int cursorPosition = ourEvalPrompt.length() + (startValue == null ? 0 : startValue.length());
-        gotoChar(cursorPosition);
+        gotoChar(cursorPosition+1);
         //todo unchangeable prompt
         setHeaderBufferActive();
     }
@@ -74,7 +73,8 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myStatus = MiniBufferStatus.READ_ARG;
         myInteractive = interactive;
         String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
-        int cursorPosition = text.length();
+        myPrompt = text;
+        int cursorPosition = text.length()+1 ;
         if (myInteractive.isNoMatch()) {
             text += " [No Match]";
         }
@@ -114,6 +114,9 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
 
     public void hide() {
         myStatus = MiniBufferStatus.FREE;
+        myPrompt = ourEvalPrompt;
+        write(myPrompt);
+        myDefaultValue = null;
         close();
     }
 
@@ -129,24 +132,34 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                     return returnDefault(myDefaultValue);
                 }
                 LispSymbol cmd = myEnvironment.find(parameter);
-                if (cmd != null)
+                if (cmd != null) {
                     if (BuiltinsCheck.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
                         //myStatus = MiniBufferStatus.READ_ARG;
                         //return BuiltinsCore.callInteractively(myEnvironment, cmd, null, null); instead of next code
 
                         cmd.castToLambda(myEnvironment);
                         String interactiveString = cmd.getInteractiveString();
-                        if (interactiveString == null || interactiveString.equals("")) {
+                        if (interactiveString == null) {
+                            throw new RuntimeException("Command has null interactive string!");
+                        }
+                        if (interactiveString.equals("")) {
                             hide();
+                            //todo: give arraylist of required number of nulls
+                            //todo: interactive string cannot be null
                             return cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
                         }
                         myCommand = cmd;
-                        SpecialFormInteractive interactive = new SpecialFormInteractive(myEnvironment, interactiveString);
+                        myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
                         myStatus = MiniBufferStatus.READ_ARG;
-                        interactive.readNextArgument();
+                        myInteractive.readNextArgument();
+                    } else {
+                        //todo: show "no match" message
+                        readCommand(myDefaultValue, parameter, true);
                     }
-                //todo: show "no match" message
-                readCommand(myDefaultValue, parameter, true);
+                } else {
+                    //todo: show "no match" message
+                    readCommand(myDefaultValue, parameter, true);
+                }
                 break;
             case READ_ARG:
                 myInteractive.onReadParameter(readParameter());

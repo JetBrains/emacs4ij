@@ -20,6 +20,7 @@ public class SpecialFormInteractive {
     private String myParameterStartValue;
     private String myParameterDefaultValue;
     private boolean myNoMatch;
+
     private LispList myArguments;
     private String[] myParameters;
     private int myIndex;
@@ -205,11 +206,11 @@ public class SpecialFormInteractive {
         switch (myParameterCode) {
             case 'b': // -- Name of existing buffer.
                 myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
-                myPromptDefaultValue = " (default " + myParameterDefaultValue + ") :";
+                myPromptDefaultValue = " (default " + myParameterDefaultValue + "): ";
                 break;
             case 'B': // -- Name of buffer, possibly nonexistent.
                 myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
-                myPromptDefaultValue = " (default " + myEnvironment.getBufferCurrentForEditing().getName() + ") :";
+                myPromptDefaultValue = " (default " + myEnvironment.getBufferCurrentForEditing().getName() + "): ";
                 break;
             case 'd': // -- Value of point as number. Does not do I/O.
                 addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));
