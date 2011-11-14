@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -99,7 +99,7 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispInteger(2), lispObject);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test (expected = WrongTypeArgumentException.class)
     public void testSetSymbols() {
         LObject lispObject = evaluateString("(set 'x 1)");
         Assert.assertEquals(new LispInteger(1), lispObject);
@@ -113,7 +113,7 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispInteger(1), lispObject);
         lispObject = evaluateString("(symbol-value 'y)");
         Assert.assertEquals(new LispSymbol("x"), lispObject);
-        //must throw WrongTypeArgument
+        //must throw WrongTypeArgumentException
         evaluateString("(symbol-value x)");
     }
 

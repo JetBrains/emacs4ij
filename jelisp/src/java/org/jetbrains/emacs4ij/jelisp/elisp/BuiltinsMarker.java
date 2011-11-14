@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -65,7 +65,7 @@ public abstract class BuiltinsMarker {
             }
             return marker;
         }
-        throw new WrongTypeArgument("marker-or-integer", markerOrInteger.getClass().getSimpleName());
+        throw new WrongTypeArgumentException("marker-or-integer", markerOrInteger.getClass().getSimpleName());
     }
 
 }

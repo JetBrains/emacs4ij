@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myTests = new HashMap<String, IdeaEditor>();
 
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(new BufferCreator(), null);
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
@@ -103,7 +103,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             eval("(get-buffer nil)");
             Assert.assertEquals(0, 1);
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
         }
     }
 
@@ -113,7 +113,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             eval("(set-buffer 5)");
             Assert.assertEquals(0, 1);
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
         }
     }
 
@@ -268,7 +268,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             eval("(set-buffer 5)");
             Assert.assertEquals(0, 1);
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgument);
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
         }
     }
 

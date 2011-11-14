@@ -33,7 +33,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         super.setUp();
 
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(new BufferCreator(), null);
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
 
         String fileName = "1.txt";
@@ -73,8 +73,8 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testArgumentA () {
-        evaluateString("(defun g (a) (+ a 5))");
-        evaluateString("(defun f (fun) (interactive \"aFunction: \") (funcall fun 5))");
+        evaluateString("(defun g () (+ 5 5))");
+        evaluateString("(defun f (fun) (interactive \"aFunction: \") (funcall fun))");
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");

@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
@@ -101,7 +101,7 @@ public abstract class SpecialForms {
             if (!(clause instanceof LispList)) {
                 if (clause.equals(LispSymbol.ourNil))
                     continue;
-                throw new WrongTypeArgument("LispList", clause.getClass().toString());
+                throw new WrongTypeArgumentException("LispList", clause.getClass().toString());
             }
             if (((LispList) clause).isEmpty())
                 continue;
@@ -174,15 +174,15 @@ public abstract class SpecialForms {
     public static LObject defineVariable(Environment environment, LispSymbol name, @Optional LObject initValue, LispString docString) {
         LispSymbol variable = GlobalEnvironment.getInstance().find(name.getName());
         if (variable == null) {
-            LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue.evaluate(environment);
+            LObject value = (initValue == null) ? null : initValue.evaluate(environment);
             name.setValue(value);
             if (docString != null)
                 name.setVariableDocumentation(docString);
             GlobalEnvironment.getInstance().defineSymbol(name);
             return name;
         }
-        if (variable.getValue().equals(LispSymbol.ourVoid)) {
-            LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue.evaluate(environment);
+        if (!variable.hasValue() && initValue != null) {
+            LObject value = initValue.evaluate(environment);
             variable.setValue(value);
         }
         if (docString != null)
@@ -224,7 +224,7 @@ public abstract class SpecialForms {
 
             return null;
         }
-        throw new WrongTypeArgument("listp", args.toString());
+        throw new WrongTypeArgumentException("listp", args.toString());
     }
 
     /*
@@ -406,7 +406,7 @@ public abstract class SpecialForms {
         LObject value = LispSymbol.ourNil;
         while (index < args.length) {
             if (!(args[index] instanceof LispSymbol))
-                throw new WrongTypeArgument("symbolp", args[index].getClass().getSimpleName());
+                throw new WrongTypeArgumentException("symbolp", args[index].getClass().getSimpleName());
             value = (index+1 == args.length) ? LispSymbol.ourNil : args[index+1].evaluate(inner);
             ((LispSymbol) args[index]).setValue(value);
             environment.setVariable((LispSymbol) args[index]);

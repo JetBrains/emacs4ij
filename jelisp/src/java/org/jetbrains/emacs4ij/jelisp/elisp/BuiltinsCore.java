@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,7 +94,7 @@ public abstract class BuiltinsCore {
     @Subroutine("call-interactively")
     public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
         if (!BuiltinsCheck.commandp(environment, function, null).equals(LispSymbol.ourT))
-            throw new WrongTypeArgument("commandp", function.getName());
+            throw new WrongTypeArgumentException("commandp", function.getName());
         //read args
         //assign args
         //invoke function

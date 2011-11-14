@@ -1,12 +1,13 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,13 +19,15 @@ import org.junit.Test;
  * Time: 4:50 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaMiniBufferTest {
+public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
     private Environment myEnvironment;
+
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);
@@ -35,9 +38,15 @@ public class IdeaMiniBufferTest {
         return parser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test
     public void testReturnDefault_Integer () {
-        myMiniBuffer.returnDefault(new LispInteger(5));
+        try {
+            myMiniBuffer.returnDefault(new LispInteger(5));
+        } catch (WrongTypeArgumentException e) {
+            Assert.assertTrue(true);
+            return;
+        }
+        Assert.assertTrue(false);
     }
 
     @Test
@@ -52,14 +61,26 @@ public class IdeaMiniBufferTest {
         Assert.assertEquals(new LispSymbol("hi"), ret);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test
     public void testReturnDefault_IntList () {
-        myMiniBuffer.returnDefault (new LispList(new LispInteger(5), new LispString("hi")));
+        try {
+            myMiniBuffer.returnDefault (new LispList(new LispInteger(5), new LispString("hi")));
+        } catch (WrongTypeArgumentException e) {
+            Assert.assertTrue(true);
+            return;
+        }
+        Assert.assertTrue(false);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test
     public void testReturnDefault_ListList () {
-        myMiniBuffer.returnDefault (new LispList(new LispList(new LispString("wow"), new LispString("hi")), new LispInteger(5), new LispString("hi")));
+        try {
+            myMiniBuffer.returnDefault (new LispList(new LispList(new LispString("wow"), new LispString("hi")), new LispInteger(5), new LispString("hi")));
+        } catch (WrongTypeArgumentException e) {
+            Assert.assertTrue(true);
+            return;
+        }
+        Assert.assertTrue(false);
     }
 
     @Test

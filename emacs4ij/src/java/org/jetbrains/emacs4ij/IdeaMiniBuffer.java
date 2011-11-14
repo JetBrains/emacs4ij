@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
 
@@ -105,7 +105,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
             if (!(defaultValue instanceof LispList))
                 return returnDefault(defaultValue);
         }
-        throw new WrongTypeArgument("stringp", defaultValue.toString());
+        throw new WrongTypeArgumentException("stringp", defaultValue.toString());
     }
 
     public String readParameter () {
@@ -169,6 +169,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                 myInteractive.onReadParameter(readParameter());
                 if (myInteractive.isFinished()) {
                     hide();
+                    myEnvironment.setArgumentsEvaluated(true);
                     return myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
                 } else
                     myInteractive.readNextArgument();

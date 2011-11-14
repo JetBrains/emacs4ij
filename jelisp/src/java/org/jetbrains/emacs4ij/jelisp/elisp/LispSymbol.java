@@ -22,7 +22,7 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
-    private LObject myValue = ourVoid;
+    private LObject myValue = null; //ourVoid;
     private LispObject myFunction = null;
     private boolean isInteractive = false;
     private String myInteractiveString;
@@ -147,6 +147,10 @@ public class LispSymbol extends LispAtom {
         return result;
     }
 
+    public boolean hasValue () {
+        return myValue != null;
+    }
+
     @Override
     /**
      * takes Environment
@@ -156,8 +160,11 @@ public class LispSymbol extends LispAtom {
             return this;
         if (myName.equals("default-directory"))
             return environment.getDefaultDirectory();
+        if (hasValue()) {
+            return getValue();
+        }
         LispSymbol symbol = environment.find(myName);
-        if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
+        if (symbol == null || (!symbol.hasValue()))
             throw new VoidVariableException(myName);
         return symbol.getValue();
     }

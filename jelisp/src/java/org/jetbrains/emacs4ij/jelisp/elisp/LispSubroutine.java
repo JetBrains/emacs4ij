@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -85,14 +85,14 @@ public abstract class LispSubroutine {
             if (((Class)rawType).isInstance(args.get(argsCounter))) {
                 Type actualTypeArguments = ((ParameterizedType) (Type)args.get(argsCounter).getClass()).getActualTypeArguments()[0];
                 if (!expectedTypeArguments.equals(actualTypeArguments)) {
-                    throw new WrongTypeArgument(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
+                    throw new WrongTypeArgumentException(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
                 }
                 arguments.setValue(i, args.get(argsCounter));
                 return argsCounter + 1;
             } else {
                 if (arguments.isOptional(i))
                     return -1;
-                throw new WrongTypeArgument(expectedType.toString(), args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(expectedType.toString(), args.get(argsCounter).toString());
             }
         } catch (IndexOutOfBoundsException e) {
             if (arguments.isOptional(i))
@@ -110,7 +110,7 @@ public abstract class LispSubroutine {
         ArrayList array = new ArrayList();
         while (argsCounter != args.size()) {
             if (!componentType.isInstance(args.get(argsCounter)))
-                throw new WrongTypeArgument(componentType.toString(), args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(componentType.toString(), args.get(argsCounter).toString());
             array.add(args.get(argsCounter));
             ++argsCounter;
         }
@@ -123,7 +123,7 @@ public abstract class LispSubroutine {
             if (!(expectedType.isInstance(args.get(argsCounter)))) {
                 if (arguments.isOptional(i))
                     return -1;
-                throw new WrongTypeArgument(expectedType.getSimpleName(), args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter).toString());
             }
             arguments.setValue(i, args.get(argsCounter));
             return argsCounter + 1;

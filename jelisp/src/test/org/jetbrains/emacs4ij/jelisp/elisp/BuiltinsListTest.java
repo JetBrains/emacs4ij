@@ -5,7 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,7 +47,7 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispSymbol.ourNil, LObject);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test (expected = WrongTypeArgumentException.class)
     public void testCarWrongArg() {
         evaluateString("(set 'p 'defun)");
         evaluateString("(car p)");
@@ -63,7 +63,7 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispSymbol.ourNil, LObject);
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test (expected = WrongTypeArgumentException.class)
     public void testCdrWrongArg() {
         evaluateString("(set 'p 'defun)");
         evaluateString("(cdr p)");

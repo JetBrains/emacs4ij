@@ -7,7 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgument;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,7 +74,7 @@ public class BuiltinsSymbolTest {
         }
     }
 
-    @Test (expected = WrongTypeArgument.class)
+    @Test (expected = WrongTypeArgumentException.class)
     public void testSymbolFunctionWrongArg() {
         evaluateString("(symbol-function 5)");
     }

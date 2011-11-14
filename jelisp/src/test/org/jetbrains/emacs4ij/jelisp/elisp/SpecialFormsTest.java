@@ -111,7 +111,7 @@ public class SpecialFormsTest {
             evaluateString("(cond (nil 10 15) 5)");
         } catch (Exception e) {
             Throwable q = getCause(e);
-            if (!(q instanceof WrongTypeArgument))
+            if (!(q instanceof WrongTypeArgumentException))
                 Assert.fail(q.getLocalizedMessage());
         }
     }
@@ -122,7 +122,7 @@ public class SpecialFormsTest {
             evaluateString("(cond 5)");
         } catch (Exception e) {
             Throwable q = getCause(e);
-            if (!(q instanceof WrongTypeArgument))
+            if (!(q instanceof WrongTypeArgumentException))
                 Assert.fail(q.getLocalizedMessage());
         }
     }
