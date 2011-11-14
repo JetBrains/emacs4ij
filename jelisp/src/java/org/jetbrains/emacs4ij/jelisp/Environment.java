@@ -5,7 +5,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 
 /**
@@ -204,6 +203,10 @@ public class Environment {
         return GlobalEnvironment.getInstance().isDead(bufferName);
     }
 
+    public ArrayList<String> getCommandList (String begin) {
+        return GlobalEnvironment.getInstance().getCommandList(begin);
+    }
+
     //========== mini buffer ==========================
 
     public LispMiniBuffer getMiniBuffer () {
@@ -213,18 +216,6 @@ public class Environment {
         return miniBuffer;
     }
 
-    public ArrayList<String> getCommandList () {
-        Iterator iterator = mySymbols.entrySet().iterator();
-        ArrayList<String> commandList = new ArrayList<String>();
-        while (iterator.hasNext()) {
-            LispSymbol symbol = (LispSymbol) iterator.next();
-            if (BuiltinsCheck.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
-                commandList.add(symbol.getName());
-            }
-
-        }
-        return commandList;
-    }
 
 
 

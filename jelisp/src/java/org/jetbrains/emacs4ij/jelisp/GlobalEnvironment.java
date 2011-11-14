@@ -8,6 +8,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -316,6 +318,18 @@ public class GlobalEnvironment extends Environment {
         return false;
     }
 
-
+    public ArrayList<String> getCommandList (String begin) {
+        Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
+        ArrayList<String> commandList = new ArrayList<String>();
+        while (iterator.hasNext()) {
+            LispSymbol symbol = iterator.next().getValue();
+            if (BuiltinsCheck.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
+                if (begin.equals(symbol.getName().substring(0, begin.length())))
+                    commandList.add(symbol.getName());
+            }
+        }
+        Collections.sort(commandList);
+        return commandList;
+    }
 
 }

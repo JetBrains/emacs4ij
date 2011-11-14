@@ -48,6 +48,8 @@ public class OpenMiniBuffer extends AnAction {
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
         InterruptMiniBuffer imb = new InterruptMiniBuffer();
         imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
+        AutoComplete autoComplete = new AutoComplete();
+        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
 
         miniBuffer.setBufferActive();
     }

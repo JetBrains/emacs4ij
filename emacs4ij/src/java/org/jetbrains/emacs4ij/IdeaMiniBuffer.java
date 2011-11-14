@@ -144,7 +144,6 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                         }
                         if (interactiveString.equals("")) {
                             hide();
-                            //todo: give arraylist of required number of nulls
                             //todo: interactive string cannot be null
                             return cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
                         }

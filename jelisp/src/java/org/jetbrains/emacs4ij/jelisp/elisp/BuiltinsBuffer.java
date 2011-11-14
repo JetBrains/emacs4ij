@@ -302,4 +302,9 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourT;
     }
 
+
+    @Subroutine(value = "bury", isCmd = true, interactive = "")
+    public static LObject buryBuffer () {
+        return LispSymbol.ourNil;
+    }
 }
