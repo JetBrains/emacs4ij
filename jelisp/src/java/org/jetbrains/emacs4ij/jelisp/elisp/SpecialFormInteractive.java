@@ -75,7 +75,6 @@ public class SpecialFormInteractive {
     }
 
     private void addArg (LObject arg) {
-        System.out.println("Got: " + arg) ;
         myArguments.add(arg);
         ++myIndex;
     }
@@ -168,6 +167,20 @@ public class SpecialFormInteractive {
             case 'M': // -- Any string. Inherits the current input method.
                 break;
             case 'n': // -- Number read using minibuffer.
+                try {
+                    int n = Integer.parseInt(parameter);
+                    addArg(new LispInteger(n));
+                    return;
+                } catch (NumberFormatException e1) {
+                    try {
+                        int n = (int) Double.parseDouble(parameter);
+                        addArg(new LispInteger(n));
+                        return;
+                    } catch (NumberFormatException e2) {
+                        //todo: show message "Please, enter a number."
+                        System.out.println("no match");
+                    }
+                }
                 break;
             case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
                 break;

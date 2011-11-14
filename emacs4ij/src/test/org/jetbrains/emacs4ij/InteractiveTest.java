@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Assert;
@@ -27,6 +28,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
 
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     EditorTextField myMiniBufferEditor;
+    String myFileName = "1.txt";
 
     @Before
     public void setUp() throws Exception {
@@ -36,14 +38,13 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
 
-        String fileName = "1.txt";
-        myFixture.configureByFile(myTestsPath + fileName);
+        myFixture.configureByFile(myTestsPath + myFileName);
 
         Editor editor = getEditor();
         myMiniBufferEditor = new EditorTextField();
         myMiniBufferEditor.addNotify();
         editor.setHeaderComponent(myMiniBufferEditor);
-        IdeaEditor buffer = new IdeaEditor(myEnvironment, fileName, myTestsPath, editor);
+        IdeaEditor buffer = new IdeaEditor(myEnvironment, myFileName, myTestsPath, editor);
         myEnvironment.defineBuffer(buffer);
 
         myMiniBuffer = new IdeaMiniBuffer(0, myMiniBufferEditor.getEditor(), myEnvironment);
@@ -72,12 +73,124 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
-    public void testArgumentA () {
+    public void testArgument_a () {
         evaluateString("(defun g () (+ 5 5))");
         evaluateString("(defun f (fun) (interactive \"aFunction: \") (funcall fun))");
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals(new LispInteger(10), result);
+    }
+
+    @Test
+    public void testArgument_a_NoMatch () {
+        evaluateString("(defun f (fun) (interactive \"aFunction: \") (funcall fun))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertNull(result);
+        Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
+    }
+
+    @Test
+    public void testArgument_b () {
+        evaluateString("(defun f (buf) (interactive \"bBuffer: \") (buffer-name (get-buffer buf)))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals(new LispString(myFileName), result);
+    }
+
+    @Test
+    public void testArgument_b_NoMatch () {
+        evaluateString("(defun f (buf) (interactive \"bBuffer: \") (buffer-name (get-buffer buf)))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("buffer.lisp");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertNull(result);
+        Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
+    }
+
+    @Test
+    public void testArgument_B () {
+        evaluateString("(defun f (buf) (interactive \"BBuffer: \") (buffer-name (get-buffer buf)))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals(new LispString(myFileName), result);
+    }
+
+    @Test
+    public void testArgument_B_create () {
+        evaluateString("(defun f (buf) (interactive \"BBuffer: \") (switch-to-buffer buf))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("buffer.lisp");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals (new LispString("It is not allowed to create files this way."), result);
+    }
+
+    //todo: testArgument_c
+
+    @Test
+    public void testArgument_C_NonExistent () {
+        evaluateString("(defun f (cmd) (interactive \"CCommand: \") (funcall cmd))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertNull(result);
+        Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
+    }
+
+    @Test
+    public void testArgument_C_NotCommand () {
+        evaluateString("(defun f (cmd) (interactive \"CCommand: \") (funcall cmd))");
+        evaluateString("(defun g () (+ 5 5))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertNull(result);
+        Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
+    }
+
+    /*@Test
+    public void testArgument_C_WrongNumberOfArguments () {
+        evaluateString("(defun f (cmd) (interactive \"CCommand: \") (funcall cmd))");
+        evaluateString("(defun g (n) (interactive \"nNumber: \") (+ n 5))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        try {
+            myMiniBuffer.onReadInput();
+        } catch (WrongNumberOfArgumentsException e) {
+            Assert.assertTrue(true);
+            return;
+        }
+        Assert.assertTrue(false);
+    } */
+
+    @Test
+    public void testArgument_C () {
+        evaluateString("(defun f (cmd) (interactive \"CCommand: \") (funcall cmd))");
+        evaluateString("(defun g () (interactive) (+ 5 5))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals(new LispInteger(10), result);
+    }
+
+    @Test
+    public void testArgument_n () {
+        evaluateString("(defun f (n) (interactive \"nNumber: \") (+ n 5))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("5.6");
         LObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
     }

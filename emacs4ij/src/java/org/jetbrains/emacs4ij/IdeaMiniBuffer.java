@@ -171,8 +171,10 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                     hide();
                     myEnvironment.setArgumentsEvaluated(true);
                     return myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
-                } else
-                    myInteractive.readNextArgument();
+                } else {
+                    if (!myInteractive.isNoMatch())
+                        myInteractive.readNextArgument();
+                }
             case FREE:
                 break;
         }
