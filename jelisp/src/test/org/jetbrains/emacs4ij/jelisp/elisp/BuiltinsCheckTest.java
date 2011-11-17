@@ -100,5 +100,18 @@ public class BuiltinsCheckTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
+    @Test
+    public void testFboundp () {
+        evaluateString("(defun f ())");
+        LObject result = evaluateString("(fboundp 'f)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+        result = evaluateString("(fboundp 'if)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+        result = evaluateString("(fboundp 'fboundp)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+        result = evaluateString("(fboundp 'switch-to-buffer)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+    }
+
 
 }

@@ -8,7 +8,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,24 +45,28 @@ public class AutoComplete extends AnAction {
 
         try {
             IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) GlobalEnvironment.getInstance().getMiniBuffer();
-            String parameter = miniBuffer.readParameter();
-            if (miniBuffer.getStatus().equals(IdeaMiniBuffer.MiniBufferStatus.READ_COMMAND)) {
-                ArrayList<String> commandNames = GlobalEnvironment.getInstance().getCommandList(parameter);
-                if (commandNames.isEmpty()) {
-                    miniBuffer.onReadInput();
+            String parameter = miniBuffer.readInputString();
+            List<String> completions = miniBuffer.getCompletions(parameter);
+            if (completions.isEmpty()) {
+                miniBuffer.onReadInput();
+            } else {
+                if (completions.size() == 1) {
+                    parameter = completions.get(0);
                 } else {
-                    if (commandNames.size() == 1) {
-                        parameter = commandNames.get(0);
-                    } else {
-                        parameter = largestCommonPrefix(commandNames.get(0), commandNames.get(commandNames.size()-1));
-                    }
-                    miniBuffer.readCommand(null, parameter, false);
+                    parameter = largestCommonPrefix(completions.get(0), completions.get(completions.size()-1));
+                }
+                miniBuffer.setInputStartValue(parameter);
+                miniBuffer.updateEditorText();
+
+                if (completions.size()>1) {
                     String message = "Possible completions are:\n";
-                    for (String name: commandNames) {
+                    for (String name: completions) {
                         message += name + "\n";
                     }
                     Messages.showInfoMessage(message, "Possible completions");
                 }
+
+
             }
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Auto complete error");

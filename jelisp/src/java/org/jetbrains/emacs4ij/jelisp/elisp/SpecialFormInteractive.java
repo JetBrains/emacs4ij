@@ -1,9 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,13 +16,19 @@ import java.io.File;
  * To change this template use File | Settings | File Templates.
  */
 public class SpecialFormInteractive {
-    private char myParameterCode;
+    private final static String ourStandardNoMatchMessage = " [No Match]";
+    private final static String ourEmptyMessage = "";
+
+    private char myInteractiveChar;
     private Environment myEnvironment;
     private String myPrompt;
     private String myPromptDefaultValue;
     private String myParameterStartValue;
     private String myParameterDefaultValue;
-    private boolean myNoMatch;
+
+    private String myNoMatchMessage;
+
+   // private boolean myNoMatch;
 
     private LispList myArguments;
     private String[] myParameters;
@@ -30,6 +39,16 @@ public class SpecialFormInteractive {
         myParameters = interactive.split("\\\\n");
         myIndex = 0;
         myArguments = new LispList();
+        myNoMatchMessage = ourEmptyMessage;
+        myPromptDefaultValue = ourEmptyMessage;
+
+        try {
+            myInteractiveChar = myParameters[0].charAt(0);
+            myPrompt = myParameters[0].substring(1);
+        } catch (IndexOutOfBoundsException e) {
+            myInteractiveChar = 0;
+            myPrompt = ourEmptyMessage;
+        }
     }
 
     public boolean isFinished () {
@@ -45,7 +64,7 @@ public class SpecialFormInteractive {
     }
 
     public boolean isNoMatch() {
-        return myNoMatch;
+        return !myNoMatchMessage.equals(ourEmptyMessage);
     }
 
     public LispList getArguments() {
@@ -56,22 +75,39 @@ public class SpecialFormInteractive {
         return myPromptDefaultValue;
     }
 
+    public String getNoMatchMessage() {
+        return myNoMatchMessage;
+    }
+
+    public char getInteractiveChar() {
+        return myInteractiveChar;
+    }
+
+    public void setParameterStartValue (String parameterStartValue) {
+        myParameterStartValue = parameterStartValue;
+    }
+
     public void readNextArgument() {
         if (isFinished())
             return;
         String command = myParameters[myIndex];
         myParameterStartValue = null;
         myPrompt = command.substring(1);
-        myPromptDefaultValue = "";
-        myNoMatch = false;
-        myParameterCode = command.charAt(0);
+        myPromptDefaultValue = ourEmptyMessage;
+        myInteractiveChar = command.charAt(0);
         myParameterDefaultValue = null;
+        myNoMatchMessage = ourEmptyMessage;
         prepare();
     }
 
-    public void putArgument() {
+    private void putArgument() {
         LispMiniBuffer miniBuffer = myEnvironment.getMiniBuffer();
-        miniBuffer.readArgument(this);
+        miniBuffer.readParameter(this);
+    }
+
+    private void notifyMiniBuffer() {
+        LispMiniBuffer miniBuffer = myEnvironment.getMiniBuffer();
+        miniBuffer.onInteractiveNoIoInput(this);
     }
 
     private void addArg (LObject arg) {
@@ -80,7 +116,7 @@ public class SpecialFormInteractive {
     }
 
     public void onReadParameter (String parameter) {
-        switch (myParameterCode) {
+        switch (myInteractiveChar) {
             case 'a':
                 LispSymbol f = myEnvironment.find(parameter);
                 if (f != null) {
@@ -116,8 +152,7 @@ public class SpecialFormInteractive {
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
                     if (BuiltinsCheck.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
-                        LispSymbol c = new LispSymbol(parameter, cmd.getFunction());
-                        addArg(c);
+                        addArg(cmd);
                         return;
                     }
                 break;
@@ -177,8 +212,9 @@ public class SpecialFormInteractive {
                         addArg(new LispInteger(n));
                         return;
                     } catch (NumberFormatException e2) {
-                        //todo: show message "Please, enter a number."
-                        System.out.println("no match");
+                        //todo: don't show prompt
+                        myNoMatchMessage = "Please, enter a number.";
+                        putArgument();
                     }
                 }
                 break;
@@ -207,16 +243,16 @@ public class SpecialFormInteractive {
             case 'Z': // -- Coding system, nil if no prefix arg.
                 break;
             default:
-                throw new InvalidControlLetterException(myParameterCode);
+                throw new InvalidControlLetterException(myInteractiveChar);
         }
         myParameterStartValue = parameter;
-        myNoMatch = true;
+        myNoMatchMessage = ourStandardNoMatchMessage;
         putArgument();
     }
 
 
     private void prepare () {
-        switch (myParameterCode) {
+        switch (myInteractiveChar) {
             case 'b': // -- Name of existing buffer.
                 myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
                 myPromptDefaultValue = " (default " + myParameterDefaultValue + "): ";
@@ -227,6 +263,7 @@ public class SpecialFormInteractive {
                 break;
             case 'd': // -- Value of point as number. Does not do I/O.
                 addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));
+                notifyMiniBuffer();
                 return;
             case 'D': // -- Directory name.
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
@@ -235,7 +272,7 @@ public class SpecialFormInteractive {
                 // If used more than once, the Nth `e' returns the Nth parametrized event.
                 // This skips events that are integers or symbols.
                 //if no event: (error "command must be bound to an event with parameters")
-                //todo, no IO
+                //todo: notifyMiniBuffer();
                 return;
             case 'f': // -- Existing file name.
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
@@ -249,6 +286,7 @@ public class SpecialFormInteractive {
                 break;
             case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
                 addArg(LispSymbol.ourNil);
+                notifyMiniBuffer();
                 return;
 
             // terra incognita =)
@@ -259,7 +297,7 @@ public class SpecialFormInteractive {
             case 'K': // -- Key sequence to be redefined (do not downcase the last event).
                 break;
             case 'm': // -- Value of mark as number. Does not do I/O.
-
+                notifyMiniBuffer();
                 break;
             case 'M': // -- Any string. Inherits the current input method.
                 break;
@@ -268,17 +306,21 @@ public class SpecialFormInteractive {
             case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
                 break;
             case 'p': // -- Prefix arg converted to number. Does not do I/O.
-                break;
+                notifyMiniBuffer();
+                return;
             case 'P': // -- Prefix arg in raw form. Does not do I/O.
-                break;
+                notifyMiniBuffer();
+                return;
             case 'r': // -- Region: point and mark as 2 numeric args, smallest first. Does no I/O.
-                break;
+                notifyMiniBuffer();
+                return;
             case 's': // -- Any string. Does not inherit the current input method.
                 break;
             case 'S': // -- Any symbol.
                 break;
             case 'U': // -- Mouse up event discarded by a previous k or K argument.
-                break;
+                notifyMiniBuffer();
+                return;
             case 'v': // -- Variable name: symbol that is user-variable-p.
                 break;
             case 'x': // -- Lisp expression read but not evaluated.
@@ -292,5 +334,41 @@ public class SpecialFormInteractive {
         }
         putArgument();
     }
+
+    public List<String> getCompletions (String parameter) {
+        ArrayList<String> completions = new ArrayList<String>();
+        switch (myInteractiveChar) {
+            case 'a':
+                completions = GlobalEnvironment.getInstance().getFunctionList(parameter);
+                break;
+            case 'b': // -- Name of existing buffer.
+
+                break;
+            case 'B': // -- Name of buffer, possibly nonexistent.
+                break;
+            case 'C': // -- Command name: symbol with interactive function definition.
+                completions = GlobalEnvironment.getInstance().getCommandList(parameter);
+                break;
+            case 'D': // -- Directory name.
+                break;
+            case 'f': // -- Existing file name.
+
+                break;
+            case 'F': // -- Possibly nonexistent file name. -- no check
+                break;
+            case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
+                break;
+            case 'v': // -- Variable name: symbol that is user-variable-p.
+                break;
+            case 'z': // -- Coding system.
+                break;
+            case 'Z': // -- Coding system, nil if no prefix arg.
+                break;
+        }
+
+        return completions;
+    }
+
+
 
 }

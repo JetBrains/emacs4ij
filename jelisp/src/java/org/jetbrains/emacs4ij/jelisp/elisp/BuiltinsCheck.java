@@ -37,6 +37,7 @@ public abstract class BuiltinsCheck {
         return LispSymbol.ourNil;
     }
 
+    //todo: it's a compliled lisp function
     @Subroutine("functionp")
     public static LispObject functionp (Environment environment, LObject function) {
         if (function == null)
@@ -120,4 +121,14 @@ public abstract class BuiltinsCheck {
                 return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("fboundp")
+    public static LispSymbol fboundp (Environment environment, LispSymbol symbol) {
+        LispSymbol f = environment.find(symbol.getName());
+        if (f == null || f.getFunctionCell() == null)
+            return LispSymbol.ourNil;
+        return LispSymbol.ourT;
+    }
+
+
 }

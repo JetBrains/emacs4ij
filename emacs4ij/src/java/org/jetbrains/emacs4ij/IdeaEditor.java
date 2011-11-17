@@ -16,6 +16,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
+import java.awt.*;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -148,13 +150,35 @@ public class IdeaEditor extends LispObject implements LispBuffer {
     protected void write (final String text) {
         if (myEditor == null)
             return;
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+
+        if (EventQueue.isDispatchThread()) {
+            ApplicationManager.getApplication().runWriteAction(new Runnable() {
             @Override
             public void run() {
                 myEditor.getDocument().setText(text);
                 gotoChar(pointMax());
             }
         });
+        } else EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        myEditor.getDocument().setText(text);
+                        gotoChar(pointMax());
+                    }
+                });
+            }
+        });
+
+        /*ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            @Override
+            public void run() {
+                myEditor.getDocument().setText(text);
+                gotoChar(pointMax());
+            }
+        });*/
     }
 
     protected void setHeaderBufferActive () {

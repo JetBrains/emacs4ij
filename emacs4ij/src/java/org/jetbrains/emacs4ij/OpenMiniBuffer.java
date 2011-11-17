@@ -33,8 +33,8 @@ public class OpenMiniBuffer extends AnAction {
 
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
+        //todo: open new mini buffer over old ones
         IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-        miniBuffer.setReadCommandStatus();
 
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
@@ -52,5 +52,7 @@ public class OpenMiniBuffer extends AnAction {
         autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
 
         miniBuffer.setBufferActive();
+
+      //  miniBuffer.startRead();
     }
 }

@@ -48,10 +48,9 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myEnvironment.defineBuffer(buffer);
 
         myMiniBuffer = new IdeaMiniBuffer(0, myMiniBufferEditor.getEditor(), myEnvironment);
-        myMiniBuffer.setReadCommandStatus();
         myEnvironment.defineServiceBuffer(myMiniBuffer);
 
-        myMiniBuffer.readCommand(null, null, false);
+        myMiniBuffer.startRead();
     }
 
     @Override
@@ -81,6 +80,18 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("g");
         LObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
+    }
+
+    @Test
+    public void testArgument_a_fboundp () {
+        evaluateString("(defun g () (+ 5 5))");
+        evaluateString("(defun f (fun) (interactive \"aFunction: \") (fboundp fun))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("g");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertEquals(LispSymbol.ourT, result);
+
     }
 
     @Test
@@ -194,6 +205,8 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         LObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
     }
+
+
 
 
 }
