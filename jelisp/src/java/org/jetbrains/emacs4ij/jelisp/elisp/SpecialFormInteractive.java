@@ -79,6 +79,10 @@ public class SpecialFormInteractive {
         return myNoMatchMessage;
     }
 
+    public boolean toShowNoMatchMessage() {
+        return (!myNoMatchMessage.equals(ourEmptyMessage) && !myNoMatchMessage.equals(ourStandardNoMatchMessage));
+    }
+
     public char getInteractiveChar() {
         return myInteractiveChar;
     }
@@ -214,6 +218,7 @@ public class SpecialFormInteractive {
                     } catch (NumberFormatException e2) {
                         //todo: don't show prompt
                         myNoMatchMessage = "Please, enter a number.";
+                        myParameterStartValue = null;
                         putArgument();
                     }
                 }

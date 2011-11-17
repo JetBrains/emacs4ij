@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -69,17 +71,28 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     }
 
     private void clearNoMatch () {
-        Thread t = new Thread(new Runnable() {
+        final Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(3000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    //just stop waiting
                 }
                 write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
             }
         });
+        DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void beforeDocumentChange(DocumentEvent documentEvent) {
+                documentEvent.getDocument().removeDocumentListener(this);
+                t.interrupt();
+            }
+            @Override
+            public void documentChanged(DocumentEvent documentEvent) {
+            }
+        };
+        myEditor.getDocument().addDocumentListener(documentListener);
         t.start();
     }
 
@@ -102,6 +115,13 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     @Override
     public void readParameter (@NotNull SpecialFormInteractive interactive) {
         myPrompt = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue();
+
+        if (myInteractive.toShowNoMatchMessage()) {
+            write(myInteractive.getNoMatchMessage());
+            clearNoMatch();
+            return;
+        }
+
         String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
         int cursorPosition = text.length()+1;
         text += myInteractive.getNoMatchMessage();
@@ -166,7 +186,10 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     }
 
     public String readInputString() {
-        return myEditor.getDocument().getText().substring(myPrompt.length());
+        int k = myInteractive.isNoMatch() ? myEditor.getDocument().getText().lastIndexOf(myInteractive.getNoMatchMessage()) : myEditor.getDocument().getText().length();
+        if (k < 0)
+            k = myEditor.getDocument().getText().length();
+        return myEditor.getDocument().getText().substring(myPrompt.length(), k);
     }
 
     public void hide() {

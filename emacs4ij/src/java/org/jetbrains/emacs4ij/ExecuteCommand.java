@@ -7,7 +7,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 /**
@@ -33,9 +32,12 @@ public class ExecuteCommand extends AnAction {
 
         try {
             LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-            LObject result = miniBuffer.onReadInput();
-            if (result != null)
-                Messages.showInfoMessage(result.toString(), "Evaluation result");
+            miniBuffer.onReadInput();
+
+            // when the command is executed we aren't interested in evaluation result
+            //LObject result = miniBuffer.onReadInput();
+            //if (result != null)
+            //    Messages.showInfoMessage(result.toString(), "Evaluation result");
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
         }
