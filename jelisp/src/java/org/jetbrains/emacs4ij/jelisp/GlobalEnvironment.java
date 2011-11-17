@@ -340,12 +340,26 @@ public class GlobalEnvironment extends Environment {
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
             if (BuiltinsCheck.fboundp(this, symbol).equals(LispSymbol.ourT)) {
+                if (symbol.getName().length() < begin.length())
+                    continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))
                     functionList.add(symbol.getName());
             }
         }
         Collections.sort(functionList);
         return functionList;
+    }
+
+    public ArrayList<String> getBufferNamesList (String begin) {
+        ArrayList<String> bufferNamesList = new ArrayList<String>();
+        for (LispBuffer buffer: myBuffers) {
+            if (buffer.getName().length() >= begin.length()) {
+                if (buffer.getName().substring(0, begin.length()).equals(begin)) {
+                    bufferNamesList.add(buffer.getName());
+                }
+            }
+        }
+        return bufferNamesList;
     }
 
 }

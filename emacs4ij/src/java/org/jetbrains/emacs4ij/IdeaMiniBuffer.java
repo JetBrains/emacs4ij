@@ -134,32 +134,6 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         clearNoMatch();
     }
 
-    /*public void readArgument(SpecialFormInteractive interactive) {
-        myStatus = MiniBufferStatus.READ_ARG;
-        myInteractive = interactive;
-        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
-        myPrompt = text;
-        int cursorPosition = text.length()+1;
-        text += myInteractive.getNoMatchMessage();
-        write(text);
-        gotoChar(cursorPosition);
-        setBufferActive();
-
-        clearNoMatch();
-    }
-
-    public void readCommand(LObject defaultValue, String startValue, boolean noMatch) {
-        myStatus = MiniBufferStatus.READ_COMMAND;
-        myDefaultValue = defaultValue;
-        String text = ourEvalPrompt + (startValue == null ? "" : startValue) + (noMatch ? " [No match]" : "");
-        write(text);
-        int cursorPosition = ourEvalPrompt.length() + (startValue == null ? 0 : startValue.length());
-        gotoChar(cursorPosition+1);
-
-        setHeaderBufferActive();
-    }    */
-
-
     //is public only for test!
     public LispSymbol returnDefault(LObject defaultValue) {
         if (defaultValue == null)

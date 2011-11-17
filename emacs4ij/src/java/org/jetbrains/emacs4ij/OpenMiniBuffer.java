@@ -52,7 +52,5 @@ public class OpenMiniBuffer extends AnAction {
         autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
 
         miniBuffer.setBufferActive();
-
-      //  miniBuffer.startRead();
     }
 }

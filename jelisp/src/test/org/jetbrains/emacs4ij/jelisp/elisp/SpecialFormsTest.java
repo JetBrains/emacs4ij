@@ -9,6 +9,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -447,6 +450,22 @@ default-directory
 (defun f (dir) (interactive "DDirectory: ") (message "%s" dir))
          */
 
+    }
+
+    @Test
+    public void testDirectoryCompletion() {
+        SpecialFormInteractive spi = new SpecialFormInteractive(environment, "D");
+        List<String> completions = spi.getCompletions("~/Do");
+        List<String> expected = new ArrayList<String>();
+        expected.add("Documents");
+        expected.add("Downloads");
+        Assert.assertEquals(expected, completions);
+
+        completions = spi.getCompletions("~");
+        Assert.assertTrue(completions.isEmpty());
+
+        completions = spi.getCompletions("~/");
+        Assert.assertTrue(!completions.isEmpty());
     }
 
 }

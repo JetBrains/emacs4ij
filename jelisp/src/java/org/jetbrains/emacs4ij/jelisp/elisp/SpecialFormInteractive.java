@@ -5,7 +5,10 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -130,7 +133,7 @@ public class SpecialFormInteractive {
                     }
                 }
                 break;
-            case 'b': // -- Name of existing buffer.  todo: Completion
+            case 'b':
                 if (parameter.equals("")) {
                     parameter = myParameterDefaultValue;
                     addArg(new LispString(parameter));
@@ -143,7 +146,7 @@ public class SpecialFormInteractive {
                     }
                 }
                 break;
-            case 'B': // -- Name of buffer, possibly nonexistent. todo: Completion
+            case 'B':
                 if (parameter.equals(""))
                     parameter = myParameterDefaultValue;
                 addArg(new LispString(parameter));
@@ -152,7 +155,7 @@ public class SpecialFormInteractive {
                 //ascii code of first key pressed
                 //TODO: keyEvent
                 return;
-            case 'C': // -- Command name: symbol with interactive function definition. todo: Completion
+            case 'C':
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
                     if (BuiltinsCheck.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
@@ -277,8 +280,8 @@ public class SpecialFormInteractive {
                 // If used more than once, the Nth `e' returns the Nth parametrized event.
                 // This skips events that are integers or symbols.
                 //if no event: (error "command must be bound to an event with parameters")
-                //todo: notifyMiniBuffer();
-                return;
+                //todo: notifyMiniBuffer(); return;
+                throw new RuntimeException("e character not implemented");
             case 'f': // -- Existing file name.
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
                 break;
@@ -340,6 +343,8 @@ public class SpecialFormInteractive {
         putArgument();
     }
 
+
+
     public List<String> getCompletions (String parameter) {
         ArrayList<String> completions = new ArrayList<String>();
         switch (myInteractiveChar) {
@@ -347,14 +352,49 @@ public class SpecialFormInteractive {
                 completions = GlobalEnvironment.getInstance().getFunctionList(parameter);
                 break;
             case 'b': // -- Name of existing buffer.
-
+                completions = GlobalEnvironment.getInstance().getBufferNamesList(parameter);
                 break;
             case 'B': // -- Name of buffer, possibly nonexistent.
+                completions = GlobalEnvironment.getInstance().getBufferNamesList(parameter);
                 break;
             case 'C': // -- Command name: symbol with interactive function definition.
                 completions = GlobalEnvironment.getInstance().getCommandList(parameter);
                 break;
             case 'D': // -- Directory name.
+                //todo: if result is not unique, show "[Complete, but not unique]"
+                if (parameter.length() > 1) {
+                    if (parameter.charAt(0) == '~') {
+                        parameter = System.getProperty("user.home") + parameter.substring(1);
+                    }
+                }
+                File d = new File(parameter);
+                File parent;
+                final String begin;
+                if (!d.exists()) {
+                    int lastDelimiter = parameter.lastIndexOf('/');
+                    if (lastDelimiter == -1) {
+                        break;
+                    } else {
+                        parent = new File(parameter.substring(0, lastDelimiter+1));
+                        begin = parameter.substring(lastDelimiter+1);
+                    }
+                } else {
+                    parent = d;
+                    begin = "";
+                }
+                String[] subdirs = parent.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String s) {
+                        if (s.length() < begin.length())
+                            return false;
+                        if (!s.substring(0, begin.length()).equals(begin))
+                            return false;
+                        File f = new File(dir.getAbsolutePath() + '/' + s);
+                        return f.isDirectory();
+                    }
+                });
+                completions = new ArrayList<String>(Arrays.asList(subdirs));
+                Collections.sort(completions);
                 break;
             case 'f': // -- Existing file name.
 
