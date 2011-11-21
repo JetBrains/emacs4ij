@@ -457,8 +457,9 @@ default-directory
         SpecialFormInteractive spi = new SpecialFormInteractive(environment, "D");
         List<String> completions = spi.getCompletions("~/Do");
         List<String> expected = new ArrayList<String>();
-        expected.add("Documents");
-        expected.add("Downloads");
+        String home = System.getProperty("user.home");
+        expected.add(home + "/Documents");
+        expected.add(home + "/Downloads");
         Assert.assertEquals(expected, completions);
 
         completions = spi.getCompletions("~");

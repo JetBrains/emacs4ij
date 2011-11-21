@@ -7,7 +7,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -108,18 +107,22 @@ public class SpecialFormInteractive {
     }
 
     private void putArgument() {
-        LispMiniBuffer miniBuffer = myEnvironment.getMiniBuffer();
-        miniBuffer.readParameter(this);
+        myEnvironment.getMiniBuffer().readParameter(this);
     }
 
     private void notifyMiniBuffer() {
-        LispMiniBuffer miniBuffer = myEnvironment.getMiniBuffer();
-        miniBuffer.onInteractiveNoIoInput(this);
+        myEnvironment.getMiniBuffer().onInteractiveNoIoInput(this);
     }
 
     private void addArg (LObject arg) {
         myArguments.add(arg);
         ++myIndex;
+    }
+
+    public void setNoMatch (String parameter) {
+        myParameterStartValue = parameter;
+        myNoMatchMessage = ourStandardNoMatchMessage;
+        putArgument();
     }
 
     public void onReadParameter (String parameter) {
@@ -152,8 +155,7 @@ public class SpecialFormInteractive {
                 addArg(new LispString(parameter));
                 return;
             case 'c': // -- Character (no input method is used).
-                //ascii code of first key pressed
-                //TODO: keyEvent
+                addArg(new LispInteger(Integer.parseInt(parameter)));
                 return;
             case 'C':
                 LispSymbol cmd = myEnvironment.find(parameter);
@@ -166,7 +168,12 @@ public class SpecialFormInteractive {
             /*case 'd': // -- Value of point as number. Does not do I/O.
                 args.add(new LispInteger(environment.getBufferCurrentForEditing().point()));
                 break;  */
-            case 'D': // -- Directory name. todo: Completion
+            case 'D': // -- Directory name.
+                if (parameter.length() > 1) {
+                    if (parameter.charAt(0) == '~') {
+                        parameter = System.getProperty("user.home") + parameter.substring(1);
+                    }
+                }
                 File dir = new File(parameter);
                 if (dir.exists() && dir.isDirectory()) {
                     addArg(new LispString(parameter));
@@ -178,20 +185,47 @@ public class SpecialFormInteractive {
                 // This skips events that are integers or symbols.
                 //if no event: (error "command must be bound to an event with parameters")
                 break;*/
-            case 'f': // -- Existing file name. todo: Completion
-                //list of existing files beginning from [what was printed] and ability to retype
+            case 'f': // -- Existing file name. Directory also fits.
+                if (parameter.length() > 1) {
+                    if (parameter.charAt(0) == '~') {
+                        parameter = System.getProperty("user.home") + parameter.substring(1);
+                    }
+                }
                 File file = new File(parameter);
-                if (file.exists() && file.isFile()) {
+                if (file.exists()) {
                     addArg(new LispString(parameter));
                     return;
                 }
                 break;
             case 'F': // -- Possibly nonexistent file name. -- no check
-                if (parameter.equals(myParameterStartValue))
-                    parameter += myParameterDefaultValue;
+                if (parameter.length() > 1) {
+                    if (parameter.charAt(0) == '~') {
+                        parameter = System.getProperty("user.home") + parameter.substring(1);
+                    }
+                }
+                File ffile = new File(parameter);
+                if (ffile.exists() && ffile.isDirectory()) {
+                    String[] filling = ffile.list();
+                    String firstFileName = null;
+                    if (!parameter.endsWith("/"))
+                        parameter += '/';
+                    for (String fileName: filling) {
+                        if (new File(parameter + fileName).isFile()) {
+                            firstFileName = fileName;
+                            break;
+                        }
+                    }
+                    if (firstFileName != null)
+                        parameter += firstFileName;
+                }
                 addArg(new LispString(parameter));
                 return;
             case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
+                if (parameter.length() > 1) {
+                    if (parameter.charAt(0) == '~') {
+                        parameter = System.getProperty("user.home") + parameter.substring(1);
+                    }
+                }
                 addArg(new LispString(parameter));
                 return;
             /*case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
@@ -223,9 +257,9 @@ public class SpecialFormInteractive {
                         myNoMatchMessage = "Please, enter a number.";
                         myParameterStartValue = null;
                         putArgument();
+                        return;
                     }
                 }
-                break;
             case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
                 break;
             case 'p': // -- Prefix arg converted to number. Does not do I/O.
@@ -269,6 +303,9 @@ public class SpecialFormInteractive {
                 myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
                 myPromptDefaultValue = " (default " + myEnvironment.getBufferCurrentForEditing().getName() + "): ";
                 break;
+            case 'c':
+                myEnvironment.getMiniBuffer().addCharListener();
+                break;
             case 'd': // -- Value of point as number. Does not do I/O.
                 addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));
                 notifyMiniBuffer();
@@ -287,7 +324,6 @@ public class SpecialFormInteractive {
                 break;
             case 'F': // -- Possibly nonexistent file name. -- no check
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
-                myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
                 break;
             case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
@@ -343,7 +379,47 @@ public class SpecialFormInteractive {
         putArgument();
     }
 
-
+    private ArrayList<String> fileCompletions (String parameter, final boolean isDirectory) {
+        //todo: if result is not unique, show "[Complete, but not unique]"
+        if (parameter.length() > 1) {
+            if (parameter.charAt(0) == '~') {
+                parameter = System.getProperty("user.home") + parameter.substring(1);
+            }
+        }
+        File d = new File(parameter);
+        File parent;
+        final String begin;
+        if (!d.exists()) {
+            int lastDelimiter = parameter.lastIndexOf('/');
+            if (lastDelimiter == -1) {
+                return new ArrayList<String>();
+            } else {
+                parent = new File(parameter.substring(0, lastDelimiter+1));
+                begin = parameter.substring(lastDelimiter+1);
+            }
+        } else {
+            parent = d;
+            begin = "";
+        }
+        File[] files =  parent.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String s) {
+                if (s.length() < begin.length())
+                    return false;
+                if (!s.substring(0, begin.length()).equals(begin))
+                    return false;
+                if (!isDirectory)
+                    return true;
+                File f = new File(dir.getAbsolutePath() + '/' + s);
+                return f.isDirectory();
+            }
+        });
+        ArrayList<String> completions = new ArrayList<String>();
+        for (File file: files) {
+            completions.add(file.getAbsolutePath());
+        }
+        return completions;
+    }
 
     public List<String> getCompletions (String parameter) {
         ArrayList<String> completions = new ArrayList<String>();
@@ -361,45 +437,13 @@ public class SpecialFormInteractive {
                 completions = GlobalEnvironment.getInstance().getCommandList(parameter);
                 break;
             case 'D': // -- Directory name.
-                //todo: if result is not unique, show "[Complete, but not unique]"
-                if (parameter.length() > 1) {
-                    if (parameter.charAt(0) == '~') {
-                        parameter = System.getProperty("user.home") + parameter.substring(1);
-                    }
-                }
-                File d = new File(parameter);
-                File parent;
-                final String begin;
-                if (!d.exists()) {
-                    int lastDelimiter = parameter.lastIndexOf('/');
-                    if (lastDelimiter == -1) {
-                        break;
-                    } else {
-                        parent = new File(parameter.substring(0, lastDelimiter+1));
-                        begin = parameter.substring(lastDelimiter+1);
-                    }
-                } else {
-                    parent = d;
-                    begin = "";
-                }
-                String[] subdirs = parent.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String s) {
-                        if (s.length() < begin.length())
-                            return false;
-                        if (!s.substring(0, begin.length()).equals(begin))
-                            return false;
-                        File f = new File(dir.getAbsolutePath() + '/' + s);
-                        return f.isDirectory();
-                    }
-                });
-                completions = new ArrayList<String>(Arrays.asList(subdirs));
-                Collections.sort(completions);
+                completions = fileCompletions(parameter, true);
                 break;
             case 'f': // -- Existing file name.
-
+                completions = fileCompletions(parameter, false);
                 break;
             case 'F': // -- Possibly nonexistent file name. -- no check
+                completions = fileCompletions(parameter, false);
                 break;
             case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
                 break;
@@ -410,7 +454,8 @@ public class SpecialFormInteractive {
             case 'Z': // -- Coding system, nil if no prefix arg.
                 break;
         }
-
+        if (!completions.isEmpty())
+            Collections.sort(completions);
         return completions;
     }
 

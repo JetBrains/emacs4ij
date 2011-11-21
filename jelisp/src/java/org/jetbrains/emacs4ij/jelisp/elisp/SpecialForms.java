@@ -205,7 +205,10 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LObject interactive(Environment environment, @Optional LObject args) {
-        if (args == null)
+        return null;
+
+
+        /*if (args == null)
             return LispSymbol.ourNil;
         if (args instanceof LispList) {
             args = args.evaluate(environment);
@@ -214,176 +217,18 @@ public abstract class SpecialForms {
         }
         if (args instanceof LispString) {
             //TODO: interactively read the arguments
-            /*SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
+            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
             synchronized (interactive) {
                 while (!interactive.isFinished()) {
                     LObject a = interactive.getArgument();
                     System.out.println(a);
                 }
-            }*/
+            }
 
             return null;
         }
-        throw new WrongTypeArgumentException("listp", args.toString());
+        throw new WrongTypeArgumentException("listp", args.toString()); */
     }
-
-    /*
-
-    private static LispList processInteractiveString (LispString interactiveString, Environment environment) {
-        String[] commands = interactiveString.getData().split("\n");
-        LispList args = new LispList();
-        for (int i = 0, commandsLength = commands.length; i < commandsLength; i++) {
-            String command = commands[i];
-            String parameter = "";
-            String parameterStartValue = null;
-            String message = command.substring(1);
-            boolean noMatch = false;
-            char codeLetter = command.charAt(0);
-
-
-
-            switch (codeLetter) {
-                case 'a': // -- Function name: symbol with a function definition. todo: Completion
-                    while (true) {
-                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
-                        LispSymbol f = environment.find(parameter);
-                        if (f != null) {
-                            if (f.isFunction()) {
-                                LispSymbol fun = new LispSymbol(parameter, f.getFunction());
-                                args.add(fun);
-                                break;
-                            }
-                        }
-                        parameterStartValue = parameter;
-                        noMatch = true;
-                    }
-                    break;
-                case 'b': // -- Name of existing buffer.  todo: Completion
-                    String currentBufferName = environment.getBufferCurrentForEditing().getName();
-                    message = command.substring(1)+ " (default " + currentBufferName + ") : ";
-                    while (true) {
-                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
-                        if (parameter.equals(""))
-                            parameter = currentBufferName;
-                        else {
-                            LispBuffer b = environment.findBuffer(parameter);
-                            if (b == null) {
-                                parameterStartValue = parameter;
-                                noMatch = true;
-                                continue;
-                            }
-                        }
-                        args.add(new LispString(parameter));
-                        break;
-                    }
-                    break;
-                case 'B': // -- Name of buffer, possibly nonexistent. todo: Completion
-                    parameter = getParameter(environment, command.substring(1)+ " (default " + environment.getBufferCurrentForEditing().getName() + ") :", parameterStartValue, noMatch);
-                    if (parameter.equals(""))
-                        parameter = environment.getBufferCurrentForEditing().getName();
-                    args.add(new LispString(parameter));
-                    break;
-                case 'c': // -- Character (no input method is used).
-                    //ascii code of first key pressed
-                    //TODO: keyEvent
-                    break;
-                case 'C': // -- Command name: symbol with interactive function definition. todo: Completion
-                    while (true) {
-                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
-                        LispSymbol cmd = environment.find(parameter);
-                        if (cmd != null)
-                            if (BuiltinsCheck.commandp(environment, cmd, null).equals(LispSymbol.ourT)) {
-                                LispSymbol c = new LispSymbol(parameter, cmd.getFunction());
-                                args.add(c);
-                                break;
-                            }
-                        parameterStartValue = parameter;
-                        noMatch = true;
-                    }
-                    break;
-                case 'd': // -- Value of point as number. Does not do I/O.
-                    args.add(new LispInteger(environment.getBufferCurrentForEditing().point()));
-                    break;
-                case 'D': // -- Directory name. todo: Completion
-                    parameterStartValue = environment.getDefaultDirectory().getData();
-                    while (true) {
-                        parameter = getParameter(environment, message, parameterStartValue, noMatch);
-                        File dir = new File(parameter);
-                        if (dir.exists() && dir.isDirectory()) {
-                            args.add(new LispString(parameter));
-                            break;
-                        }
-                        parameterStartValue = parameter;
-                        noMatch = true;
-                    }
-                    break;
-                case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
-                          // If used more than once, the Nth `e' returns the Nth parametrized event.
-                          // This skips events that are integers or symbols.
-                    //if no event: (error "command must be bound to an event with parameters")
-                    break;
-                case 'f': // -- Existing file name.
-                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
-                    //list of existing files beginning from [what was printed] and ability to retype
-
-                    break;
-                case 'F': // -- Possibly nonexistent file name. -- no check
-                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
-                    if (parameter.equals(System.getProperty("user.home")))
-                        parameter += "#scratch.lisp#";
-                    args.add(new LispString(parameter));
-                    break;
-                case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
-                    parameter = getParameter(environment, command.substring(1) + System.getProperty("user.home"), parameterStartValue, noMatch);
-                    args.add(new LispString(parameter));
-                    break;
-                case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
-                    args.add(LispSymbol.ourNil);
-                    break;
-                case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
-                    // 1 first printed char or ??
-                    break;
-                case 'K': // -- Key sequence to be redefined (do not downcase the last event).
-                    break;
-                case 'm': // -- Value of mark as number. Does not do I/O.
-
-                    break;
-                case 'M': // -- Any string. Inherits the current input method.
-                    break;
-                case 'n': // -- Number read using minibuffer.
-                    break;
-                case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
-                    break;
-                case 'p': // -- Prefix arg converted to number. Does not do I/O.
-                    break;
-                case 'P': // -- Prefix arg in raw form. Does not do I/O.
-                    break;
-                case 'r': // -- Region: point and mark as 2 numeric args, smallest first. Does no I/O.
-                    break;
-                case 's': // -- Any string. Does not inherit the current input method.
-                    break;
-                case 'S': // -- Any symbol.
-                    break;
-                case 'U': // -- Mouse up event discarded by a previous k or K argument.
-                    break;
-                case 'v': // -- Variable name: symbol that is user-variable-p.
-                    break;
-                case 'x': // -- Lisp expression read but not evaluated.
-                    break;
-                case 'X': // -- Lisp expression read and evaluated.
-                    break;
-                case 'z': // -- Coding system.
-                    break;
-                case 'Z': // -- Coding system, nil if no prefix arg.
-                    break;
-                default:
-                    throw new InvalidControlLetterException(codeLetter);
-            }
-        }
-        return args;
-    }
-
-    */
 
     @Subroutine("progn")
     public static LObject progn (Environment environment, @Optional LObject... args) {

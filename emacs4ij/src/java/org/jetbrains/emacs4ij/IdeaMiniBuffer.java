@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.ide.IdeEventQueue;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -8,6 +9,8 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,8 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     private SpecialFormInteractive myInteractive;
     private String myPrompt;
     private LispSymbol myCommand;
+
+    private Integer myCharCode = null;
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
         myName = " *Minibuf-" + number + '*';
@@ -60,6 +65,32 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         super.setEditor(editor);
         //todo: on hide save state of interactive input and restore here.
         write(myPrompt);
+    }
+
+    @Override
+    public void addCharListener () {
+        IdeEventQueue.getInstance().addActivityListener(new Runnable() {
+            @Override
+            public void run() {
+                IdeEventQueue ideEventQueue = IdeEventQueue.getInstance();
+                AWTEvent currentEvent = ideEventQueue.getTrueCurrentEvent();
+                if (currentEvent instanceof KeyEvent) {
+                    if (currentEvent.getID() == KeyEvent.KEY_PRESSED) {
+                        if (((KeyEvent) currentEvent).getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+                            myCharCode = ((KeyEvent) currentEvent).getKeyCode();
+                            ((KeyEvent) currentEvent).consume();
+                            ideEventQueue.removeActivityListener(this);
+                            onReadInput();
+                        }
+                    }
+                }
+                //IdeKeyEventDispatcher keyEventDispatcher = ideEventQueue.getKeyEventDispatcher();
+                //KeyState keyState = keyEventDispatcher.getState();
+
+                //IdeEventQueue.getInstance().removeActivityListener(this);
+
+            }
+        });
     }
 
     public List<String> getCompletions (String parameter) {
@@ -160,6 +191,11 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
     }
 
     public String readInputString() {
+        if (myCharCode != null) {
+            String code = myCharCode.toString();
+            myCharCode = null;
+            return code;
+        }
         int k = myInteractive.isNoMatch() ? myEditor.getDocument().getText().lastIndexOf(myInteractive.getNoMatchMessage()) : myEditor.getDocument().getText().length();
         if (k < 0)
             k = myEditor.getDocument().getText().length();
@@ -178,6 +214,15 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         write (myEditor.getDocument().getText() + text);
     }
 
+    public void setNoMatch(String input) {
+        myInteractive.setNoMatch(input);
+    }
+
+    private void viewResult (LObject result) {
+        //todo: it is only for testing stage
+//        Messages.showInfoMessage(result.toString(), "Evaluation result");
+    }
+
     @Override
     public LObject onReadInput () {
         switch (myStatus) {
@@ -192,7 +237,9 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                     }
                     if (interactiveString.equals("")) {
                         hide();
-                        return cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
+                        LObject result = cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
+                        viewResult(result);
+                        return result;
                     }
                     myCommand = cmd;
                     myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
@@ -209,6 +256,7 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
                     myEnvironment.setArgumentsEvaluated(true);
                     LObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
                     hide();
+                    viewResult(result);
                     return result;
                 } else {
                     if (!myInteractive.isNoMatch())
@@ -225,9 +273,12 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
             myEnvironment.setArgumentsEvaluated(true);
-            LObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
+            LObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
             hide();
+
+            viewResult(result);
             return result;
+
         } else {
             if (!myInteractive.isNoMatch())
                 myInteractive.readNextArgument();

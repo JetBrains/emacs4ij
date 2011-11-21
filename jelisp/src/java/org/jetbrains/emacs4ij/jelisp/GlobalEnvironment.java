@@ -330,7 +330,7 @@ public class GlobalEnvironment extends Environment {
                     commandList.add(symbol.getName());
             }
         }
-        Collections.sort(commandList);
+        //Collections.sort(commandList);
         return commandList;
     }
 
@@ -346,7 +346,7 @@ public class GlobalEnvironment extends Environment {
                     functionList.add(symbol.getName());
             }
         }
-        Collections.sort(functionList);
+        //Collections.sort(functionList);
         return functionList;
     }
 

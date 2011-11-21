@@ -48,7 +48,7 @@ public class AutoComplete extends AnAction {
             String parameter = miniBuffer.readInputString();
             List<String> completions = miniBuffer.getCompletions(parameter);
             if (completions.isEmpty()) {
-                miniBuffer.onReadInput();
+                miniBuffer.setNoMatch(parameter);
             } else {
                 if (completions.size() == 1) {
                     parameter = completions.get(0);
@@ -65,8 +65,6 @@ public class AutoComplete extends AnAction {
                     }
                     Messages.showInfoMessage(message, "Possible completions");
                 }
-
-
             }
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Auto complete error");

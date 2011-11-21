@@ -7,7 +7,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,13 +30,7 @@ public class ExecuteCommand extends AnAction {
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
         try {
-            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-            miniBuffer.onReadInput();
-
-            // when the command is executed we aren't interested in evaluation result
-            //LObject result = miniBuffer.onReadInput();
-            //if (result != null)
-            //    Messages.showInfoMessage(result.toString(), "Evaluation result");
+            environment.getMiniBuffer().onReadInput();
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
         }

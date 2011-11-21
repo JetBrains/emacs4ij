@@ -11,6 +11,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +63,12 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
     private LObject evaluateString (String lispCode) throws LispException {
         Parser parser = new Parser();
         return parser.parseLine(lispCode).evaluate(myEnvironment);
+    }
+
+     private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
     }
 
     @Test
@@ -144,7 +151,20 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals (new LispString("It is not allowed to create files this way."), result);
     }
 
-    //todo: testArgument_c
+   /* @Test
+    public void testArgument_c () {
+        evaluateString("(defun f (ch) (interactive \"cCharacter: \") ch)");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        try {
+            Robot robot = new Robot();
+            robot.keyPress(KeyEvent.VK_SHIFT);
+            robot.keyPress(KeyEvent.VK_G);
+        } catch (AWTException e) {
+            Assert.fail(e.getMessage());
+        }
+    }  */
+
 
     @Test
     public void testArgument_C_NonExistent () {
@@ -169,7 +189,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
     }
 
-    /*@Test
+    @Test
     public void testArgument_C_WrongNumberOfArguments () {
         evaluateString("(defun f (cmd) (interactive \"CCommand: \") (funcall cmd))");
         evaluateString("(defun g (n) (interactive \"nNumber: \") (+ n 5))");
@@ -178,12 +198,14 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("g");
         try {
             myMiniBuffer.onReadInput();
-        } catch (WrongNumberOfArgumentsException e) {
-            Assert.assertTrue(true);
-            return;
+        } catch (Exception e) {
+            if (getCause(e) instanceof WrongNumberOfArgumentsException) {
+                Assert.assertTrue(true);
+                return;
+            }
         }
         Assert.assertTrue(false);
-    } */
+    }
 
     @Test
     public void testArgument_C () {
@@ -206,8 +228,15 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispInteger(10), result);
     }
 
-
-
-
+    @Test
+    public void testArgument_n_NoMatch () {
+        evaluateString("(defun f (n) (interactive \"nNumber: \") (+ n 5))");
+        myMiniBuffer.appendText("f");
+        myMiniBuffer.onReadInput();
+        myMiniBuffer.appendText("hello");
+        LObject result = myMiniBuffer.onReadInput();
+        Assert.assertNull(result);
+        Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("Please, enter a number."));
+    }
 
 }
