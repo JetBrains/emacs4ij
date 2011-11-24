@@ -20,6 +20,8 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
+    public static final LispSymbol ourBufferLocalVariable = new LispSymbol("");
+    public static final LispSymbol ourUserOption = new LispSymbol("");
 
     private String myName = null;
     private LObject myValue = null; //ourVoid;

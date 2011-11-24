@@ -91,7 +91,6 @@ public abstract class BuiltinsCheck {
                     return LispSymbol.ourT;
             }
 
-            //todo: ability to check primitive functions!!!
             //todo: autoload objects
             // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
         }
@@ -117,8 +116,7 @@ public abstract class BuiltinsCheck {
     @Subroutine("buffer-live-p")
     public static LispSymbol bufferLivePredicate (LObject object) {
         if (bufferp(object).equals(LispSymbol.ourT))
-            if (((LispBuffer)object).isAlive())
-                return LispSymbol.ourT;
+            return (LispSymbol) ((LispBuffer)object).getLocalVariableValue("is-alive");
         return LispSymbol.ourNil;
     }
 

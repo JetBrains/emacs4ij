@@ -36,7 +36,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         super.setUp();
 
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
 
         myFixture.configureByFile(myTestsPath + myFileName);
@@ -45,7 +45,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBufferEditor = new EditorTextField();
         myMiniBufferEditor.addNotify();
         editor.setHeaderComponent(myMiniBufferEditor);
-        IdeaEditor buffer = new IdeaEditor(myEnvironment, myFileName, myTestsPath, editor);
+        IdeaBuffer buffer = new IdeaBuffer(myEnvironment, myFileName, myTestsPath, editor);
         myEnvironment.defineBuffer(buffer);
 
         myMiniBuffer = new IdeaMiniBuffer(0, myMiniBufferEditor.getEditor(), myEnvironment);

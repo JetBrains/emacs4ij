@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,7 +25,7 @@ public class BufferCreator implements LispBufferFactory {
         // http://www.gnu.org/software/emacs/elisp/html_node/Creating-Buffers.html#Creating-Buffers
 
         GlobalEnvironment global = GlobalEnvironment.getInstance();
-        String baseDir = global.getBufferCurrentForEditing().getDefaultDirectory();
-        return new IdeaEditor(global, bufferName, baseDir, null);
+        String baseDir = ((LispString)global.getBufferCurrentForEditing().getLocalVariableValue("directory")).getData();
+        return new IdeaBuffer(global, bufferName, baseDir, null);
     }
 }

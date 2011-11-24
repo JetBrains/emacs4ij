@@ -121,6 +121,10 @@ public abstract class LispSubroutine {
     private static int checkSingleArgument (Class expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
         try {
             if (!(expectedType.isInstance(args.get(argsCounter)))) {
+                if (expectedType.equals(LispList.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
+                    arguments.setValue(i, new LispList());
+                    return argsCounter + 1;
+                }
                 if (arguments.isOptional(i))
                     return -1;
                 throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter).toString());

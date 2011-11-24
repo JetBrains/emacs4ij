@@ -5,11 +5,9 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
+import java.io.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,24 +30,55 @@ public class GlobalEnvironment extends Environment {
     public static final String ourUnsetInteractiveString = "0";
 
     private static GlobalEnvironment myInstance = null;
+    private HashMap<String, LObject> ourUserOptions = new HashMap<String, LObject>();
 
-    public static void initialize (LispBufferFactory bufferFactory, Object project) {
-        myInstance = new GlobalEnvironment(bufferFactory, project);
+    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+    private static final String ourFinderPath = "/lisp/help-fns.el";
+
+    private static Ide myIde;
+
+    public static void initialize (LispBufferFactory bufferFactory, Object project, Ide ide) {
+        myInstance = new GlobalEnvironment(bufferFactory, project, ide);
+        //findAndRegisterEmacsFunction(ourFinder);
     }
 
     public static GlobalEnvironment getInstance () {
         return myInstance;
     }
 
-    private GlobalEnvironment (LispBufferFactory bufferFactory, Object project) {
+    private GlobalEnvironment (LispBufferFactory bufferFactory, Object project, Ide ide) {
         myProject = project;
         myBufferFactory = bufferFactory;
         myOuterEnv = null;
-        setGlobal();
+        myIde = ide;
+        setConstants();
+        defineBufferLocalVariables();
+        defineGlobalVariables();
+        defineUserOptions();
+        setSubroutines();
     }
 
-     private void setSubroutines () {
+    private void defineUserOptions() {
+        mySymbols.put("transient-mark-mode", new LispSymbol("transient-mark-mode", LispSymbol.ourT));
+        mySymbols.put("mark-even-if-inactive", new LispSymbol("mark-even-if-inactive", LispSymbol.ourNil));
+        mySymbols.put("mark-ring-max", new LispSymbol("mark-ring-max", new LispInteger(16)));
+    }
+
+    private void defineBufferLocalVariables() {
+        mySymbols.put("mark-active", LispSymbol.ourBufferLocalVariable);
+        mySymbols.put("mark-ring", LispSymbol.ourBufferLocalVariable);
+    }
+
+    private void defineGlobalVariables() {
+        mySymbols.put("deactivate-mark", LispSymbol.ourNil);
+        //wtf?
+        mySymbols.put("activate-mark-hook", LispSymbol.ourNil);
+        mySymbols.put("deactivate-mark-hook", LispSymbol.ourNil);
+    }
+
+    private void setSubroutines () {
         Class[] subroutineContainers = LispSubroutine.getSubroutineClasses();
+        int n = mySymbols.size();
         for (Class subroutineContainer: subroutineContainers) {
             Method[] methods = subroutineContainer.getMethods();
             for (Method m: methods) {
@@ -64,14 +93,15 @@ public class GlobalEnvironment extends Environment {
                 mySymbols.put(name, LispSymbol.newSubroutine(name, annotation.isCmd(), annotation.interactive()));
                 //System.out.print(name + ' ');
             }
+
         }
+       // System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
     }
 
-    private void setGlobal() {
+    private void setConstants() {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
-        setSubroutines();
-       // mySymbols.put("*scratch*",  new LispSymbol("*scratch*", new LispBuffer("*scratch*")));
+        mySymbols.put("void", LispSymbol.ourVoid);
     }
 
 /*private void indexEmacsSources() {
@@ -97,6 +127,13 @@ public class GlobalEnvironment extends Environment {
 
     }   */
 
+    public static void showMessage (String message) {
+        myIde.showMessage(message);
+    }
+
+    public static void showErrorMessage (String message) {
+        myIde.showErrorMessage(message);
+    }
 
     private LispBufferFactory getBufferFactory() {
         return myBufferFactory;
@@ -289,9 +326,9 @@ public class GlobalEnvironment extends Environment {
         return buffersNames;
     }
 
-    public LispString getDefaultDirectory () {
-        return new LispString(getBufferCurrentForEditing().getDefaultDirectory());
-    }
+    /*public LispString getDefaultDirectory () {
+        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
+    }     */
 
     public void buryBuffer (LispBuffer buffer) {
         myBuffers.remove(buffer);
@@ -360,6 +397,77 @@ public class GlobalEnvironment extends Environment {
             }
         }
         return bufferNamesList;
+    }
+
+
+    //TODO: its public only for test
+    public static LispList getFunctionFromFile(String fileName, String functionName) {
+        File file = new File(fileName);
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+        String line;
+        while (true) {
+            try {
+                line = reader.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException("Error while reading " + fileName);
+            }
+            if (line == null)
+                throw new RuntimeException("function " + functionName + " not found in " + fileName);
+            if (line.contains("(defun " + functionName + ' '))
+                break;
+        }
+        BufferedReaderParser p = new BufferedReaderParser(reader);
+        LispObject parsed = p.parse(line);
+        if (parsed instanceof LispList) {
+            if (((LispSymbol)((LispList) parsed).car()).getName().equals("defun"))
+                return (LispList) parsed;
+            throw new RuntimeException("Parsed list is not a function definition!");
+        }
+        throw new RuntimeException("Parsed object is not a LispList!");
+    }
+
+    //TODO: it is public only for test
+    public static String findEmacsFunctionFileName(String functionName) {
+        if (ourEmacsPath.equals("")) {
+            throw new RuntimeException("Emacs path is not set!");
+        }
+
+        LispSymbol finder = myInstance.find(ourFinder.getName());
+        if (finder == null) {
+            if (functionName.equals(ourFinder.getName()))
+                return ourEmacsPath + ourFinderPath;
+        }
+        if (functionName.equals("symbol-file"))
+            return ourEmacsPath + "lisp/subr.el";
+
+        //TODO: eval finder
+
+        throw new RuntimeException("I don't know where to find function " + functionName);
+
+    }
+
+    public static LispSymbol findAndRegisterEmacsFunction (LispSymbol name) {
+        LispSymbol emacsFunction = myInstance.find(name.getName());
+        if (emacsFunction != null)
+            return emacsFunction;
+        String path = findEmacsFunctionFileName(name.getName());
+        LispList function = getFunctionFromFile(path, name.getName());
+        LObject evaluated = function.evaluate(myInstance);
+        if (!name.equals(evaluated)) {
+            throw new RuntimeException("findAndRegisterEmacsFunction FAILED : " + name.getName());
+        }
+        return myInstance.find(name.getName());
+    }
+
+    //TODO: for test only
+    public static void findAndRegisterEmacsFunction (String file, String name) {
+        LispList function = getFunctionFromFile(file, name);
+        function.evaluate(myInstance);
     }
 
 }

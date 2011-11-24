@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -110,5 +112,47 @@ public abstract class BuiltinsCore {
         Collections.addAll(data, args);
         LispList funcall = new LispList(data);
         return funcall.evaluate(environment);
+    }
+
+    @Subroutine("signal")
+    public static void signal (LispSymbol errorSymbol, LispList data) {
+        LObject errorMessage = errorSymbol.getProperty("error-message");
+        String msg = '[' + errorSymbol.getName() + "] ";
+        msg += (errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error";
+        msg += ": " + data.toString();
+        GlobalEnvironment.showErrorMessage(msg);
+    }
+
+    private static void runFunction (Environment environment, LispSymbol function) {
+        if (!function.isFunction()) {
+            throw new InvalidFunctionException(function.toString());
+        }
+        function.evaluateFunction(environment, null);
+    }
+
+    @Subroutine("run-hooks")
+    public static LObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
+        if (hooks == null)
+            return LispSymbol.ourNil;
+        for (LispSymbol hook: hooks) {
+            LispSymbol tHook = environment.find(hook.getName());
+            if (tHook == null)
+                continue;
+            if (hook.getValue() instanceof LispSymbol) {
+                runFunction(environment, (LispSymbol) hook.getValue());
+                continue;
+            }
+            if (hook.getValue() instanceof LispList) {
+                for (LObject function: ((LispList) hook.getValue()).getData()) {
+                    if (!(function instanceof LispSymbol))
+                        throw new WrongTypeArgumentException("symbolp", function.toString());
+
+                    LispSymbol tFunction = environment.find(((LispSymbol)function).getName());
+                    runFunction(environment, tFunction);
+                }
+            }
+            throw new InvalidFunctionException(hook.getValue().toString());
+        }
+        return LispSymbol.ourNil;
     }
 }

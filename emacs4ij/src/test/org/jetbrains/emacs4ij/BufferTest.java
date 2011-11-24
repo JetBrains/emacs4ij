@@ -28,21 +28,21 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     Environment myEnvironment;
     Parser myParser = new Parser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
-    HashMap<String, IdeaEditor> myTests;
+    HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
-        myTests = new HashMap<String, IdeaEditor>();
+        myTests = new HashMap<String, IdeaBuffer>();
 
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
-            IdeaEditor buffer = new IdeaEditor(myEnvironment, fileName, myTestsPath, getEditor());
+            IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
             myTests.put(fileName, buffer);
             myEnvironment.defineBuffer(buffer);
         }

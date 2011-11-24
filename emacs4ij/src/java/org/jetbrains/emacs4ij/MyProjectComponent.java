@@ -23,17 +23,17 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        GlobalEnvironment.initialize(new BufferCreator(), project);
+        GlobalEnvironment.initialize(new BufferCreator(), project, new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
 
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-        IdeaEditor scratchBuffer = new IdeaEditor(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
+        IdeaBuffer scratchBuffer = new IdeaBuffer(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
         myEnvironment.defineServiceBuffer(scratchBuffer);
 
         myProject = project;
-        IdeaEditor.setProject(project);
+        IdeaBuffer.setProject(project);
     }
 
     public Environment getEnvironment() {
@@ -57,7 +57,7 @@ public class MyProjectComponent implements ProjectComponent {
         myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                IdeaEditor newBuffer = new IdeaEditor(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
+                IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
                 myEnvironment.defineBuffer(newBuffer);
                 System.out.print("open: ");
                 //setHeaders(newBuffer);
@@ -85,7 +85,7 @@ public class MyProjectComponent implements ProjectComponent {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
                         myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     else myEnvironment.setSelectionManagedBySubroutine(false);
-                    //setHeaders((IdeaEditor)myEnvironment.getBufferCurrentForEditing());
+                    //setHeaders((IdeaBuffer)myEnvironment.getBufferCurrentForEditing());
                     System.out.print("select: ");
                     myEnvironment.printBuffers();
                 } catch (EnvironmentException e) {

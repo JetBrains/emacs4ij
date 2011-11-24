@@ -22,7 +22,7 @@ public class BuiltinsListTest {
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.initialize(null, null, null);
         environment = new Environment(GlobalEnvironment.getInstance());
     }
 

@@ -6,17 +6,16 @@ import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,38 +24,72 @@ import java.awt.*;
  * Time: 11:10 AM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaEditor extends LispObject implements LispBuffer {
+public class IdeaBuffer extends LispObject implements LispBuffer {
     protected String myName;
     protected Editor myEditor;
     protected Environment myEnvironment;
-
     private static Project ourProject;
 
+    private ArrayList<LispSymbol> myLocalVariables = new ArrayList<LispSymbol>();
+
     //buffer-local elisp variables
-    private String myDefaultDirectory;
-    private boolean isAlive;
+    //private String myDefaultDirectory;
+    //private boolean isAlive;
+    //private Integer myMark = null;
+    //private boolean isMarkActive = false;
+    //private ArrayDeque<Integer> myMarkRing = new ArrayDeque<Integer>();
 
-    protected IdeaEditor() {}
+    protected IdeaBuffer() {}
 
-    public IdeaEditor (Environment environment, String name, String path, Editor editor) {
+    public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
         myEnvironment = environment;
         myName = name;
         myEditor = editor;
-        myDefaultDirectory = path;
-        isAlive = true;
+
+        myLocalVariables.add(new LispSymbol("directory", new LispString(path)));
+        myLocalVariables.add(new LispSymbol("is-alive", LispSymbol.ourT));
+        myLocalVariables.add(new LispSymbol("my-mark", new LispMarker()));
+        myLocalVariables.add(new LispSymbol("mark-active", LispSymbol.ourNil));
+        myLocalVariables.add(new LispSymbol("mark-ring", new LispList()));
     }
 
     public static void setProject(Project project) {
         ourProject = project;
     }
 
-    public void kill () {
-        isAlive = false;
-        close();
+    private void setLocalVariable (String name, LObject value) {
+        for (LispSymbol variable: myLocalVariables) {
+            if (variable.getName().equals(name)) {
+                variable.setValue(value);
+                return;
+            }
+        }
+        throw new VoidVariableException(name);
     }
 
-    public boolean isAlive() {
-        return isAlive;
+    @Override
+    public LObject getLocalVariableValue (String name) {
+        for (LispSymbol variable: myLocalVariables) {
+            if (variable.getName().equals(name)) {
+                return variable.getValue();
+            }
+        }
+        throw new VoidVariableException(name);
+    }
+
+    @Override
+    public LispSymbol getLocalVariable(String name) {
+        for (LispSymbol variable: myLocalVariables) {
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+        throw new VoidVariableException(name);
+    }
+
+    public void kill () {
+        setLocalVariable("is-alive", LispSymbol.ourNil);
+        close();
     }
 
     @Override
@@ -64,7 +97,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        IdeaEditor that = (IdeaEditor) o;
+        IdeaBuffer that = (IdeaBuffer) o;
 
         if (myEditor != null ? !myEditor.equals(that.myEditor) : that.myEditor != null) return false;
         if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
@@ -94,7 +127,7 @@ public class IdeaEditor extends LispObject implements LispBuffer {
 
     @Override
     public LObject evaluate(Environment environment) {
-        throw new NotImplementedException();  //To change body of implemented methods use File | Settings | File Templates.
+        throw new RuntimeException("Cannot evaluate buffer!");
     }
 
     @Override
@@ -211,10 +244,10 @@ public class IdeaEditor extends LispObject implements LispBuffer {
         }
     }
 
-    @Override
+   /* @Override
     public String getDefaultDirectory() {
         return myDefaultDirectory;
-    }
+    }    */
 
     @Override
     public void closeHeader () {
@@ -247,4 +280,49 @@ public class IdeaEditor extends LispObject implements LispBuffer {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void showMessage(String message) {
+        Messages.showInfoMessage(message, "Elisp message");
+    }
+
+
+    //--------------- mark --------------------------------
+
+   /* @Override
+    public Integer getMark() {
+        return myMark;
+    }   */
+
+   /* @Override
+    public void setMark(int position) {
+        myMark = position;
+        isMarkActive = true;
+    }
+
+    @Override
+    public void pushMark(@Nullable Integer position, boolean activate) {
+        if (position == null) {
+            position = point();
+        }
+        if (myMark != null) {
+            LObject markRingMax = GlobalEnvironment.getInstance().find("mark-ring-max").getValue();
+            if (!(markRingMax instanceof LispInteger || markRingMax instanceof LispMarker))
+                throw new WrongTypeArgumentException("mark-ring-max", markRingMax.toString());
+            int max = (markRingMax instanceof LispInteger) ? ((LispInteger) markRingMax).getData() : ((LispMarker)markRingMax).getPosition();
+            while (myMarkRing.size() >= max)
+                myMarkRing.removeLast();
+            myMarkRing.push(myMark);
+        }
+        myMark = position;
+        isMarkActive = activate;
+    }
+
+    @Override
+    public void popMark() {
+        if (myMarkRing.isEmpty())
+            return;
+        isMarkActive = false;
+        myMark = myMarkRing.pop();
+    }  */
 }

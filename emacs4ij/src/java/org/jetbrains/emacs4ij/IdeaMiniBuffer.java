@@ -21,7 +21,7 @@ import java.util.List;
  * Time: 4:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
+public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public enum MiniBufferStatus {READ_COMMAND, READ_ARG}
     public static String ourEvalPrompt = "M-x ";
     private MiniBufferStatus myStatus;
@@ -53,11 +53,6 @@ public class IdeaMiniBuffer extends IdeaEditor implements LispMiniBuffer {
 
     private void setReadArgumentStatus () {
         myStatus = MiniBufferStatus.READ_ARG;
-    }
-
-    @Override
-    public String getDefaultDirectory() {
-        throw new RuntimeException("Wrong usage!");
     }
 
     @Override

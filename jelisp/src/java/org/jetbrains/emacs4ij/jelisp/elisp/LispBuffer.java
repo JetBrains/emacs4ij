@@ -10,6 +10,11 @@ import com.intellij.openapi.editor.Editor;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LObject {
+    public void showMessage (String message);
+
+    public LObject getLocalVariableValue (String name);
+    public LispSymbol getLocalVariable (String name);
+
     public String getName();
     public int getSize();
     public int point();
@@ -18,12 +23,17 @@ public interface LispBuffer extends LObject {
     public int bufferEnd(double parameter);
     public String gotoChar(int position);
     public String forwardChar (int shift);
-    public boolean isAlive();
+  //  public boolean isAlive();
     public void kill();
-    public String getDefaultDirectory();
+    ////public String getDefaultDirectory();
 
     public void setBufferActive ();
     public Editor getEditor();
     public void setEditor (Editor editor);
     public void closeHeader();
+
+   // public Integer getMark();
+    //public void setMark (int position);
+    //public void pushMark (@Nullable Integer position, boolean activate);
+    //public void popMark ();
 }

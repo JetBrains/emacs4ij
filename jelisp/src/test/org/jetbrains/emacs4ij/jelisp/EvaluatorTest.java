@@ -21,14 +21,20 @@ public class EvaluatorTest {
 
     @Before
     public void setUp() {
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.ourEmacsPath = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        GlobalEnvironment.initialize(null, null, null);
         environment = new Environment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {
         Parser parser = new Parser();
         return parser.parseLine(lispCode).evaluate(environment);
+    }
+
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
     }
 
     @Test
@@ -91,13 +97,24 @@ public class EvaluatorTest {
 
     @Ignore
     @Test
-    public void testFinder () {
+    public void testFinder () throws Throwable {
         try {
-        LObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
-        Assert.assertEquals(new LispString("src/buffer.c"), path);
-        } catch (LispException e) {
-            System.out.println(e.getMessage());
-            throw e;
+            LObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
+            Assert.assertEquals(new LispString("src/buffer.c"), path);
+        } catch (Exception e) {
+            System.out.println(getCause(e).getMessage());
+            throw getCause(e);
         }
     }
+
+    @Test
+    public void testFindMark () throws Throwable {
+        try {
+            GlobalEnvironment.getFunctionFromFile(GlobalEnvironment.ourEmacsPath + "/lisp/simple.el", "mark");
+        } catch (Exception e) {
+            System.out.println(getCause(e).getMessage());
+            throw getCause(e);
+        }
+    }
+
 }

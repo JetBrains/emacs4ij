@@ -1,10 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -20,8 +22,8 @@ public class EnvironmentTest {
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.ourEmacsPath = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        GlobalEnvironment.initialize(null, null, null);
         e = new Environment(GlobalEnvironment.getInstance());
     }
 
@@ -39,23 +41,22 @@ public class EnvironmentTest {
         Assert.assertEquals(new LispInteger(6), (e.find("a")).getValue());
     }
 
-
-    /*
     @Test
     public void testGetFunctionFromFile() {
-        String lispObjectFileNameFile = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\lisp\\help-fns.el";
+        String lispObjectFileNameFile = GlobalEnvironment.ourEmacsPath + "/lisp/help-fns.el";
         String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = e.getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
+        LispList functionFromFile = GlobalEnvironment.getInstance().getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
         Assert.assertEquals(new LispSymbol(lispFunctionName), (functionFromFile.cdr()).car());
     }
 
+    @Ignore
     @Test
     public void testFindEmacsFinder() {
-        Environment.ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\";
-        CustomFunction finder = (CustomFunction) e.find(Environment.ourFinder.getName(), Environment.SymbolType.FUNCTION, "");
-        Assert.assertEquals(Environment.ourFinder, finder.getName());
+        LispSymbol finder = e.find(GlobalEnvironment.ourFinder.getName());
+        Assert.assertEquals(GlobalEnvironment.ourFinder, finder.getName());
     }
 
+    /*
     @Ignore
     @Test
     public void findir() {

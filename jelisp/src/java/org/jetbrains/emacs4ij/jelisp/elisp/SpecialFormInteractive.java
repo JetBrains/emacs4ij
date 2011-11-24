@@ -237,6 +237,7 @@ public class SpecialFormInteractive {
                 break;
             case 'K': // -- Key sequence to be redefined (do not downcase the last event).
                 break;
+
             case 'm': // -- Value of mark as number. Does not do I/O.
 
                 break;
@@ -333,13 +334,11 @@ public class SpecialFormInteractive {
                 notifyMiniBuffer();
                 return;
 
-            // terra incognita =)
-
             case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
-                // 1 first printed char or ??
-                break;
+                throw new RuntimeException("k character not implemented");
             case 'K': // -- Key sequence to be redefined (do not downcase the last event).
-                break;
+                throw new RuntimeException("K character not implemented");
+
             case 'm': // -- Value of mark as number. Does not do I/O.
                 notifyMiniBuffer();
                 break;

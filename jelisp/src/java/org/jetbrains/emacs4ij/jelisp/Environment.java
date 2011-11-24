@@ -58,8 +58,13 @@ public class Environment {
 
     public LObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
         LispSymbol lispObject = mySymbols.get(name);
-        if (lispObject != null)
+
+        if (lispObject != null) {
+            if (lispObject.equals(LispSymbol.ourBufferLocalVariable)) {
+                lispObject = getBufferCurrentForEditing().getLocalVariable(name);
+            }
             return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);
+        }
         if (myOuterEnv != null) {
             return myOuterEnv.find(name, methodName, parameterTypes, methodParameters);
         }
@@ -189,7 +194,7 @@ public class Environment {
     }
 
     public LispString getDefaultDirectory () {
-        return new LispString(getBufferCurrentForEditing().getDefaultDirectory());
+        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
     }
 
     public void buryBuffer (LispBuffer buffer) {
@@ -224,8 +229,4 @@ public class Environment {
             throw new RuntimeException("mini buffer does not exist!");
         return miniBuffer;
     }
-
-
-
-
 }

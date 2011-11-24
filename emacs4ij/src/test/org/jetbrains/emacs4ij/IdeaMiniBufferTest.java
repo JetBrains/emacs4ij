@@ -27,7 +27,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         super.setUp();
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject());
+        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);
