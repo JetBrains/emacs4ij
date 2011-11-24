@@ -8,13 +8,13 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -183,16 +183,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     protected void write (final String text) {
         if (myEditor == null)
             return;
-
-        if (EventQueue.isDispatchThread()) {
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                myEditor.getDocument().setText(text);
-                gotoChar(pointMax());
-            }
-        });
-        } else EventQueue.invokeLater(new Runnable() {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
@@ -204,14 +195,6 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
                 });
             }
         });
-
-        /*ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            @Override
-            public void run() {
-                myEditor.getDocument().setText(text);
-                gotoChar(pointMax());
-            }
-        });*/
     }
 
     protected void setHeaderBufferActive () {
