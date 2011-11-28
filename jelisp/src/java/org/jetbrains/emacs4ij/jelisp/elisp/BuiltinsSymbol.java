@@ -16,11 +16,11 @@ public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
     @Subroutine("symbol-function")
-    public static FunctionCell symbolFunction(Environment environment, LispSymbol arg) {
+    public static LObject symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
         if (f == null || f.getFunctionCell() == null)
             throw new VoidFunctionException(arg.getName());
-        return f.getFunctionCell();
+        return f.getFunction();
     }
 
     @Subroutine("symbol-value")

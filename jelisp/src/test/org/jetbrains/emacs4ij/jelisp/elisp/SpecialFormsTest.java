@@ -427,10 +427,12 @@ public class SpecialFormsTest {
 
     //todo: not string documentation
 
-    @Ignore
+
     @Test
-    public void testDefineMacro() throws Exception {
-        throw new RuntimeException("not implemented");
+    public void testDefunReturn () {
+        LObject funCell = evaluateString("(symbol-function (defun f ()))");
+        Assert.assertTrue(funCell instanceof LispList);
+        Assert.assertEquals(new LispList(new LispSymbol("lambda"), LispSymbol.ourNil), funCell);
     }
 
     @Test
@@ -468,5 +470,76 @@ default-directory
         completions = spi.getCompletions("~/");
         Assert.assertTrue(!completions.isEmpty());
     }
+
+
+    @Test
+    public void testDefineMacro_Simple() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ())");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_SimpleIgnoreArgType() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 5)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), new LispInteger(5)), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_WithDocString() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"docstring\" nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("docstring"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test (expected = WrongNumberOfArgumentsException.class)
+    public void testDefineMacro_WrongNumberOfArguments() {
+        evaluateString("(defmacro m1)");
+    }
+
+    @Test
+    public void testDefineMacro_DeclareAfterArguments() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) \"hello2\" nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello2"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_DoubleDeclareAfterArguments() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) \"hello3\" nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello3"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_DeclareAfterDocstring() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello2\" (declare (doc-string \"hello1\")) nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello2"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_DoubleDeclareAfterDocstring() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello3\" (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello3"), LispSymbol.ourNil), fCell);
+    }
+
+    @Test
+    public void testDefineMacro_DeclareAfterDocstringAndAfterArguments() {
+        LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ()  (declare (doc-string \"hello1\")) \"hello2\" (declare (doc-string \"hello3\")) nil)");
+        LObject fCell = evaluateString("(symbol-function 'm1)");
+        Assert.assertEquals(new LispList(new LispSymbol("macro"),
+                new LispSymbol("lambda"),
+                LispSymbol.ourNil,
+                new LispString("hello2"),
+                new LispList(new LispSymbol("declare"), new LispList(new LispSymbol("doc-string"), new LispString("hello3"))),
+                LispSymbol.ourNil),
+            fCell);
+    }
+
+
+
 
 }

@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,11 +72,6 @@ public abstract class SpecialForms {
                 return symbol;
         }
         return arg;
-    }
-
-    @Subroutine("defmacro")
-    public static LObject defineMacro (Environment environment, List<LispObject> args) {
-        throw new NotImplementedException();
     }
 
     @Subroutine("let")
@@ -192,7 +186,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine(value = "defun")
-    public static LObject defineFunction(Environment environment, LispSymbol name, LObject... body) {
+    public static LispSymbol defineFunction(Environment environment, LispSymbol name, LObject... body) {
         LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         LispList functionCell = new LispList(new LispSymbol("lambda"));
@@ -200,7 +194,7 @@ public abstract class SpecialForms {
             functionCell.add(bodyForm);
         f.setFunction(functionCell);
         GlobalEnvironment.getInstance().defineSymbol(f);
-        return name;
+        return f;
     }
 
     @Subroutine("interactive")
@@ -258,6 +252,50 @@ public abstract class SpecialForms {
             index += 2;
         }
         return value;
+    }
+
+    private static boolean isDeclareForm (LObject form) {
+        if (form instanceof LispList)
+            if (((LispList)form).car().equals(new LispSymbol("declare")))
+                return true;
+        return false;
+    }
+
+    private static int getAllDeclareForms (int startIndex, LObject[] body) {
+        int k = startIndex;
+        while (k < body.length && isDeclareForm(body[k])) {
+            //todo: store this declare form somewhere
+            ++k;
+        }
+        return k;
+    }
+
+    @Subroutine("defmacro")
+    public static LispSymbol defmacro (LispSymbol name, LObject argList, @Optional LObject ... body) {
+        LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
+        LispSymbol f = symbol != null ? symbol : name;
+        LispList functionCell = new LispList(new LispSymbol("macro"));
+        functionCell.add(new LispSymbol("lambda"));
+        functionCell.add(argList);
+        if (body != null) {
+            int k = 0;
+            if (body.length != 0) {
+                k = getAllDeclareForms(k, body);
+                if (k == 0) {
+                    if (body[0] instanceof LispString) {
+                        functionCell.add(body[0]);
+                        k = getAllDeclareForms(1, body);
+                    }
+                }
+            }
+
+            for (; k < body.length; ++k) {
+                functionCell.add(body[k]);
+            }
+        }
+        f.setFunction(functionCell);
+        GlobalEnvironment.getInstance().defineSymbol(f);
+        return f;
     }
 
 }

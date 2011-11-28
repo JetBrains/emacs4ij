@@ -72,6 +72,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         try {
             GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsPath + "/lisp/simple.el", "set-mark");
             LObject mark = evaluateString("(set-mark 10)");
+            System.out.println("Mark set: " + mark.toString());
             Assert.assertEquals(LispSymbol.ourNil, mark);
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());

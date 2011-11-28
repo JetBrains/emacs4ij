@@ -132,7 +132,12 @@ public class LispSymbol extends LispAtom {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
+
+        if (o.getClass().equals(LispList.class) && ((LispList)o).getData().isEmpty() && this.equals(ourNil))
+            return true;
+        if (o.getClass() != getClass())
+            return false;
 
         LispSymbol that = (LispSymbol) o;
 

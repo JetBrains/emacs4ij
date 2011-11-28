@@ -93,7 +93,8 @@ public class LispList extends LispObject {
             if (o.getClass() == ArrayList.class) {
                 list = new LispList((List<LObject>)o);
             } else {
-                return false;
+                if (o.getClass() == LispSymbol.class && o.equals(LispSymbol.ourNil) && myData.isEmpty())
+                    return true;
             }
         }
 

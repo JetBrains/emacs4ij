@@ -197,4 +197,28 @@ public class BuiltinsCoreTest {
         Assert.assertTrue(false);
     }
 
+    @Test
+    public void testRunHooks () {
+        evaluateString("(defun f () (+ 1 2))");
+        evaluateString("(defun g () (+ 2 3))");
+        evaluateString("(set 'hook1 '(f g))");
+        evaluateString("(run-hooks 'hook1)");
+        evaluateString("(run-hooks 'hook2)");
+    }
+
+    @Test
+    public void testRunHooks_InvalidFunction () {
+        try {
+            evaluateString("(set 'hook1 5)");
+            evaluateString("(run-hooks 'hook1)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            Assert.assertTrue(q instanceof InvalidFunctionException);
+            return;
+        }
+        Assert.assertTrue(false);
+    }
+
+
+
 }

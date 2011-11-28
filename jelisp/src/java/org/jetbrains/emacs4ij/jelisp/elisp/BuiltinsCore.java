@@ -127,7 +127,7 @@ public abstract class BuiltinsCore {
         if (!function.isFunction()) {
             throw new InvalidFunctionException(function.toString());
         }
-        function.evaluateFunction(environment, null);
+        function.evaluateFunction(environment, new ArrayList<LObject>());
     }
 
     @Subroutine("run-hooks")
@@ -136,7 +136,7 @@ public abstract class BuiltinsCore {
             return LispSymbol.ourNil;
         for (LispSymbol hook: hooks) {
             LispSymbol tHook = environment.find(hook.getName());
-            if (tHook == null)
+            if (tHook == null || tHook.equals(LispSymbol.ourNil))
                 continue;
             if (hook.getValue() instanceof LispSymbol) {
                 runFunction(environment, (LispSymbol) hook.getValue());
@@ -150,6 +150,7 @@ public abstract class BuiltinsCore {
                     LispSymbol tFunction = environment.find(((LispSymbol)function).getName());
                     runFunction(environment, tFunction);
                 }
+                continue;
             }
             throw new InvalidFunctionException(hook.getValue().toString());
         }
