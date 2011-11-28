@@ -4,6 +4,7 @@ import com.intellij.ide.IdeEventQueue;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -32,6 +33,30 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private LispSymbol myCommand;
 
     private Integer myCharCode = null;
+    private Alarm myAlarm;
+
+    private boolean isDocumentListenerSet = false;
+
+    private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
+        @Override
+        public void beforeDocumentChange(DocumentEvent documentEvent) {
+            documentEvent.getDocument().removeDocumentListener(this);
+            isDocumentListenerSet = false;
+            myAlarm.cancelAllRequests();
+            write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
+        }
+        @Override
+        public void documentChanged(DocumentEvent documentEvent) {
+        }
+    };
+
+    private void cancelNoMatchMessageUpdate() {
+        myAlarm.cancelAllRequests();
+        if (isDocumentListenerSet) {
+            myEditor.getDocument().removeDocumentListener(myMiniBufferChangedListener);
+            isDocumentListenerSet = false;
+        }
+    }
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
         myName = " *Minibuf-" + number + '*';
@@ -39,6 +64,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myEnvironment = environment;
         setReadCommandStatus();
         myPrompt = ourEvalPrompt;
+        myAlarm = new Alarm();
        // write(myPrompt);
     }
 
@@ -79,11 +105,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                         }
                     }
                 }
-                //IdeKeyEventDispatcher keyEventDispatcher = ideEventQueue.getKeyEventDispatcher();
-                //KeyState keyState = keyEventDispatcher.getState();
-
-                //IdeEventQueue.getInstance().removeActivityListener(this);
-
             }
         });
     }
@@ -97,29 +118,19 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     private void clearNoMatch () {
-        final Thread t = new Thread(new Runnable() {
+       // myAlarm.cancelAllRequests();
+
+        myEditor.getDocument().addDocumentListener(myMiniBufferChangedListener);
+        isDocumentListenerSet = true;
+
+        myAlarm.addRequest(new Runnable() {
             @Override
             public void run() {
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    //just stop waiting
-                }
+                myEditor.getDocument().removeDocumentListener(myMiniBufferChangedListener);
+                isDocumentListenerSet = false;
                 write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
             }
-        });
-        DocumentListener documentListener = new DocumentListener() {
-            @Override
-            public void beforeDocumentChange(DocumentEvent documentEvent) {
-                documentEvent.getDocument().removeDocumentListener(this);
-                t.interrupt();
-            }
-            @Override
-            public void documentChanged(DocumentEvent documentEvent) {
-            }
-        };
-        myEditor.getDocument().addDocumentListener(documentListener);
-        t.start();
+        }, 3000);
     }
 
    /*
@@ -200,6 +211,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void hide() {
         setReadCommandStatus();
         myPrompt = ourEvalPrompt;
+        cancelNoMatchMessageUpdate();
         write(myPrompt);
         close();
     }
@@ -220,6 +232,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public LObject onReadInput () {
+
+
         switch (myStatus) {
             case READ_COMMAND:
                 myInteractive.onReadParameter(readInputString());
