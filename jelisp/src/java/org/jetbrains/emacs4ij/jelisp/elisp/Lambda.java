@@ -53,7 +53,7 @@ public class Lambda extends LispObject {
         }
     }
 
-    private void parseArgumentsList (LispList args) {
+    public void parseArgumentsList (LispList args) {
         myArgumentList = new LinkedHashMap<LispSymbol, String>();
         if (args.isEmpty())
             return;
@@ -93,7 +93,19 @@ public class Lambda extends LispObject {
         throw new RuntimeException("wrong usage");
     }
 
-    private Environment substituteArguments (Environment environment, List<LObject> args) {
+    private LObject evaluateBody (Environment inner) {
+        LObject result = LispSymbol.ourNil;
+        for (LObject bodyForm: myBody) {
+            result = bodyForm.evaluate(inner);
+        }
+        return result;
+    }
+
+    public LObject evaluate(Environment environment, List<LObject> args) {
+        return evaluateBody(substituteArguments(environment, args));
+    }
+
+    public Environment substituteArguments (Environment environment, List<LObject> args) {
         int nRequiredArguments = 0;
         for (Map.Entry<LispSymbol, String> arg: myArgumentList.entrySet()) {
             if (arg.getValue().equals("required"))
@@ -122,18 +134,6 @@ public class Lambda extends LispObject {
                 inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
         }
         return inner;
-    }
-
-    private LObject evaluateBody (Environment inner) {
-        LObject result = LispSymbol.ourNil;
-        for (LObject bodyForm: myBody) {
-            result = bodyForm.evaluate(inner);
-        }
-        return result;
-    }
-
-    public LObject evaluate(Environment environment, List<LObject> args) {
-        return evaluateBody(substituteArguments(environment, args));
     }
 
     public LispObject getDocString () {

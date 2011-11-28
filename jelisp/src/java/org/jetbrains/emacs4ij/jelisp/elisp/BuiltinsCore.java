@@ -156,4 +156,21 @@ public abstract class BuiltinsCore {
         }
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("macroexpand")
+    public static LObject macroExpand (Environment environment, LObject macroCall) {
+        if (!(macroCall instanceof LispList))
+            return macroCall;
+        LispSymbol macro;
+        try {
+            macro = (LispSymbol) ((LispList) macroCall).car();
+        } catch (ClassCastException e) {
+            return macroCall;
+        }
+        LispSymbol trueMacro = environment.find(macro.getName());
+        if (!trueMacro.isMacro())
+            return macroCall;
+
+        return trueMacro.macroExpand(environment, ((LispList) macroCall).cdr().getData());
+    }
 }

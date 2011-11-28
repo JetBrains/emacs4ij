@@ -65,6 +65,8 @@ public class LispSymbol extends LispAtom {
             return null;
         if (isCustom())
             return new FunctionCell(toString(), FunctionCell.Type.CustomFunction);
+        if (isMacro())
+            return new FunctionCell(toString(), FunctionCell.Type.Macro);
         if (isSubroutine()) {
             if (isBuiltIn())
                 return new FunctionCell(toString(), FunctionCell.Type.BuiltIn);
@@ -74,8 +76,15 @@ public class LispSymbol extends LispAtom {
     }
 
     public void castToLambda (Environment environment) {
-        if (myFunction instanceof LispList) {
+        if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
+            environment.updateFunction(this);
+        }
+    }
+
+    public void castToMacro (Environment environment) {
+        if (isMacro() && !(myFunction instanceof Macro)) {
+            myFunction = new Macro((LispList) myFunction, environment);
             environment.updateFunction(this);
         }
     }
@@ -118,11 +127,17 @@ public class LispSymbol extends LispAtom {
     }
 
     public boolean isCustom() {
-        return ((myFunction instanceof LispList) || (myFunction instanceof Lambda));
+        return ((myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("lambda")))
+                || (myFunction instanceof Lambda));
     }
 
     public boolean isFunction() {
         return myFunction != null;
+    }
+
+    public boolean isMacro() {
+        return (myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("macro"))
+                || (myFunction instanceof Macro));
     }
 
     public boolean isInteractive () {
@@ -180,6 +195,26 @@ public class LispSymbol extends LispAtom {
         if (isSubroutine())
             return LispSubroutine.evaluate(this, environment, args);
 
+        if (isMacro())
+            return evaluateMacro(environment, args);
+
+        return evaluateCustomFunction(environment, args);
+    }
+
+    public LObject macroExpand (Environment environment, List<LObject> args) {
+        castToMacro(environment);
+        try {
+            return ((Macro)myFunction).expand(environment, args);
+        } catch (ClassCastException e) {
+            throw new RuntimeException("Wrong cast to macro: " + myName);
+        }
+    }
+
+    private LObject evaluateMacro(Environment environment, List<LObject> args) {
+        return macroExpand(environment, args).evaluate(environment);
+    }
+
+    private LObject evaluateCustomFunction (Environment environment, List<LObject> args) {
         if (!environment.areArgumentsEvaluated()) {
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));
@@ -188,9 +223,7 @@ public class LispSymbol extends LispAtom {
             environment.setArgumentsEvaluated(false);
         }
 
-        if (!(myFunction instanceof Lambda)) {
-            myFunction = new Lambda((LispList)myFunction, environment);
-        }
+        castToLambda(environment);
         return ((Lambda)myFunction).evaluate(environment, args);
     }
 

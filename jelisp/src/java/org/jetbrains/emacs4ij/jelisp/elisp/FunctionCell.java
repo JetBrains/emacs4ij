@@ -10,7 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public class FunctionCell extends LispObject {
-    public enum Type {BuiltIn, SpecialForm, CustomFunction}
+    public enum Type {BuiltIn, SpecialForm, CustomFunction, Macro}
     private String myBody;
     private Type myType;
 

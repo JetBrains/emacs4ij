@@ -219,6 +219,55 @@ public class BuiltinsCoreTest {
         Assert.assertTrue(false);
     }
 
+    @Test
+    public void testMacro () {
+        evaluateString("(setq r 5)");
+        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+        evaluateString("(inc r)");
+        LObject r = evaluateString("r");
+        Assert.assertEquals(new LispInteger(6), r);
+    }
 
+
+    @Test
+    public void testMacroExpand_Complex () {
+        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+        LObject expansion = evaluateString("(macroexpand '(inc r))");
+        //(setq r (+ r 1))
+        Assert.assertEquals(new LispList(new LispSymbol("setq"),
+                                        new LispSymbol("r"),
+                                        new LispList(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
+                expansion);
+    }
+
+    @Test
+    public void testMacroExpand_Simple () {
+        evaluateString("(defmacro m2 (q) (declare (doc-string \"hello1\")) \"hello2\" (+ 5 q))");
+        LObject expansion = evaluateString("(macroexpand '(m2 7))");
+        Assert.assertEquals(new LispInteger(12), expansion);
+    }
+
+    @Test
+    public void testMacroExpand_EmbeddedMacro () {
+        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+        evaluateString("(defmacro inc2 (var1 var2) (list 'progn (list 'inc var1) (list 'inc var2)))");
+        LObject expansion = evaluateString("(macroexpand '(inc2 r s))");
+        //(progn (inc r) (inc s))  ; inc not expanded here.
+        Assert.assertEquals(new LispList(new LispSymbol("progn"),
+                                         new LispList(new LispSymbol("inc"), new LispSymbol("r")),
+                                         new LispList(new LispSymbol("inc"), new LispSymbol("s"))),
+                expansion);
+    }
+
+    @Test
+    public void testMacroExpand_NotMacroCall() {
+        LObject expansion = evaluateString("(macroexpand 10)");
+        Assert.assertEquals(new LispInteger(10), expansion);
+        evaluateString("(defun f ())");
+        expansion = evaluateString("(macroexpand 'f)");
+        Assert.assertEquals(new LispSymbol("f"), expansion);
+        expansion = evaluateString("(macroexpand '(f))");
+        Assert.assertEquals(new LispList(new LispSymbol("f")), expansion);
+    }
 
 }

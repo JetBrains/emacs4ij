@@ -27,6 +27,11 @@ public class Macro extends LispObject {
         myDeclaration = declaration;
     }
 
+    public LObject expand (Environment environment, List<LObject> args) {
+        return myLambda.evaluate(environment, args);
+        //return null;
+    }
+
     @Override
     public LObject evaluate(Environment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.

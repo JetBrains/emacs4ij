@@ -15,8 +15,8 @@ public class IdeProvider implements Ide {
 
     @Override
     public void showErrorMessage(String message) {
-        Messages.showDialog(message, "Elisp error", new String[] {"ok"}, 0, Messages.getErrorIcon());
-      //  Messages.showErrorDialog(message, "Elisp error");
+       // Messages.showDialog(message, "Elisp error", new String[] {"ok"}, 0, Messages.getErrorIcon());
+        Messages.showErrorDialog(message, "Elisp error");
     }
 
     @Override

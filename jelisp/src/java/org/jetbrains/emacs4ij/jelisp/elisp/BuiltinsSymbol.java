@@ -20,6 +20,8 @@ public abstract class BuiltinsSymbol {
         LispSymbol f = environment.find(arg.getName());
         if (f == null || f.getFunctionCell() == null)
             throw new VoidFunctionException(arg.getName());
+        if (f.isSubroutine())
+            return f.getFunctionCell();
         return f.getFunction();
     }
 
