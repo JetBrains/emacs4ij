@@ -33,9 +33,9 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        super.setUp();
         GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
 

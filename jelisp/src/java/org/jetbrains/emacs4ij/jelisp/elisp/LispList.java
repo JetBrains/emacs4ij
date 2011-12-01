@@ -60,11 +60,15 @@ public class LispList extends LispObject {
             throw new InvalidFunctionException(car().toString());
         }
         LispSymbol symbol = GlobalEnvironment.getInstance().find(fun.getName());
-        if (symbol == null || symbol.getFunctionCell() == null)
-            throw new VoidFunctionException(fun.getName());
+        if (symbol == null || symbol.getFunctionCell() == null) {
+            //while we are not loading all elisp code, perform search on request
+            System.out.println("upload " + fun.getName());
+            symbol = GlobalEnvironment.findAndRegisterEmacsFunction(fun);
+            if (symbol == null || symbol.getFunctionCell() == null)
+                throw new VoidFunctionException(fun.getName());
+        }
 
         List<LObject> data = cdr().getData();
-
         return symbol.evaluateFunction(environment, data);
     }
 
@@ -95,6 +99,7 @@ public class LispList extends LispObject {
             } else {
                 if (o.getClass() == LispSymbol.class && o.equals(LispSymbol.ourNil) && myData.isEmpty())
                     return true;
+                return false;
             }
         }
 

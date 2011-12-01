@@ -34,7 +34,9 @@ public class Lambda extends LispObject {
         }
         if (data.size() > 2) {
             try {
-                LObject docString = data.get(2).evaluate(environment);
+                //todo: if those instructions have some side effects, this is wrong behaviour
+                //LObject docString = data.get(2).evaluate(environment);
+                LObject docString = data.get(2);
                 if (docString instanceof LispString) {
                     myDocString = (LispString) docString;
                 }

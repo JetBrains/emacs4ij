@@ -133,7 +133,8 @@ public abstract class LispSubroutine {
                 }
                 if (arguments.isOptional(i))
                     return -1;
-                throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter).toString());
+
+                throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter)==null ? "NULL!" : args.get(argsCounter).toString());
             }
             arguments.setValue(i, args.get(argsCounter));
             return argsCounter + 1;

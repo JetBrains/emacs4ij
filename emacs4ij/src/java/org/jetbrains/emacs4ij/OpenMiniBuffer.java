@@ -25,6 +25,9 @@ public class OpenMiniBuffer extends AnAction {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
+        if (!Checker.isReady())
+            return;
+        PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment();
         String myName = GlobalEnvironment.ourMiniBufferName;
 
         String editorComponentName = editor.getContentComponent().getName();

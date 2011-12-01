@@ -46,7 +46,7 @@ public class EmacsHomeService implements PersistentStateComponent<EmacsHomeServi
                 GlobalEnvironment.ourEmacsPath = emacsHome;
                 return true;
             } else {
-                Messages.showErrorDialog("You didn't choose Emacs home directory!\nNo command evaluation will be done.", "Emacs4ij");
+                Messages.showInfoMessage("You didn't choose Emacs home directory!\nNo command evaluation will be done.", "Emacs4ij");
                 return false;
             }
         } else {

@@ -36,6 +36,7 @@
     <!-- Add your extensions here -->
     <!-- Declare the application level service -->
   <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
+  <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
 
 
   </extensions>

@@ -28,6 +28,9 @@ public class OpenScratchBuffer extends AnAction {
             return;
         if (editor.isOneLineMode())
             return;
+        if (!Checker.isReady())
+            return;
+        PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment();
         String myName = GlobalEnvironment.ourScratchBufferName;
         String editorComponentName = editor.getContentComponent().getName();
         if (editorComponentName != null && editorComponentName.equals(myName))

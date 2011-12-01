@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.lang.reflect.Method;
@@ -29,17 +30,22 @@ public class LispSymbol extends LispAtom {
     private boolean isInteractive = false;
     private String myInteractiveString;
 
+
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
+
+    //for subroutines only
+    private String myDocumentation = null;
 
     public LispSymbol(String myName) {
         this.myName = myName;
     }
 
-    public static LispSymbol newSubroutine (String myName, boolean isCommand, String interactiveString) {
+    public static LispSymbol newSubroutine (String myName, boolean isCommand, String interactiveString, String documentation) {
         LispSymbol subroutine = new LispSymbol(myName);
         subroutine.myFunction = new LispString("#<subr " + myName + ">");
         subroutine.isInteractive = isCommand;
         subroutine.myInteractiveString = interactiveString;
+        subroutine.myDocumentation = documentation;
         return subroutine;
     }
 
@@ -185,20 +191,42 @@ public class LispSymbol extends LispAtom {
         if (hasValue()) {
             return getValue();
         }
+
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || (!symbol.hasValue()))
             throw new VoidVariableException(myName);
         return symbol.getValue();
     }
 
+    private void checkCallStack () {
+        String q = GlobalEnvironment.ourCallStack.removeFirst();
+        if (!q.equals(myName)) {
+            throw new RuntimeException("bug in call stack");
+        }
+        if (q.equals("symbol-file"))
+            System.out.println("symbol-file FINISHED");
+    }
+
     public LObject evaluateFunction (Environment environment, List<LObject> args) {
-        if (isSubroutine())
-            return LispSubroutine.evaluate(this, environment, args);
+        GlobalEnvironment.ourCallStack.push(myName);
 
-        if (isMacro())
-            return evaluateMacro(environment, args);
+        LObject result;
 
-        return evaluateCustomFunction(environment, args);
+        if (isSubroutine()) {
+            result = LispSubroutine.evaluate(this, environment, args);
+            checkCallStack();
+            return result;
+        }
+
+        if (isMacro()) {
+            result =  evaluateMacro(environment, args);
+            checkCallStack();
+            return result;
+        }
+
+        result = evaluateCustomFunction(environment, args);
+        checkCallStack();
+        return result;
     }
 
     public LObject macroExpand (Environment environment, List<LObject> args) {
@@ -256,8 +284,12 @@ public class LispSymbol extends LispAtom {
         return getProperty("variable-documentation");
     }
 
-    public void setVariableDocumentation (LispString value) {
+    public void setVariableDocumentation (LispObject value) {
         setProperty("variable-documentation", value);
+    }
+
+    public String getSubroutineDocumentation () {
+        return myDocumentation;
     }
 
     public LispObject getCustomFunctionDocumentation () {

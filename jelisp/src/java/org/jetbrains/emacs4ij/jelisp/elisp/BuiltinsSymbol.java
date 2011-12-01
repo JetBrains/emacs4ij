@@ -1,9 +1,13 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * Created by IntelliJ IDEA.
@@ -35,7 +39,8 @@ public abstract class BuiltinsSymbol {
 
     @Subroutine("get")
     public static LObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
-        return environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
+        LObject result = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
+        return result == null ? LispSymbol.ourNil : result;
     }
 
     @Subroutine("put")
@@ -50,28 +55,30 @@ public abstract class BuiltinsSymbol {
         // Third argument RAW omitted or nil means pass the result through `substitute-command-keys' if it is a string.
         LObject value = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
         if (!(value instanceof LispString)) {
-            //TODO:
-            /* by Dmitry Neverov:: Похоже на то, что если в property записан integer, то он
-интерпретируется как смещение в файле документации, где записана дока
-по всем build-in функциям. Emacs лезет в этот файл, читает по данному
-смещению и ничего не находит (или находит не то, что не ожидал) и
-поэтому возвращает nil. Имя этого файла задаётся переменной
-internal-doc-file-name. У меня он находится в
-/usr/local/share/emacs/23.2/etc/DOC-23.2.1.
+            if (!(value instanceof LispInteger))
+                return value.evaluate(environment);
 
-Если выполнить вот такое:
-
-(defun fun ())
-(setq x 0)
-(while (< x 1000)
- (put 'fun 'function-documentation x)
- (let ((doc (documentation-property 'fun 'function-documentation)))
-   (if doc (message doc)))
- (incf x))
-
-То по нескольким смещениям документация все-таки находится.
-             */
-            return value.evaluate(environment);
+            int offset = ((LispInteger) value).getData();
+            if (offset < 0)
+                offset = -offset;
+            try {
+                RandomAccessFile docFile = new RandomAccessFile(((LispString)GlobalEnvironment.getInstance().find("doc-directory").getValue()).getData() +
+                        ((LispString)GlobalEnvironment.getInstance().find("internal-doc-file-name").getValue()).getData(), "r");
+                docFile.seek(offset);
+                String line = docFile.readLine();
+                String doc = line;
+                while ((line = docFile.readLine()) != null) {
+                    if (line.contains(""))  // \u001F
+                        break;
+                    doc += '\n' + line;
+                }
+                docFile.close();
+                doc += '\n' + line.substring(0, line.indexOf(''));
+                return new LispString(doc);
+            } catch (IOException e) {
+                //throw new RuntimeException(e.getMessage());
+                return LispSymbol.ourNil;
+            }
         }
         return value;
     }

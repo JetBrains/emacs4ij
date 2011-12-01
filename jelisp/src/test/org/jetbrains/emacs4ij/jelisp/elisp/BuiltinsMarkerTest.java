@@ -20,6 +20,7 @@ public class BuiltinsMarkerTest {
 
     @Before
     public void setUp() throws Exception {
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null, null);
         environment = new Environment(GlobalEnvironment.getInstance());

@@ -24,6 +24,7 @@ public class BuiltinsSymbolTest {
 
     @Before
     public void setUp() {
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null, null);
         environment = new Environment(GlobalEnvironment.getInstance());
@@ -110,5 +111,43 @@ public class BuiltinsSymbolTest {
             return;
         }
         Assert.assertTrue(false);
+    }
+
+    @Test
+    public void testDocumentationProperty_MyVar () {
+        evaluateString("(defvar a 1 \"doc\")");
+        LObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), doc);
+    }
+
+    @Test
+    public void testDocumentationProperty_GlobalVar () {
+        LObject doc = evaluateString("(documentation-property 'load-history 'variable-documentation)");
+        LispString trueDoc = new LispString("Alist mapping loaded file names to symbols and features.\n" +
+                "Each alist element should be a list (FILE-NAME ENTRIES...), where\n" +
+                "FILE-NAME is the name of a file that has been loaded into Emacs.\n" +
+                "The file name is absolute and true (i.e. it doesn't contain symlinks).\n" +
+                "As an exception, one of the alist elements may have FILE-NAME nil,\n" +
+                "for symbols and features not associated with any file.\n" +
+                "\n" +
+                "The remaining ENTRIES in the alist element describe the functions and\n" +
+                "variables defined in that file, the features provided, and the\n" +
+                "features required.  Each entry has the form `(provide . FEATURE)',\n" +
+                "`(require . FEATURE)', `(defun . FUNCTION)', `(autoload . SYMBOL)',\n" +
+                "`(defface . SYMBOL)', or `(t . SYMBOL)'.  In addition, an entry `(t\n" +
+                ". SYMBOL)' may precede an entry `(defun . FUNCTION)', and means that\n" +
+                "SYMBOL was an autoload before this file redefined it as a function.\n" +
+                "\n" +
+                "During preloading, the file name recorded is relative to the main Lisp\n" +
+                "directory.  These file names are converted to absolute at startup.");
+
+        Assert.assertTrue(doc != null && doc != LispSymbol.ourNil);
+        Assert.assertEquals(trueDoc, doc);
+    }
+
+
+    @Test
+    public void testIntegerDocumentation () {
+        LObject doc = evaluateString("(get 'internal-doc-file-name 'variable-documentation)");
     }
 }

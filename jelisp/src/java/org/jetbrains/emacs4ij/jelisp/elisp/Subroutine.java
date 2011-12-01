@@ -19,6 +19,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subroutine {
     String value();
+    String doc() default "";
     boolean isCmd () default false;
     String interactive () default GlobalEnvironment.ourUnsetInteractiveString;
 }

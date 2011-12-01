@@ -33,11 +33,11 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
-
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         for (String fileName: myTestFiles) {

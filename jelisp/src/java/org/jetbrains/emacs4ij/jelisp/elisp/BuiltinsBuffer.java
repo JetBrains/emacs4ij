@@ -29,7 +29,7 @@ public abstract class BuiltinsBuffer {
         throw new WrongTypeArgumentException("buffer-or-name", bufferOrName.getClass().getSimpleName());
     }
 
-    @Subroutine("current-buffer")
+    @Subroutine(value = "current-buffer")
     public static LispBuffer getCurrentBuffer(Environment environment) {
         return environment.getBufferCurrentForEditing();
     }

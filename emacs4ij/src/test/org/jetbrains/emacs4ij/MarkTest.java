@@ -29,11 +29,11 @@ public class MarkTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
-
-        GlobalEnvironment.ourEmacsPath = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         for (String fileName: myTestFiles) {
@@ -58,7 +58,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     @Test
     public void testMark () throws Throwable {
         try {
-            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsPath + "/lisp/simple.el", "mark");
+            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
             LObject mark = evaluateString("(mark)");
             Assert.assertEquals(LispSymbol.ourNil, mark);
         } catch (Exception e) {
@@ -70,13 +70,13 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetMark () throws Throwable {
         try {
-            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsPath + "/lisp/simple.el", "set-mark");
+            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
             LObject mark = evaluateString("(set-mark 10)");
             System.out.println("Mark set: " + mark.toString());
             Assert.assertEquals(LispSymbol.ourNil, mark);
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
-           // throw getCause(e);
+            throw getCause(e);
         }
 
     }

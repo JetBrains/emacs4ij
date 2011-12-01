@@ -5,6 +5,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -23,17 +24,28 @@ public class MyProjectComponent implements ProjectComponent {
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        GlobalEnvironment.initialize(new BufferCreator(), project, new IdeProvider());
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
-
-        IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
-        myEnvironment.defineServiceBuffer(miniBuffer);
-        String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-        IdeaBuffer scratchBuffer = new IdeaBuffer(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
-        myEnvironment.defineServiceBuffer(scratchBuffer);
-
         myProject = project;
         IdeaBuffer.setProject(project);
+        if (!Checker.isReady()) {
+            Checker.isEnvironmentInitialized = false;
+            myEnvironment = null;
+            Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by pressing any of Emacs4ij icons.", "Emacs4ij");
+        } else {
+            initEnvironment();
+        }
+    }
+
+    public void initEnvironment () {
+        if (Checker.isEnvironmentInitialized)
+            return;
+        Checker.isEnvironmentInitialized = true;
+        GlobalEnvironment.initialize(new BufferCreator(), myProject, new IdeProvider());
+        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
+        myEnvironment.defineServiceBuffer(miniBuffer);
+        String scratchDir = myProject.getProjectFilePath().substring(0, myProject.getProjectFilePath().lastIndexOf("/")+1);
+        IdeaBuffer scratchBuffer = new IdeaBuffer(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
+        myEnvironment.defineServiceBuffer(scratchBuffer);
     }
 
     public Environment getEnvironment() {

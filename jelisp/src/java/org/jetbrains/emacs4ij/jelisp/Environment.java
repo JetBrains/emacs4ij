@@ -60,7 +60,7 @@ public class Environment {
         LispSymbol lispObject = mySymbols.get(name);
 
         if (lispObject != null) {
-            if (lispObject.equals(LispSymbol.ourBufferLocalVariable)) {
+            if (lispObject.getValue() != null && lispObject.getValue().equals(LispSymbol.ourBufferLocalVariable)) {
                 lispObject = getBufferCurrentForEditing().getLocalVariable(name);
             }
             return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);
