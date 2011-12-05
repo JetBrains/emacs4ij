@@ -1,4 +1,6 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
+
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 /**
  * Created by IntelliJ IDEA.

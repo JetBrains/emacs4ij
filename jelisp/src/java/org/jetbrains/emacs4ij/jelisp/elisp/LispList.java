@@ -60,11 +60,11 @@ public class LispList extends LispObject {
             throw new InvalidFunctionException(car().toString());
         }
         LispSymbol symbol = GlobalEnvironment.getInstance().find(fun.getName());
-        if (symbol == null || symbol.getFunctionCell() == null) {
+        if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("upload " + fun.getName());
             symbol = GlobalEnvironment.findAndRegisterEmacsFunction(fun);
-            if (symbol == null || symbol.getFunctionCell() == null)
+            if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
         }
 
@@ -78,8 +78,8 @@ public class LispList extends LispObject {
 
     @Override
     public String toString() {
-        if (isEmpty())
-            return "()";
+        if (myData == null || isEmpty())
+            return "nil";
         String list = "(";
         for (LObject lispObject: myData) {
             list += lispObject.toString() + " ";

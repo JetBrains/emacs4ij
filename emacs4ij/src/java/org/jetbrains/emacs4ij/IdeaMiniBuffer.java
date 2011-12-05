@@ -239,8 +239,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
                     LispSymbol cmd = (LispSymbol) myInteractive.getArguments().car();
-                    cmd.castToLambda(myEnvironment);
-                    String interactiveString = cmd.getInteractiveString();
+                    //cmd.castToLambda(myEnvironment);
+                    String interactiveString = cmd.getInteractiveString(myEnvironment);
                     if (interactiveString == null) {
                         throw new RuntimeException("Command has null interactive string!");
                     }

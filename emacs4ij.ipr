@@ -246,8 +246,8 @@
       <module name="jelisp" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.elisp" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.elisp.BuiltinsBufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsBufferTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="" />
@@ -268,8 +268,8 @@
       <module name="jelisp" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.elisp" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.elisp.BuiltinsCheckTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheckTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="" />

@@ -17,7 +17,7 @@ import java.util.Map;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Lambda extends LispObject {
+public class Lambda extends LispObject implements FunctionCell {
     private LinkedHashMap<LispSymbol, String> myArgumentList = null;
     private LispString myDocString = null;
     private LispList myInteractive = null;
@@ -82,7 +82,7 @@ public class Lambda extends LispObject {
 
     @Override
     public String toString() {
-        String s = "(lambda " + myArgumentList.toString();
+        String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
         for (LObject bodyForm: myBody) {
             s += " " + bodyForm.toString();
         }
@@ -138,14 +138,17 @@ public class Lambda extends LispObject {
         return inner;
     }
 
+    @Override
     public LispObject getDocString () {
         return myDocString == null ? LispSymbol.ourNil : myDocString;
     }
 
+    @Override
     public boolean isInteractive() {
         return myInteractive != null;
     }
 
+    @Override
     public String getInteractiveString () {
         LispList args = myInteractive.cdr();
         if (args.isEmpty())

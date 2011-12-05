@@ -1,7 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -22,10 +23,8 @@ public abstract class BuiltinsSymbol {
     @Subroutine("symbol-function")
     public static LObject symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
-        if (f == null || f.getFunctionCell() == null)
+        if (f == null || !f.isFunction())
             throw new VoidFunctionException(arg.getName());
-        if (f.isSubroutine())
-            return f.getFunctionCell();
         return f.getFunction();
     }
 
@@ -90,23 +89,21 @@ public abstract class BuiltinsSymbol {
             LispSymbol f = environment.find(name);
             if (f == null)
                 throw new VoidFunctionException(name);
-            if (f.getFunctionCell() == null)
-                throw new VoidFunctionException(name);
+
             LObject funPropValue = documentationProperty(environment, f, new LispSymbol("function-documentation"), null);
             if (!funPropValue.equals(LispSymbol.ourNil))
                 return funPropValue;
 
-            if (f.isCustom()) {
-                f.castToLambda(environment);
-                return f.getCustomFunctionDocumentation();
-            }
-
-            return null;
-
-            //todo: provide doc for special forms and biiltins
+            if (!f.isFunction())
+                throw new VoidFunctionException(name);
+            return f.getDocumentation(environment);
 
         } else if (function instanceof Lambda) {
             return ((Lambda) function).getDocString();
+        } else if (function instanceof Macro) {
+            return ((Macro)function).getDocString();
+        } else if (function instanceof Primitive) {
+            return ((Primitive) function).getDocString();
         }
         throw new InvalidFunctionException(function.toString());
     }

@@ -4,6 +4,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -59,38 +61,40 @@ public class GlobalEnvironment extends Environment {
         defineBufferLocalVariables();
         defineGlobalVariables();
         defineUserOptions();
+
+
         setSubroutines();
     }
 
-    private void addSymbol (String name, LObject value, int documentation) {
+    private void addVariable(String name, LObject value, int documentation) {
         LispSymbol symbol = new LispSymbol(name, value);
         symbol.setVariableDocumentation(new LispInteger(documentation));
         mySymbols.put(name, symbol);
     }
 
     private void defineUserOptions() {
-        addSymbol("transient-mark-mode", LispSymbol.ourT, -2109012);
-        addSymbol("mark-even-if-inactive", LispSymbol.ourNil, -467784);
-        addSymbol("mark-ring-max", new LispInteger(16), 2103241);
+        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012);
+        addVariable("mark-even-if-inactive", LispSymbol.ourNil, -467784);
+        addVariable("mark-ring-max", new LispInteger(16), 2103241);
     }
 
     private void defineBufferLocalVariables() {
-        addSymbol("mark-active", LispSymbol.ourBufferLocalVariable, 329910);
-        addSymbol("addSymbol", LispSymbol.ourBufferLocalVariable, 2103159);
+        addVariable("mark-active", LispSymbol.ourBufferLocalVariable, 329910);
+        addVariable("default-directory", LispSymbol.ourBufferLocalVariable, 316938);
+        addVariable("addSymbol", LispSymbol.ourBufferLocalVariable, 2103159);
     }
 
     private void defineGlobalVariables() {
-        addSymbol("load-history", LispSymbol.ourNil, 550505);
-        addSymbol("deactivate-mark", LispSymbol.ourNil, 264600);
+        addVariable("load-history", LispSymbol.ourNil, 550505);
+        addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
+        addVariable("default-directory", LispSymbol.ourNil, 316938);
 
         //wtf?
-        addSymbol("activate-mark-hook", LispSymbol.ourNil, 2100203);
-        addSymbol("deactivate-mark-hook", LispSymbol.ourNil, 2100379);
+        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
+        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379);
     }
 
-    private void setSubroutines () {
-        Class[] subroutineContainers = LispSubroutine.getSubroutineClasses();
-        int n = mySymbols.size();
+    private void setSubroutinesFromClass (HashMap<String, String> documentation,  Class[] subroutineContainers, Primitive.Type type) {
         for (Class subroutineContainer: subroutineContainers) {
             Method[] methods = subroutineContainer.getMethods();
             for (Method m: methods) {
@@ -102,11 +106,22 @@ public class GlobalEnvironment extends Environment {
                     throw new RuntimeException("Duplicate symbol: " + name + '!');
                 if (annotation.isCmd() && annotation.interactive().equals(ourUnsetInteractiveString))
                     throw new RuntimeException("Interactive string not set! Subroutine " + name);
-                mySymbols.put(name, LispSymbol.newSubroutine(name, annotation.isCmd(), annotation.interactive(), annotation.doc()));
+
+                LispSymbol subroutine = new LispSymbol(name);
+                subroutine.setFunction(new Primitive(annotation, documentation.get(name), type));
+                mySymbols.put(name, subroutine);
                 //System.out.print(name + ' ');
             }
-
         }
+    }
+
+    private void setSubroutines () {
+        //int n = mySymbols.size();
+//  String cSource = ourEmacsSource.substring(0, ourEmacsSource.lastIndexOf('/')) + "/src";
+        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
+        d.scanAll();
+        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
+        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
        // System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
     }
 
@@ -114,32 +129,9 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
         mySymbols.put("void", LispSymbol.ourVoid);
-        addSymbol("internal-doc-file-name", new LispString("DOC-23.2.1"), 432776);
-        addSymbol("doc-directory", new LispString(ourEmacsPath + "/etc/"), 601973);
+        addVariable("internal-doc-file-name", new LispString("DOC-23.2.1"), 432776);
+        addVariable("doc-directory", new LispString(ourEmacsPath + "/etc/"), 601973);
     }
-
-/*private void indexEmacsSources() {
-        if (ourEmacsPath.equals("")) {
-            ourEmacsPath = "c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3";
-            //TODO:
-            //throw new RuntimeException("Emacs path is not set!");
-        }
-        indexDirectory(ourEmacsPath + "\\lisp");
-    }
-
-    private void indexDirectory (String dir) {
-        File[] fList = new File(dir).listFiles();
-        for (File f: fList) {
-            if (f.isDirectory())
-                indexDirectory(f.getAbsolutePath());
-            else if (f.getName().substring(f.getName().lastIndexOf('.'), f.getName().length()).equals("el")) {
-
-                //TODO: parse and save
-            }
-        }
-
-
-    }   */
 
     public static void showMessage (String message) {
         myIde.showMessage(message);

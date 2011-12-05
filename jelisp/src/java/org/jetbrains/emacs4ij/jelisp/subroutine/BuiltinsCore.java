@@ -1,7 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -176,19 +177,7 @@ public abstract class BuiltinsCore {
         return trueMacro.macroExpand(environment, ((LispList) macroCall).cdr().getData());
     }
 
-    @Subroutine(value = "string-match", doc = "string-match is a built-in function in `Java source code'.\n" +
-            "\n" +
-            "(string-match REGEXP STRING &optional START)\n" +
-            "\n" +
-            "Return index of start of first match for REGEXP in STRING, or nil.\n" +
-            "Matching ignores case if `case-fold-search' is non-nil.\n" +
-            "If third arg START is non-nil, start search at that index in STRING.\n" +
-            "For index of first char beyond the match, do (match-end 0).\n" +
-            "`match-end' and `match-beginning' also give indices of substrings\n" +
-            "matched by parenthesis constructs in the pattern.\n" +
-            "\n" +
-            "You can use the function `match-string' to extract the substrings\n" +
-            "matched by the parenthesis constructions in REGEXP.")
+    @Subroutine(value = "string-match")
     public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {
         return null;
     }

@@ -1,6 +1,7 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,14 +32,13 @@ public abstract class BuiltinsCheck {
     public static LispObject subrp (LispObject functionCell) {
         if (functionCell == null || !(functionCell instanceof FunctionCell))
             return LispSymbol.ourNil;
-        FunctionCell.Type type = ((FunctionCell) functionCell).getType();
-        if (type == FunctionCell.Type.BuiltIn || type == FunctionCell.Type.SpecialForm)
+        if (functionCell instanceof Primitive)
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
 
     //todo: it's a compliled lisp function
-    @Subroutine("functionp")
+   /* @Subroutine("functionp")
     public static LispObject functionp (Environment environment, LObject function) {
         if (function == null)
             return LispSymbol.ourNil;
@@ -53,7 +53,7 @@ public abstract class BuiltinsCheck {
         FunctionCell functionCell = null;
         if (function instanceof LispSymbol) {
             LispSymbol f = environment.find(((LispSymbol) function).getName());
-            if (f == null || f.getFunctionCell() == null)
+            if (f == null || !f.isFunction())
                 return LispSymbol.ourNil;
             if (f.isSubroutine())
                 return LispSymbol.ourNil;
@@ -70,7 +70,7 @@ public abstract class BuiltinsCheck {
         if (type == FunctionCell.Type.BuiltIn || type == FunctionCell.Type.CustomFunction)
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
-    }
+    } */
 
     @Subroutine("bufferp")
     public static LispObject bufferp (LObject arg) {
@@ -80,22 +80,20 @@ public abstract class BuiltinsCheck {
     @Subroutine("commandp")
     public static LispSymbol commandp (Environment environment, LObject function, @Optional LObject forCallInteractively) {
         if (function instanceof LispSymbol) {
-            if (!(((LispSymbol) function).getProperty("interactive-form").equals(LispSymbol.ourNil)))
+            if (!((LispSymbol) function).isFunction())
+                return LispSymbol.ourNil;
+
+            if (((LispSymbol) function).isInteractive(environment))
                 return LispSymbol.ourT;
-            if (((LispSymbol) function).isCustom()) {
-                ((LispSymbol) function).castToLambda(environment);
-                return commandp(environment, ((LispSymbol) function).getFunction(), forCallInteractively);
-            }
-            if (((LispSymbol) function).isSubroutine()) {
-                if (((LispSymbol) function).isInteractive())
-                    return LispSymbol.ourT;
-            }
+            else
+                return LispSymbol.ourNil;
 
             //todo: autoload objects
             // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
         }
-        if (function instanceof Lambda) {
-            return ((Lambda) function).isInteractive() ? LispSymbol.ourT : LispSymbol.ourNil;
+
+        if (function instanceof Lambda || function instanceof Primitive) {
+            return ((FunctionCell) function).isInteractive() ? LispSymbol.ourT : LispSymbol.ourNil;
         }
 
         if (forCallInteractively == null || forCallInteractively.equals(LispSymbol.ourNil)) {
@@ -123,7 +121,7 @@ public abstract class BuiltinsCheck {
     @Subroutine("fboundp")
     public static LispSymbol fboundp (Environment environment, LispSymbol symbol) {
         LispSymbol f = environment.find(symbol.getName());
-        if (f == null || f.getFunctionCell() == null)
+        if (f == null || !f.isFunction())
             return LispSymbol.ourNil;
         return LispSymbol.ourT;
     }

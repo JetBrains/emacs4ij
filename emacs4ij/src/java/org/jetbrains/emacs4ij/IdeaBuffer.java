@@ -46,7 +46,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         myName = name;
         myEditor = editor;
 
-        myLocalVariables.add(new LispSymbol("directory", new LispString(path)));
+        myLocalVariables.add(new LispSymbol("default-directory", new LispString(path)));
         myLocalVariables.add(new LispSymbol("is-alive", LispSymbol.ourT));
         myLocalVariables.add(new LispSymbol("my-mark", new LispMarker()));
         myLocalVariables.add(new LispSymbol("mark-active", LispSymbol.ourNil));

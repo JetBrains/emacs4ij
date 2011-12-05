@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck;
 
 import java.io.File;
 import java.io.FilenameFilter;

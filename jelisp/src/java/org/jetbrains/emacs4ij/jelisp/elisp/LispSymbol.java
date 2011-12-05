@@ -4,7 +4,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,26 +26,17 @@ public class LispSymbol extends LispAtom {
     private String myName = null;
     private LObject myValue = null; //ourVoid;
     private LispObject myFunction = null;
-    private boolean isInteractive = false;
-    private String myInteractiveString;
+    //private boolean isInteractive = false;
+    //private String myInteractiveString;
 
 
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
 
     //for subroutines only
-    private String myDocumentation = null;
+    //private String myDocumentation = null;
 
     public LispSymbol(String myName) {
         this.myName = myName;
-    }
-
-    public static LispSymbol newSubroutine (String myName, boolean isCommand, String interactiveString, String documentation) {
-        LispSymbol subroutine = new LispSymbol(myName);
-        subroutine.myFunction = new LispString("#<subr " + myName + ">");
-        subroutine.isInteractive = isCommand;
-        subroutine.myInteractiveString = interactiveString;
-        subroutine.myDocumentation = documentation;
-        return subroutine;
     }
 
     public LispSymbol (String myName, LObject value) {
@@ -66,7 +56,7 @@ public class LispSymbol extends LispAtom {
         this.myValue = myValue;
     }
 
-    public FunctionCell getFunctionCell() {
+    /*public FunctionCell getFunctionCell() {
         if (myFunction == null)
             return null;
         if (isCustom())
@@ -79,16 +69,16 @@ public class LispSymbol extends LispAtom {
             return new FunctionCell(toString(), FunctionCell.Type.SpecialForm);
         }
         throw new RuntimeException("unknown function type: " + myName);
-    }
+    }*/
 
-    public void castToLambda (Environment environment) {
+    private void castToLambda (Environment environment) {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
             environment.updateFunction(this);
         }
     }
 
-    public void castToMacro (Environment environment) {
+    private void castToMacro (Environment environment) {
         if (isMacro() && !(myFunction instanceof Macro)) {
             myFunction = new Macro((LispList) myFunction, environment);
             environment.updateFunction(this);
@@ -107,29 +97,17 @@ public class LispSymbol extends LispAtom {
     public String toString() {
         if (myFunction == null)
             return myName;
-        if (isSubroutine())
-            return "#<subr " + myName + '>';
+        /*if (isSubroutine())
+            return "#<subr " + myName + '>';   */
         return myFunction.toString();
     }
 
     public boolean isSubroutine () {
-        return (myFunction instanceof LispString);
+        return myFunction instanceof Primitive;
     }
 
     public boolean isBuiltIn () {
-        if (!isSubroutine())
-            return false;
-        for (Class c: LispSubroutine.getSpecialFormsClasses()) {
-            for (Method m: c.getMethods()) {
-                Subroutine annotation = m.getAnnotation(Subroutine.class);
-                if (annotation == null)
-                    continue;
-                if (annotation.value().equals(myName)) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return isSubroutine() && ((Primitive) myFunction).getType().equals(Primitive.Type.BUILTIN);
     }
 
     public boolean isCustom() {
@@ -146,8 +124,21 @@ public class LispSymbol extends LispAtom {
                 || (myFunction instanceof Macro));
     }
 
-    public boolean isInteractive () {
-        return isInteractive;
+    public boolean isInteractive (Environment environment) {
+        if (!isFunction())
+            throw new RuntimeException("wrong usage of function isInteractive with symbol " + myName +
+                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
+
+        castFunctionCell(environment);
+        return ((FunctionCell)myFunction).isInteractive();
+        /*if (isCustom()) {
+            castToLambda(environment);
+            return ((Lambda)myFunction).isInteractive();
+        } if (isSubroutine()) {
+            return ((Primitive)myFunction).isInteractive();
+        }
+        throw new RuntimeException("wrong usage of function isInteractive with symbol " + myName +
+                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));     */
     }
 
     @Override
@@ -163,7 +154,6 @@ public class LispSymbol extends LispAtom {
         LispSymbol that = (LispSymbol) o;
 
         return !(myName != null ? !myName.equals(that.myName) : that.myName != null);
-
     }
 
     @Override
@@ -186,12 +176,11 @@ public class LispSymbol extends LispAtom {
     public LObject evaluate(Environment environment) {
         if (equals(ourNil) || equals(ourT) || equals(ourVoid))
             return this;
-        if (myName.equals("default-directory"))
-            return environment.getDefaultDirectory();
+        //if (myName.equals("default-directory"))
+        //    return environment.getDefaultDirectory();
         if (hasValue()) {
             return getValue();
         }
-
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || (!symbol.hasValue()))
             throw new VoidVariableException(myName);
@@ -203,8 +192,8 @@ public class LispSymbol extends LispAtom {
         if (!q.equals(myName)) {
             throw new RuntimeException("bug in call stack");
         }
-        if (q.equals("symbol-file"))
-            System.out.println("symbol-file FINISHED");
+        //if (q.equals("symbol-file"))
+        //    System.out.println("symbol-file FINISHED");
     }
 
     public LObject evaluateFunction (Environment environment, List<LObject> args) {
@@ -250,7 +239,6 @@ public class LispSymbol extends LispAtom {
         } else {
             environment.setArgumentsEvaluated(false);
         }
-
         castToLambda(environment);
         return ((Lambda)myFunction).evaluate(environment, args);
     }
@@ -280,32 +268,30 @@ public class LispSymbol extends LispAtom {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    public LispObject getVariableDocumentation () {
-        return getProperty("variable-documentation");
+    private void castFunctionCell (Environment environment) {
+        if (isCustom()) {
+            castToLambda(environment);
+        } else if (isMacro()) {
+            castToMacro(environment);
+        }
+    }
+
+    public LispObject getDocumentation (Environment environment) {
+        if (myFunction == null)
+            return getProperty("variable-documentation");
+        castFunctionCell(environment);
+        return ((FunctionCell)myFunction).getDocString();
     }
 
     public void setVariableDocumentation (LispObject value) {
         setProperty("variable-documentation", value);
     }
 
-    public String getSubroutineDocumentation () {
-        return myDocumentation;
-    }
-
-    public LispObject getCustomFunctionDocumentation () {
-        if (myFunction instanceof Lambda)
-            return ((Lambda) myFunction).getDocString();
-        throw new RuntimeException("invalid function call");
-    }
-
-    public String getInteractiveString () {
-        if (!isFunction())
+    public String getInteractiveString (Environment environment) {
+        if (myFunction == null)
             return null;
-        if (myFunction instanceof Lambda)
-            return ((Lambda) myFunction).getInteractiveString();
-        if (isSubroutine())
-            return myInteractiveString;
-        return null;
+        castFunctionCell(environment);
+        return ((FunctionCell)myFunction).getInteractiveString();
     }
 
 

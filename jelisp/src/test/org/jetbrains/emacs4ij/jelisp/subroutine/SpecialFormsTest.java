@@ -1,8 +1,9 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -345,41 +346,6 @@ public class SpecialFormsTest {
         evaluateString("(progn (defvar pvar 50))");
         lispObject = evaluateString("pvar");
         Assert.assertEquals(new LispInteger(50), lispObject);
-    }
-
-    @Test
-    public void testFunctionDocumentationNil () {
-        evaluateString("(defun a () \"doc\" 2)");
-        LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
-        Assert.assertEquals(LispSymbol.ourNil, doc);
-    }
-
-    @Test
-    public void testDocumentationNoDef () {
-        try {
-            evaluateString("(documentation 'a)");
-        } catch (Exception e) {
-            Throwable q = getCause(e);
-            if (!(q instanceof VoidFunctionException))
-                Assert.fail(q.getLocalizedMessage());
-        }
-    }
-
-    @Test
-    public void testDocumentationString () {
-        evaluateString("(defun a () \"doc\" 2)");
-        LObject doc = evaluateString("(documentation 'a)");
-        Assert.assertEquals(new LispString("doc"), doc);
-    }
-
-    @Test
-    public void testDocumentationProperty () {
-        evaluateString("(defun a () 2)");
-        evaluateString("(put 'a 'function-documentation \"doc\")");
-        LObject doc = evaluateString("(documentation 'a)");
-        Assert.assertEquals(new LispString("doc"), doc);
-        doc = evaluateString("(documentation-property 'a 'function-documentation)");
-        Assert.assertEquals(new LispString("doc"), doc);
     }
 
     @Test

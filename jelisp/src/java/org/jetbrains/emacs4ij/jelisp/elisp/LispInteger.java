@@ -28,7 +28,7 @@ public class LispInteger extends LispNumber<Integer> {
 
         LispInteger that = (LispInteger) o;
 
-        return myData == that.myData;
+        return myData.equals(that.myData);
     }
 
     @Override

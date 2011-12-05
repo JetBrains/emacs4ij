@@ -11,8 +11,8 @@ import java.util.List;
  * Time: 7:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Macro extends LispObject {
-    private String myName;
+public class Macro extends LispObject implements FunctionCell {
+   // private String myName;
     private Lambda myLambda;
     private LispList myDeclaration;
 
@@ -29,11 +29,25 @@ public class Macro extends LispObject {
 
     public LObject expand (Environment environment, List<LObject> args) {
         return myLambda.evaluate(environment, args);
-        //return null;
+    }
+
+    @Override
+    public LispObject getDocString() {
+        return myLambda.getDocString();
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+
+    @Override
+    public String getInteractiveString() {
+        return null;
     }
 
     @Override
     public LObject evaluate(Environment environment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        throw new RuntimeException("not impl");
     }
 }

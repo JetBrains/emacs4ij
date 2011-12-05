@@ -575,6 +575,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertTrue(myEnvironment.isDead("3.txt"));
     }
 
+    @Test
+    public void testEvalBufferLocalVar() {
+        LObject var = eval("default-directory");
+        org.junit.Assert.assertEquals(new LispString("qwas"), var);
+    }
+
 }
 
 

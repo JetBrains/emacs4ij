@@ -4,6 +4,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -38,8 +39,12 @@ public abstract class LispSubroutine {
         return false;
     }
 
-    public static Class[] getSubroutineClasses () {
+    public static Class[] getSubroutineContainers () {
         return (Class[]) ArrayUtils.addAll(myBuiltIns, mySpecialForms);
+    }
+
+    public static Class[] getBuiltinsClasses() {
+        return myBuiltIns;
     }
 
     public static Class[] getSpecialFormsClasses () {
@@ -165,8 +170,7 @@ public abstract class LispSubroutine {
     }
 
     public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
-        Class[] subroutines = getSubroutineClasses();
-        for (Class c: subroutines) {
+        for (Class c: getSubroutineContainers()) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {
                 Subroutine annotation = m.getAnnotation(Subroutine.class);

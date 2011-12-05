@@ -1,6 +1,7 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -155,10 +156,11 @@ public abstract class BuiltinsBuffer {
         return new LispInteger(environment.getBufferCurrentForEditing().pointMax());
     }
 
-    @Subroutine("buffer-end")
+    //todo: it's a compiled lisp function
+    /*@Subroutine("buffer-end")
     public static LObject bufferEnd (Environment environment, LispNumber arg) {
         return new LispInteger(environment.getBufferCurrentForEditing().bufferEnd((Double)arg.getData()));
-    }
+    } */
 
     //todo: accepts integer OR MARKER
     //todo:  bound to <menu-bar> <edit> <goto> <go-to-pos>
@@ -230,21 +232,22 @@ public abstract class BuiltinsBuffer {
     This command switches to the last buffer in the local buffer list of the selected frame.
     More precisely, it calls the function switch-to-buffer (see Displaying Buffers), to display the buffer returned by last-buffer, see above, in the selected window.
      */
-    @Subroutine(value = "unbury-buffer", isCmd = true, interactive = "")
+    //todo: it's a compiled lisp function
+    /*@Subroutine(value = "unbury-buffer", isCmd = true, interactive = "")
     public static LObject unburyBuffer (Environment environment) {
         LispBuffer lastBuffer = lastBuffer(environment, null, null, null);
         switchToBuffer(environment, lastBuffer, null);
         return lastBuffer;
-    }
+    }        */
 
     //todo: it's a compiled lisp function
-    @Subroutine("last-buffer")
+   /* @Subroutine("last-buffer")
     public static LispBuffer lastBuffer (Environment environment, @Optional LObject buffer, LObject visibleOk, LObject frame) {
         if (buffer == null || !(buffer instanceof LispBuffer)) {
             return environment.lastBuffer();
         }
         return environment.lastBuffer(((LispBuffer) buffer).getName());
-    }
+    }   */
 
     @Subroutine("generate-new-buffer-name")
     public static LispString generateNewBufferName (Environment environment, LispString startingName, @Optional LispString ignore) {
@@ -258,11 +261,11 @@ public abstract class BuiltinsBuffer {
         }
     }
 
-    @Subroutine("generate-new-buffer")
+    /*@Subroutine("generate-new-buffer")
     public static LispBuffer generateNewBuffer (Environment environment, LispString startingName) {
         LispString name = generateNewBufferName(environment, startingName, null);
         return environment.createBuffer(name.getData());
-    }
+    } */
 
     @Subroutine(value = "replace-buffer-in-windows", isCmd = true, interactive = "bReplace buffer in windows")
     public static LObject replaceBufferInWindows (Environment environment, @Optional LObject bufferOrName) {
@@ -303,8 +306,8 @@ public abstract class BuiltinsBuffer {
     }
 
 
-    @Subroutine(value = "bury", isCmd = true, interactive = "")
+   /* @Subroutine(value = "bury", isCmd = true, interactive = "")
     public static LObject buryBuffer () {
         return LispSymbol.ourNil;
-    }
+    }   */
 }

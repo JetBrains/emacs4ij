@@ -96,6 +96,12 @@ public class EvaluatorTest {
         }
     }
 
+    @Test
+    public void testEvalGlobalVar() {
+        LObject var = evaluateString("default-directory");
+        org.junit.Assert.assertEquals(LispSymbol.ourNil, var);
+    }
+
     @Ignore
     @Test
     public void testFinder () throws Throwable {
