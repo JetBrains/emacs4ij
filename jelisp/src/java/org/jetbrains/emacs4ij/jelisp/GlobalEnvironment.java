@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -43,9 +44,29 @@ public class GlobalEnvironment extends Environment {
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
-    public static void initialize (LispBufferFactory bufferFactory, Object project, Ide ide) {
+    public static int initialize (LispBufferFactory bufferFactory, Object project, Ide ide) {
+
         myInstance = new GlobalEnvironment(bufferFactory, project, ide);
-        findAndRegisterEmacsFunction(ourFinder);
+
+        if (!myInstance.setConstants()) {
+            //myIde.showMessage("You might have mistaken when you set Emacs Home directory. Try again.");
+            myInstance = null;
+            return -1;
+        }
+
+        myInstance.defineBufferLocalVariables();
+        myInstance.defineGlobalVariables();
+        myInstance.defineUserOptions();
+
+        if (!myInstance.setSubroutines()) {
+            //myIde.showMessage("You might have mistaken when you set Emacs Source directory. Try again.");
+            myInstance = null;
+            return -2;
+        }
+
+        myIde = ide;
+        return 0;
+        //findAndRegisterEmacsFunction(ourFinder);
     }
 
     public static GlobalEnvironment getInstance () {
@@ -56,17 +77,9 @@ public class GlobalEnvironment extends Environment {
         myProject = project;
         myBufferFactory = bufferFactory;
         myOuterEnv = null;
-        myIde = ide;
-        setConstants();
-        defineBufferLocalVariables();
-        defineGlobalVariables();
-        defineUserOptions();
-
-
-        setSubroutines();
     }
 
-    private void addVariable(String name, LObject value, int documentation) {
+    private void addVariable(String name, @Nullable LObject value, int documentation) {
         LispSymbol symbol = new LispSymbol(name, value);
         symbol.setVariableDocumentation(new LispInteger(documentation));
         mySymbols.put(name, symbol);
@@ -79,9 +92,13 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineBufferLocalVariables() {
-        addVariable("mark-active", LispSymbol.ourBufferLocalVariable, 329910);
+        /*addVariable("mark-active", LispSymbol.ourBufferLocalVariable, 329910);
         addVariable("default-directory", LispSymbol.ourBufferLocalVariable, 316938);
-        addVariable("addSymbol", LispSymbol.ourBufferLocalVariable, 2103159);
+        addVariable("addSymbol", LispSymbol.ourBufferLocalVariable, 2103159);  */
+
+        addVariable("mark-active", null, 329910);
+        addVariable("default-directory", null, 316938);
+        addVariable("addSymbol", null, 2103159);
     }
 
     private void defineGlobalVariables() {
@@ -115,22 +132,48 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    private void setSubroutines () {
-        //int n = mySymbols.size();
-//  String cSource = ourEmacsSource.substring(0, ourEmacsSource.lastIndexOf('/')) + "/src";
+    private boolean setSubroutines () {
+       // int n = mySymbols.size();
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        d.scanAll();
+        if (d.scanAll() > 1) {
+            return false;
+        }
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
+
+        return true;
+
        // System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
     }
 
-    private void setConstants() {
+    private boolean setConstants() {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
         mySymbols.put("void", LispSymbol.ourVoid);
-        addVariable("internal-doc-file-name", new LispString("DOC-23.2.1"), 432776);
-        addVariable("doc-directory", new LispString(ourEmacsPath + "/etc/"), 601973);
+
+
+        String docDir = ourEmacsPath + "/etc/";
+        File file = new File (docDir);
+        if (file.isDirectory()) {
+            addVariable("doc-directory", new LispString(docDir), 601973);
+
+            String[] docs = file.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return s.startsWith("DOC-");
+                }
+            });
+            if (docs != null && docs.length == 1) {
+                //"DOC-23.2.1"
+                addVariable("internal-doc-file-name", new LispString(docs[0]), 432776);
+            } else
+                return false;
+        } else
+            return false;
+
+
+        return true;
+
     }
 
     public static void showMessage (String message) {

@@ -4,11 +4,8 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.RoamingType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-
-import javax.swing.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,37 +20,16 @@ import javax.swing.*;
         reloadable = true,
         roamingType = RoamingType.DISABLED
     )
-public class EmacsHomeService implements PersistentStateComponent<EmacsHomeService> {
-    private String myEmacsHome;
-
-    public String getEmacsHome() {
-        return myEmacsHome;
-    }
-
-    public void setEmacsHome(String emacsHome) {
-        myEmacsHome = emacsHome;
-    }
+public class EmacsHomeService extends EmacsService implements PersistentStateComponent<EmacsHomeService> {
 
     public boolean checkSetEmacsHome () {
-        if (myEmacsHome == null || myEmacsHome.equals("")) {
-            Messages.showInfoMessage("You should choose Emacs home directory!", "Emacs4ij");
-            JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
-            fileChooser.setDialogTitle("Select Emacs home directory");
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                String emacsHome = fileChooser.getSelectedFile().getAbsolutePath();
-                setEmacsHome(emacsHome);
-                GlobalEnvironment.ourEmacsPath = emacsHome;
-                return true;
-            } else {
-                Messages.showInfoMessage("You didn't choose Emacs home directory!\nNo command evaluation will be done.", "Emacs4ij");
-                return false;
-            }
-        } else {
-            if (GlobalEnvironment.ourEmacsPath.equals(""))
-                GlobalEnvironment.ourEmacsPath = myEmacsHome;
-            return true;
-        }
+        GlobalEnvironment.ourEmacsPath = checkSetEmacsParameter("home");
+        return !GlobalEnvironment.ourEmacsPath.equals("");
+    }
+
+    public boolean resetEmacsHome () {
+        GlobalEnvironment.ourEmacsPath = reset("home");
+        return !GlobalEnvironment.ourEmacsPath.equals("");
     }
 
     @Override

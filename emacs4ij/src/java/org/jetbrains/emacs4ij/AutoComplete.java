@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -33,13 +32,14 @@ public class AutoComplete extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
-
         if (editor == null)
             return;
-
-        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-        if (!emacsHomeService.checkSetEmacsHome())
+        if (!Checker.isReady())
             return;
+
+        /*EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+        if (!emacsHomeService.checkSetEmacsHome())
+            return;*/
 
        // Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 

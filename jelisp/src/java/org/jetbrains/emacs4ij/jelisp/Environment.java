@@ -2,6 +2,8 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,8 +62,15 @@ public class Environment {
         LispSymbol lispObject = mySymbols.get(name);
 
         if (lispObject != null) {
-            if (lispObject.getValue() != null && lispObject.getValue().equals(LispSymbol.ourBufferLocalVariable)) {
-                lispObject = getBufferCurrentForEditing().getLocalVariable(name);
+            if (!lispObject.isFunction() && lispObject.getValue() == null)// && lispObject.getValue().equals(LispSymbol.ourBufferLocalVariable)) {
+            {
+                try {
+                    lispObject = getBufferCurrentForEditing().getLocalVariable(name);
+                } catch (NoOpenedBufferException e1) {
+                    //return null;
+                } catch (VoidVariableException e2) {
+                    //return null;
+                }
             }
             return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);
         }

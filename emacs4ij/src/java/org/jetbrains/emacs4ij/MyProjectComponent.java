@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -29,23 +30,52 @@ public class MyProjectComponent implements ProjectComponent {
         if (!Checker.isReady()) {
             Checker.isEnvironmentInitialized = false;
             myEnvironment = null;
-            Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by pressing any of Emacs4ij icons.", "Emacs4ij");
+           // Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by clicking on any of Emacs4ij icons.", "Emacs4ij");
         } else {
             initEnvironment();
         }
     }
 
-    public void initEnvironment () {
+    public boolean initEnvironment () {
         if (Checker.isEnvironmentInitialized)
-            return;
+            return true;
+
+        int k;
+        while ((k = GlobalEnvironment.initialize(new BufferCreator(), myProject, new IdeProvider())) < 0) {
+            //Checker.isEnvironmentInitialized = false;
+            if (k == -1) {
+                Messages.showInfoMessage("You might have mistaken when you set Emacs Home directory. Try again.", "Emacs4ij");
+                EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+                if (!emacsHomeService.resetEmacsHome())
+                    return false;
+                continue;
+            }
+            if (k == -2) {
+                Messages.showInfoMessage("You might have mistaken when you set Emacs Source directory. Try again.", "Emacs4ij");
+                EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
+                if (!emacsSourceService.resetEmacsSource())
+                    return false;
+                continue;
+            }
+            return false;
+        }
         Checker.isEnvironmentInitialized = true;
-        GlobalEnvironment.initialize(new BufferCreator(), myProject, new IdeProvider());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = myProject.getProjectFilePath().substring(0, myProject.getProjectFilePath().lastIndexOf("/")+1);
         IdeaBuffer scratchBuffer = new IdeaBuffer(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
         myEnvironment.defineServiceBuffer(scratchBuffer);
+
+        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
+        for (VirtualFile virtualFile : fileEditorManager.getOpenFiles()) {
+            IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
+            myEnvironment.defineBuffer(newBuffer);
+            //System.out.print("open: ");
+            //setHeaders(newBuffer);
+            //myEnvironment.printBuffers();
+        }
+        return true;
     }
 
     public Environment getEnvironment() {
@@ -69,6 +99,9 @@ public class MyProjectComponent implements ProjectComponent {
         myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
+                if (!Checker.isEnvironmentInitialized)
+                    return;
+
                 IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
                 myEnvironment.defineBuffer(newBuffer);
                 System.out.print("open: ");
@@ -78,6 +111,9 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
+                if (!Checker.isEnvironmentInitialized)
+                    return;
+
                 if (!(myEnvironment.isSelectionManagedBySubroutine()))
                     myEnvironment.killBuffer(virtualFile.getName());
                 else myEnvironment.setSelectionManagedBySubroutine(false);
@@ -88,6 +124,9 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) {
+                if (!Checker.isEnvironmentInitialized)
+                    return;
+
                 if (fileEditorManagerEvent.getNewFile() == null) {
                     if (myEnvironment.getBuffersSize() != 1)
                         throw new RuntimeException("the number of opened buffers doesn't correspond to number of opened files!");

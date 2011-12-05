@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import com.intellij.openapi.components.ServiceManager;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,17 +14,19 @@ public abstract class Checker {
 
     public static boolean isReady () {
         //test mode
-        if (GlobalEnvironment.ourEmacsPath.equals("") || GlobalEnvironment.ourEmacsSource.equals(""))
+        /*if (GlobalEnvironment.ourEmacsPath.equals("") || GlobalEnvironment.ourEmacsSource.equals(""))
             return false;
-
-
-        /*EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+                 */
+        if (isEnvironmentInitialized)
+            return true;
+        boolean answer = true;
+        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
         if (!emacsHomeService.checkSetEmacsHome())
-            return false;
+            answer = false;
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (!emacsSourceService.checkSetEmacsSource())
-            return false;*/
+            return false;
 
-        return true;
+        return answer;
     }
 }

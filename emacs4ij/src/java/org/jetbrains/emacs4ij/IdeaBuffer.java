@@ -69,12 +69,8 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
 
     @Override
     public LObject getLocalVariableValue (String name) {
-        for (LispSymbol variable: myLocalVariables) {
-            if (variable.getName().equals(name)) {
-                return variable.getValue();
-            }
-        }
-        throw new VoidVariableException(name);
+        LispSymbol localVar = getLocalVariable(name);
+        return localVar.getValue();
     }
 
     @Override

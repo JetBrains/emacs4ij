@@ -11,20 +11,6 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class DocumentationExtractorTest {
-    /*private Environment environment;
-
-    @Before
-    public void setUp() {
-        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null, null);
-        environment = new Environment(GlobalEnvironment.getInstance());
-    }
-
-    private LObject evaluateString (String lispCode) throws LispException {
-        Parser parser = new Parser();
-        return parser.parseLine(lispCode).evaluate(environment);
-    }     */
 
     @Test
     public void testScanAll() throws Exception {

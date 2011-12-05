@@ -128,21 +128,23 @@ public class DocumentationExtractor {
         File[] cSrc = sourceDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return (s.endsWith(".c"));
+                return (s.endsWith(".c") && !s.startsWith("."));
             }
         });
-        for (File file: cSrc) {
-            if (getUndocumentedSubroutines().isEmpty())
-                    break;
-            scanFile(file);
-        }
+
+        if (cSrc!=null && cSrc.length != 0)
+            for (File file: cSrc) {
+                if (getUndocumentedSubroutines().isEmpty())
+                        break;
+                scanFile(file);
+            }
 
         List<String> str = getUndocumentedSubroutines();
 
-        for (String s: str) {
+        /*for (String s: str) {
             System.out.println("Undocumented: " + s);
-        }
-
+        }        */
+        System.out.println("Undocumented: " + str.size());
         return str.size();
     }
 
