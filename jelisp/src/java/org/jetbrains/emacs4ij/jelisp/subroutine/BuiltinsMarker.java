@@ -66,7 +66,7 @@ public abstract class BuiltinsMarker {
             }
             return marker;
         }
-        throw new WrongTypeArgumentException("marker-or-integer", markerOrInteger.getClass().getSimpleName());
+        throw new WrongTypeArgumentException("number-or-marker-p", markerOrInteger.getClass().getSimpleName());
     }
 
 }

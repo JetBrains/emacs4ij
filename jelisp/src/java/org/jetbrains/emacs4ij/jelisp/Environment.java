@@ -23,6 +23,11 @@ public class Environment {
     private boolean myArgumentsEvaluated = false;
     protected LispBuffer myBufferCurrentForEditing = null;
 
+
+    private boolean isRecording = false;
+    private ArrayList<String> myRecordedSymbols = new ArrayList<String>();
+    private ArrayList<String> myRecordedBuffers = new ArrayList<String>();
+
     // for global environment
     protected Environment () {}
 
@@ -80,7 +85,32 @@ public class Environment {
         return null;
     }
 
+    public void startRecording() {
+        isRecording = true;
+        myRecordedSymbols.clear();
+        myRecordedBuffers.clear();
+    }
+
+    public void stopRecording() {
+        isRecording = false;
+    }
+    
+    public void clearRecorded() {
+        for (String name: myRecordedSymbols) {
+            mySymbols.remove(name);
+        }
+        for (String name: myRecordedBuffers) {
+            GlobalEnvironment.getInstance().removeBuffer(name);
+        }
+        myRecordedSymbols.clear();
+        myRecordedBuffers.clear();
+    }
+
     public void defineSymbol (LispSymbol symbol) {
+        if (isRecording) {
+            myRecordedSymbols.add(symbol.getName());
+        }
+
         mySymbols.put(symbol.getName(), symbol);
     }
 
@@ -102,6 +132,7 @@ public class Environment {
         myOuterEnv.setVariable(symbol);
     }
 
+
     public boolean isMainEnvironment() {
         return myOuterEnv instanceof GlobalEnvironment;
     }
@@ -111,6 +142,9 @@ public class Environment {
     }
 
     public void defineBuffer (LispBuffer buffer) {
+        if (isRecording) {
+            
+        }
         GlobalEnvironment.getInstance().defineBuffer(buffer);
     }
 

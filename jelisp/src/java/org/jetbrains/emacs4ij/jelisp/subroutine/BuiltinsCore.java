@@ -1,9 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.CyclicFunctionIndirectionException;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -101,7 +102,7 @@ public abstract class BuiltinsCore {
         //read args
         //assign args
         //invoke function
-        return null;
+        return LispSymbol.ourNil;
 
     }
 
@@ -116,12 +117,14 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("signal")
-    public static void signal (LispSymbol errorSymbol, LispList data) {
+    public static LObject signal (LispSymbol errorSymbol, LispList data) {
         LObject errorMessage = errorSymbol.getProperty("error-message");
         String msg = '[' + errorSymbol.getName() + "] ";
         msg += (errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error";
         msg += ": " + data.toString();
-        GlobalEnvironment.showErrorMessage(msg);
+//        GlobalEnvironment.showErrorMessage(msg);
+        //todo: this method returns for test only
+        return new LispString(msg);
     }
 
     private static void runFunction (Environment environment, LispSymbol function) {
@@ -175,6 +178,56 @@ public abstract class BuiltinsCore {
             return macroCall;
 
         return trueMacro.macroExpand(environment, ((LispList) macroCall).cdr().getData());
+    }
+
+    @Subroutine("fset")
+    public static LObject functionSet (Environment environment, LispSymbol symbol, LObject function) {
+        symbol.setFunction(function);
+        environment.setVariable(symbol);
+        return function;
+    }
+    
+    private static LObject signalOrNot (LObject noError, String name, String data) {
+        if (noError != null && !noError.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+
+
+        LispSymbol errorSymbol = new LispSymbol(name);
+        errorSymbol.setProperty("error-message", new LispString(name));
+        return signal(errorSymbol, new LispList(new LispSymbol(data)));    
+    }
+    
+    @Subroutine("indirect-function")
+    public static LObject indirectFunction (LObject object, @Optional LObject noError) {
+        if (!(object instanceof LispSymbol)) {
+            return object;
+        }
+        LispSymbol symbol = (LispSymbol) object;
+        ArrayList<String> examined = new ArrayList<String>();
+        examined.add(symbol.getName());
+        
+        while (true) {
+            if (!symbol.isFunction()) {
+                if (noError != null && !noError.equals(LispSymbol.ourNil))
+                    return LispSymbol.ourNil;
+                throw new VoidFunctionException(((LispSymbol) object).getName());
+                //return signalOrNot(noError, "void-function", symbol.getName());
+            }
+            LObject f = symbol.getFunction();
+            if (f instanceof LispSymbol) {
+                if (examined.contains(((LispSymbol) f).getName())) {
+                    if (noError != null && !noError.equals(LispSymbol.ourNil))
+                        return LispSymbol.ourNil;
+                    throw new CyclicFunctionIndirectionException(symbol.getName());
+
+                    //return signalOrNot(noError, "cyclic-function-indirection", symbol.getName());
+                }
+                symbol = (LispSymbol) f;
+                examined.add(symbol.getName());
+                continue;
+            }
+            return f;
+        }
     }
 
     @Subroutine(value = "string-match")

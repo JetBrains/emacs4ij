@@ -136,6 +136,10 @@ public abstract class LispSubroutine {
                     arguments.setValue(i, new LispList());
                     return argsCounter + 1;
                 }
+                if (expectedType.equals(LispSymbol.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
+                    arguments.setValue(i, LispSymbol.ourNil);
+                    return argsCounter + 1;
+                }
                 if (arguments.isOptional(i))
                     return -1;
 

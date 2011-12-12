@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -20,11 +21,17 @@ import org.junit.Test;
 public class BuiltinsListTest {
     private Environment environment;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null, null);
+        GlobalEnvironment.getInstance().startRecording();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        GlobalEnvironment.getInstance().clearRecorded();
         environment = new Environment(GlobalEnvironment.getInstance());
     }
 

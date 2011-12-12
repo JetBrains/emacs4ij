@@ -23,7 +23,8 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 public class EmacsSourceService extends EmacsService implements PersistentStateComponent<EmacsSourceService>  {
 
     public boolean checkSetEmacsSource  () {
-        GlobalEnvironment.ourEmacsSource = checkSetEmacsParameter("source");
+        if (GlobalEnvironment.ourEmacsSource.equals(""))
+            GlobalEnvironment.ourEmacsSource = checkSetEmacsParameter("source");
         return !GlobalEnvironment.ourEmacsSource.equals("");
     }
 

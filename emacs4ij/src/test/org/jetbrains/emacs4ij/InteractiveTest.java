@@ -36,8 +36,12 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         super.setUp();
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
+
+        GlobalEnvironment.initialize(new BufferCreator(), null, new IdeProvider());
+        //GlobalEnvironment.getInstance().startRecording();
+        GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        //GlobalEnvironment.getInstance().clearRecorded();
 
         myFixture.configureByFile(myTestsPath + myFileName);
 

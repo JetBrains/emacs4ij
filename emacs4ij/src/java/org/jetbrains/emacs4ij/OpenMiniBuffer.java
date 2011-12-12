@@ -44,10 +44,18 @@ public class OpenMiniBuffer extends AnAction {
 
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
-        String name = ((EditorImpl)editor).getVirtualFile().getName();
+
+        String name;
+        try {
+            name = ((EditorImpl)editor).getVirtualFile().getName();
+        } catch (NullPointerException exc) {
+            name = GlobalEnvironment.ourScratchBufferName;
+        }
+
         LispBuffer parent = environment.findBuffer(name);
         parent.setEditor(editor);
         environment.updateBuffer(parent);
+
         miniBuffer.setEditor(input.getEditor());
 
         ExecuteCommand command = new ExecuteCommand();

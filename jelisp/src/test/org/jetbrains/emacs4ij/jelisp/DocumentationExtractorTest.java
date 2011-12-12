@@ -19,4 +19,11 @@ public class DocumentationExtractorTest {
         // it is not = alias null
         Assert.assertEquals(1, d.scanAll());
     }
+
+    @Test
+    public void testScanAll2() {
+        String ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
+        d.scanAll2();
+    }
 }

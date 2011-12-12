@@ -25,7 +25,7 @@ public class LispSymbol extends LispAtom {
 
     private String myName = null;
     private LObject myValue = null; //ourVoid;
-    private LispObject myFunction = null;
+    private LObject myFunction = null;
     //private boolean isInteractive = false;
     //private String myInteractiveString;
 
@@ -89,7 +89,7 @@ public class LispSymbol extends LispAtom {
         return myFunction;
     }
 
-    public void setFunction(LispObject myFunction) {
+    public void setFunction(LObject myFunction) {
         this.myFunction = myFunction;
     }
 

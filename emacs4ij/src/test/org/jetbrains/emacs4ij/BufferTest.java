@@ -38,8 +38,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
+
+        GlobalEnvironment.initialize(new BufferCreator(), null, new IdeProvider());
+        //GlobalEnvironment.getInstance().startRecording();
+        GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
+       // GlobalEnvironment.getInstance().clearRecorded();
+
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());

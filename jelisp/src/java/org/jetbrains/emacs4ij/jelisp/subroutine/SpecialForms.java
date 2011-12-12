@@ -2,7 +2,10 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.Error;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -96,7 +99,7 @@ public abstract class SpecialForms {
             if (!(clause instanceof LispList)) {
                 if (clause.equals(LispSymbol.ourNil))
                     continue;
-                throw new WrongTypeArgumentException("LispList", clause.getClass().toString());
+                throw new WrongTypeArgumentException("listp", clause.getClass().toString());
             }
             if (((LispList) clause).isEmpty())
                 continue;
@@ -299,4 +302,79 @@ public abstract class SpecialForms {
         return f;
     }
 
+    private static LObject parseString(String lispCode, Environment environment) throws LispException {
+        Parser parser = new Parser();
+        return parser.parseLine(lispCode);
+    }
+
+    @Subroutine("condition-case")
+    public static LObject conditionCase (Environment environment, LispSymbol var, LObject bodyForm, @Optional LObject... handlers) {
+        ArrayList<LispList> h = new ArrayList<LispList>();
+        if (handlers != null) {
+            for (LObject element: handlers) {
+                try {
+                    LispList handler = (LispList)element;
+                    if (!(handler.car() instanceof LispSymbol))
+                        throw new ClassCastException();
+                    h.add(handler);
+                } catch (ClassCastException e) {
+                    throw new RuntimeException("Invalid condition handler");
+                    //todo: return parseString("(error \"\"Invalid condition handler\")").evaluate(environment);
+                }
+            }
+        }
+        
+        try {
+            return bodyForm.evaluate(environment);
+        } catch (RuntimeException e) {
+
+            Throwable exc = e;
+            while (!(exc instanceof LispException)) {
+                exc = exc.getCause();
+            }
+
+            Error annotation = exc.getClass().getAnnotation(Error.class);
+            if (annotation != null) {
+                for (LispList handler: h) {
+                    LispSymbol errorSymbol = (LispSymbol) handler.car();
+                    if (errorSymbol.getName().equals(annotation.value())) {
+
+                        // todo: unbind all bindings; clean-ups for all unwind-protect forms
+
+
+                        Parser parser = new Parser();
+                        LispList errorInfo = (LispList) parser.parseLine(exc.getMessage());
+                        while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
+                            //todo: make full error list and store it in errorInfo
+                            // make somehow new error message
+                            // errorInfo = new LispList( <new error> errorInfo);
+
+                            GlobalEnvironment.ourCallStack.removeFirst();
+                        }
+
+                        Environment inner = new Environment(environment);
+                        if (!var.equals(LispSymbol.ourNil)) {
+                            LispSymbol test = environment.find(var.getName());
+                            if (test == null) {
+                                //init in given environment
+                                setq(environment, var, errorInfo);
+                            } else {
+                                //create local binding
+                                var.setValue(errorInfo.evaluate(inner));
+                                inner.defineSymbol(var);
+                            }
+                        }
+
+                        LObject result = LispSymbol.ourNil;
+                        for (LObject form: handler.cdr().getData()) {
+                            result = form.evaluate(inner);
+                        }
+
+                        return result;
+                    }
+                }
+            } 
+            throw e;
+        }
+    }
 }

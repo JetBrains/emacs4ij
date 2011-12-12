@@ -78,7 +78,7 @@ public class DocumentationExtractor {
         try {
             reader = new BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("File not found: " + file);
+            throw new RuntimeException("File not found: " + file.getName());
         }
 
         String line = readLine(reader, file.getName());
@@ -146,6 +146,149 @@ public class DocumentationExtractor {
         }        */
         System.out.println("Undocumented: " + str.size());
         return str.size();
+    }
+
+    //------------
+
+    private int n;
+
+    private String lineContainsAnySubroutineDefinition2 (String line) {
+        String defun = "DEFUN (\"";
+        if (line.contains(defun)) {
+            int k = line.indexOf(defun) + defun.length();
+            String subroutine = line.substring(k, line.indexOf("\"", k));
+            return subroutine;
+        }
+        return null;
+    }
+
+    private void scanFile2 (BufferedWriter writer, File file) {
+
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found: " + file.getName());
+        }
+
+        String line = readLine(reader, file.getName());
+        String subroutine;
+        final String myDocStartFlag = "doc: /* ";
+        final String myDocEndFlag = " */";
+        while (line != null) {
+            if ((subroutine = lineContainsAnySubroutineDefinition2(line)) != null) {
+                while (!line.contains(myDocStartFlag)) {
+                    line = readLine(reader, file.getName());
+                    if (line == null) {
+                        try {
+                            String s = "function definition found, but no documentation! File = " + file.getName() + ", function = " + subroutine;
+                            System.out.println(s);
+                            writer.write(s);
+                            n++;
+                        }  catch (IOException e) {
+                            throw new RuntimeException("Write error.");
+                        }
+
+                        try {
+                            reader.close();
+                            writer.flush();
+                            return;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e.getMessage());
+                        }
+                    }
+                }
+
+                if (line.contains(myDocEndFlag)) {
+                    try {
+                        writer.write(" == " + subroutine + " == \n" + line.substring(line.indexOf(myDocStartFlag) + myDocStartFlag.length()-1,
+                                               line.indexOf(myDocEndFlag)) + "\n\n");
+                        n++;
+                    } catch (StringIndexOutOfBoundsException e1) {
+                        throw new RuntimeException("Write error.");
+                    } catch (IOException e) {
+                        throw new RuntimeException("Write error.");
+                    }
+
+                } else {
+                    String doc = line.substring(line.indexOf(myDocStartFlag) + myDocStartFlag.length());
+                    while (true) {
+                        line = readLine(reader, file.getName());
+                        if (line == null) {
+                            try {
+                                String s = "function definition&documentation found, but documentation is not finished! File = " + file.getName() + ", function = " + subroutine;
+                                System.out.println(s);
+                                writer.write(s);
+                                n++;
+                            }  catch (IOException e) {
+                                throw new RuntimeException("Write error.");
+                            }
+
+                            try {
+                                reader.close();
+                                writer.flush();
+                                return;
+                            } catch (IOException e) {
+                                throw new RuntimeException(e.getMessage());
+                            }
+                        }
+                        if (line.contains(myDocEndFlag)) {
+                            doc += '\n' + line.substring(0, line.indexOf(myDocEndFlag)-1);
+
+                            try {
+                                writer.write(" == " + subroutine + " == \n" + doc + "\n\n");
+                                n++;
+                            } catch (IOException e) {
+                                throw new RuntimeException("Write error.");
+                            }
+
+                            break;
+                        }
+                        doc += '\n' + line;
+                    }
+                }
+            }
+            line = readLine(reader, file.getName());
+        }
+        try {
+            reader.close();
+            writer.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public void scanAll2 () {
+        File sourceDir = new File(mySourcePath);
+        File[] cSrc = sourceDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return (s.endsWith(".c") && !s.startsWith("."));
+            }
+        });
+        n = 0;
+        if (cSrc!=null && cSrc.length != 0) {
+            File out = new File(mySourcePath + "/all.txt");
+            BufferedWriter writer;
+            try {
+                out.createNewFile();
+                writer = new BufferedWriter(new FileWriter(out));
+            } catch (IOException e) {
+                throw new RuntimeException("Write error: " + out.getName());
+            }
+
+            for (File file: cSrc) {
+                scanFile2(writer, file);
+            }
+
+            try {
+                writer.write('\n' + Integer.toString(n));
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException("Close error: " + out.getName());
+            }
+        }
+
     }
 
 }

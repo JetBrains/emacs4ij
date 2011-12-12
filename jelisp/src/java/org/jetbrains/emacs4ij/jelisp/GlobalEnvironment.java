@@ -26,8 +26,8 @@ public class GlobalEnvironment extends Environment {
 
     public static String ourEmacsPath = "";
     public static String ourEmacsSource = "";
-    private final LispBufferFactory myBufferFactory;
-    private final Object myProject;
+    private LispBufferFactory myBufferFactory = null;
+    private Object myProject = null;
 
     public static final String ourMiniBufferName = " *Minibuf-0*";
     public static final String ourScratchBufferName = "*scratch*";
@@ -39,14 +39,15 @@ public class GlobalEnvironment extends Environment {
     public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
     private static final String ourFinderPath = "/lisp/help-fns.el";
 
-    private static Ide myIde;
+    private static Ide myIde = null;
+
 
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
-    public static int initialize (LispBufferFactory bufferFactory, Object project, Ide ide) {
+    public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Object project, @Nullable Ide ide) {
 
-        myInstance = new GlobalEnvironment(bufferFactory, project, ide);
+        myInstance = new GlobalEnvironment();
 
         if (!myInstance.setConstants()) {
             //myIde.showMessage("You might have mistaken when you set Emacs Home directory. Try again.");
@@ -65,6 +66,8 @@ public class GlobalEnvironment extends Environment {
         }
 
         myIde = ide;
+        myInstance.myBufferFactory = bufferFactory;
+        myInstance.myProject = project;
         return 0;
         //findAndRegisterEmacsFunction(ourFinder);
     }
@@ -72,13 +75,17 @@ public class GlobalEnvironment extends Environment {
     public static GlobalEnvironment getInstance () {
         return myInstance;
     }
-
-    private GlobalEnvironment (LispBufferFactory bufferFactory, Object project, Ide ide) {
-        myProject = project;
-        myBufferFactory = bufferFactory;
-        myOuterEnv = null;
+    
+    public static void setProject (Object project) {
+        myInstance.myProject = project;
     }
 
+    private GlobalEnvironment () {
+       // myProject = project;
+       // myBufferFactory = bufferFactory;
+        myOuterEnv = null;
+    }
+    
     private void addVariable(String name, @Nullable LObject value, int documentation) {
         LispSymbol symbol = new LispSymbol(name, value);
         symbol.setVariableDocumentation(new LispInteger(documentation));
@@ -126,6 +133,7 @@ public class GlobalEnvironment extends Environment {
 
                 LispSymbol subroutine = new LispSymbol(name);
                 subroutine.setFunction(new Primitive(annotation, documentation.get(name), type));
+
                 mySymbols.put(name, subroutine);
                 //System.out.print(name + ' ');
             }
@@ -337,6 +345,14 @@ public class GlobalEnvironment extends Environment {
         myBuffers.remove(getCurrentBuffer());
     }
 
+    // for test
+    public void removeBuffer(String name) {
+        LispBuffer buffer = findBuffer(name);
+        if (buffer == null)
+            throw new NoBufferException(name);
+        myBuffers.remove(buffer);
+    }
+    
     public void killBuffer (String bufferName) {
         LispBuffer buffer = findBuffer(bufferName);
         if (buffer == null)
@@ -578,5 +594,7 @@ public class GlobalEnvironment extends Environment {
         LispList function = getFunctionFromFile(file, name);
         function.evaluate(myInstance);
     }
+    
+
 
 }

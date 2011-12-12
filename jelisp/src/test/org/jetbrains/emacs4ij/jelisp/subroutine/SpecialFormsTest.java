@@ -5,10 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,11 +20,17 @@ import java.util.List;
 public class SpecialFormsTest {
     private Environment environment;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null, null);
+        GlobalEnvironment.getInstance().startRecording();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        GlobalEnvironment.getInstance().clearRecorded();
         environment = new Environment(GlobalEnvironment.getInstance());
     }
 
@@ -346,6 +349,13 @@ public class SpecialFormsTest {
         evaluateString("(progn (defvar pvar 50))");
         lispObject = evaluateString("pvar");
         Assert.assertEquals(new LispInteger(50), lispObject);
+
+        evaluateString("(setq abc 123)");
+        lispObject = evaluateString("abc");
+        Assert.assertEquals(new LispInteger(123), lispObject);
+        evaluateString("(progn (setq abc 50))");
+        lispObject = evaluateString("abc");
+        Assert.assertEquals(new LispInteger(50), lispObject);
     }
 
     @Test
@@ -390,6 +400,12 @@ public class SpecialFormsTest {
         Assert.assertEquals(new LispInteger(15), lispObject);
         lispObject = evaluateString("a");
         Assert.assertEquals(new LispInteger(15), lispObject);
+    }
+    
+    @Test
+    public void testSetqListValue () {
+        LObject lispObject = evaluateString("(setq a '(b c))");
+        Assert.assertEquals(new LispList(new LispSymbol("b"), new LispSymbol("c")),  lispObject);
     }
 
     //todo: not string documentation
@@ -503,8 +519,82 @@ default-directory
                 new LispString("hello2"),
                 new LispList(new LispSymbol("declare"), new LispList(new LispSymbol("doc-string"), new LispString("hello3"))),
                 LispSymbol.ourNil),
-            fCell);
+                fCell);
     }
+
+
+    private static void conditionCaseErrorChecker (Object error, String expectedMessage) {
+        if (error instanceof LispString) {
+            // from signal
+            Assert.assertEquals(expectedMessage, ((LispString) error).getData());
+            return;
+        }
+        if (error instanceof RuntimeException) {
+            Throwable exc = (Throwable) error;
+            while (exc.getCause() != null) {
+                exc = exc.getCause();
+            }
+            Assert.assertEquals(expectedMessage, exc.getMessage());
+            //return;
+        }
+    }
+
+    // error message must be = (void-variable a)
+    @Test
+    public void testConditionCase_GlobalBinding () {
+        LObject result = evaluateString("(condition-case err (progn (+ a 5)) (void-variable \"message\"))");
+        //LObject result = evaluateString("(condition-case err (+ a 5) (void-variable \"message\"))");
+        Assert.assertEquals(new LispString("message"), result);
+        LispSymbol err = environment.find("err");
+        Assert.assertNotNull(err);
+        //todo: in err must be a LispList!
+        //in this case err.value = (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a))))
+        Assert.assertEquals(new LispList(new LispSymbol("void-variable"), new LispSymbol("a")), err.getValue());
+        
+        //conditionCaseErrorChecker(err, "(void-variable a)");
+    }
+
+    @Test
+    public void testConditionCase2 () {
+        try {
+            evaluateString("(condition-case a (+ a 5) 5 (void-variable \"message\"))");
+        } catch (RuntimeException e) {
+            conditionCaseErrorChecker(e, "Invalid condition handler");
+        }
+    }
+
+    @Ignore
+    @Test
+    public void testConditionCase3 () {
+        // in a must be stored errror-symbol
+        LObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
+        // (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a)))
+        Assert.assertEquals(new LispList(new LispSymbol("wrong-type-argument"),
+                                        new LispSymbol("number-or-marker-p"),
+                                        new LispList(new LispSymbol("wrong-type-argument"),
+                                                     new LispSymbol("number-or-marker-p"),
+                                                new LispList(new LispSymbol("void-variable"), new LispSymbol("a")))),
+                r);
+    }
+
+    @Test
+    public void testConditionCase_LocalBinding () {
+        evaluateString("(setq b 123)");
+        LObject r = evaluateString("(condition-case b (+ a 5) (void-variable (symbol-value 'b)))");
+        Assert.assertEquals(new LispList(new LispSymbol("void-variable"), new LispSymbol("a")), r);
+        Assert.assertEquals(new LispInteger(123), evaluateString("b"));
+    }
+
+    @Test
+    public void testConditionCase_NilBinding () {
+        LObject r = evaluateString("(condition-case nil (+ a 5) (void-variable \"hi\"))");
+        Assert.assertEquals(new LispString("hi"), r);
+        r = evaluateString("(condition-case () (+ a 5) (void-variable \"hi\"))");
+        Assert.assertEquals(new LispString("hi"), r);
+    }
+
+
+
 
 
 

@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,6 +28,13 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
 
+    @BeforeClass
+    public static void runBeforeClass() {
+        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+
+    }
+
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
@@ -34,8 +42,13 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
-        GlobalEnvironment.initialize(new BufferCreator(), myFixture.getProject(), new IdeProvider());
+
+        GlobalEnvironment.initialize(new BufferCreator(), null, new IdeProvider());
+       // GlobalEnvironment.getInstance().startRecording();
+        GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
+       // GlobalEnvironment.getInstance().clearRecorded();
+
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());

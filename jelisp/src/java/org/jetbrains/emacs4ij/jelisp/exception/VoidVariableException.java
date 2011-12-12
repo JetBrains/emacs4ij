@@ -7,8 +7,9 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 10:31 AM
  * To change this template use File | Settings | File Templates.
  */
+@Error("void-variable")
 public class VoidVariableException extends LispException {
     public VoidVariableException (String varName) {
-        super("Void variable " + varName);
+        super("'(void-variable " + varName + ')');
     }
 }

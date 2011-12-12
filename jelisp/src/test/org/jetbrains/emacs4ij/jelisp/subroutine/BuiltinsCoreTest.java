@@ -9,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -21,11 +22,17 @@ import org.junit.Test;
 public class BuiltinsCoreTest {
     private Environment environment;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null, null);
+        GlobalEnvironment.getInstance().startRecording();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        GlobalEnvironment.getInstance().clearRecorded();
         environment = new Environment(GlobalEnvironment.getInstance());
     }
 
@@ -270,6 +277,82 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispSymbol("f"), expansion);
         expansion = evaluateString("(macroexpand '(f))");
         Assert.assertEquals(new LispList(new LispSymbol("f")), expansion);
+    }
+    
+    @Test
+    public void testFset() {
+        LObject f = evaluateString("(fset 'f2 'f1)");
+        Assert.assertEquals(new LispSymbol("f1"), f);
+        LispSymbol f1 = environment.find("f1");
+        Assert.assertNull(f1);
+        LispSymbol f2 = environment.find("f2");
+        Assert.assertNotNull(f2);
+        Assert.assertEquals(new LispSymbol("f1"), f2.getFunction());
+    }
+    
+    @Test
+    public void testFsetWta() {
+        try {
+            evaluateString("(fset 5 10)");
+        } catch (WrongTypeArgumentException e) {
+            // todo:  (wrong-type-argument symbolp 5)
+            Assert.assertEquals("'(wrong-type-argument LispSymbol 5)", e.getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testIndirectFunction() {
+        evaluateString("(defun f1 () (+ 1 2))");
+        evaluateString("(fset 'f2 'f1)");
+        evaluateString("(fset 'g 'f2)");
+        LObject innerF = evaluateString("(indirect-function 'g)");
+        Assert.assertEquals("(lambda nil (+ 1 2))", innerF.toString());
+    }
+
+    @Test
+    public void testIndirectFunctionNumber() {
+        LObject r = evaluateString("(fset 'a 10)");
+        Assert.assertEquals(new LispInteger(10), r);
+        r = evaluateString("(indirect-function 'a)");
+        Assert.assertEquals(new LispInteger(10), r);
+    }
+
+    @Test
+    public void testIndirectFunctionVoid() {
+        evaluateString("(fset 'g 'f)");
+        try {
+            evaluateString("(indirect-function 'g)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-function g)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testIndirectFunctionCycle() {
+        evaluateString("(fset 'f 'g)");
+        evaluateString("(fset 'g 'f)");
+        try {
+            evaluateString("(indirect-function 'g)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(cyclic-function-indirection f)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testIndirectFunctionOverride() {
+        evaluateString("(defun f () (+ 1 2))");
+        LObject innerF = evaluateString("(indirect-function 'f)");
+        LispSymbol f = environment.find("f");
+        Assert.assertEquals(f.getFunction(), innerF);
+        evaluateString("(fset 'f 1)");
+        innerF = evaluateString("(indirect-function 'f)");
+        Assert.assertEquals(new LispInteger(1), innerF);
     }
 
 }

@@ -7,6 +7,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 4:41 PM
  * To change this template use File | Settings | File Templates.
  */
+@Error("invalid-function")
 public class InvalidFunctionException extends LispException {
     public InvalidFunctionException(String functionName) {
         super("Invalid function " + functionName);

@@ -7,8 +7,10 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 6:58 PM
  * To change this template use File | Settings | File Templates.
  */
+
+@Error("wrong-type-argument")
 public class WrongTypeArgumentException extends LispException {
     public WrongTypeArgumentException(String expectedType, String gotValue) {
-        super("Wrong type argument: " + expectedType + " " + gotValue);
+        super("'(wrong-type-argument " + expectedType + " " + gotValue + ')');
     }
 }
