@@ -94,7 +94,7 @@ public class Environment {
     public void stopRecording() {
         isRecording = false;
     }
-    
+
     public void clearRecorded() {
         for (String name: myRecordedSymbols) {
             mySymbols.remove(name);
@@ -143,7 +143,7 @@ public class Environment {
 
     public void defineBuffer (LispBuffer buffer) {
         if (isRecording) {
-            
+
         }
         GlobalEnvironment.getInstance().defineBuffer(buffer);
     }

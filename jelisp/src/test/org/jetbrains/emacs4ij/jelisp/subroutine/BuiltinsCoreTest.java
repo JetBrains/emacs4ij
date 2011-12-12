@@ -355,4 +355,41 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispInteger(1), innerF);
     }
 
+    @Test
+    public void testPrimitiveMinMaxArgsNum() {
+        LispSymbol f = environment.find("indirect-function");
+        Assert.assertEquals(new LispInteger(1), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(new LispInteger(2), ((Primitive)f.getFunction()).getMaxNumArgs());
+
+        f = environment.find("run-hooks");
+        Assert.assertEquals(new LispInteger(0), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(new LispSymbol("many"), ((Primitive) f.getFunction()).getMaxNumArgs());
+
+        f = environment.find("if");
+        Assert.assertEquals(new LispInteger(2), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive)f.getFunction()).getMaxNumArgs());
+    }
+    
+    @Test
+    public void testSubrArityWta() {
+        try {
+            evaluateString("(subr-arity 'if)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument subrp if)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubrArity() {
+        LObject cons = evaluateString("(subr-arity (symbol-function 'if))");
+        Assert.assertEquals(new ConsCell(new LispInteger(2), new LispSymbol("unevalled")), cons);
+        cons = evaluateString("(subr-arity (symbol-function 'indirect-function))");
+        Assert.assertEquals(new ConsCell(new LispInteger(1), new LispInteger(2)), cons);
+        cons = evaluateString("(subr-arity (symbol-function 'run-hooks))");
+        Assert.assertEquals(new ConsCell(new LispInteger(0), new LispSymbol("many")), cons);
+    }
+
+
 }

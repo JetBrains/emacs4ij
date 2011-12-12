@@ -29,48 +29,13 @@ public abstract class BuiltinsCheck {
     }
 
     @Subroutine("subrp")
-    public static LispObject subrp (LispObject functionCell) {
+    public static LispObject subrp (LObject functionCell) {
         if (functionCell == null || !(functionCell instanceof FunctionCell))
             return LispSymbol.ourNil;
         if (functionCell instanceof Primitive)
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
-
-    //todo: it's a compliled lisp function
-   /* @Subroutine("functionp")
-    public static LispObject functionp (Environment environment, LObject function) {
-        if (function == null)
-            return LispSymbol.ourNil;
-        if (function instanceof LispList) {
-            try {
-                new Lambda((LispList) function, environment);
-                return LispSymbol.ourT;
-            } catch (Exception e) {
-                return LispSymbol.ourNil;
-            }
-        }
-        FunctionCell functionCell = null;
-        if (function instanceof LispSymbol) {
-            LispSymbol f = environment.find(((LispSymbol) function).getName());
-            if (f == null || !f.isFunction())
-                return LispSymbol.ourNil;
-            if (f.isSubroutine())
-                return LispSymbol.ourNil;
-            functionCell = f.getFunctionCell();
-        }
-        if (functionCell == null) {
-            try {
-                functionCell = (FunctionCell) function;
-            } catch (ClassCastException e) {
-                return LispSymbol.ourNil;
-            }
-        }
-        FunctionCell.Type type = functionCell.getType();
-        if (type == FunctionCell.Type.BuiltIn || type == FunctionCell.Type.CustomFunction)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
-    } */
 
     @Subroutine("bufferp")
     public static LispObject bufferp (LObject arg) {
@@ -125,6 +90,24 @@ public abstract class BuiltinsCheck {
             return LispSymbol.ourNil;
         return LispSymbol.ourT;
     }
+    
+    @Subroutine("byte-code-function-p")
+    public static LispSymbol byteCodeFunctionP (LObject object) {
+        return LispSymbol.ourNil;
+    }
 
+    @Subroutine("listp")
+    public static LispSymbol listp (LObject object) {
+        if (object instanceof LispList || object instanceof ConsCell || object.equals(LispSymbol.ourNil))
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("consp")
+    public static LispSymbol consp (LObject object) {
+        if (object instanceof ConsCell)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
 
 }

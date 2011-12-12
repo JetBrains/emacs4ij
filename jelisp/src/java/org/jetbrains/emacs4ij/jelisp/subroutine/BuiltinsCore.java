@@ -10,6 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck.subrp;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -187,7 +189,7 @@ public abstract class BuiltinsCore {
         return function;
     }
     
-    private static LObject signalOrNot (LObject noError, String name, String data) {
+   /* private static LObject signalOrNot (LObject noError, String name, String data) {
         if (noError != null && !noError.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
 
@@ -195,7 +197,7 @@ public abstract class BuiltinsCore {
         LispSymbol errorSymbol = new LispSymbol(name);
         errorSymbol.setProperty("error-message", new LispString(name));
         return signal(errorSymbol, new LispList(new LispSymbol(data)));    
-    }
+    }*/
     
     @Subroutine("indirect-function")
     public static LObject indirectFunction (LObject object, @Optional LObject noError) {
@@ -228,6 +230,15 @@ public abstract class BuiltinsCore {
             }
             return f;
         }
+    }
+    
+    @Subroutine("subr-arity")
+    public static LObject subrArity (LObject object) {
+        if (subrp(object).equals(LispSymbol.ourNil))
+            throw new WrongTypeArgumentException("subrp",
+                    object instanceof LispSymbol ? ((LispSymbol) object).getName() : object.toString());
+        Primitive subr = (Primitive)object;
+        return new ConsCell(subr.getMinNumArgs(), subr.getMaxNumArgs());
     }
 
     @Subroutine(value = "string-match")
