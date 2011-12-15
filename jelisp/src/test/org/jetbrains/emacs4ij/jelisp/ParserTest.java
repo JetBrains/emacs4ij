@@ -29,7 +29,7 @@ public class ParserTest {
     @Test
     public void testEmptyList () throws LispException {
         LispObject lispObject = p.parseLine("()");
-        Assert.assertEquals(new LispList(), lispObject);
+        Assert.assertEquals(LispList.list(), lispObject);
     }
     @Test
     public void testEmptyString() throws LispException {
@@ -50,18 +50,18 @@ public class ParserTest {
     @Test
     public void testList () throws LispException {
         LispObject lispObject = p.parseLine("(5)");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5))), lispObject);
     }
     @Test
     public void testComplexList () throws LispException {
         LispObject lispObject = p.parseLine("(5 \"lala\")");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispString("lala"))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("lala"))), lispObject);
     }
 
     @Test
     public void testStringWithSpaceList () throws LispException {
         LispObject lispObject = p.parseLine("(5 \"la la\")");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
     }
 
     @Test(expected = MissingClosingBracketException.class)
@@ -77,25 +77,25 @@ public class ParserTest {
     @Test (expected = UnknownCodeBlockException.class)
     public void testQuotedList () throws LispException {
         LispObject lispObject = p.parseLine("'    (5 \"la la\")");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispSymbol("quote"),  new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
     }
 
     @Test
     public void testStringWithDblQuote () throws LispException {
         LispObject lispObject = p.parseLine("(5 \"la \\\" la\")");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispString("la \" la"))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la \" la"))), lispObject);
     }
 
     @Test
     public void testInnerList () throws LispException {
         LispObject lispObject = p.parseLine("(5 (10))");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispList(Arrays.<LObject>asList(new LispInteger(10))))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), LispList.list(Arrays.<LObject>asList(new LispInteger(10))))), lispObject);
     }
 
     @Test
     public void testListWithMultipleSpaces () throws LispException {
         LispObject lispObject = p.parseLine("(   5    \"la   la\"   )");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispInteger(5), new LispString("la   la"))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la   la"))), lispObject);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class ParserTest {
     @Test
     public void testEmptyListWithComments() throws LispException {
         LispObject lispObject = p.parseLine("(); a comment");
-        Assert.assertEquals(new LispList(), lispObject);
+        Assert.assertEquals(LispList.list(), lispObject);
     }
 
     @Test (expected = MissingClosingBracketException.class)
@@ -190,49 +190,49 @@ public class ParserTest {
     @Test
     public void testEmptyQuote() throws LispException {
         LispObject lispObject = p.parseLine("'");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
     @Test
     public void testQuotedSpace() throws LispException {
         LispObject lispObject = p.parseLine("' ");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
     @Test
     public void testQuotedInt() throws LispException {
         LispObject lispObject = p.parseLine("'5");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispSymbol("quote"),  new LispInteger(5))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  new LispInteger(5))), lispObject);
     }
 
     @Test
     public void testQuotedQuotedList() throws LispException {
         LispObject lispObject = p.parseLine("'(quote 5)");
-        Assert.assertEquals(new LispList(new LispSymbol("quote"), new LispList(new LispSymbol("quote"), new LispInteger(5))), lispObject);
+        Assert.assertEquals(LispList.list(new LispSymbol("quote"), LispList.list(new LispSymbol("quote"), new LispInteger(5))), lispObject);
     }
 
     @Test
     public void testListOfQuotedItems() {
         LispObject lispObject = p.parseLine("('test)");
-        Assert.assertEquals(new LispList(new LispList(new LispSymbol("quote"), new LispSymbol("test"))), lispObject);
+        Assert.assertEquals(LispList.list(LispList.list(new LispSymbol("quote"), new LispSymbol("test"))), lispObject);
     }
 
     @Test
     public void testParsePlus () throws LispException {
         LispObject lispObject = p.parseLine("(+ 2 2)");
-        Assert.assertEquals(new LispList(Arrays.<LObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("+"), new LispInteger(2), new LispInteger(2))), lispObject);
     }
 
     @Test
     public void testParseMultiLineListWithComments () {
         LispObject lispObject = p.parseLine("(rose\nbutterfly;;something like comment\nelefant;;kit\n)");
-        Assert.assertEquals(new LispList(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
+        Assert.assertEquals(LispList.list(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
     }
 
     @Test
     public void testParseMultiLineList () {
         LispObject lispObject = p.parseLine("(rose\nbutterfly\nelefant)");
-        Assert.assertEquals(new LispList(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
+        Assert.assertEquals(LispList.list(new LispSymbol("rose"), new LispSymbol("butterfly"), new LispSymbol("elefant")), lispObject);
     }
 
     @Test
@@ -250,7 +250,7 @@ public class ParserTest {
     @Test
     public void testParseVector() {
         LispObject lispObject = p.parseLine("[1 \"hello\" anna ['q]]");
-        Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(new LispList(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
+        Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(LispList.list(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
     }
 }
 

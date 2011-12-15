@@ -334,11 +334,11 @@ public class GlobalEnvironment extends Environment {
     }
 
     public LispList getBufferList() {
-        LispList bufferList = new LispList();
+        ArrayList<LObject> bufferList = new ArrayList<>();
         for (LispBuffer buffer: myBuffers) {
             bufferList.add(buffer);
         }
-        return bufferList;
+        return LispList.list(bufferList);
     }
 
     public void closeCurrentBuffer () {

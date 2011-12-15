@@ -24,7 +24,7 @@ public class Lambda extends LispObject implements FunctionCell {
     private List<LObject> myBody = new ArrayList<LObject>();
 
     public Lambda (LispList def, Environment environment) {
-        List<LObject> data = def.getData();
+        List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
         try {
@@ -60,7 +60,7 @@ public class Lambda extends LispObject implements FunctionCell {
         if (args.isEmpty())
             return;
 
-        List<LObject> data = args.getData();
+        List<LObject> data = args.toLObjectList();
         String type = "required";
         for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
             LispSymbol argName = (LispSymbol)data.get(i);
@@ -127,7 +127,7 @@ public class Lambda extends LispObject implements FunctionCell {
                     continue;
                 }
                 List<LObject> rest = args.subList(i, argsSize);
-                inner.defineSymbol(new LispSymbol(argName.getName(), new LispList(rest)));
+                inner.defineSymbol(new LispSymbol(argName.getName(), LispList.list(rest)));
                 for (int k = i+1; k!=keys.size(); ++k)
                     inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
                 break;
@@ -150,11 +150,11 @@ public class Lambda extends LispObject implements FunctionCell {
 
     @Override
     public String getInteractiveString () {
-        LispList args = myInteractive.cdr();
+        LispList args = (LispList) myInteractive.cdr();
         if (args.isEmpty())
             return null;
-        if (args.getData().get(0) instanceof LispString) {
-            return ((LispString) args.getData().get(0)).getData();
+        if (args.toLObjectList().get(0) instanceof LispString) {
+            return ((LispString) args.toLObjectList().get(0)).getData();
         }
         return null;
     }

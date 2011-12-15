@@ -4,7 +4,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Observable;
 
@@ -44,7 +43,7 @@ public class Parser extends Observable {
     }
 
     private LispObject parseList() throws LispException {
-        LispList list = new LispList();
+        ArrayList<LObject> data = new ArrayList<>();
         while (true) {
             try {
                 while (getCurrentChar() != ')') {
@@ -52,7 +51,9 @@ public class Parser extends Observable {
                         advance();
                         continue;
                     }
-                    list.add(parseObject());
+                    LObject object = parseObject();
+                    if (object != null)
+                        data.add(object);
                 }
                 break;
             } catch (EndOfLineException e) {
@@ -64,7 +65,7 @@ public class Parser extends Observable {
             }
         }
         advanceTo(getMyCurrentIndex() + 1);
-        return list;
+        return LispList.list(data);
     }
 
     private LispObject parseVector() throws LispException {
@@ -203,7 +204,7 @@ public class Parser extends Observable {
 
         }
         LispObject lispObject = parseObject();
-        return new LispList(Arrays.<LObject>asList(new LispSymbol("quote"), lispObject));
+        return LispList.list(new LispSymbol("quote"), lispObject);
     }
 
     private LispObject parseObject() throws LispException {

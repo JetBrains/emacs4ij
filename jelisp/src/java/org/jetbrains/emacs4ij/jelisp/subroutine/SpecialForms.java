@@ -26,12 +26,16 @@ public abstract class SpecialForms {
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
-        for (LObject var: varList.getData()) {
+        for (LObject var: varList.toLObjectList()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = (LispSymbol) ((LispList) var).car();
-                LispList valueForm = ((LispList) var).cdr();
-                LObject value = valueForm.car().evaluate(inner);
-                symbol.setValue(value);
+                LObject valueForm = ((LispList) var).cdr();
+                if (valueForm instanceof LispList) {
+                    LObject value = ((LispList)valueForm).car().evaluate(inner);
+                    symbol.setValue(value);
+                } else {
+                    symbol.setValue(valueForm.evaluate(inner));
+                }
 
                 if (isStar)
                     inner.defineSymbol(symbol);
@@ -105,7 +109,8 @@ public abstract class SpecialForms {
                 continue;
             LObject condition = ((LispList) clause).car().evaluate(environment);
             if (!condition.equals(LispSymbol.ourNil)) {
-                List<LObject> data = ((LispList) clause).cdr().getData();
+                List<LObject> data = ((LispList) clause).cdr() instanceof LispList ?
+                        ((LispList)((LispList) clause).cdr()).toLObjectList() : new ArrayList<LObject>();
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
                     result = data.get(k).evaluate(environment);
@@ -193,7 +198,7 @@ public abstract class SpecialForms {
     public static LispSymbol defineFunction(Environment environment, LispSymbol name, LObject... body) {
         LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
-        LispList functionCell = new LispList(new LispSymbol("lambda"));
+        LispList functionCell = LispList.list(new LispSymbol("lambda"));
         for (LObject bodyForm: body)
             functionCell.add(bodyForm);
         f.setFunction(functionCell);
@@ -278,7 +283,7 @@ public abstract class SpecialForms {
     public static LispSymbol defmacro (LispSymbol name, LObject argList, @Optional LObject ... body) {
         LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
-        LispList functionCell = new LispList(new LispSymbol("macro"));
+        LispList functionCell = LispList.list(new LispSymbol("macro"));
         functionCell.add(new LispSymbol("lambda"));
         functionCell.add(argList);
         if (body != null) {
@@ -366,7 +371,7 @@ public abstract class SpecialForms {
                         }
 
                         LObject result = LispSymbol.ourNil;
-                        for (LObject form: handler.cdr().getData()) {
+                        for (LObject form: ((LispList)handler.cdr()).toLObjectList()) {
                             result = form.evaluate(inner);
                         }
 

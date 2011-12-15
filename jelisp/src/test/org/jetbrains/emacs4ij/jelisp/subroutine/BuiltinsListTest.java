@@ -40,6 +40,12 @@ public class BuiltinsListTest {
         return parser.parseLine(lispCode).evaluate(environment);
     }
 
+    private Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
+    }
+
     @Test
     public void testInnerLists() throws LispException {
         LObject LObject = evaluateString("(+ 2 (+ 2 3))");
@@ -55,27 +61,51 @@ public class BuiltinsListTest {
         LObject = evaluateString("(car p)");
         Assert.assertEquals(LispSymbol.ourNil, LObject);
     }
+    
+    @Test
+    public void testCarNil() {
+        LObject res = evaluateString("(car nil)");
+        Assert.assertEquals(LispSymbol.ourNil, res);
+    }
 
-    @Test (expected = WrongTypeArgumentException.class)
+    @Test
     public void testCarWrongArg() {
-        evaluateString("(set 'p 'defun)");
-        evaluateString("(car p)");
+        try {
+            evaluateString("(set 'p 'defun)");
+            evaluateString("(car p)");
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            return;
+        }
+        Assert.fail();
     }
 
     @Test
     public void testCdr() {
         evaluateString("(set 'p '(1 2 3))");
         LObject LObject = evaluateString("(cdr p)");
-        Assert.assertEquals(new LispList(new LispInteger(2), new LispInteger(3)), LObject);
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), LObject);
         evaluateString("(set 'p '(1))");
         LObject = evaluateString("(cdr p)");
         Assert.assertEquals(LispSymbol.ourNil, LObject);
     }
 
-    @Test (expected = WrongTypeArgumentException.class)
+    @Test
     public void testCdrWrongArg() {
-        evaluateString("(set 'p 'defun)");
-        evaluateString("(cdr p)");
+        try {
+            evaluateString("(set 'p 'defun)");
+            evaluateString("(cdr p)");
+        } catch (Exception e) {
+            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testCdrNil() {
+        LObject res = evaluateString("(cdr nil)");
+        Assert.assertEquals(LispSymbol.ourNil, res);
     }
 
     @Test
@@ -98,7 +128,7 @@ public class BuiltinsListTest {
         LObject LObject = evaluateString("(memq 4 a)");
         Assert.assertEquals("not exist", LispSymbol.ourNil, LObject);
         LObject = evaluateString("(memq 3 a)");
-        Assert.assertEquals(new LispList(new LispInteger(3)), LObject);
+        Assert.assertEquals(LispList.list(new LispInteger(3)), LObject);
     }
 
     @Test
@@ -106,10 +136,10 @@ public class BuiltinsListTest {
         LObject LObject = evaluateString("(list)");
         Assert.assertEquals("no args", LispSymbol.ourNil, LObject);
         LObject = evaluateString("(list 5 \"test\")");
-        Assert.assertEquals("2 args", new LispList(new LispInteger(5), new LispString("test")), LObject);
+        Assert.assertEquals("2 args", LispList.list(new LispInteger(5), new LispString("test")), LObject);
         LObject = evaluateString("(list nil)");
-        Assert.assertEquals("list of nil -1", new LispList(LispSymbol.ourNil), LObject);
+        Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.ourNil), LObject);
         LObject = evaluateString("(list (list))");
-        Assert.assertEquals("list of nil -2", new LispList(LispSymbol.ourNil), LObject);
+        Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), LObject);
     }
 }

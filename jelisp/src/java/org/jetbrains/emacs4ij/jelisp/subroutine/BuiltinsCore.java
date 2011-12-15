@@ -114,7 +114,7 @@ public abstract class BuiltinsCore {
         ArrayList<LObject> data = new ArrayList<LObject>();
         data.add(function);
         Collections.addAll(data, args);
-        LispList funcall = new LispList(data);
+        LispList funcall = LispList.list(data);
         return funcall.evaluate(environment);
     }
 
@@ -151,7 +151,7 @@ public abstract class BuiltinsCore {
                 continue;
             }
             if (hook.getValue() instanceof LispList) {
-                for (LObject function: ((LispList) hook.getValue()).getData()) {
+                for (LObject function: ((LispList) hook.getValue()).toLObjectList()) {
                     if (!(function instanceof LispSymbol))
                         throw new WrongTypeArgumentException("symbolp", function.toString());
 
@@ -179,7 +179,7 @@ public abstract class BuiltinsCore {
         if (!trueMacro.isMacro())
             return macroCall;
 
-        return trueMacro.macroExpand(environment, ((LispList) macroCall).cdr().getData());
+        return trueMacro.macroExpand(environment, ((LispList)((LispList) macroCall).cdr()).toLObjectList());
     }
 
     @Subroutine("fset")
@@ -238,7 +238,7 @@ public abstract class BuiltinsCore {
             throw new WrongTypeArgumentException("subrp",
                     object instanceof LispSymbol ? ((LispSymbol) object).getName() : object.toString());
         Primitive subr = (Primitive)object;
-        return new ConsCell(subr.getMinNumArgs(), subr.getMaxNumArgs());
+        return LispList.cons(subr.getMinNumArgs(), subr.getMaxNumArgs());
     }
 
     @Subroutine(value = "string-match")

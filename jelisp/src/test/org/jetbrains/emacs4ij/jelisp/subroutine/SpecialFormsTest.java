@@ -54,7 +54,7 @@ public class SpecialFormsTest {
     @Test
     public void testQuotedQuotedList () {
         LObject LObject = evaluateString("'(quote 5)");
-        junit.framework.Assert.assertEquals(new LispList(new LispSymbol("quote"), new LispInteger(5)), LObject);
+        junit.framework.Assert.assertEquals(LispList.list(new LispSymbol("quote"), new LispInteger(5)), LObject);
     }
 
     @Test
@@ -405,7 +405,7 @@ public class SpecialFormsTest {
     @Test
     public void testSetqListValue () {
         LObject lispObject = evaluateString("(setq a '(b c))");
-        Assert.assertEquals(new LispList(new LispSymbol("b"), new LispSymbol("c")),  lispObject);
+        Assert.assertEquals(LispList.list(new LispSymbol("b"), new LispSymbol("c")),  lispObject);
     }
 
     //todo: not string documentation
@@ -415,7 +415,7 @@ public class SpecialFormsTest {
     public void testDefunReturn () {
         LObject funCell = evaluateString("(symbol-function (defun f ()))");
         Assert.assertTrue(funCell instanceof LispList);
-        Assert.assertEquals(new LispList(new LispSymbol("lambda"), LispSymbol.ourNil), funCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("lambda"), LispList.list()), funCell);
     }
 
     @Test
@@ -459,21 +459,21 @@ default-directory
     public void testDefineMacro_Simple() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ())");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list()), fCell);
     }
 
     @Test
     public void testDefineMacro_SimpleIgnoreArgType() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 5)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), new LispInteger(5)), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), new LispInteger(5)), fCell);
     }
 
     @Test
     public void testDefineMacro_WithDocString() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"docstring\" nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("docstring"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("docstring"), LispSymbol.ourNil), fCell);
     }
 
     @Test (expected = WrongNumberOfArgumentsException.class)
@@ -485,39 +485,39 @@ default-directory
     public void testDefineMacro_DeclareAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) \"hello2\" nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello2"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DoubleDeclareAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) \"hello3\" nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello3"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DeclareAfterDocstring() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello2\" (declare (doc-string \"hello1\")) nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello2"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DoubleDeclareAfterDocstring() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello3\" (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"), new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("hello3"), LispSymbol.ourNil), fCell);
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DeclareAfterDocstringAndAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ()  (declare (doc-string \"hello1\")) \"hello2\" (declare (doc-string \"hello3\")) nil)");
         LObject fCell = evaluateString("(symbol-function 'm1)");
-        Assert.assertEquals(new LispList(new LispSymbol("macro"),
+        Assert.assertEquals(LispList.list(new LispSymbol("macro"),
                 new LispSymbol("lambda"),
-                LispSymbol.ourNil,
+                LispList.list(),
                 new LispString("hello2"),
-                new LispList(new LispSymbol("declare"), new LispList(new LispSymbol("doc-string"), new LispString("hello3"))),
+                LispList.list(new LispSymbol("declare"), LispList.list(new LispSymbol("doc-string"), new LispString("hello3"))),
                 LispSymbol.ourNil),
                 fCell);
     }
@@ -549,7 +549,7 @@ default-directory
         Assert.assertNotNull(err);
         //todo: in err must be a LispList!
         //in this case err.value = (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a))))
-        Assert.assertEquals(new LispList(new LispSymbol("void-variable"), new LispSymbol("a")), err.getValue());
+        Assert.assertEquals(LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")), err.getValue());
         
         //conditionCaseErrorChecker(err, "(void-variable a)");
     }
@@ -569,11 +569,11 @@ default-directory
         // in a must be stored errror-symbol
         LObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
         // (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a)))
-        Assert.assertEquals(new LispList(new LispSymbol("wrong-type-argument"),
+        Assert.assertEquals(LispList.list(new LispSymbol("wrong-type-argument"),
                                         new LispSymbol("number-or-marker-p"),
-                                        new LispList(new LispSymbol("wrong-type-argument"),
+                                        LispList.list(new LispSymbol("wrong-type-argument"),
                                                      new LispSymbol("number-or-marker-p"),
-                                                new LispList(new LispSymbol("void-variable"), new LispSymbol("a")))),
+                                                LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")))),
                 r);
     }
 
@@ -581,7 +581,7 @@ default-directory
     public void testConditionCase_LocalBinding () {
         evaluateString("(setq b 123)");
         LObject r = evaluateString("(condition-case b (+ a 5) (void-variable (symbol-value 'b)))");
-        Assert.assertEquals(new LispList(new LispSymbol("void-variable"), new LispSymbol("a")), r);
+        Assert.assertEquals(LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")), r);
         Assert.assertEquals(new LispInteger(123), evaluateString("b"));
     }
 

@@ -50,7 +50,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         myLocalVariables.add(new LispSymbol("is-alive", LispSymbol.ourT));
         myLocalVariables.add(new LispSymbol("my-mark", new LispMarker()));
         myLocalVariables.add(new LispSymbol("mark-active", LispSymbol.ourNil));
-        myLocalVariables.add(new LispSymbol("mark-ring", new LispList()));
+        myLocalVariables.add(new LispSymbol("mark-ring", LispList.list()));
     }
 
     public static void setProject(Project project) {

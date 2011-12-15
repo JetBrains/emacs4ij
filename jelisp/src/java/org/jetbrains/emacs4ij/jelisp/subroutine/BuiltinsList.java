@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -13,14 +14,23 @@ public abstract class BuiltinsList {
     private BuiltinsList() {}
 
     @Subroutine("car")
-    public static LObject car (LispList arg) {
-        return arg.car();
+    public static LObject car (LObject arg) {
+        if (arg.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        if (arg instanceof LispList)
+            return ((LispList) arg).car();
+        throw new WrongTypeArgumentException("listp", arg.toString());
     }
+
     @Subroutine("cdr")
-    public static LispObject cdr (LispList arg) {
-        LispList cdr = arg.cdr();
-        return (cdr.isEmpty()) ? LispSymbol.ourNil : cdr;
+    public static LObject cdr (LObject arg) {
+        if (arg.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        if (arg instanceof LispList)
+            return ((LispList) arg).cdr();
+        throw new WrongTypeArgumentException("listp", arg.toString());
     }
+
     @Subroutine("car-safe")
     public static LObject carSafe (LObject arg) {
         if (arg instanceof LispList)
@@ -28,7 +38,7 @@ public abstract class BuiltinsList {
         return LispSymbol.ourNil;
     }
     @Subroutine("cdr-safe")
-    public static LispObject cdrSafe (LObject arg) {
+    public static LObject cdrSafe (LObject arg) {
         if (arg instanceof LispList)
             return ((LispList) arg).cdr();
         return LispSymbol.ourNil;
@@ -41,7 +51,7 @@ public abstract class BuiltinsList {
     public static LispObject list (@Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
-        LispList list = new LispList(args);
+        LispList list = LispList.list(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
     }
 }

@@ -55,7 +55,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testReturnDefault_StringList () {
-        LObject ret = myMiniBuffer.returnDefault (new LispList(new LispString("hi"), new LispInteger(5)));
+        LObject ret = myMiniBuffer.returnDefault (LispList.list(new LispString("hi"), new LispInteger(5)));
         Assert.assertEquals(new LispSymbol("hi"), ret);
     }
 
@@ -68,7 +68,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testReturnDefault_IntList () {
         try {
-            myMiniBuffer.returnDefault (new LispList(new LispInteger(5), new LispString("hi")));
+            myMiniBuffer.returnDefault (LispList.list(new LispInteger(5), new LispString("hi")));
         } catch (WrongTypeArgumentException e) {
             Assert.assertTrue(true);
             return;
@@ -79,7 +79,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testReturnDefault_ListList () {
         try {
-            myMiniBuffer.returnDefault (new LispList(new LispList(new LispString("wow"), new LispString("hi")), new LispInteger(5), new LispString("hi")));
+            myMiniBuffer.returnDefault (LispList.list(LispList.list(new LispString("wow"), new LispString("hi")), new LispInteger(5), new LispString("hi")));
         } catch (WrongTypeArgumentException e) {
             Assert.assertTrue(true);
             return;
@@ -108,7 +108,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testReturnDefault_EmptyList () {
-        LObject ret = myMiniBuffer.returnDefault (new LispList());
+        LObject ret = myMiniBuffer.returnDefault (LispList.list());
         Assert.assertEquals(new LispSymbol(""), ret);
     }
 

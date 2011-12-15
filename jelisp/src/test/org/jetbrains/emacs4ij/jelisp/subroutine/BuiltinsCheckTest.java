@@ -6,10 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -83,14 +80,19 @@ public class BuiltinsCheckTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'f))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
-      //  todo: lispObject = evaluateString("(functionp (lambda () 1))");
-      //  todo: Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'subrp))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'if))");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(functionp  'subrp)");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Ignore
+    @Test
+    public void FunctionpLambda() {
+        LObject lispObject = evaluateString("(functionp (lambda () 1))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test

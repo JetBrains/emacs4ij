@@ -75,7 +75,6 @@ public class BuiltinsCoreTest {
     public void testPlusEmpty () {
         LObject lispObject = evaluateString("(+)");
         Assert.assertEquals(new LispInteger(0), lispObject);
-
     }
 
     @Test
@@ -243,9 +242,9 @@ public class BuiltinsCoreTest {
         evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
         LObject expansion = evaluateString("(macroexpand '(inc r))");
         //(setq r (+ r 1))
-        Assert.assertEquals(new LispList(new LispSymbol("setq"),
+        Assert.assertEquals(LispList.list(new LispSymbol("setq"),
                                         new LispSymbol("r"),
-                                        new LispList(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
+                                        LispList.list(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
                 expansion);
     }
 
@@ -262,9 +261,9 @@ public class BuiltinsCoreTest {
         evaluateString("(defmacro inc2 (var1 var2) (list 'progn (list 'inc var1) (list 'inc var2)))");
         LObject expansion = evaluateString("(macroexpand '(inc2 r s))");
         //(progn (inc r) (inc s))  ; inc not expanded here.
-        Assert.assertEquals(new LispList(new LispSymbol("progn"),
-                                         new LispList(new LispSymbol("inc"), new LispSymbol("r")),
-                                         new LispList(new LispSymbol("inc"), new LispSymbol("s"))),
+        Assert.assertEquals(LispList.list(new LispSymbol("progn"),
+                                         LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
+                                         LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
                 expansion);
     }
 
@@ -276,7 +275,7 @@ public class BuiltinsCoreTest {
         expansion = evaluateString("(macroexpand 'f)");
         Assert.assertEquals(new LispSymbol("f"), expansion);
         expansion = evaluateString("(macroexpand '(f))");
-        Assert.assertEquals(new LispList(new LispSymbol("f")), expansion);
+        Assert.assertEquals(LispList.list(new LispSymbol("f")), expansion);
     }
     
     @Test
@@ -384,11 +383,11 @@ public class BuiltinsCoreTest {
     @Test
     public void testSubrArity() {
         LObject cons = evaluateString("(subr-arity (symbol-function 'if))");
-        Assert.assertEquals(new ConsCell(new LispInteger(2), new LispSymbol("unevalled")), cons);
+        Assert.assertEquals(LispList.cons(new LispInteger(2), new LispSymbol("unevalled")), cons);
         cons = evaluateString("(subr-arity (symbol-function 'indirect-function))");
-        Assert.assertEquals(new ConsCell(new LispInteger(1), new LispInteger(2)), cons);
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), cons);
         cons = evaluateString("(subr-arity (symbol-function 'run-hooks))");
-        Assert.assertEquals(new ConsCell(new LispInteger(0), new LispSymbol("many")), cons);
+        Assert.assertEquals(LispList.cons(new LispInteger(0), new LispSymbol("many")), cons);
     }
 
 

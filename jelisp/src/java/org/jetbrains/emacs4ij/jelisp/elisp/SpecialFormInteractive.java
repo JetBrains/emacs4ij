@@ -33,7 +33,7 @@ public class SpecialFormInteractive {
 
    // private boolean myNoMatch;
 
-    private LispList myArguments;
+    private ArrayList<LObject> myArguments;
     private String[] myParameters;
     private int myIndex;
 
@@ -41,7 +41,7 @@ public class SpecialFormInteractive {
         myEnvironment = environment;
         myParameters = interactive.split("\\\\n");
         myIndex = 0;
-        myArguments = new LispList();
+        myArguments = new ArrayList<>();
         myNoMatchMessage = ourEmptyMessage;
         myPromptDefaultValue = ourEmptyMessage;
 
@@ -71,7 +71,7 @@ public class SpecialFormInteractive {
     }
 
     public LispList getArguments() {
-        return myArguments;
+        return LispList.list(myArguments);
     }
 
     public String getPromptDefaultValue () {

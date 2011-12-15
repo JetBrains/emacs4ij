@@ -45,6 +45,6 @@ public class BufferedReaderParserTest {
             throw e;
         }
         LispObject lispObject = bufferedReaderParser.parse(s);
-        Assert.assertEquals(new LispList(new LispSymbol("defun"), new LispSymbol("test"), new LispList(), new LispList(new LispSymbol("message"), new LispString("test"))), lispObject);
+        Assert.assertEquals(LispList.list(new LispSymbol("defun"), new LispSymbol("test"), LispList.list(), LispList.list(new LispSymbol("message"), new LispString("test"))), lispObject);
     }
 }

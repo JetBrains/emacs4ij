@@ -98,14 +98,14 @@ public abstract class BuiltinsCheck {
 
     @Subroutine("listp")
     public static LispSymbol listp (LObject object) {
-        if (object instanceof LispList || object instanceof ConsCell || object.equals(LispSymbol.ourNil))
+        if (object instanceof LispList || object.equals(LispSymbol.ourNil))
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
 
     @Subroutine("consp")
     public static LispSymbol consp (LObject object) {
-        if (object instanceof ConsCell)
+        if (object instanceof LispList)
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }

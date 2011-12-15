@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -146,7 +147,7 @@ public class LispSymbol extends LispAtom {
         if (this == o) return true;
         if (o == null) return false;
 
-        if (o.getClass().equals(LispList.class) && ((LispList)o).getData().isEmpty() && this.equals(ourNil))
+        if (o.getClass().equals(LispList.class) && ((LispList)o).isEmpty() && this.equals(ourNil))
             return true;
         if (o.getClass() != getClass())
             return false;
@@ -244,10 +245,10 @@ public class LispSymbol extends LispAtom {
     }
 
     public LispObject getPropertyList() {
-        LispList pList = new LispList();
+        ArrayList<LObject> pList = new ArrayList<>();
         for (LispSymbol key: myProperties.keySet())
-            pList.add(new LispList(key, myProperties.get(key)));
-        return pList;
+            pList.add(LispList.list(key, myProperties.get(key)));
+        return LispList.list(pList);
     }
 
     public LispObject getProperty (String pName) {

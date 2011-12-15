@@ -263,7 +263,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
                     myEnvironment.setArgumentsEvaluated(true);
-                    LObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
+                    LObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLObjectList());
                     hide();
                     viewResult(result);
                     return result;
@@ -282,7 +282,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
             myEnvironment.setArgumentsEvaluated(true);
-            LObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().getData());
+            LObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLObjectList());
             hide();
 
             viewResult(result);

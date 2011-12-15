@@ -17,10 +17,10 @@ public class Macro extends LispObject implements FunctionCell {
     private LispList myDeclaration;
 
     public Macro (LispList def, Environment environment) {
-        List<LObject> data = def.getData();
+        List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
             throw new RuntimeException("wrong macro definition");
-        myLambda = new Lambda(new LispList(data.subList(1, data.size())), environment);
+        myLambda = new Lambda(LispList.list(data.subList(1, data.size())), environment);
     }
 
     public void setDeclaration(LispList declaration) {

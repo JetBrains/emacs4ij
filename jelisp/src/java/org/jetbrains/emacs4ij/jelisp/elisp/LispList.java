@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
@@ -19,39 +20,101 @@ import java.util.List;
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
 public class LispList extends LispObject {
-    private ArrayList<LObject> myData = null;
+    private LObject myCar;
+    private LObject myCdr;
+    
+    private boolean isTrueList;
+    
+    //private ArrayList<LObject> myData = null;
 
-    public LispList() {
+    /*public LispList() {
         myData = new ArrayList<LObject>();
+    } */
+
+    public static LispList list (LObject ... objects) {
+        return new LispList(new ArrayList<LObject>(Arrays.asList(objects)));
     }
 
-    public LispList (LObject ... objects) {
-        myData = new ArrayList<LObject>(Arrays.asList(objects));
+    public static LispList list (List<LObject> data) {
+        return new LispList(data);
     }
 
-    public LispList (List<LObject> data) {
-        myData = new ArrayList<LObject>(data);
-    }
+    public static LispList cons (LObject car, LObject cdr) {
+        return new LispList(car, cdr);
+    } 
 
-    public void add (LObject lispObject) {
-        if (lispObject == null)
+    private LispList (List<LObject> data) {
+        isTrueList = true;
+        if (data == null || data.size() == 0) {
+            myCar = LispSymbol.ourNil;
+            myCdr = LispSymbol.ourNil;
             return;
-        myData.add(lispObject);
+        }
+
+        if (data.get(0) == null) {
+            throw new RuntimeException("Null element in LispList!");
+        }
+
+        myCar = data.get(0);
+        if (data.size() == 1) {
+            myCdr = LispSymbol.ourNil;
+            return;
+        }
+        myCdr = new LispList(data.subList(1, data.size()));
+    }
+
+    private LispList (@NotNull LObject car, @NotNull LObject cdr) {
+        myCar = car;
+        myCdr = cdr;
+        isTrueList = false;
+    }
+
+    private LispList (@NotNull LObject element) {
+        myCar = element;
+        myCdr = LispSymbol.ourNil;
+        isTrueList = true;
+    }
+
+
+    /*private LispList (LObject ... objects) {
+        this(new ArrayList<LObject>(Arrays.asList(objects)));
+    }*/
+        
+   /* private boolean isTrueList () {
+        return isTrueList;
+        /*if (list.cdr() instanceof LispList) {
+            return isTrueList((LispList) list.cdr());
+        }
+        return myCdr.equals(LispSymbol.ourNil);
+    }*/
+
+    public void add (@NotNull LObject lispObject) {
+        if (!isTrueList) {
+            throw new RuntimeException("wrong usage??");
+        }
+        if (myCdr instanceof LispList) {
+            ((LispList) myCdr).add(lispObject);
+            return;
+        }
+        if (myCdr.equals(LispSymbol.ourNil)) {
+            myCdr = new LispList(lispObject);
+            return;
+        }
+        throw new RuntimeException("wrong usage??");
     }
 
     public boolean isEmpty() {
-        return ((myData == null) || myData.isEmpty());
+        return (myCar == LispSymbol.ourNil && myCdr == LispSymbol.ourNil);
     }
 
     /**
-     *
-     *
      * @param environment@return the result of last function execution
      */
     @Override
     public LObject evaluate(Environment environment) {
         if (isEmpty())
             return LispSymbol.ourNil;
+        //todo: if assotiated list?
 
         LispSymbol fun;
         try {
@@ -67,73 +130,76 @@ public class LispList extends LispObject {
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
         }
-
-        List<LObject> data = cdr().getData();
+        List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
     }
 
-    public List<LObject> getData() {
-        return myData;
+    public List<LObject> toLObjectList() {
+        if (!isTrueList) {
+            throw new RuntimeException("wrong usage??");
+        }
+       // if (isEmpty()) return new ArrayList<LObject>();
+        ArrayList<LObject> list = new ArrayList<>();
+        for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+            list.add(((LispList)cdr).car());
+        }
+        return list;
     }
 
     @Override
     public String toString() {
-        if (myData == null || isEmpty())
+        if (isEmpty())
             return "nil";
-        String list = "(";
-        for (LObject lispObject: myData) {
-            list += lispObject.toString() + " ";
+        if (isTrueList) {
+            String list = "(";                        
+            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+                list += ((LispList)cdr).car().toString() + " ";                
+            }
+            return list.trim() + ")";
         }
-        return list.trim() + ")";
+        return '(' + myCar.toString() + " . " + myCdr.toString() + ')';        
+    }
+
+    public LObject car () {
+        return myCar;
+    }
+
+    public LObject cdr () {
+        return myCdr;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null) return false;
-
-        Object list = o;
-        if (getClass() != o.getClass()) {
-            if (o.getClass() == ArrayList.class) {
-                list = new LispList((List<LObject>)o);
-            } else {
-                if (o.getClass() == LispSymbol.class && o.equals(LispSymbol.ourNil) && myData.isEmpty())
-                    return true;
-                return false;
-            }
+        if (!(o instanceof LispList)) {
+            return o == LispSymbol.ourNil && isEmpty();
         }
 
-        LispList lispList = (LispList) list;
-        return !(myData != null ? !myData.equals(lispList.myData) : lispList.myData != null);
+        LispList lispList = (LispList) o;
 
+        if (myCar != null ? !myCar.equals(lispList.myCar) : lispList.myCar != null) return false;
+        if (myCdr != null ? !myCdr.equals(lispList.myCdr) : lispList.myCdr != null) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return myData != null ? myData.hashCode() : 0;
-    }
-
-    public LObject car () {
-        return ((myData.size() == 0) ? LispSymbol.ourNil : myData.get(0)) ;
-    }
-
-    public LispList cdr () {
-        return ((myData.size() < 2) ? new LispList() : new LispList(myData.subList(1, myData.size())));
+        int result = myCar != null ? myCar.hashCode() : 0;
+        result = 31 * result + (myCdr != null ? myCdr.hashCode() : 0);
+        return result;
     }
 
     public LispObject memq (LObject element) {
-        for (int i=0; i!=myData.size(); ++i) {
-            if (myData.get(i).equals(element)) {
-                return new LispList(myData.subList(i, myData.size()));
+        if (!isTrueList) {
+            throw new RuntimeException("wrong usage??");
+        }
+        
+        for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+            if (((LispList)cdr).car().equals(element)) {
+                return (LispList)cdr;
             }
         }
         return LispSymbol.ourNil;
     }
-
-    public int size() {
-        if (isEmpty())
-            return 0;
-        return myData.size();
-    }
-
 }

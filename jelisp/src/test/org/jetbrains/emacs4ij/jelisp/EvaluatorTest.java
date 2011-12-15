@@ -84,7 +84,7 @@ public class EvaluatorTest {
 
             evaluateString("(defun f (a &optional b c &rest d e) d)");
             LObject = evaluateString("(f 1 2 3 4 5)");
-            Assert.assertEquals(new LispList(new LispInteger(4), new LispInteger(5)), LObject);
+            Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(5)), LObject);
 
             evaluateString("(defun f (a &optional b c) b c)");
             LObject = evaluateString("(f 1)");
