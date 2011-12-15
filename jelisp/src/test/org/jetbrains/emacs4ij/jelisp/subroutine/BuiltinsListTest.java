@@ -132,6 +132,16 @@ public class BuiltinsListTest {
     }
 
     @Test
+    public void testMemqCons() {
+        try {
+            evaluateString("(setq x (cons 1 (cons (cons 5 6) 3)))");
+            evaluateString("(memq 6 x)");
+        } catch (Exception e) {
+            Assert.assertEquals("(wrong-type-argument listp 3)", getCause(e).getMessage());
+        }
+    }
+
+    @Test
     public void testList() {
         LObject LObject = evaluateString("(list)");
         Assert.assertEquals("no args", LispSymbol.ourNil, LObject);

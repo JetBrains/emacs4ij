@@ -390,5 +390,38 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispList.cons(new LispInteger(0), new LispSymbol("many")), cons);
     }
 
+    @Test
+    public void testArefVectorOk () {
+        LObject val = evaluateString("(aref '[1 2 3] 0)");
+        Assert.assertEquals(new LispInteger(1), val);
+    }
+
+    @Test
+    public void testArefVectorOutOfBounds () {
+        try {
+            evaluateString("(aref '[1 2 3] 10)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testArefStringOk () {
+        LObject val = evaluateString("(aref \"hi\" 0)");
+        Assert.assertEquals(new LispInteger(104), val);
+    }
+
+    @Test
+    public void testArefStringOutOfBounds () {
+        try {
+            evaluateString("(aref \"hi\" 10)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 
 }

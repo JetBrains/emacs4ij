@@ -8,4 +8,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispFrame extends LObject {
+    public LObject getParameter (String parameter);
 }

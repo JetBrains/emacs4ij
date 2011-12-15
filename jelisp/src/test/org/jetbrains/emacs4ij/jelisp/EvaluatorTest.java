@@ -96,6 +96,7 @@ public class EvaluatorTest {
         }
     }
 
+    @Ignore
     @Test
     public void testEvalGlobalVar() {
         LObject var = evaluateString("default-directory");

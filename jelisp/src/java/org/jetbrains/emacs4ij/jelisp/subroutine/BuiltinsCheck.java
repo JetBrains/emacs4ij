@@ -110,4 +110,11 @@ public abstract class BuiltinsCheck {
         return LispSymbol.ourNil;
     }
 
+    @Subroutine("framep")
+    public static LispSymbol framep (LObject object) {
+        if (object instanceof LispFrame)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
 }

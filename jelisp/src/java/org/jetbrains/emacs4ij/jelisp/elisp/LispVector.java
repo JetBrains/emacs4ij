@@ -61,4 +61,8 @@ public class LispVector extends LispObject {
             return;
         myData.add(object);
     }
+    
+    public LObject get (int index) throws IndexOutOfBoundsException {
+        return myData.get(index);
+    }
 }

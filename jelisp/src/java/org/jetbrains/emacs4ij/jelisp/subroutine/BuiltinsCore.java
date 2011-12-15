@@ -1,12 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.CyclicFunctionIndirectionException;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -242,12 +238,25 @@ public abstract class BuiltinsCore {
         return LispList.cons(subr.getMinNumArgs(), subr.getMaxNumArgs());
     }
 
-    @Subroutine("selected-frame") 
-    public static LObject selectedFrame () {
-        return GlobalEnvironment.getSelectedFrame() == null ?
-                LispSymbol.ourNil : GlobalEnvironment.getSelectedFrame();
+    @Subroutine("aref")
+    public static LObject aRef (LObject array, LispInteger index) {
+        try {
+            if (array instanceof LispVector) {
+                return ((LispVector) array).get(index.getData());
+            }
+            if (array instanceof LispString) {
+                return new LispInteger(((LispString) array).getData().charAt(index.getData()));
+            }
+            //todo: char-table, bool-vector
+            throw new WrongTypeArgumentException("arrayp", array.toString());            
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(array.toString(), index.toString());
+        }
+        
+        
     }
     
+
     @Subroutine(value = "string-match")
     public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {
         return null;

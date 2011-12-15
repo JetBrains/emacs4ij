@@ -52,6 +52,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             myTests.put(fileName, buffer);
             myEnvironment.defineBuffer(buffer);
         }
+        
+   /*     LispFrame current  = new IdeaFrame(WindowManager.getInstance().getIdeFrame(myFixture.getProject()));
+        GlobalEnvironment.onFrameOpened(current);
+        GlobalEnvironment.setSelectedFrame(current);*/
     }
 
     private Throwable getCause (Throwable e) {
@@ -490,9 +494,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testLastBuffer () {
-        LObject lastBuffer = eval("(last-buffer)");
-        Assert.assertTrue(lastBuffer instanceof LispBuffer);
-        Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+        try {
+            LObject lastBuffer = eval("(last-buffer)");
+            Assert.assertTrue(lastBuffer instanceof LispBuffer);
+            Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+        } catch (Exception e) {
+            System.out.println(getCause(e).getMessage());
+        }
     }
 
     @Test

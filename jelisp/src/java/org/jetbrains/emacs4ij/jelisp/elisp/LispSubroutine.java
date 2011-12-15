@@ -22,6 +22,7 @@ public abstract class LispSubroutine {
     private static Class[] myBuiltIns = new Class[] {BuiltinsBuffer.class,
                                                     BuiltinsCheck.class,
                                                     BuiltinsCore.class,
+                                                    BuiltinsFrame.class,
                                                     BuiltinsList.class,
                                                     BuiltinsMark.class,
                                                     BuiltinsMarker.class,
