@@ -33,9 +33,11 @@
     <exclude name="**/*~/**"/>
     <exclude name="**/__pycache__/**"/>
     <exclude name="**/.bundle/**"/>
+    <exclude name="**/*.rbc/**"/>
   </patternset>
   <patternset id="library.patterns">
     <include name="*.zip"/>
+    <include name="*.apk"/>
     <include name="*.war"/>
     <include name="*.egg"/>
     <include name="*.ear"/>
@@ -57,50 +59,53 @@
   
   <!-- JDK definitions -->
   
-  <property name="jdk.bin.idea_ic-107.587" value="${jdk.home.idea_ic-107.587}/../../../lib/jvm/java-6-sun-1.6.0.26/bin"/>
-  <path id="jdk.classpath.idea_ic-107.587">
-    <fileset dir="${jdk.home.idea_ic-107.587}">
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/plugin.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/jsse.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/deploy.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/javaws.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/charsets.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/alt-rt.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/resources.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/management-agent.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/rt.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/jce.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/alt-string.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/ext/sunpkcs11.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/ext/localedata.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/ext/sunjce_provider.jar"/>
-      <include name="../../../lib/jvm/java-6-sun-1.6.0.26/jre/lib/ext/dnsns.jar"/>
+  <property name="jdk.bin.idea_ic-111.69" value="${jdk.home.idea_ic-111.69}/../../../lib/jvm/java-7-oracle/bin"/>
+  <path id="jdk.classpath.idea_ic-111.69">
+    <fileset dir="${jdk.home.idea_ic-111.69}">
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/plugin.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/jsse.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/deploy.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/javaws.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/charsets.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/alt-rt.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/resources.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/management-agent.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/rt.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/jce.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/sunpkcs11.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/zipfs.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/localedata.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/sunjce_provider.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/dnsns.jar"/>
+      <include name="../../../lib/jvm/java-7-oracle/jre/lib/ext/sunec.jar"/>
       <include name="lib/asm.jar"/>
       <include name="lib/jh.jar"/>
       <include name="lib/commons-httpclient-3.1-patched.jar"/>
       <include name="lib/extensions.jar"/>
       <include name="lib/jgoodies-forms.jar"/>
+      <include name="lib/jps-server.jar"/>
       <include name="lib/jna.jar"/>
       <include name="lib/openapi.jar"/>
       <include name="lib/jaxen-1.1.3.jar"/>
-      <include name="lib/winp-1.14.jar"/>
+      <include name="lib/netty-3.2.5.Final.jar"/>
       <include name="lib/idea.jar"/>
+      <include name="lib/sanselan-0.98-snapshot.jar"/>
       <include name="lib/org.eclipse.jdt.core_3.5.2.v_981_R35x.jar"/>
+      <include name="lib/optimizedFileManager.jar"/>
       <include name="lib/boot.jar"/>
       <include name="lib/xbean.jar"/>
       <include name="lib/commons-logging-1.1.1.jar"/>
       <include name="lib/jna-utils.jar"/>
       <include name="lib/velocity.jar"/>
-      <include name="lib/cglib-2.2.jar"/>
       <include name="lib/javac2.jar"/>
       <include name="lib/nanoxml-2.2.3.jar"/>
+      <include name="lib/cli-10.jar"/>
       <include name="lib/trove4j.jar"/>
       <include name="lib/jsr173_1.0_api.jar"/>
       <include name="lib/trove4j_src.jar"/>
       <include name="lib/commons-lang-2.4.jar"/>
       <include name="lib/xerces.jar"/>
       <include name="lib/commons-net-2.0-patched.jar"/>
-      <include name="lib/junit-4.8.jar"/>
       <include name="lib/resources.jar"/>
       <include name="lib/looks-2.2.2.jar"/>
       <include name="lib/bootstrap.jar"/>
@@ -111,33 +116,40 @@
       <include name="lib/util.jar"/>
       <include name="lib/automaton.jar"/>
       <include name="lib/xmlrpc-2.0.jar"/>
+      <include name="lib/protobuf-2.3.0.jar"/>
+      <include name="lib/junit-4.10.jar"/>
       <include name="lib/dtdparser113.jar"/>
       <include name="lib/resolver.jar"/>
+      <include name="lib/swingx-core-1.6.2.jar"/>
       <include name="lib/picocontainer.jar"/>
+      <include name="lib/winp-1.16.jar"/>
       <include name="lib/jdom.jar"/>
       <include name="lib/junit.jar"/>
       <include name="lib/commons-collections.jar"/>
       <include name="lib/resources_en.jar"/>
       <include name="lib/idea_rt.jar"/>
+      <include name="lib/nekohtml-1.9.14.jar"/>
       <include name="lib/guava-r09.jar"/>
+      <include name="lib/cglib-2.2.2.jar"/>
+      <include name="lib/rngom-20051226-patched.jar"/>
       <include name="lib/oromatcher.jar"/>
       <include name="lib/asm-commons.jar"/>
       <include name="lib/microba.jar"/>
       <include name="lib/annotations.jar"/>
+      <include name="lib/trang-core.jar"/>
       <include name="lib/log4j.jar"/>
+      <include name="lib/isorelax.jar"/>
       <include name="lib/xstream.jar"/>
       <include name="lib/xpp3-1.1.4-min.jar"/>
+      <include name="lib/jing.jar"/>
       <include name="lib/forms_rt.jar"/>
       <include name="lib/icons.jar"/>
     </fileset>
   </path>
   
-  <property name="project.jdk.home" value="${jdk.home.idea_ic-107.587}"/>
-  <property name="project.jdk.bin" value="${jdk.bin.idea_ic-107.587}"/>
-  <property name="project.jdk.classpath" value="jdk.classpath.idea_ic-107.587"/>
-  
-  
-  <!-- Project Libraries -->
+  <property name="project.jdk.home" value="${jdk.home.idea_ic-111.69}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.idea_ic-111.69}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.idea_ic-111.69"/>
   <!-- Register Custom Compiler Taskdefs -->
   <property name="javac2.home" value="${idea.home}/lib"/>
   <path id="javac2.classpath">

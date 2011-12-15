@@ -15,12 +15,15 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
  * To change this template use File | Settings | File Templates.
  */
 @State(
-        name="EmacsHomeDirectory",
+        name="EmacsHome",
         storages = @Storage(id="other", file = "$APP_CONFIG$/other.xml"),
         reloadable = true,
         roamingType = RoamingType.DISABLED
     )
+
 public class EmacsHomeService extends EmacsService implements PersistentStateComponent<EmacsHomeService> {
+
+
 
     public boolean checkSetEmacsHome () {
         if (GlobalEnvironment.ourEmacsPath.equals(""))

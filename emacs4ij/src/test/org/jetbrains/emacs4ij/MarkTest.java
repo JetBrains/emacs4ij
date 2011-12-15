@@ -43,9 +43,10 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
 
-        GlobalEnvironment.initialize(new BufferCreator(), null, new IdeProvider());
+        GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
        // GlobalEnvironment.getInstance().startRecording();
-        GlobalEnvironment.setProject(myFixture.getProject());
+
+       // GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
        // GlobalEnvironment.getInstance().clearRecorded();
 

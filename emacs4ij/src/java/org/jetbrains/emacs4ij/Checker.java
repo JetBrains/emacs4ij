@@ -10,14 +10,14 @@ import com.intellij.openapi.components.ServiceManager;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class Checker {
-    public static boolean isEnvironmentInitialized;
+    public static boolean isGlobalEnvironmentInitialized;
 
     public static boolean isReady () {
         //test mode
         /*if (GlobalEnvironment.ourEmacsPath.equals("") || GlobalEnvironment.ourEmacsSource.equals(""))
             return false;
                  */
-        if (isEnvironmentInitialized)
+        if (isGlobalEnvironmentInitialized)
             return true;
         boolean answer = true;
         EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);

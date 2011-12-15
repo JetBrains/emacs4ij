@@ -2,9 +2,9 @@
 <project name="module_jelisp" default="compile.module.jelisp">
   <dirname property="module.jelisp.basedir" file="${ant.file.module_jelisp}"/>
   
-  <property name="module.jdk.home.jelisp" value="${project.jdk.home}"/>
-  <property name="module.jdk.bin.jelisp" value="${project.jdk.bin}"/>
-  <property name="module.jdk.classpath.jelisp" value="${project.jdk.classpath}"/>
+  <property name="module.jdk.home.jelisp" value="${jdk.home.idea_ic-111.69}"/>
+  <property name="module.jdk.bin.jelisp" value="${jdk.bin.idea_ic-111.69}"/>
+  <property name="module.jdk.classpath.jelisp" value="jdk.classpath.idea_ic-111.69"/>
   
   <property name="compiler.args.jelisp" value="${compiler.args}"/>
   
@@ -26,13 +26,11 @@
   <path id="jelisp.module.classpath">
     <path refid="${module.jdk.classpath.jelisp}"/>
     <pathelement location="${jelisp.output.dir}"/>
-    <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
   </path>
   
   <path id="jelisp.runtime.module.classpath">
     <pathelement location="${jelisp.testoutput.dir}"/>
     <pathelement location="${jelisp.output.dir}"/>
-    <pathelement location="${idea.home}/lib/junit-4.8.jar"/>
   </path>
   
   

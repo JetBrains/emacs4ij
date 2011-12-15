@@ -37,21 +37,29 @@ public abstract class BuiltinsList {
             return ((LispList)arg).car();
         return LispSymbol.ourNil;
     }
+    
     @Subroutine("cdr-safe")
     public static LObject cdrSafe (LObject arg) {
         if (arg instanceof LispList)
             return ((LispList) arg).cdr();
         return LispSymbol.ourNil;
     }
+    
     @Subroutine("memq")
     public static LispObject memq (LObject element, LispList list) {
         return list.memq(element);
     }
+    
     @Subroutine("list")
     public static LispObject list (@Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
         LispList list = LispList.list(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
+    }
+    
+    @Subroutine("cons")
+    public static LObject cons (LObject car, LObject cdr) {
+        return LispList.cons(car, cdr);
     }
 }

@@ -15,7 +15,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
  * To change this template use File | Settings | File Templates.
  */
 @State(
-        name="EmacsSourceDirectory",
+        name="EmacsSource",
         storages = @Storage(id="other", file = "$APP_CONFIG$/other.xml"),
         reloadable = true,
         roamingType = RoamingType.DISABLED

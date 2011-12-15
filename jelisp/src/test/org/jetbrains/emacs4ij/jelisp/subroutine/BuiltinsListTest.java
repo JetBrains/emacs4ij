@@ -25,7 +25,7 @@ public class BuiltinsListTest {
     public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null, null);
+        GlobalEnvironment.initialize(null,  null);
         GlobalEnvironment.getInstance().startRecording();
     }
 
@@ -141,5 +141,11 @@ public class BuiltinsListTest {
         Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.ourNil), LObject);
         LObject = evaluateString("(list (list))");
         Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), LObject);
+    }
+    
+    @Test
+    public void testCons() {
+        LObject cons = evaluateString("(cons (+ 4 5) \"hi\")");
+        Assert.assertEquals(LispList.cons(new LispInteger(9), new LispString("hi")), cons);
     }
 }

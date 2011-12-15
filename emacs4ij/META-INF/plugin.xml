@@ -8,6 +8,9 @@
 
   <application-components>
     <!-- Add your application components here -->
+      <component>
+          <implementation-class>org.jetbrains.emacs4ij.MyApplicationComponent</implementation-class>
+      </component>
   </application-components>
 
   <project-components>

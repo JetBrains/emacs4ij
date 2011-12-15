@@ -7,5 +7,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * Time: 1:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispFrame {
+public interface LispFrame extends LObject {
 }

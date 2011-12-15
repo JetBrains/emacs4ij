@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
@@ -24,8 +23,8 @@ public class BufferCreator implements LispBufferFactory {
         // If the name begins with a space, the buffer initially disables undo information recording (see Undo).
         // http://www.gnu.org/software/emacs/elisp/html_node/Creating-Buffers.html#Creating-Buffers
 
-        GlobalEnvironment global = GlobalEnvironment.getInstance();
-        String baseDir = ((LispString)global.getBufferCurrentForEditing().getLocalVariableValue("directory")).getData();
-        return new IdeaBuffer(global, bufferName, baseDir, null);
+       // GlobalEnvironment global = GlobalEnvironment.getInstance();
+        String baseDir = ((LispString)environment.getBufferCurrentForEditing().getLocalVariableValue("default-directory")).getData();
+        return new IdeaBuffer(environment, bufferName, baseDir, null);
     }
 }

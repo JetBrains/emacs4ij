@@ -17,6 +17,14 @@ import javax.swing.*;
 public abstract class EmacsService  {
     protected String myEmacsParameter;
 
+    public String getEmacsParameter() {
+        return myEmacsParameter;
+    }
+
+    public void setEmacsParameter(String myEmacsParameter) {
+        this.myEmacsParameter = myEmacsParameter;
+    }
+
     private void showInfoMessage (final String name) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override

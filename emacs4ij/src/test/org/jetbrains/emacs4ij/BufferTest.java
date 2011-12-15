@@ -39,9 +39,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myTestFiles = (new File (myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();
 
-        GlobalEnvironment.initialize(new BufferCreator(), null, new IdeProvider());
+        GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
         //GlobalEnvironment.getInstance().startRecording();
-        GlobalEnvironment.setProject(myFixture.getProject());
+
+        //GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
        // GlobalEnvironment.getInstance().clearRecorded();
 
@@ -546,9 +547,13 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testGenerateNewBuffer () {
-        LObject newBuffer = eval("(generate-new-buffer \"1.txt\")");
-        LispBuffer buffer = myEnvironment.createBuffer("1.txt<2>");
-        Assert.assertEquals(buffer, newBuffer);
+        try {
+            LObject newBuffer = eval("(generate-new-buffer \"1.txt\")");
+            LispBuffer buffer = myEnvironment.createBuffer("1.txt<2>");
+            Assert.assertEquals(buffer, newBuffer);
+        } catch (Exception e) {
+            Assert.fail(getCause(e).getMessage());
+        }
     }
 
     @Test
@@ -579,13 +584,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getBuffersSize(), 2);
         Assert.assertTrue(myEnvironment.isDead("3.txt"));
     }
-
-    @Test
-    public void testEvalBufferLocalVar() {
-        LObject var = eval("default-directory");
-        org.junit.Assert.assertEquals(new LispString("qwas"), var);
-    }
-
 }
 
 

@@ -33,9 +33,6 @@ public class LispSymbol extends LispAtom {
 
     private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
 
-    //for subroutines only
-    //private String myDocumentation = null;
-
     public LispSymbol(String myName) {
         this.myName = myName;
     }

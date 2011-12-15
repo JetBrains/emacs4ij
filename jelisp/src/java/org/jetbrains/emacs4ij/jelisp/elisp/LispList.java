@@ -69,12 +69,12 @@ public class LispList extends LispObject {
         isTrueList = false;
     }
 
-    private LispList (@NotNull LObject element) {
+   /* private LispList (@NotNull LObject element) {
         myCar = element;
         myCdr = LispSymbol.ourNil;
         isTrueList = true;
     }
-
+     */
 
     /*private LispList (LObject ... objects) {
         this(new ArrayList<LObject>(Arrays.asList(objects)));
@@ -88,7 +88,7 @@ public class LispList extends LispObject {
         return myCdr.equals(LispSymbol.ourNil);
     }*/
 
-    public void add (@NotNull LObject lispObject) {
+    /*public void add (@NotNull LObject lispObject) {
         if (!isTrueList) {
             throw new RuntimeException("wrong usage??");
         }
@@ -101,7 +101,7 @@ public class LispList extends LispObject {
             return;
         }
         throw new RuntimeException("wrong usage??");
-    }
+    }  */
 
     public boolean isEmpty() {
         return (myCar == LispSymbol.ourNil && myCdr == LispSymbol.ourNil);
@@ -201,5 +201,10 @@ public class LispList extends LispObject {
             }
         }
         return LispSymbol.ourNil;
+    }
+    
+    public LObject nReverse () {
+        //LispList reversed
+        return null;
     }
 }

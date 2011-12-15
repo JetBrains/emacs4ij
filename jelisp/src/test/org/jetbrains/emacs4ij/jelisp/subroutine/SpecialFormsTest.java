@@ -24,7 +24,7 @@ public class SpecialFormsTest {
     public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-        GlobalEnvironment.initialize(null, null, null);
+        GlobalEnvironment.initialize(null, null);
         GlobalEnvironment.getInstance().startRecording();
     }
 

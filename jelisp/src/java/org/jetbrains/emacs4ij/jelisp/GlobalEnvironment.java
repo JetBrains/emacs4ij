@@ -24,6 +24,9 @@ public class GlobalEnvironment extends Environment {
     private ArrayList<LispBuffer> myDeadBuffers = new ArrayList<LispBuffer>();
     private ArrayList<LispBuffer> myServiceBuffers = new ArrayList<LispBuffer>();
 
+    private ArrayList<LispFrame> myFrames = new ArrayList<>();
+    private static LispFrame myCurrentFrame = null;
+
     public static String ourEmacsPath = "";
     public static String ourEmacsSource = "";
     private LispBufferFactory myBufferFactory = null;
@@ -45,7 +48,7 @@ public class GlobalEnvironment extends Environment {
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
-    public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Object project, @Nullable Ide ide) {
+    public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
 
         myInstance = new GlobalEnvironment();
 
@@ -67,7 +70,7 @@ public class GlobalEnvironment extends Environment {
 
         myIde = ide;
         myInstance.myBufferFactory = bufferFactory;
-        myInstance.myProject = project;
+        //myInstance.myProject = project;
         return 0;
         //findAndRegisterEmacsFunction(ourFinder);
     }
@@ -76,9 +79,9 @@ public class GlobalEnvironment extends Environment {
         return myInstance;
     }
     
-    public static void setProject (Object project) {
+   /* public static void setProject (Object project) {
         myInstance.myProject = project;
-    }
+    }*/
 
     private GlobalEnvironment () {
        // myProject = project;
@@ -105,13 +108,14 @@ public class GlobalEnvironment extends Environment {
 
         addVariable("mark-active", null, 329910);
         addVariable("default-directory", null, 316938);
-        addVariable("addSymbol", null, 2103159);
+        addVariable("mark-ring", null, 2103159);
     }
 
     private void defineGlobalVariables() {
         addVariable("load-history", LispSymbol.ourNil, 550505);
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
-        addVariable("default-directory", LispSymbol.ourNil, 316938);
+
+       // addVariable("default-directory", LispSymbol.ourNil, 316938);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
@@ -196,9 +200,9 @@ public class GlobalEnvironment extends Environment {
         return myBufferFactory;
     }
 
-    public Object getProject () {
+    /*public Object getProject () {
         return myProject;
-    }
+    }*/
 
     public LispBuffer createBuffer (String bufferName) {
         LispBuffer buffer = myBufferFactory.createBuffer(bufferName, this);
@@ -593,6 +597,28 @@ public class GlobalEnvironment extends Environment {
     public static void findAndRegisterEmacsFunction (String file, String name) {
         LispList function = getFunctionFromFile(file, name);
         function.evaluate(myInstance);
+    }
+
+    public static void onFrameOpened (LispFrame newFrame) {
+        if (myInstance == null)
+            return;
+        myInstance.myFrames.add(newFrame);
+    }
+    
+    public static void onFrameReleased (LispFrame frame) {
+        if (myInstance == null)
+            return;
+        myInstance.myFrames.remove(frame);
+    }
+    
+    public static void setSelectedFrame (LispFrame frame) {
+        myCurrentFrame = frame;
+    }
+    
+    public static LispFrame getSelectedFrame() {
+        if (myInstance == null)
+            return null;
+        return myCurrentFrame;
     }
     
 

@@ -9,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -198,10 +199,10 @@ public abstract class SpecialForms {
     public static LispSymbol defineFunction(Environment environment, LispSymbol name, LObject... body) {
         LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
-        LispList functionCell = LispList.list(new LispSymbol("lambda"));
-        for (LObject bodyForm: body)
-            functionCell.add(bodyForm);
-        f.setFunction(functionCell);
+        ArrayList<LObject> data = new ArrayList<>();
+        data.add(new LispSymbol("lambda"));
+        Collections.addAll(data, body);
+        f.setFunction(LispList.list(data));
         GlobalEnvironment.getInstance().defineSymbol(f);
         return f;
     }
@@ -283,26 +284,27 @@ public abstract class SpecialForms {
     public static LispSymbol defmacro (LispSymbol name, LObject argList, @Optional LObject ... body) {
         LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
-        LispList functionCell = LispList.list(new LispSymbol("macro"));
-        functionCell.add(new LispSymbol("lambda"));
-        functionCell.add(argList);
+        ArrayList<LObject> data = new ArrayList<>();
+        data.add(new LispSymbol("macro"));
+        data.add(new LispSymbol("lambda"));
+        data.add(argList);
         if (body != null) {
             int k = 0;
             if (body.length != 0) {
                 k = getAllDeclareForms(k, body);
                 if (k == 0) {
                     if (body[0] instanceof LispString) {
-                        functionCell.add(body[0]);
+                        data.add(body[0]);
                         k = getAllDeclareForms(1, body);
                     }
                 }
             }
 
             for (; k < body.length; ++k) {
-                functionCell.add(body[k]);
+                data.add(body[k]);
             }
         }
-        f.setFunction(functionCell);
+        f.setFunction(LispList.list(data));
         GlobalEnvironment.getInstance().defineSymbol(f);
         return f;
     }

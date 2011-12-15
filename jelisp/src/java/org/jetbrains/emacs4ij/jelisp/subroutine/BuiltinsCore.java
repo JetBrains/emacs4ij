@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.CyclicFunctionIndirectionException;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
@@ -179,7 +180,7 @@ public abstract class BuiltinsCore {
         if (!trueMacro.isMacro())
             return macroCall;
 
-        return trueMacro.macroExpand(environment, ((LispList)((LispList) macroCall).cdr()).toLObjectList());
+        return trueMacro.macroExpand(environment, ((LispList) ((LispList) macroCall).cdr()).toLObjectList());
     }
 
     @Subroutine("fset")
@@ -241,6 +242,12 @@ public abstract class BuiltinsCore {
         return LispList.cons(subr.getMinNumArgs(), subr.getMaxNumArgs());
     }
 
+    @Subroutine("selected-frame") 
+    public static LObject selectedFrame () {
+        return GlobalEnvironment.getSelectedFrame() == null ?
+                LispSymbol.ourNil : GlobalEnvironment.getSelectedFrame();
+    }
+    
     @Subroutine(value = "string-match")
     public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {
         return null;

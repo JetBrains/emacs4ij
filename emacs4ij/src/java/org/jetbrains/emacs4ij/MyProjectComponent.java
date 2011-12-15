@@ -1,12 +1,10 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -28,38 +26,21 @@ public class MyProjectComponent implements ProjectComponent {
         myProject = project;
         IdeaBuffer.setProject(project);
         if (!Checker.isReady()) {
-            Checker.isEnvironmentInitialized = false;
+            Checker.isGlobalEnvironmentInitialized = false;
             myEnvironment = null;
-           // Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by clicking on any of Emacs4ij icons.", "Emacs4ij");
+            // Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by clicking on any of Emacs4ij icons.", "Emacs4ij");
         } else {
             initEnvironment();
         }
     }
 
     public boolean initEnvironment () {
-        if (Checker.isEnvironmentInitialized)
+        if (myEnvironment != null)
             return true;
 
-        int k;
-        while ((k = GlobalEnvironment.initialize(new BufferCreator(), myProject, new IdeProvider())) < 0) {
-            //Checker.isEnvironmentInitialized = false;
-            if (k == -1) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Home directory. Try again.", "Emacs4ij");
-                EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-                if (!emacsHomeService.resetEmacsHome())
-                    return false;
-                continue;
-            }
-            if (k == -2) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Source directory. Try again.", "Emacs4ij");
-                EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
-                if (!emacsSourceService.resetEmacsSource())
-                    return false;
-                continue;
-            }
+        if (!MyApplicationComponent.initGlobalEnvironment())
             return false;
-        }
-        Checker.isEnvironmentInitialized = true;
+
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
@@ -99,7 +80,7 @@ public class MyProjectComponent implements ProjectComponent {
         myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                if (!Checker.isEnvironmentInitialized)
+                if (!Checker.isGlobalEnvironmentInitialized)
                     return;
 
                 IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
@@ -111,7 +92,7 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                if (!Checker.isEnvironmentInitialized)
+                if (!Checker.isGlobalEnvironmentInitialized)
                     return;
 
                 if (!(myEnvironment.isSelectionManagedBySubroutine()))
@@ -124,7 +105,7 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) {
-                if (!Checker.isEnvironmentInitialized)
+                if (!Checker.isGlobalEnvironmentInitialized)
                     return;
 
                 if (fileEditorManagerEvent.getNewFile() == null) {
