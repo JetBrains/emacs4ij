@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,14 +151,18 @@ public class LispList extends LispObject {
     public String toString() {
         if (isEmpty())
             return "nil";
-        if (isTrueList) {
-            String list = "(";                        
-            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-                list += ((LispList)cdr).car().toString() + " ";                
+        String list = "(";
+        for (LObject cdr = this; !cdr.equals(LispSymbol.ourNil); ) {
+            if (cdr instanceof LispList) {
+                list += ((LispList)cdr).car().toString() + " ";
+                cdr = ((LispList)cdr).cdr();
+                continue;
             }
-            return list.trim() + ")";
+            list += ". " + cdr.toString();
+            cdr = LispSymbol.ourNil;
         }
-        return '(' + myCar.toString() + " . " + myCdr.toString() + ')';        
+        return list.trim() + ")";
+        //return '(' + myCar.toString() + " . " + myCdr.toString() + ')';
     }
 
     public LObject car () {
@@ -202,9 +207,28 @@ public class LispList extends LispObject {
         }
         return LispSymbol.ourNil;
     }
+
+    public void setCar (LObject car) {
+        myCar = car;
+    }
     
+    public void setCdr (LObject cdr) {
+        myCdr = cdr;
+    }
+        
     public LObject nReverse () {
-        //LispList reversed
-        return null;
+        if (isEmpty())
+            return this;
+        LObject prev = LispSymbol.ourNil;
+        LObject tail = this;
+        while (tail != LispSymbol.ourNil) {
+            if (!(tail instanceof LispList))
+                throw new WrongTypeArgumentException("listp", toString());
+            LObject next = ((LispList)tail).cdr();
+            ((LispList) tail).setCdr(prev);
+            prev = tail;
+            tail = next;
+        }
+        return prev;
     }
 }

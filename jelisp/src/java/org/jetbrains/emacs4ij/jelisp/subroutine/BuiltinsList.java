@@ -62,4 +62,9 @@ public abstract class BuiltinsList {
     public static LObject cons (LObject car, LObject cdr) {
         return LispList.cons(car, cdr);
     }
+    
+    @Subroutine("nreverse")
+    public static LObject nReverse (LispList list) {
+        return list.nReverse();
+    }
 }

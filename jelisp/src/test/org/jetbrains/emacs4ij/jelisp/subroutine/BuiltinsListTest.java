@@ -148,4 +148,45 @@ public class BuiltinsListTest {
         LObject cons = evaluateString("(cons (+ 4 5) \"hi\")");
         Assert.assertEquals(LispList.cons(new LispInteger(9), new LispString("hi")), cons);
     }
+
+    @Test
+    public void testMixedList() {
+        LObject a = evaluateString("(cons 1 (cons 2 3))");
+        Assert.assertEquals("(1 2 . 3)", a.toString());
+        a = evaluateString("(cons 1 (cons 2 (cons 3 nil)))");
+        Assert.assertEquals("(1 2 3)", a.toString());
+        a = evaluateString("(cons 1 (cons (cons 5 6) 3))");
+        Assert.assertEquals("(1 (5 . 6) . 3)", a.toString());
+        a = evaluateString("(cons nil (cons nil nil))");
+        Assert.assertEquals("(nil nil)", a.toString());
+    }
+
+    @Test
+    public void testNReverse () {
+        LObject reversed = evaluateString("(nreverse '(1 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(1)), reversed);
+        reversed = evaluateString("(nreverse '(1))");
+        Assert.assertEquals(LispList.list(new LispInteger(1)), reversed);
+    }
+
+    @Test
+    public void testNReverseCons () {
+        try {
+            evaluateString("(nreverse (cons 1 2))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp (1))", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testNReverseLong () {
+        evaluateString("(setq x '(1 2 3))");
+        LObject reversed = evaluateString("(nreverse x)");
+        Assert.assertEquals(LispList.list(new LispInteger(1)), evaluateString("x"));
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(2), new LispInteger(1)), reversed);
+    }
+
+
 }
