@@ -177,6 +177,105 @@ public class Parser extends Observable {
         return new LispSymbol(symbol);
     }
 
+    private LispInteger parseCharacter () throws EndOfLineException {
+        int nextSeparatorIndex = getNextSeparatorIndex();
+        int currentIndex = getMyCurrentIndex();
+        String character = myLispCode.substring(currentIndex, nextSeparatorIndex);
+        int answer = -1;
+        if (character.charAt(0) == '\\') {
+            if (character.length() == 1) {
+                throw new RuntimeException("You must have forgotten the <space> between <?\\ > character and next code!");
+            }
+            switch (character.charAt(1)) {
+                case '^':
+                    //Ctrl+following
+                    switch (character.charAt(2)) {
+                        case 'j':
+                            answer = '\n';
+                            break;
+                        default:
+                            throw new RuntimeException("Character <?\\^...> not implemented yet.");
+                    }
+                    break;
+                case 'C':
+                    if (character.length() < 3) {
+                        throw new RuntimeException("Error in syntax: " + character);
+                    }
+                    if (character.charAt(2) == '-') {
+                        switch (character.charAt(3)) {
+                            case 'j':
+                                answer = '\n';
+                                break;
+                            default:
+                                throw new RuntimeException("Character <?\\C-...> not implemented yet.");
+                        }
+                        break;
+                    }
+                    throw new RuntimeException("Unknown special character " + character);
+                case 'a':  //control-g, C-g
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    //  break;
+                case 'b': //backspace, <BS>, C-h
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    // break;
+                case 't': //tab, <TAB>, C-i
+                    answer = '\t';
+                    //throw new RuntimeException("I don't know " + character + " yet.");
+                    break;
+                case 'n': //newline, C-j
+                    answer = '\n';
+                    break;
+                case 'v': //vertical tab, C-k
+                    //throw new RuntimeException("I don't know " + character + " yet.");
+                    break;
+                case 'f': //formfeed character, C-l
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    //break;
+                case 'r': //carriage return, <RET>, C-m
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    //break;
+                case 'e': //escape character, <ESC>, C-[
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    //break;
+                case 's': //space character, <SPC>
+                    answer = ' ';
+                    // throw new RuntimeException("I don't know " + character + " yet.");
+                    break;
+                case '\\': //backslash character, \
+                    answer = '\\';
+                    //throw new RuntimeException("I don't know " + character + " yet.");
+                    break;
+                case 'd': //delete character, <DEL>
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    //break;
+                default:
+                    throw new RuntimeException("I don't expect " + character + " here!");
+
+                    /*
+                   ?\a ⇒ 7                 ; control-g, C-g
+        ?\b ⇒ 8                 ; backspace, <BS>, C-h
+        ?\t ⇒ 9                 ; tab, <TAB>, C-i
+        ?\n ⇒ 10                ; newline, C-j
+        ?\v ⇒ 11                ; vertical tab, C-k
+        ?\f ⇒ 12                ; formfeed character, C-l
+        ?\r ⇒ 13                ; carriage return, <RET>, C-m
+        ?\e ⇒ 27                ; escape character, <ESC>, C-[
+        ?\s ⇒ 32                ; space character, <SPC>
+        ?\\ ⇒ 92                ; backslash character, \
+        ?\d ⇒ 127               ; delete character, <DEL>
+                    */
+
+            }
+
+
+        } else {
+            answer = character.charAt(0);
+        }
+
+        advanceTo(nextSeparatorIndex);
+        return new LispInteger(answer);
+    }
+
     public LispObject parseLine (String lispCode) throws LispException {
         myCurrentIndex = 0;
         myLispCode = lispCode;
@@ -232,6 +331,11 @@ public class Parser extends Observable {
         if (getCurrentChar() == '[') {
             advance();
             return parseVector();
+        }
+
+        if (getCurrentChar() == '?') {
+            advance();
+            return parseCharacter();
         }
 
         if (getCurrentChar() == ';') {

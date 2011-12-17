@@ -5,7 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
@@ -51,6 +51,9 @@ public class GlobalEnvironment extends Environment {
     public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
 
         myInstance = new GlobalEnvironment();
+        if (myCurrentFrame != null) {
+            onFrameOpened(myCurrentFrame);
+        }
 
         if (!myInstance.setConstants()) {
             //myIde.showMessage("You might have mistaken when you set Emacs Home directory. Try again.");
@@ -227,6 +230,7 @@ public class GlobalEnvironment extends Environment {
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);
+            myCurrentFrame.openWindow(buffer);
             return;
         }
         myDeadBuffers.remove(getIndexByName(myDeadBuffers, buffer.getName()));
@@ -234,6 +238,7 @@ public class GlobalEnvironment extends Environment {
 
     public void defineServiceBuffer (LispBuffer buffer) {
         myServiceBuffers.add(buffer);
+        myCurrentFrame.openWindow(buffer);
     }
 
     public void updateBuffer(LispBuffer buffer) {
@@ -346,7 +351,9 @@ public class GlobalEnvironment extends Environment {
     }
 
     public void closeCurrentBuffer () {
-        myBuffers.remove(getCurrentBuffer());
+        LispBuffer b = getCurrentBuffer();
+        myCurrentFrame.closeWindow(b);
+        myBuffers.remove(b);
     }
 
     // for test
@@ -354,6 +361,7 @@ public class GlobalEnvironment extends Environment {
         LispBuffer buffer = findBuffer(name);
         if (buffer == null)
             throw new NoBufferException(name);
+        myCurrentFrame.closeWindow(buffer);
         myBuffers.remove(buffer);
     }
     
@@ -367,6 +375,7 @@ public class GlobalEnvironment extends Environment {
     public void killBuffer (LispBuffer buffer) {
         buffer.kill();
         myDeadBuffers.add(buffer);
+        myCurrentFrame.closeWindow(buffer);
         myBuffers.remove(buffer);
     }
 
@@ -429,7 +438,7 @@ public class GlobalEnvironment extends Environment {
         ArrayList<String> commandList = new ArrayList<String>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
-            if (BuiltinsCheck.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
+            if (BuiltinPredicates.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
                 if (symbol.getName().length() < begin.length())
                     continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))
@@ -445,7 +454,7 @@ public class GlobalEnvironment extends Environment {
         ArrayList<String> functionList = new ArrayList<String>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
-            if (BuiltinsCheck.fboundp(this, symbol).equals(LispSymbol.ourT)) {
+            if (BuiltinPredicates.fboundp(this, symbol).equals(LispSymbol.ourT)) {
                 if (symbol.getName().length() < begin.length())
                     continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))
@@ -599,8 +608,12 @@ public class GlobalEnvironment extends Environment {
         function.evaluate(myInstance);
     }
 
+    //------------------------------------------- FRAMES ------------------------------------------------------
+
     public static void onFrameOpened (LispFrame newFrame) {
         if (myInstance == null)
+            return;
+        if (frameIndex(newFrame) != -1)
             return;
         myInstance.myFrames.add(newFrame);
     }
@@ -612,6 +625,15 @@ public class GlobalEnvironment extends Environment {
     }
     
     public static void setSelectedFrame (LispFrame frame) {
+        if (myInstance != null) {
+            int k = frameIndex(frame);
+            if (k < 0) {
+                System.out.println("fail");
+            }
+            myCurrentFrame = myInstance.myFrames.get(k);
+            return;
+        }
+        
         myCurrentFrame = frame;
     }
     
@@ -621,6 +643,61 @@ public class GlobalEnvironment extends Environment {
         return myCurrentFrame;
     }
     
+    private static int frameIndex (LispFrame frame) {
+        for (int i = 0; i != myInstance.myFrames.size(); ++i) {
+            if (myInstance.myFrames.get(i).areIdeFramesEqual(frame))
+                return i;
+        }
+        return -1;
+    } 
+                    
+    public static void setFrameVisible (LispFrame frame, boolean status) {
+        if (myInstance == null)
+            return;
+        int k = frameIndex(frame);
+        myInstance.myFrames.get(k).setVisible(status);
+    }
+    
+    public static void setFrameIconified (LispFrame frame, boolean status) {
+        if (myInstance == null)
+            return;
+        int k = frameIndex(frame);
+        myInstance.myFrames.get(k).setIconified(status);
+    }
+    
+    public static boolean isFrameAlive (LispFrame frame) {
+        if (myInstance == null)
+            return false;
+        return frameIndex(frame) >= 0;
+    }
+    
+    public static ArrayList<LispFrame> getVisibleFrames () {
+        ArrayList<LispFrame> visibleFrames = new ArrayList<>();
+        if (myInstance == null)
+            return visibleFrames;
+        for (LispFrame frame: myInstance.myFrames) {
+            if (BuiltinPredicates.frameVisibleP(frame).equals(LispSymbol.ourT))
+                visibleFrames.add(frame);
+        }
+        return visibleFrames;
+    }
+
+    public static ArrayList<LispFrame> getVisibleAndIconifiedFrames () {
+        ArrayList<LispFrame> frames = new ArrayList<>();
+        if (myInstance == null)
+            return frames;
+        for (LispFrame frame: myInstance.myFrames) {
+            LispSymbol predicate = BuiltinPredicates.frameVisibleP(frame);
+            if (predicate.equals(LispSymbol.ourT) || predicate.equals(new LispSymbol("icon")))
+                frames.add(frame);
+        }
+        return frames;
+    }
 
 
+    public static ArrayList<LispFrame> getAllFrames () {
+        if (myInstance == null)
+            return new ArrayList<>();
+        return myInstance.myFrames;
+    }
 }

@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -161,7 +161,7 @@ public class SpecialFormInteractive {
             case 'C':
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
-                    if (BuiltinsCheck.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
+                    if (BuiltinPredicates.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
                         addArg(cmd);
                         return;
                     }

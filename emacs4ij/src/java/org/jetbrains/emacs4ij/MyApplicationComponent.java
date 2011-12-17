@@ -28,16 +28,23 @@ public class MyApplicationComponent implements ApplicationComponent {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 super.windowGainedFocus(e);
-                System.out.println(e.getWindow().getName() + " GainedFocus");
-                GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrame) e.getWindow()));
-                //Messages.showInfoMessage("windowGainedFocus", "Yo");
+                if (Checker.isGlobalEnvironmentInitialized)
+                    GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
             }
 
             @Override
-            public void windowLostFocus(WindowEvent e) {
-                super.windowLostFocus(e);
-                System.out.println(e.getWindow().getName() + " LostFocus");
-                //Messages.showInfoMessage("windowLostFocus", "Yo");
+            public void windowIconified(WindowEvent e) {
+                super.windowIconified(e);
+                //GlobalEnvironment.setFrameVisible(new IdeaFrame((IdeFrame) e.getWindow()), false);
+                if (Checker.isGlobalEnvironmentInitialized)
+                    GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+                super.windowDeiconified(e);
+                if (Checker.isGlobalEnvironmentInitialized)
+                    GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
             }
         };
 
@@ -71,30 +78,27 @@ public class MyApplicationComponent implements ApplicationComponent {
             return false;
         }
         Checker.isGlobalEnvironmentInitialized = true;
-        WindowManager windowManager = WindowManager.getInstance();
-        for (IdeFrame frame: windowManager.getAllFrames()) {
-            GlobalEnvironment.onFrameOpened(new IdeaFrame(frame));
-        }
-        //GlobalEnvironment.setSelectedFrame(new IdeaFrame(windowManager.getIdeFrame(myProject)));
         return true;
     }
 
     public void initComponent() {
+     //   GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+
         WindowManager.getInstance().addListener(new WindowManagerListener() {
             @Override
             public void frameCreated(IdeFrame ideFrame) {
                 ((IdeFrameImpl)ideFrame).addWindowFocusListener(myWindowAdapter);
-                GlobalEnvironment.onFrameOpened(new IdeaFrame(ideFrame));
-               //Messages.showInfoMessage("Frame created", "Yo");
+                ((IdeFrameImpl)ideFrame).addWindowListener(myWindowAdapter);
+                IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) ideFrame);
+                GlobalEnvironment.onFrameOpened(ideaFrame);
+                //GlobalEnvironment.setSelectedFrame(ideaFrame);
             }
 
             @Override
             public void beforeFrameReleased(IdeFrame ideFrame) {
-                GlobalEnvironment.onFrameReleased(new IdeaFrame(ideFrame));
-                //Messages.showInfoMessage("Frame released", "Yo");
+                GlobalEnvironment.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
             }
         });
-
 
     }
 
@@ -108,6 +112,5 @@ public class MyApplicationComponent implements ApplicationComponent {
     public String getComponentName() {
         return "org.jetbrains.emacs4ij.MyApplicationComponent";
     }
-
 
 }

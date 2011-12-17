@@ -6,6 +6,9 @@ import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.IdeFrame;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
@@ -25,6 +28,9 @@ public class MyProjectComponent implements ProjectComponent {
     public MyProjectComponent(Project project) {
         myProject = project;
         IdeaBuffer.setProject(project);
+      //  IdeFrameImpl ifi = (IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0];
+    //    GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+       // GlobalEnvironment.setSelectedFrame(new IdeaFrame(ifi);
         if (!Checker.isReady()) {
             Checker.isGlobalEnvironmentInitialized = false;
             myEnvironment = null;
@@ -40,6 +46,18 @@ public class MyProjectComponent implements ProjectComponent {
 
         if (!MyApplicationComponent.initGlobalEnvironment())
             return false;
+
+        WindowManager windowManager = WindowManager.getInstance();
+        for (IdeFrame frame: windowManager.getAllFrames()) {
+            GlobalEnvironment.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
+            boolean hasFocus = ((IdeFrameImpl) frame).hasFocus();
+            boolean isActive = ((IdeFrameImpl) frame).isActive();
+            System.out.println("Project environment initializing");
+          //  if (((IdeFrameImpl) frame).hasFocus())
+          //      GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
+        }
+
+        GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
         myEnvironment = new Environment(GlobalEnvironment.getInstance());
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);

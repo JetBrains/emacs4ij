@@ -1,7 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,8 +12,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
  * Time: 5:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsCheck {
-    private BuiltinsCheck() {}
+public abstract class BuiltinPredicates {
+    private BuiltinPredicates() {}
 
     @Subroutine("stringp")
     public static LispObject stringp (LObject arg) {
@@ -112,7 +114,38 @@ public abstract class BuiltinsCheck {
 
     @Subroutine("framep")
     public static LispSymbol framep (LObject object) {
-        if (object instanceof LispFrame)
+        if (object instanceof LispFrame) {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("win"))
+                return new LispSymbol("w32");
+            if (os.contains("mac"))
+                return new LispSymbol("mac");
+            if (os.contains("nix") || os.contains("nux"))
+                return new LispSymbol("x");
+            //todo: ?? `ns' for an Emacs frame on a GNUstep or Macintosh Cocoa display,
+            return LispSymbol.ourT;
+        }
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("frame-live-p")
+    public static LispSymbol frameLiveP (LObject object) {
+        LispSymbol frameP = framep(object);
+        if (frameP.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        if (GlobalEnvironment.isFrameAlive((LispFrame) object))
+            return frameP;
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("frame-visible-p")
+    public static LispSymbol frameVisibleP (LObject object) {
+        LispSymbol frameLiveP = frameLiveP(object);
+        if (frameLiveP.equals(LispSymbol.ourNil))
+            throw new WrongTypeArgumentException("frame-live-p", object.toString());
+        if (((LispFrame) object).isIconified())
+            return new LispSymbol("icon");
+        if (((LispFrame) object).isVisible())
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }

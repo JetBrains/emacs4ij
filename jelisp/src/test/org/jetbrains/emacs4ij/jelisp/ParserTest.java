@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -251,6 +252,180 @@ public class ParserTest {
     public void testParseVector() {
         LispObject lispObject = p.parseLine("[1 \"hello\" anna ['q]]");
         Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(LispList.list(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
+    }
+    
+    @Test
+    public void testParseCharacter() {
+        LispObject c = p.parseLine("?a");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue('a' == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharA() {
+        // ?\a ⇒ 7                 ; control-g, C-g
+        LispObject c = p.parseLine("?\\a");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(7 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-g");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(7 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^g");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(7 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharB() {
+        // ?\b ⇒ 8                 ; backspace, <BS>, C-h
+        LispObject c = p.parseLine("?\\b");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(8 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-h");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(8 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^h");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(8 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharT() {
+        //?\t ⇒ 9                 ; tab, <TAB>, C-i
+        LispObject c = p.parseLine("?\\t");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(9 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-i");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(9 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^i");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(9 == ((LispInteger)c).getData());
+    }
+
+    @Test
+    public void testParseSpecialCharN() {
+        //?\n ⇒ 10                ; newline, C-j
+        LispObject c = p.parseLine("?\\n");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(10 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-j");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(10 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^j");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(10 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharV() {
+        //?\v ⇒ 11                ; vertical tab, C-k
+        LispObject c = p.parseLine("?\\v");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(11 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-k");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(11 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^k");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(11 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharF() {
+        //?\f ⇒ 12                ; formfeed character, C-l
+        LispObject c = p.parseLine("?\\f");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(12 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-l");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(12 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^l");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(12 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharR() {
+        //?\r ⇒ 13                ; carriage return, <RET>, C-m
+        LispObject c = p.parseLine("?\\r");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(13 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-m");
+
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(13 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\^m");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(13 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharE() {
+        //?\e ⇒ 27                ; escape character, <ESC>, C-[
+        LispObject c = p.parseLine("?\\e");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(27 == ((LispInteger)c).getData());
+
+        c = p.parseLine("?\\C-[");
+        //todo: must throw (scan-error "Containing expression ends prematurely" 2150 2150)
+        c = p.parseLine("?\\^[");
+        //todo: must throw (scan-error "Containing expression ends prematurely" 2149 2149)
+    }
+
+    @Test
+    public void testParseSpecialCharS() {
+        //?\s ⇒ 32                ; space character, <SPC>
+        LispObject c = p.parseLine("?\\s");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(32 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharSpace() {
+        //?\s ⇒ 32                ; space character, <SPC>
+        LispObject c = p.parseLine("? ");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(32 == ((LispInteger)c).getData());
+    }
+
+    @Test
+    public void testParseSpecialCharBackslash() {
+        //?\\ ⇒ 92                ; backslash character, \
+        LispObject c = p.parseLine("?\\\\");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(92 == ((LispInteger)c).getData());
+    }
+
+    @Ignore
+    @Test
+    public void testParseSpecialCharDel() {
+        //?\d ⇒ 127               ; delete character, <DEL>
+        LispObject c = p.parseLine("?\\d");
+        Assert.assertTrue(c instanceof LispInteger);
+        Assert.assertTrue(127 == ((LispInteger)c).getData());
     }
 }
 

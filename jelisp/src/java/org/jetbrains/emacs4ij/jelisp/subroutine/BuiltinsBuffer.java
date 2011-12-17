@@ -15,7 +15,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
-    private static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LObject bufferOrName) {
+    public static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LObject bufferOrName) {
         if (bufferOrName == null || bufferOrName.equals(LispSymbol.ourNil))
             return environment.getBufferCurrentForEditing();
         if (bufferOrName instanceof LispString) {

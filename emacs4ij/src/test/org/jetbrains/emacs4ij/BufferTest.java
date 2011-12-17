@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -52,10 +53,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             myTests.put(fileName, buffer);
             myEnvironment.defineBuffer(buffer);
         }
-        
-   /*     LispFrame current  = new IdeaFrame(WindowManager.getInstance().getIdeFrame(myFixture.getProject()));
+
+        LispFrame current  = new IdeaFrame(new IdeFrameImpl(null, null, null, null, null, null));
+
+   //     LispFrame current  = new IdeaFrame(WindowManager.getInstance().getIdeFrame(myFixture.getProject()));
         GlobalEnvironment.onFrameOpened(current);
-        GlobalEnvironment.setSelectedFrame(current);*/
+        GlobalEnvironment.setSelectedFrame(current);
     }
 
     private Throwable getCause (Throwable e) {

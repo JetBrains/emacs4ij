@@ -23,7 +23,6 @@ public class Environment {
     private boolean myArgumentsEvaluated = false;
     protected LispBuffer myBufferCurrentForEditing = null;
 
-
     private boolean isRecording = false;
     private ArrayList<String> myRecordedSymbols = new ArrayList<String>();
     private ArrayList<String> myRecordedBuffers = new ArrayList<String>();

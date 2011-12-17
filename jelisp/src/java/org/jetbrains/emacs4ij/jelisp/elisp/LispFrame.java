@@ -9,4 +9,14 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  */
 public interface LispFrame extends LObject {
     public LObject getParameter (String parameter);
+    public void setVisible (boolean visible);
+    public boolean isVisible ();
+    public void setIconified (boolean iconified);
+    public boolean isIconified ();
+
+    public boolean areIdeFramesEqual (LispFrame frame);
+
+    public void openWindow (LispBuffer buffer);
+    public LispWindow containsBuffer (LispBuffer buffer);
+    public void closeWindow (LispBuffer buffer);
 }

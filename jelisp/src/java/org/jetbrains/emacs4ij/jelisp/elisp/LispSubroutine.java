@@ -20,7 +20,7 @@ import java.util.List;
  */
 public abstract class LispSubroutine {
     private static Class[] myBuiltIns = new Class[] {BuiltinsBuffer.class,
-                                                    BuiltinsCheck.class,
+                                                    BuiltinPredicates.class,
                                                     BuiltinsCore.class,
                                                     BuiltinsFrame.class,
                                                     BuiltinsList.class,

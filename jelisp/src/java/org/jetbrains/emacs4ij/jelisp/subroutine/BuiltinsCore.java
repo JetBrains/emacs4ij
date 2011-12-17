@@ -7,7 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCheck.subrp;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 
 /**
  * Created by IntelliJ IDEA.
@@ -96,7 +96,7 @@ public abstract class BuiltinsCore {
 
     @Subroutine("call-interactively")
     public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
-        if (!BuiltinsCheck.commandp(environment, function, null).equals(LispSymbol.ourT))
+        if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         //read args
         //assign args

@@ -15,7 +15,7 @@ import org.junit.*;
  * Time: 3:55 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsCheckTest {
+public class BuiltinPredicatesTest {
     private Environment environment;
 
     @BeforeClass
