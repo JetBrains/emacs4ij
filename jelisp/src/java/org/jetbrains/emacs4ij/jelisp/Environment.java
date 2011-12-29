@@ -1,50 +1,28 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 /**
  * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 7/11/11
- * Time: 5:37 PM
+ * User: kate
+ * Date: 12/19/11
+ * Time: 8:25 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Environment {
+public abstract class Environment {
+    protected boolean isRecording = false;
+    protected ArrayList<String> myRecordedSymbols = new ArrayList<String>();
     protected HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
-    protected Environment myOuterEnv;
-    private boolean mySelectionManagedBySubroutine = false;
-    private boolean myArgumentsEvaluated = false;
-    protected LispBuffer myBufferCurrentForEditing = null;
-
-    private boolean isRecording = false;
-    private ArrayList<String> myRecordedSymbols = new ArrayList<String>();
-    private ArrayList<String> myRecordedBuffers = new ArrayList<String>();
-
-    // for global environment
-    protected Environment () {}
-
-    public Environment (@NotNull final Environment outerEnv) {
-        myOuterEnv = outerEnv;
-    }
-
-    public boolean isGlobalEnvironment() {
-        return myOuterEnv == null;
-    }
-
-    public void setSelectionManagedBySubroutine(boolean selectionManagedBySubroutine) {
-       mySelectionManagedBySubroutine = selectionManagedBySubroutine;
-    }
-
-    public boolean isSelectionManagedBySubroutine () {
-        return mySelectionManagedBySubroutine;
-    }
+    protected boolean myArgumentsEvaluated = false;
+    protected Environment myOuterEnv = null;
+    protected String myBufferCurrentForEditing = null;
 
     public boolean areArgumentsEvaluated() {
         return myArgumentsEvaluated;
@@ -52,6 +30,18 @@ public class Environment {
 
     public void setArgumentsEvaluated(boolean argumentsEvaluated) {
         myArgumentsEvaluated = argumentsEvaluated;
+    }
+
+    public void setBufferCurrentForEditing (String buffer) {
+        myBufferCurrentForEditing = buffer;
+    }
+
+    public String getBufferCurrentForEditing() {
+        return myBufferCurrentForEditing == null ? GlobalEnvironment.INSTANCE.getCurrentBuffer() : myBufferCurrentForEditing;
+    }
+
+    public LispString getDefaultDirectory () {
+        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
     }
 
     public LObject find(String name, String methodName) {
@@ -66,7 +56,7 @@ public class Environment {
         LispSymbol lispObject = mySymbols.get(name);
 
         if (lispObject != null) {
-            if (!lispObject.isFunction() && lispObject.getValue() == null)// && lispObject.getValue().equals(LispSymbol.ourBufferLocalVariable)) {
+            if (!lispObject.isFunction() && lispObject.getValue() == null)
             {
                 try {
                     lispObject = getBufferCurrentForEditing().getLocalVariable(name);
@@ -98,18 +88,13 @@ public class Environment {
         for (String name: myRecordedSymbols) {
             mySymbols.remove(name);
         }
-        for (String name: myRecordedBuffers) {
-            GlobalEnvironment.getInstance().removeBuffer(name);
-        }
         myRecordedSymbols.clear();
-        myRecordedBuffers.clear();
     }
 
     public void defineSymbol (LispSymbol symbol) {
         if (isRecording) {
             myRecordedSymbols.add(symbol.getName());
         }
-
         mySymbols.put(symbol.getName(), symbol);
     }
 
@@ -118,7 +103,7 @@ public class Environment {
     }
 
     public void setVariable(LispSymbol symbol) {
-        if (isGlobalEnvironment() || containsSymbol(symbol.getName())) {
+        if (myOuterEnv == null || containsSymbol(symbol.getName())) {
             LispSymbol variable = mySymbols.get(symbol.getName());
             if (variable == null) {
                 defineSymbol(symbol);
@@ -129,146 +114,5 @@ public class Environment {
             return;
         }
         myOuterEnv.setVariable(symbol);
-    }
-
-
-    public boolean isMainEnvironment() {
-        return myOuterEnv instanceof GlobalEnvironment;
-    }
-
-    public void updateFunction (LispSymbol symbol) {
-        GlobalEnvironment.getInstance().updateFunction(symbol);
-    }
-
-    public void defineBuffer (LispBuffer buffer) {
-        if (isRecording) {
-
-        }
-        GlobalEnvironment.getInstance().defineBuffer(buffer);
-    }
-
-    public LispBuffer createBuffer (String bufferName) {
-        return GlobalEnvironment.getInstance().createBuffer(bufferName);
-    }
-
-    public void defineServiceBuffer (LispBuffer buffer) {
-        GlobalEnvironment.getInstance().defineServiceBuffer(buffer);
-    }
-
-    public void updateBuffer(LispBuffer buffer) {
-        GlobalEnvironment.getInstance().updateBuffer(buffer);
-    }
-
-    public void updateServiceBuffer (LispBuffer buffer) {
-        GlobalEnvironment.getInstance().updateServiceBuffer(buffer);
-    }
-
-    public void switchToBuffer(String bufferName) {
-        GlobalEnvironment.getInstance().switchToBuffer(bufferName);
-    }
-
-    public void setBufferCurrentForEditing (LispBuffer buffer) {
-        myBufferCurrentForEditing = buffer;
-    }
-
-    public LispBuffer getBufferCurrentForEditing() {
-        if (myBufferCurrentForEditing == null) {
-            return GlobalEnvironment.getInstance().getCurrentBuffer();
-        }
-        return myBufferCurrentForEditing;
-    }
-
-    public LispBuffer findBuffer (String bufferName) {
-        return GlobalEnvironment.getInstance().findBuffer(bufferName);
-    }
-
-    public LispBuffer getServiceBuffer (String bufferName) {
-        return GlobalEnvironment.getInstance().getServiceBuffer(bufferName);
-    }
-
-
-    public ArrayList<LispBuffer> getBuffers () {
-        return GlobalEnvironment.getInstance().getBuffers();
-    }
-
-    public LispBuffer getOtherBuffer () {
-        return getOtherBuffer(getBufferCurrentForEditing().getName());
-    }
-
-    public LispBuffer getOtherBuffer (String bufferName) {
-        return GlobalEnvironment.getInstance().getOtherBuffer(bufferName);
-    }
-
-    public int getBuffersSize() {
-        return GlobalEnvironment.getInstance().getBuffersSize();
-    }
-
-    public LispList getBufferList() {
-        return GlobalEnvironment.getInstance().getBufferList();
-    }
-
-    public void closeCurrentBuffer () {
-        GlobalEnvironment.getInstance().closeCurrentBuffer();
-    }
-
-    public void killBuffer (String bufferName) {
-        GlobalEnvironment.getInstance().killBuffer(bufferName);
-    }
-
-    public void killBuffer (LispBuffer buffer) {
-        GlobalEnvironment.getInstance().killBuffer(buffer);
-    }
-
-    public void closeAllBuffers () {
-        GlobalEnvironment.getInstance().closeAllBuffers();
-    }
-
-    public LispBuffer getBufferByIndex (int index) {
-        return GlobalEnvironment.getInstance().getBufferByIndex(index);
-    }
-
-    public void printBuffers() {
-        GlobalEnvironment.getInstance().printBuffers();
-    }
-
-    public String[] getBuffersNames () {
-        return GlobalEnvironment.getInstance().getBuffersNames();
-    }
-
-    public LispString getDefaultDirectory () {
-        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
-    }
-
-    public void buryBuffer (LispBuffer buffer) {
-        GlobalEnvironment.getInstance().buryBuffer(buffer);
-    }
-
-    public LispBuffer lastBuffer () {
-        return lastBuffer("");
-    }
-
-    public LispBuffer lastBuffer (String bufferName) {
-        return GlobalEnvironment.getInstance().lastBuffer(bufferName);
-    }
-
-    public boolean containsBuffer (String bufferName) {
-        return findBuffer(bufferName) != null;
-    }
-
-    public boolean isDead (String bufferName) {
-        return GlobalEnvironment.getInstance().isDead(bufferName);
-    }
-
-    public ArrayList<String> getCommandList (String begin) {
-        return GlobalEnvironment.getInstance().getCommandList(begin);
-    }
-
-    //========== mini buffer ==========================
-
-    public LispMiniBuffer getMiniBuffer () {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer) getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
-        if (miniBuffer == null)
-            throw new RuntimeException("mini buffer does not exist!");
-        return miniBuffer;
     }
 }
