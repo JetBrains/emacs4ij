@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ public class LispVector extends LispObject {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         return this;
     }
 

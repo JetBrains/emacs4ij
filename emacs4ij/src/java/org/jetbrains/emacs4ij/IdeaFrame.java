@@ -1,12 +1,13 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,7 +38,7 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -67,7 +68,11 @@ public class IdeaFrame implements LispFrame {
             myFrame.show();
             //WindowManagerImpl.getInstance().
         }  else {
+          //  myFrame.setFocusableWindowState(false);
+
+           // myFrame.setVisible(false);
             // TODO: really iconify =)
+
         }
     }
 
@@ -100,6 +105,16 @@ public class IdeaFrame implements LispFrame {
         }
         if (i < myWindows.size())
             myWindows.remove(i);
+    }
+
+    @Override
+    public List<LispBuffer> getBufferList() {
+        ArrayList<LispBuffer> buffers = new ArrayList<>();
+        for (LispWindow window: myWindows) {
+            if (window.getBuffer() != null)
+                buffers.add(window.getBuffer());
+        }
+        return buffers;
     }
 
     @Override

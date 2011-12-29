@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -18,7 +18,7 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("point-marker")
-    public static LispMarker pointMarker (Environment environment) {
+    public static LispMarker pointMarker (CustomEnvironment environment) {
         LispBuffer buffer = environment.getBufferCurrentForEditing();
         return new LispMarker(buffer.point(), buffer);
     }
@@ -34,19 +34,19 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("point-min-marker")
-    public static LispMarker pointMinMarker (Environment environment) {
+    public static LispMarker pointMinMarker (CustomEnvironment environment) {
         LispBuffer buffer = environment.getBufferCurrentForEditing();
         return new LispMarker(buffer.pointMin(), buffer);
     }
 
     @Subroutine("point-max-marker")
-    public static LispMarker pointMaxMarker (Environment environment) {
+    public static LispMarker pointMaxMarker (CustomEnvironment environment) {
         LispBuffer buffer = environment.getBufferCurrentForEditing();
         return new LispMarker(buffer.pointMax(), buffer);
     }
 
     @Subroutine("copy-marker")
-    public static LispMarker copyMarker (Environment environment, LObject markerOrInteger, @Optional LObject insertionType) {
+    public static LispMarker copyMarker (CustomEnvironment environment, LObject markerOrInteger, @Optional LObject insertionType) {
         if (markerOrInteger instanceof LispMarker) {
             LispMarker marker = new LispMarker((LispMarker) markerOrInteger);
             if (insertionType != null)

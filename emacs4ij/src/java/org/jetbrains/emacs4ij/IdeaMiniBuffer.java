@@ -6,7 +6,7 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -40,13 +40,18 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
         @Override
         public void beforeDocumentChange(DocumentEvent documentEvent) {
-            documentEvent.getDocument().removeDocumentListener(this);
-            isDocumentListenerSet = false;
-            myAlarm.cancelAllRequests();
-            write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
         }
         @Override
         public void documentChanged(DocumentEvent documentEvent) {
+            documentEvent.getDocument().removeDocumentListener(this);
+            isDocumentListenerSet = false;
+            myAlarm.cancelAllRequests();
+            if (myInteractive.isNoMatch()) {
+                String newText = documentEvent.getDocument().getText();
+                int k = newText.indexOf(myInteractive.getNoMatchMessage());
+                newText = newText.substring(0, k);
+                write(newText);
+            }
         }
     };
 
@@ -58,7 +63,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }
     }
 
-    public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
+    public IdeaMiniBuffer (int number, Editor editor, CustomEnvironment environment) {
         myName = " *Minibuf-" + number + '*';
         myEditor = editor;
         myEnvironment = environment;
@@ -232,8 +237,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public LObject onReadInput () {
-
-
         switch (myStatus) {
             case READ_COMMAND:
                 myInteractive.onReadParameter(readInputString());

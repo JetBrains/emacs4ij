@@ -1,7 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
-
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -10,5 +8,5 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBufferFactory {
-    public LispBuffer createBuffer (String bufferName, Environment environment);
+    public LispBuffer createBuffer (String bufferName);
 }

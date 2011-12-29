@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
@@ -16,7 +16,7 @@ import org.junit.*;
  * To change this template use File | Settings | File Templates.
  */
 public class BuiltinPredicatesTest {
-    private Environment environment;
+    private CustomEnvironment environment;
 
     @BeforeClass
     public static void runBeforeClass() {
@@ -29,7 +29,7 @@ public class BuiltinPredicatesTest {
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.getInstance().clearRecorded();
-        environment = new Environment(GlobalEnvironment.getInstance());
+        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

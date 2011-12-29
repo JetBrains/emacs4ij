@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
@@ -22,7 +22,7 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class MarkTest extends CodeInsightFixtureTestCase {
-    Environment myEnvironment;
+    CustomEnvironment myEnvironment;
     Parser myParser = new Parser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     HashMap<String, IdeaBuffer> myTests;
@@ -47,7 +47,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
        // GlobalEnvironment.getInstance().startRecording();
 
        // GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
        // GlobalEnvironment.getInstance().clearRecorded();
 
         for (String fileName: myTestFiles) {

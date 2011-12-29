@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -45,7 +45,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("commandp")
-    public static LispSymbol commandp (Environment environment, LObject function, @Optional LObject forCallInteractively) {
+    public static LispSymbol commandp (CustomEnvironment environment, LObject function, @Optional LObject forCallInteractively) {
         if (function instanceof LispSymbol) {
             if (!((LispSymbol) function).isFunction())
                 return LispSymbol.ourNil;
@@ -86,7 +86,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("fboundp")
-    public static LispSymbol fboundp (Environment environment, LispSymbol symbol) {
+    public static LispSymbol fboundp (CustomEnvironment environment, LispSymbol symbol) {
         LispSymbol f = environment.find(symbol.getName());
         if (f == null || !f.isFunction())
             return LispSymbol.ourNil;
@@ -149,5 +149,41 @@ public abstract class BuiltinPredicates {
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("windowp")
+    public static LispSymbol windowP (LObject object) {
+        if (object instanceof LispWindow)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+    
+    @Subroutine("number-or-marker-p") 
+    public static LispSymbol numberOrMarkerP (LObject object) {
+        if (object instanceof LispNumber || object instanceof LispMarker)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("integer-or-marker-p")
+    public static LispSymbol integerOrMarkerP (LObject object) {
+        if (object instanceof LispInteger || object instanceof LispMarker)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("markerp")
+    public static LispSymbol markerP (LObject object) {
+        if (object instanceof LispMarker)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("keywordp")
+    public static LispSymbol keywordP (LObject object) {
+        if (object instanceof LispSymbol && ((LispSymbol) object).getName().startsWith(":"))
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
+
 
 }

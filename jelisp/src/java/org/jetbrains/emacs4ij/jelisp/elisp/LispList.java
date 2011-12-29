@@ -123,7 +123,7 @@ public class LispList extends LispObject {
         } catch (ClassCastException e) {
             throw new InvalidFunctionException(car().toString());
         }
-        LispSymbol symbol = GlobalEnvironment.getInstance().find(fun.getName());
+        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("upload " + fun.getName());

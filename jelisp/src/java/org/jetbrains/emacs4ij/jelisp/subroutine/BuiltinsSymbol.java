@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
@@ -21,7 +21,7 @@ public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
     @Subroutine("symbol-function")
-    public static LObject symbolFunction(Environment environment, LispSymbol arg) {
+    public static LObject symbolFunction(CustomEnvironment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
         if (f == null || !f.isFunction())
             throw new VoidFunctionException(arg.getName());
@@ -29,7 +29,7 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("symbol-value")
-    public static LObject symbolValue (Environment environment, LispSymbol arg) {
+    public static LObject symbolValue (CustomEnvironment environment, LispSymbol arg) {
         LispSymbol symbol = environment.find(arg.getName());
         if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
             throw new VoidVariableException(arg.getName());
@@ -37,19 +37,19 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("get")
-    public static LObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
+    public static LObject get(CustomEnvironment environment, LispSymbol symbol, LispSymbol propertyName) {
         LObject result = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
         return result == null ? LispSymbol.ourNil : result;
     }
 
     @Subroutine("put")
-    public static LObject put(Environment environment, LispSymbol symbol, LispSymbol propertyName, LObject value) {
+    public static LObject put(CustomEnvironment environment, LispSymbol symbol, LispSymbol propertyName, LObject value) {
         environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LispObject.class}, propertyName, value);
         return value;
     }
 
     @Subroutine("documentation-property")
-    public static LObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName, @Optional LObject verbatim)  {
+    public static LObject documentationProperty (CustomEnvironment environment, LispSymbol symbol, LispSymbol propertyName, @Optional LObject verbatim)  {
         //todo: if (verbatim != null) && !(verbatim.equals(LispSymbol.ourNil) ---
         // Third argument RAW omitted or nil means pass the result through `substitute-command-keys' if it is a string.
         LObject value = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
@@ -83,7 +83,7 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("documentation")
-    public static LObject documentation (Environment environment, LispObject function) {
+    public static LObject documentation (CustomEnvironment environment, LispObject function) {
         if (function instanceof LispSymbol) {
             String name = ((LispSymbol) function).getName();
             LispSymbol f = environment.find(name);

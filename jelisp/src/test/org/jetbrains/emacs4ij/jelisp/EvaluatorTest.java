@@ -17,14 +17,14 @@ import org.junit.Test;
  */
 public class EvaluatorTest {
 
-    private Environment environment;
+    private CustomEnvironment environment;
 
     @Before
     public void setUp() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null);
-        environment = new Environment(GlobalEnvironment.getInstance());
+        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

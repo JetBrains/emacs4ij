@@ -9,4 +9,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  */
 public interface LispWindow extends LObject {
     public boolean containsBuffer (LispBuffer buffer);
+    public LispBuffer getBuffer();
 }

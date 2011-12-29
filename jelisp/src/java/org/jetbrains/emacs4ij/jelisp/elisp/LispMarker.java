@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -83,7 +83,7 @@ public class LispMarker extends LispObject {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         return this;
     }
 }

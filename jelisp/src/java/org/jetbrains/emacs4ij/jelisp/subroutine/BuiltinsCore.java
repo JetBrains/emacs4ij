@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -19,35 +19,57 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
-    //todo: accept MARKERS
+    private static LispNumber numberOrMarkerToNumber (LObject lispObject) {
+        if (BuiltinPredicates.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
+            throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
+        LispNumber n;
+        if (BuiltinPredicates.markerP(lispObject).equals(LispSymbol.ourT)) {
+            n = new LispInteger(((LispMarker)lispObject).getPosition());
+        } else {
+            n = (LispNumber) lispObject;
+        }
+        return n;
+    }
+    
     @Subroutine("+")
-    public static LispNumber plus (@Optional LispNumber... args) {
+    public static LispNumber plus (@Optional LObject... args) {
         double ans = 0.0;
         boolean isDouble = false;
         if (args != null) {
-            for (LispNumber lispObject: args) {
-                if (!isDouble && (lispObject.getData() instanceof Double))
+            for (LObject lispObject: args) {
+                LispNumber n = numberOrMarkerToNumber(lispObject);               
+                if (!isDouble && (n.getData() instanceof Double))
                     isDouble = true;
-                ans += (lispObject instanceof LispInteger) ? ((Integer)lispObject.getData()).doubleValue() : (Double)lispObject.getData();
+                ans += n.getDoubleData();
             }
         }
         return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
     }
-    //todo: accept MARKERS
+    
     @Subroutine("*")
-    public static LispNumber multiply (@Optional LispNumber... args) {
+    public static LispNumber multiply (@Optional LObject... args) {
         double ans = 1;
         boolean isDouble = false;
-        for (LispNumber lispObject: args) {
-            if (!isDouble && (lispObject.getData() instanceof Double))
-                    isDouble = true;
-            ans *= (lispObject instanceof LispInteger) ? ((Integer)lispObject.getData()).doubleValue() : (Double)lispObject.getData();
+        for (LObject lispObject: args) {
+            LispNumber n = numberOrMarkerToNumber(lispObject);            
+            if (!isDouble && (n.getData() instanceof Double))
+                isDouble = true;
+            ans *= n.getDoubleData();
         }
         return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
     }
+    
+    @Subroutine(">")
+    public static LispSymbol more (LObject num1, LObject num2) {
+        LispNumber n1 = numberOrMarkerToNumber(num1);
+        LispNumber n2 = numberOrMarkerToNumber(num2);
+        if (n1.getDoubleData() > n2.getDoubleData())
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
 
     @Subroutine("set")
-    public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
+    public static LObject set (CustomEnvironment environment, LispSymbol variable, LObject initValue) {
         LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
         variable.setValue(value);
         environment.setVariable(variable);
@@ -95,7 +117,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("call-interactively")
-    public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
+    public static LObject callInteractively (CustomEnvironment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
         if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         //read args
@@ -106,7 +128,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("funcall")
-    public static LObject functionCall (Environment environment, LObject function, @Optional LObject... args) {
+    public static LObject functionCall (CustomEnvironment environment, LObject function, @Optional LObject... args) {
         environment.setArgumentsEvaluated(true);
         ArrayList<LObject> data = new ArrayList<LObject>();
         data.add(function);
@@ -126,7 +148,7 @@ public abstract class BuiltinsCore {
         return new LispString(msg);
     }
 
-    private static void runFunction (Environment environment, LispSymbol function) {
+    private static void runFunction (CustomEnvironment environment, LispSymbol function) {
         if (function.equals(LispSymbol.ourNil))
             return;
         if (!function.isFunction()) {
@@ -136,7 +158,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("run-hooks")
-    public static LObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
+    public static LObject runHooks (CustomEnvironment environment, @Optional LispSymbol... hooks) {
         if (hooks == null)
             return LispSymbol.ourNil;
         for (LispSymbol hook: hooks) {
@@ -163,7 +185,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("macroexpand")
-    public static LObject macroExpand (Environment environment, LObject macroCall) {
+    public static LObject macroExpand (CustomEnvironment environment, LObject macroCall) {
         if (!(macroCall instanceof LispList))
             return macroCall;
         LispSymbol macro;
@@ -180,7 +202,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("fset")
-    public static LObject functionSet (Environment environment, LispSymbol symbol, LObject function) {
+    public static LObject functionSet (CustomEnvironment environment, LispSymbol symbol, LObject function) {
         symbol.setFunction(function);
         environment.setVariable(symbol);
         return function;

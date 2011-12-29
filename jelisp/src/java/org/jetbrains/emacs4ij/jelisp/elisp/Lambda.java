@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
@@ -23,7 +23,7 @@ public class Lambda extends LispObject implements FunctionCell {
     private LispList myInteractive = null;
     private List<LObject> myBody = new ArrayList<LObject>();
 
-    public Lambda (LispList def, Environment environment) {
+    public Lambda (LispList def, CustomEnvironment environment) {
         List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
@@ -91,11 +91,11 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         throw new RuntimeException("wrong usage");
     }
 
-    private LObject evaluateBody (Environment inner) {
+    private LObject evaluateBody (CustomEnvironment inner) {
         LObject result = LispSymbol.ourNil;
         for (LObject bodyForm: myBody) {
             result = bodyForm.evaluate(inner);
@@ -103,11 +103,11 @@ public class Lambda extends LispObject implements FunctionCell {
         return result;
     }
 
-    public LObject evaluate(Environment environment, List<LObject> args) {
+    public LObject evaluate(CustomEnvironment environment, List<LObject> args) {
         return evaluateBody(substituteArguments(environment, args));
     }
 
-    public Environment substituteArguments (Environment environment, List<LObject> args) {
+    public CustomEnvironment substituteArguments (CustomEnvironment environment, List<LObject> args) {
         int nRequiredArguments = 0;
         for (Map.Entry<LispSymbol, String> arg: myArgumentList.entrySet()) {
             if (arg.getValue().equals("required"))
@@ -116,7 +116,7 @@ public class Lambda extends LispObject implements FunctionCell {
         if (nRequiredArguments > args.size() || myArgumentList.size() < args.size())
             throw new WrongNumberOfArgumentsException(toString(), args.size());
 
-        Environment inner = new Environment(environment);
+        CustomEnvironment inner = new CustomEnvironment(environment);
         List<LispSymbol> keys = new ArrayList<LispSymbol>(myArgumentList.keySet());
         if (!myArgumentList.isEmpty()) {
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {

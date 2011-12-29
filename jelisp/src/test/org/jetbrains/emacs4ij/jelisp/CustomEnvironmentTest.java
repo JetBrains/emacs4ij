@@ -16,16 +16,16 @@ import org.junit.Test;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EnvironmentTest {
+public class CustomEnvironmentTest {
 
-    private Environment e;
+    private CustomEnvironment e;
 
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null);
-        e = new Environment(GlobalEnvironment.getInstance());
+        e = new CustomEnvironment(GlobalEnvironment.getInstance());
     }
 
     @Test

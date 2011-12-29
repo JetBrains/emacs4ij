@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -23,7 +23,7 @@ public class SpecialFormInteractive {
     private final static String ourEmptyMessage = "";
 
     private char myInteractiveChar;
-    private Environment myEnvironment;
+    private CustomEnvironment myEnvironment;
     private String myPrompt;
     private String myPromptDefaultValue;
     private String myParameterStartValue;
@@ -37,7 +37,7 @@ public class SpecialFormInteractive {
     private String[] myParameters;
     private int myIndex;
 
-    public SpecialFormInteractive (Environment environment, String interactive) {
+    public SpecialFormInteractive (CustomEnvironment environment, String interactive) {
         myEnvironment = environment;
         myParameters = interactive.split("\\\\n");
         myIndex = 0;

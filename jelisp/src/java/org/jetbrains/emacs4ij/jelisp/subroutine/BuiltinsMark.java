@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 
 /**
@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
  */
 public abstract class BuiltinsMark {
      @Subroutine("mark-marker")
-    public static LispMarker markMarker (Environment environment) {
+    public static LispMarker markMarker (CustomEnvironment environment) {
         //todo:  Moving this marker changes the mark position
         return (LispMarker) environment.getBufferCurrentForEditing().getLocalVariableValue("my-mark");
     }
@@ -21,7 +21,7 @@ public abstract class BuiltinsMark {
     //todo: it's a compiled elisp function
 
     @Subroutine("mark")
-    public static LObject mark (Environment environment, @Optional LObject force) {
+    public static LObject mark (CustomEnvironment environment, @Optional LObject force) {
 
 
         Integer mark = environment.getBufferCurrentForEditing().getMark();
@@ -32,14 +32,14 @@ public abstract class BuiltinsMark {
 
     //todo: it's a compiled elisp function
     @Subroutine("set-mark")
-    public static LispMarker setMark (Environment environment, LispInteger position) {
+    public static LispMarker setMark (CustomEnvironment environment, LispInteger position) {
         environment.getBufferCurrentForEditing().setMark(position.getData());
         return markMarker(environment);
     }
 
     //todo: it's a compiled elisp function
     @Subroutine("push-mark")
-    public static LObject pushMark (Environment environment, @Optional LispInteger position, @Optional LObject noMsg, @Optional LObject activate) {
+    public static LObject pushMark (CustomEnvironment environment, @Optional LispInteger position, @Optional LObject noMsg, @Optional LObject activate) {
         Integer pos = position == null ? null : position.getData();
         boolean setActive = false;
         if (activate != null && activate.equals(LispSymbol.ourT))
@@ -52,7 +52,7 @@ public abstract class BuiltinsMark {
 
      //todo: it's a compiled elisp function
     @Subroutine("pop-mark")
-    public static LObject popMark (Environment environment) {
+    public static LObject popMark (CustomEnvironment environment) {
         environment.getBufferCurrentForEditing().popMark();
         return LispSymbol.ourNil;
     }

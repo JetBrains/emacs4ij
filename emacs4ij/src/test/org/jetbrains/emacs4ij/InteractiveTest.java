@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.ui.EditorTextField;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
@@ -25,7 +25,7 @@ import org.junit.Test;
  */
 public class InteractiveTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
-    private Environment myEnvironment;
+    private CustomEnvironment myEnvironment;
 
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     EditorTextField myMiniBufferEditor;
@@ -40,7 +40,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
         //GlobalEnvironment.getInstance().startRecording();
        // GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
         //GlobalEnvironment.getInstance().clearRecorded();
 
         myFixture.configureByFile(myTestsPath + myFileName);
@@ -73,13 +73,6 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         if (e.getCause() == null)
             return e;
         return getCause(e.getCause());
-    }
-
-    @Test
-    public void testReadCommand () {
-        myMiniBuffer.appendText("bury");
-        LObject result = myMiniBuffer.onReadInput();
-        Assert.assertEquals(LispSymbol.ourNil, result);
     }
 
     @Test

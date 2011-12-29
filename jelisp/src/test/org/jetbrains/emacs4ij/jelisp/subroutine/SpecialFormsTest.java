@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -18,7 +18,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class SpecialFormsTest {
-    private Environment environment;
+    private CustomEnvironment environment;
 
     @BeforeClass
     public static void runBeforeClass() {
@@ -31,7 +31,7 @@ public class SpecialFormsTest {
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.getInstance().clearRecorded();
-        environment = new Environment(GlobalEnvironment.getInstance());
+        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {
@@ -293,6 +293,13 @@ public class SpecialFormsTest {
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
         evaluateString("(testFun)");
     }
+    
+    @Test
+    public void testDefVarNilDoc() {
+        evaluateString("(defvar a 5 5)");
+        LObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
+        Assert.assertEquals(LispSymbol.ourNil, doc);
+    }
 
     @Ignore
     @Test
@@ -332,6 +339,15 @@ public class SpecialFormsTest {
         evaluateString("(let ((x 2)) (defvar one 1))");
         LObject result = evaluateString("one");
         junit.framework.Assert.assertEquals(new LispInteger(1), result);
+    }
+    
+    @Test
+    public void testDefconst() {
+        LObject a = evaluateString("(defconst a 5 5)");
+        Assert.assertEquals(LispSymbol.ourNil, ((LispSymbol) a).getDocumentation(environment));
+        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+        evaluateString("(setq a 10)");
+        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
     }
 
     @Test

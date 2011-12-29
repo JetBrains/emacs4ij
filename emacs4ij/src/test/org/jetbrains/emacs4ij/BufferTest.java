@@ -1,9 +1,8 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -26,7 +25,7 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public class BufferTest extends CodeInsightFixtureTestCase {
-    Environment myEnvironment;
+    CustomEnvironment myEnvironment;
     Parser myParser = new Parser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     HashMap<String, IdeaBuffer> myTests;
@@ -44,8 +43,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         //GlobalEnvironment.getInstance().startRecording();
 
         //GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
        // GlobalEnvironment.getInstance().clearRecorded();
+
 
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
@@ -54,11 +54,11 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             myEnvironment.defineBuffer(buffer);
         }
 
-        LispFrame current  = new IdeaFrame(new IdeFrameImpl(null, null, null, null, null, null));
+//        LispFrame current  = new IdeaFrame(new IdeFrameImpl(null, null, null, null, null, null));
 
    //     LispFrame current  = new IdeaFrame(WindowManager.getInstance().getIdeFrame(myFixture.getProject()));
-        GlobalEnvironment.onFrameOpened(current);
-        GlobalEnvironment.setSelectedFrame(current);
+  /*      GlobalEnvironment.onFrameOpened(current);
+        GlobalEnvironment.setSelectedFrame(current);*/
     }
 
     private Throwable getCause (Throwable e) {
@@ -500,7 +500,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             LObject lastBuffer = eval("(last-buffer)");
             Assert.assertTrue(lastBuffer instanceof LispBuffer);
-            Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+            Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
         }
@@ -510,14 +510,16 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void testLastBuffer_Integer () {
         LObject lastBuffer = eval("(last-buffer 1)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
-        Assert.assertEquals(myTestFiles[0], ((LispBuffer) lastBuffer).getName());
+        Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
     @Test
     public void testLastBuffer_Other () {
-        LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        LObject lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[myTestFiles.length-1] + "\"))");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
-        Assert.assertEquals(myTestFiles[1], ((LispBuffer) lastBuffer).getName());
+        Assert.assertEquals(myTestFiles[myTestFiles.length-2], ((LispBuffer) lastBuffer).getName());
+        lastBuffer = eval("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
     @Test
@@ -594,6 +596,29 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.findBuffer(myTestFiles[1]), lispObject);
         Assert.assertEquals(myEnvironment.getBuffersSize(), 2);
         Assert.assertTrue(myEnvironment.isDead("3.txt"));
+    }
+
+    @Test
+    public void testBufferEnd () {
+        LObject bufferEnd = eval("(buffer-end 1)");
+        LObject pos = eval("(point-max)");
+        Assert.assertEquals(pos, bufferEnd);
+        bufferEnd = eval("(buffer-end 0)");
+        pos = eval("(point-min)");
+        Assert.assertEquals(pos, bufferEnd);
+        bufferEnd = eval("(buffer-end -1)");
+        Assert.assertEquals(pos, bufferEnd);
+    }
+
+    @Test
+    public void testBufferEndWrongArg () {
+        try {
+            eval("(buffer-end 'a)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
     }
 }
 

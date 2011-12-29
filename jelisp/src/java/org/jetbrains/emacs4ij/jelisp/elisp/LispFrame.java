@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -19,4 +21,5 @@ public interface LispFrame extends LObject {
     public void openWindow (LispBuffer buffer);
     public LispWindow containsBuffer (LispBuffer buffer);
     public void closeWindow (LispBuffer buffer);
+    public List<LispBuffer> getBufferList();
 }

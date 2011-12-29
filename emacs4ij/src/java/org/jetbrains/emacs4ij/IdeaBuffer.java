@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -122,7 +123,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         throw new RuntimeException("Cannot evaluate buffer!");
     }
 

@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
@@ -26,6 +26,10 @@ public abstract class LispNumber<T> extends LispAtom {
             return new LispFloat((Double)data);
         throw new LispException("Invalid LispNumber instantiation!");
     }
+    
+    public double getDoubleData() {
+        return (this instanceof LispInteger) ? ((Integer)getData()).doubleValue() : (Double)getData();
+    }
 
     /*public void setData(T myData) {
         this.myData = myData;
@@ -35,7 +39,7 @@ public abstract class LispNumber<T> extends LispAtom {
     /**
      * no parameters required
      */
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         return this;
     }
 

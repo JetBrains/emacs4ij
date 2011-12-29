@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -10,7 +12,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
@@ -22,10 +24,11 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
  * To change this template use File | Settings | File Templates.
  */
 public class MyProjectComponent implements ProjectComponent {
-    private Environment myEnvironment;
+    private CustomEnvironment myEnvironment;
     private Project myProject;
 
     public MyProjectComponent(Project project) {
+        Application application = ApplicationManager.getApplication();
         myProject = project;
         IdeaBuffer.setProject(project);
       //  IdeFrameImpl ifi = (IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0];
@@ -50,16 +53,20 @@ public class MyProjectComponent implements ProjectComponent {
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
             GlobalEnvironment.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
-            boolean hasFocus = ((IdeFrameImpl) frame).hasFocus();
-            boolean isActive = ((IdeFrameImpl) frame).isActive();
-            System.out.println("Project environment initializing");
+            if (((IdeFrameImpl) frame).hasFocus())
+                GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
+          //  boolean isActive = ((IdeFrameImpl) frame).isActive();
+
+          //  System.out.println("Project environment initializing");
           //  if (((IdeFrameImpl) frame).hasFocus())
           //      GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
         }
 
-        GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+        //for test:
+        if (windowManager.getAllFrames().length > 0)
+            GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = myProject.getProjectFilePath().substring(0, myProject.getProjectFilePath().lastIndexOf("/")+1);
@@ -77,7 +84,7 @@ public class MyProjectComponent implements ProjectComponent {
         return true;
     }
 
-    public Environment getEnvironment() {
+    public CustomEnvironment getEnvironment() {
         return myEnvironment;
     }
 

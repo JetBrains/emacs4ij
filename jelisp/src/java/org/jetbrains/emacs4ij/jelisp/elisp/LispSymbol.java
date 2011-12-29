@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -69,14 +69,14 @@ public class LispSymbol extends LispAtom {
         throw new RuntimeException("unknown function type: " + myName);
     }*/
 
-    private void castToLambda (Environment environment) {
+    private void castToLambda (CustomEnvironment environment) {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
             environment.updateFunction(this);
         }
     }
 
-    private void castToMacro (Environment environment) {
+    private void castToMacro (CustomEnvironment environment) {
         if (isMacro() && !(myFunction instanceof Macro)) {
             myFunction = new Macro((LispList) myFunction, environment);
             environment.updateFunction(this);
@@ -122,7 +122,7 @@ public class LispSymbol extends LispAtom {
                 || (myFunction instanceof Macro));
     }
 
-    public boolean isInteractive (Environment environment) {
+    public boolean isInteractive (CustomEnvironment environment) {
         if (!isFunction())
             throw new RuntimeException("wrong usage of function isInteractive with symbol " + myName +
                 ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
@@ -169,9 +169,9 @@ public class LispSymbol extends LispAtom {
 
     @Override
     /**
-     * takes Environment
+     * takes CustomEnvironment
      */
-    public LObject evaluate(Environment environment) {
+    public LObject evaluate(CustomEnvironment environment) {
         if (equals(ourNil) || equals(ourT) || equals(ourVoid))
             return this;
         //if (myName.equals("default-directory"))
@@ -194,7 +194,7 @@ public class LispSymbol extends LispAtom {
         //    System.out.println("symbol-file FINISHED");
     }
 
-    public LObject evaluateFunction (Environment environment, List<LObject> args) {
+    public LObject evaluateFunction (CustomEnvironment environment, List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
 
         LObject result;
@@ -216,7 +216,7 @@ public class LispSymbol extends LispAtom {
         return result;
     }
 
-    public LObject macroExpand (Environment environment, List<LObject> args) {
+    public LObject macroExpand (CustomEnvironment environment, List<LObject> args) {
         castToMacro(environment);
         try {
             return ((Macro)myFunction).expand(environment, args);
@@ -225,11 +225,11 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    private LObject evaluateMacro(Environment environment, List<LObject> args) {
+    private LObject evaluateMacro(CustomEnvironment environment, List<LObject> args) {
         return macroExpand(environment, args).evaluate(environment);
     }
 
-    private LObject evaluateCustomFunction (Environment environment, List<LObject> args) {
+    private LObject evaluateCustomFunction (CustomEnvironment environment, List<LObject> args) {
         if (!environment.areArgumentsEvaluated()) {
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));
@@ -266,7 +266,7 @@ public class LispSymbol extends LispAtom {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    private void castFunctionCell (Environment environment) {
+    private void castFunctionCell (CustomEnvironment environment) {
         if (isCustom()) {
             castToLambda(environment);
         } else if (isMacro()) {
@@ -274,18 +274,19 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    public LispObject getDocumentation (Environment environment) {
+    public LispObject getDocumentation (CustomEnvironment environment) {
         if (myFunction == null)
             return getProperty("variable-documentation");
         castFunctionCell(environment);
         return ((FunctionCell)myFunction).getDocString();
     }
 
-    public void setVariableDocumentation (LispObject value) {
-        setProperty("variable-documentation", value);
+    public void setVariableDocumentation (LObject value) {
+        if (value instanceof LispString)
+            setProperty("variable-documentation", (LispString)value);
     }
 
-    public String getInteractiveString (Environment environment) {
+    public String getInteractiveString (CustomEnvironment environment) {
         if (myFunction == null)
             return null;
         castFunctionCell(environment);

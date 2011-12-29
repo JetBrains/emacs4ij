@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
@@ -67,7 +67,7 @@ public abstract class LispSubroutine {
         arguments.setRequiredSize(nRequiredParameters);
     }
 
-    private static ArgumentsList parseArguments (Method m, Environment environment, List<LObject> args) {
+    private static ArgumentsList parseArguments (Method m, CustomEnvironment environment, List<LObject> args) {
         Type[] parametersTypes = m.getGenericParameterTypes();
         Annotation[][] parametersAnnotations = m.getParameterAnnotations();
         if (parametersAnnotations.length != parametersTypes.length) {
@@ -78,7 +78,7 @@ public abstract class LispSubroutine {
 
         int nActual = args.size();
         if (parametersTypes.length != 0) {
-            if (parametersTypes[0].equals(Environment.class)) {
+            if (parametersTypes[0].equals(CustomEnvironment.class)) {
                 ++nActual;
                 arguments.setValue(0, environment);
             }
@@ -159,7 +159,7 @@ public abstract class LispSubroutine {
         int argsCounter = 0;
         for (int i=0; i != arguments.getSize(); ++i) {
             Type expectedType = arguments.getType(i);
-            if (i==0 && expectedType.equals(Environment.class))
+            if (i==0 && expectedType.equals(CustomEnvironment.class))
                 continue;
             if (ParameterizedType.class.isInstance(expectedType)) {
                 argsCounter = checkParameterizedType((ParameterizedType) expectedType, arguments, args, argsCounter, i);
@@ -174,7 +174,7 @@ public abstract class LispSubroutine {
         }
     }
 
-    public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
+    public static LObject evaluate (LispSymbol f, CustomEnvironment environment, List<LObject> args) {
         for (Class c: getSubroutineContainers()) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {

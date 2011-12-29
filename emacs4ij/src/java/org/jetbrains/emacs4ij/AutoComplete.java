@@ -41,10 +41,10 @@ public class AutoComplete extends AnAction {
         if (!emacsHomeService.checkSetEmacsHome())
             return;*/
 
-       // Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+       // CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
         try {
-            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) GlobalEnvironment.getInstance().getMiniBuffer();
+            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) GlobalEnvironment.INSTANCE.getMiniBuffer();
             String parameter = miniBuffer.readInputString();
             List<String> completions = miniBuffer.getCompletions(parameter);
             if (completions.isEmpty()) {

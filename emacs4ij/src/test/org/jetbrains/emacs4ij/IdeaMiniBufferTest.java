@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.ui.EditorTextField;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -21,7 +21,7 @@ import org.junit.Test;
  */
 public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
-    private Environment myEnvironment;
+    private CustomEnvironment myEnvironment;
 
     @Before
     public void setUp() throws Exception {
@@ -31,7 +31,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
 
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
 //        GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new Environment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
 
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);

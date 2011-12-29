@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -20,7 +20,7 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class BuiltinsCoreTest {
-    private Environment environment;
+    private CustomEnvironment environment;
 
     @BeforeClass
     public static void runBeforeClass() {
@@ -33,7 +33,7 @@ public class BuiltinsCoreTest {
     @Before
     public void setUp() throws Exception {
         GlobalEnvironment.getInstance().clearRecorded();
-        environment = new Environment(GlobalEnvironment.getInstance());
+        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
     }
 
     private LObject evaluateString (String lispCode) throws LispException {
@@ -64,7 +64,19 @@ public class BuiltinsCoreTest {
         LispNumber n = BuiltinsCore.plus(new LispInteger(5), new LispFloat(6.6));
         Assert.assertEquals(new LispFloat(11.6), n);
     }
+    
+    @Test 
+    public void testPlusMarker () {
+        LispNumber n = BuiltinsCore.plus(new LispMarker(), new LispMarker());
+        Assert.assertEquals(new LispInteger(0), n);
+    }
 
+    @Test
+    public void testMore() {
+        LispSymbol more = BuiltinsCore.more(new LispInteger(5), new LispFloat(1.3));
+        Assert.assertEquals(LispSymbol.ourT, more);
+    }
+    
     @Test
     public void testMultiplySimple () {
         LispNumber n = BuiltinsCore.multiply(new LispInteger(5), new LispFloat(2.0));
