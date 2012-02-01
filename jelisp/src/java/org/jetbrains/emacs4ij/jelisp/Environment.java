@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -16,7 +17,6 @@ import java.util.HashMap;
  */
 public abstract class Environment {
     protected boolean isRecording = false;
-   // protected ArrayList<String> myRecordedBuffers = new ArrayList<>();
     protected ArrayList<String> myRecordedSymbols = new ArrayList<String>();
     protected HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
     protected boolean myArgumentsEvaluated = false;
@@ -69,12 +69,11 @@ public abstract class Environment {
         return (LispSymbol) find(name, "", null);
     }
 
-    public LObject find(String name, String methodName, Class[] parameterTypes, Object... methodParameters) {
+    public LObject find(String name, String methodName, @Nullable Class[] parameterTypes, @Nullable Object... methodParameters) {
         LispSymbol lispObject = mySymbols.get(name);
 
         if (lispObject != null) {
-            if (!lispObject.isFunction() && lispObject.getValue() == null)
-            {
+            if (!lispObject.isFunction() && lispObject.getValue() == null) {
                 try {
                     lispObject = getBufferCurrentForEditing().getLocalVariable(name);
                 } catch (NoOpenedBufferException e1) {

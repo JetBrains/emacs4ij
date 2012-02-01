@@ -141,31 +141,33 @@ public class LispList extends LispObject {
             list.add(myCar);
             list.add(myCdr);
             return list;
-            //throw new RuntimeException("wrong usage??");
         }
        // if (isEmpty()) return new ArrayList<LObject>();
-        for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+        LObject cdr = this;
+        do {
             list.add(((LispList)cdr).car());
-        }
+            cdr = ((LispList)cdr).cdr();
+        } while (cdr instanceof LispList);
         return list;
     }
 
     @Override
     public String toString() {
-        if (toLObjectList().isEmpty())
+        List<LObject> objectList = toLObjectList();
+        if (objectList.isEmpty())
+            return "nil";
+        if (objectList.size() == 1 && objectList.get(0).equals(LispSymbol.ourNil))
             return "nil";
         String list = "(";
-        for (LObject cdr = this; !cdr.equals(LispSymbol.ourNil); ) {
-            if (cdr instanceof LispList) {
-                list += ((LispList)cdr).car().toString() + " ";
-                cdr = ((LispList)cdr).cdr();
-                continue;
+        if (isTrueList) {
+            for (int i = 0; i != objectList.size(); ++i) {
+                list += objectList.get(i) + " ";
             }
-            list += ". " + cdr.toString();
-            cdr = LispSymbol.ourNil;
+            return list.trim() + ")";
+        } else {
+            list += myCar.toString() + " . " + myCdr.toString() + ')';
+            return list;
         }
-        return list.trim() + ")";
-        //return '(' + myCar.toString() + " . " + myCdr.toString() + ')';
     }
 
     public LObject car () {
@@ -202,7 +204,7 @@ public class LispList extends LispObject {
         if (!isTrueList) {
             throw new RuntimeException("wrong usage??");
         }
-        
+
         for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
             if (((LispList)cdr).car().equals(element)) {
                 return (LispList)cdr;

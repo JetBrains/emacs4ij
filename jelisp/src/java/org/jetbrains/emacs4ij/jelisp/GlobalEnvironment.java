@@ -87,7 +87,7 @@ public class GlobalEnvironment extends Environment {
 
     private void addVariable(String name, @Nullable LObject value, int documentation) {
         LispSymbol symbol = new LispSymbol(name, value);
-        symbol.setVariableDocumentation(new LispInteger(documentation));
+        symbol.setGlobalVariableDocumentation(new LispInteger(documentation));
         mySymbols.put(name, symbol);
     }
 

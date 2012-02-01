@@ -44,7 +44,7 @@ public abstract class BuiltinsSymbol {
 
     @Subroutine("put")
     public static LObject put(Environment environment, LispSymbol symbol, LispSymbol propertyName, LObject value) {
-        environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LispObject.class}, propertyName, value);
+        environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LObject.class}, propertyName, value);
         return value;
     }
 

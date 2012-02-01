@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
@@ -103,7 +102,7 @@ public class Primitive extends LispObject implements FunctionCell {
                         return;
                     }
 
-                    int correction = (parametersTypes[0].equals(CustomEnvironment.class)) ? -1 : 0;
+                    int correction = (parametersTypes[0].equals(Environment.class)) ? -1 : 0;
 
                     boolean optional = false;
                     for (int i = 0; i != parametersTypes.length; ++i) {

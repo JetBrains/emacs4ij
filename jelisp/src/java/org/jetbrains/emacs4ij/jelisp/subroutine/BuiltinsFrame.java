@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -35,7 +35,7 @@ public class BuiltinsFrame {
     }
 
     @Subroutine("get-buffer-window")
-    public static LObject getBufferWindow(CustomEnvironment environment, @Optional LObject bufferOrName, @Optional LObject frame) {
+    public static LObject getBufferWindow(Environment environment, @Optional LObject bufferOrName, @Optional LObject frame) {
         LispBuffer buffer = BuiltinsBuffer.getBufferByBufferNameOrNil(environment, bufferOrName);
         ArrayList<LispFrame> frames = new ArrayList<>();
         if (frame == null) {

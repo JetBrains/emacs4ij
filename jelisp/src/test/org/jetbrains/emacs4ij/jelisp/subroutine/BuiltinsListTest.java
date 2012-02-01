@@ -160,6 +160,12 @@ public class BuiltinsListTest {
     }
 
     @Test
+    public void testToStringNils() {
+        LObject cons = evaluateString("(cons (cons nil nil) nil)");
+        Assert.assertEquals("((nil))", cons.toString());
+    }
+
+    @Test
     public void testMixedList() {
         LObject a = evaluateString("(cons 1 (cons 2 3))");
         Assert.assertEquals("(1 2 . 3)", a.toString());

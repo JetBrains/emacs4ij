@@ -31,7 +31,7 @@ public class LispSymbol extends LispAtom {
     //private String myInteractiveString;
 
 
-    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<LispSymbol, LispObject>();
+    private HashMap<LispSymbol, LObject> myProperties = new HashMap<LispSymbol, LObject>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
@@ -248,21 +248,21 @@ public class LispSymbol extends LispAtom {
         return LispList.list(pList);
     }
 
-    public LispObject getProperty (String pName) {
+    public LObject getProperty (String pName) {
         return getProperty(new LispSymbol(pName));
     }
 
-    public LispObject getProperty(LispSymbol pName) {
+    public LObject getProperty(LispSymbol pName) {
         if (myProperties.containsKey(pName))
             return myProperties.get(pName);
         return LispSymbol.ourNil;
     }
 
-    public void setProperty(LispSymbol key, LispObject value) {
+    public void setProperty(LispSymbol key, LObject value) {
         myProperties.put(key, value);
     }
 
-    public void setProperty(String keyName, LispObject value) {
+    public void setProperty(String keyName, LObject value) {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
@@ -274,7 +274,7 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    public LispObject getDocumentation (Environment environment) {
+    public LObject getDocumentation (Environment environment) {
         if (myFunction == null)
             return getProperty("variable-documentation");
         castFunctionCell(environment);
@@ -285,6 +285,11 @@ public class LispSymbol extends LispAtom {
         if (value instanceof LispString)
             setProperty("variable-documentation", (LispString)value);
     }
+
+    public void setGlobalVariableDocumentation (LObject value) {
+        setProperty("variable-documentation", value);
+    }
+
 
     public String getInteractiveString (Environment environment) {
         if (myFunction == null)
