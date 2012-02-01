@@ -52,9 +52,9 @@ public class MyProjectComponent implements ProjectComponent {
 
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
-            GlobalEnvironment.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
+            GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
             if (((IdeFrameImpl) frame).hasFocus())
-                GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
+                GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
           //  boolean isActive = ((IdeFrameImpl) frame).isActive();
 
           //  System.out.println("Project environment initializing");
@@ -64,9 +64,9 @@ public class MyProjectComponent implements ProjectComponent {
 
         //for test:
         if (windowManager.getAllFrames().length > 0)
-            GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+            GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, myEnvironment);
         myEnvironment.defineServiceBuffer(miniBuffer);
         String scratchDir = myProject.getProjectFilePath().substring(0, myProject.getProjectFilePath().lastIndexOf("/")+1);

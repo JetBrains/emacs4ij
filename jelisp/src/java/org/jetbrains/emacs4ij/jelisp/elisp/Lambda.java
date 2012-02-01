@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
@@ -23,7 +24,7 @@ public class Lambda extends LispObject implements FunctionCell {
     private LispList myInteractive = null;
     private List<LObject> myBody = new ArrayList<LObject>();
 
-    public Lambda (LispList def, CustomEnvironment environment) {
+    public Lambda (LispList def, Environment environment) {
         List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
@@ -91,7 +92,7 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         throw new RuntimeException("wrong usage");
     }
 
@@ -103,11 +104,11 @@ public class Lambda extends LispObject implements FunctionCell {
         return result;
     }
 
-    public LObject evaluate(CustomEnvironment environment, List<LObject> args) {
+    public LObject evaluate(Environment environment, List<LObject> args) {
         return evaluateBody(substituteArguments(environment, args));
     }
 
-    public CustomEnvironment substituteArguments (CustomEnvironment environment, List<LObject> args) {
+    public CustomEnvironment substituteArguments (Environment environment, List<LObject> args) {
         int nRequiredArguments = 0;
         for (Map.Entry<LispSymbol, String> arg: myArgumentList.entrySet()) {
             if (arg.getValue().equals("required"))

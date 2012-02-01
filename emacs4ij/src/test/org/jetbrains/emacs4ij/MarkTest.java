@@ -47,7 +47,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
        // GlobalEnvironment.getInstance().startRecording();
 
        // GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
        // GlobalEnvironment.getInstance().clearRecorded();
 
         for (String fileName: myTestFiles) {
@@ -72,7 +72,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     @Test
     public void testMark () throws Throwable {
         try {
-            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
+            GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
             LObject mark = evaluateString("(mark)");
             Assert.assertEquals(LispSymbol.ourNil, mark);
         } catch (Exception e) {
@@ -84,7 +84,7 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetMark () throws Throwable {
         try {
-            GlobalEnvironment.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
+            GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
             LObject mark = evaluateString("(set-mark 10)");
             System.out.println("Mark set: " + mark.toString());
             Assert.assertEquals(LispSymbol.ourNil, mark);

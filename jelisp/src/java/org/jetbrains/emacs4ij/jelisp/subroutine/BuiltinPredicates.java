@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -45,7 +45,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("commandp")
-    public static LispSymbol commandp (CustomEnvironment environment, LObject function, @Optional LObject forCallInteractively) {
+    public static LispSymbol commandp (Environment environment, LObject function, @Optional LObject forCallInteractively) {
         if (function instanceof LispSymbol) {
             if (!((LispSymbol) function).isFunction())
                 return LispSymbol.ourNil;
@@ -86,7 +86,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("fboundp")
-    public static LispSymbol fboundp (CustomEnvironment environment, LispSymbol symbol) {
+    public static LispSymbol fboundp (Environment environment, LispSymbol symbol) {
         LispSymbol f = environment.find(symbol.getName());
         if (f == null || !f.isFunction())
             return LispSymbol.ourNil;

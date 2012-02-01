@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 public interface LObject {
    // LispString toLispString();
 
-    LObject evaluate(CustomEnvironment environment);
+    LObject evaluate(Environment environment);
 
     LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters);
 }

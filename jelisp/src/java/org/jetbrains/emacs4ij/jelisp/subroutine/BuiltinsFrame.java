@@ -17,15 +17,15 @@ import java.util.ArrayList;
 public class BuiltinsFrame {
     @Subroutine("selected-frame")
     public static LObject selectedFrame () {
-        return GlobalEnvironment.getSelectedFrame() == null ?
-                LispSymbol.ourNil : GlobalEnvironment.getSelectedFrame();
+        return GlobalEnvironment.INSTANCE.getSelectedFrame() == null ?
+                LispSymbol.ourNil : GlobalEnvironment.INSTANCE.getSelectedFrame();
     }
 
     @Subroutine("frame-parameter")
     public static LObject frameParameter (LObject frame, LispSymbol parameter) {
         System.out.println("Ask for frame parameter: " + parameter.getName());
         if (frame.equals(LispSymbol.ourNil)) {
-            frame = GlobalEnvironment.getSelectedFrame();
+            frame = GlobalEnvironment.INSTANCE.getSelectedFrame();
         }
         if (frame == null)
             return LispSymbol.ourNil;

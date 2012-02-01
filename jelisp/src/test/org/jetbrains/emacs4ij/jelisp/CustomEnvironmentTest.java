@@ -25,7 +25,7 @@ public class CustomEnvironmentTest {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null);
-        e = new CustomEnvironment(GlobalEnvironment.getInstance());
+        e = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class CustomEnvironmentTest {
     public void testGetFunctionFromFile() {
         String lispObjectFileNameFile = GlobalEnvironment.ourEmacsSource + "/lisp/help-fns.el";
         String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = GlobalEnvironment.getInstance().getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
+        LispList functionFromFile = GlobalEnvironment.INSTANCE.getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
         Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList)functionFromFile.cdr()).car());
     }
 

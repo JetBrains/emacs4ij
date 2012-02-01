@@ -43,7 +43,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         //GlobalEnvironment.getInstance().startRecording();
 
         //GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
        // GlobalEnvironment.getInstance().clearRecorded();
 
 
@@ -477,7 +477,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testBuryBuffer_String () {
-        LispBuffer current = myEnvironment.findBuffer(myTestFiles[1]);
+        LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
         ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
         buffers.remove(current);
         buffers.add(0, current);
@@ -487,7 +487,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testBuryBuffer_Buffer () {
-        LispBuffer current = myEnvironment.findBuffer(myTestFiles[1]);
+        LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
         ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
         buffers.remove(current);
         buffers.add(0, current);
@@ -593,9 +593,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LObject lispObject = eval("(kill-buffer \"3.txt\")");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = myEnvironment.getBufferCurrentForEditing();
-        Assert.assertEquals(myEnvironment.findBuffer(myTestFiles[1]), lispObject);
+        Assert.assertEquals(myEnvironment.findBufferSafe(myTestFiles[1]), lispObject);
         Assert.assertEquals(myEnvironment.getBuffersSize(), 2);
-        Assert.assertTrue(myEnvironment.isDead("3.txt"));
+        Assert.assertTrue(myEnvironment.isBufferDead("3.txt"));
     }
 
     @Test

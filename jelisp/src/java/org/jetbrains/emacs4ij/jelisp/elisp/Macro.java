@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ public class Macro extends LispObject implements FunctionCell {
     private Lambda myLambda;
     private LispList myDeclaration;
 
-    public Macro (LispList def, CustomEnvironment environment) {
+    public Macro (LispList def, Environment environment) {
         List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
             throw new RuntimeException("wrong macro definition");
@@ -27,7 +27,7 @@ public class Macro extends LispObject implements FunctionCell {
         myDeclaration = declaration;
     }
 
-    public LObject expand (CustomEnvironment environment, List<LObject> args) {
+    public LObject expand (Environment environment, List<LObject> args) {
         return myLambda.evaluate(environment, args);
     }
 
@@ -47,7 +47,7 @@ public class Macro extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         throw new RuntimeException("not impl");
     }
 }

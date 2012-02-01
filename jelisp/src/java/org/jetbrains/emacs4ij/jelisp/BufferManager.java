@@ -22,12 +22,17 @@ public class BufferManager {
     private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
     private ArrayList<LispBuffer> myDeadBuffers = new ArrayList<LispBuffer>();
     private ArrayList<LispBuffer> myServiceBuffers = new ArrayList<LispBuffer>();
-    protected ArrayList<String> myRecordedBuffers = new ArrayList<String>();
+    private ArrayList<String> myRecordedBuffers = new ArrayList<String>();
     private LispBufferFactory myBufferFactory = null;
 
+    public BufferManager(LispBufferFactory bufferFactory) {
+        myBufferFactory = bufferFactory;
+    }
+    
     private LispBufferFactory getBufferFactory() {
         return myBufferFactory;
     }
+    
     public LispBuffer createBuffer (String bufferName) {
         LispBuffer buffer = myBufferFactory.createBuffer(bufferName);
         //getMainEnvironment().defineBuffer(buffer);
@@ -75,24 +80,31 @@ public class BufferManager {
         return null;
     }
 
-    @Override
-    public void defineBuffer(LispBuffer buffer) {
+    public boolean containsBuffer (String bufferName) {
+        return findBuffer(bufferName) != null;
+    }
+    
+    public LispBuffer findBufferSafe (String bufferName) {
+        LispBuffer buffer = findBuffer(bufferName);
+        if (buffer == null)
+            throw new NoBufferException(bufferName);
+        return buffer;
+    }
+
+    public boolean defineBuffer(LispBuffer buffer) {
         if (containsBuffer(buffer.getName())) {
             throw new DoubleBufferException("double "+buffer.getName());
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);
-            if (myCurrentFrame != null)
-                myCurrentFrame.openWindow(buffer);
-            return;
+            return true;
         }
         myDeadBuffers.remove(getIndexByName(myDeadBuffers, buffer.getName()));
+        return false;
     }
 
     public void defineServiceBuffer (LispBuffer buffer) {
         myServiceBuffers.add(buffer);
-        if (myCurrentFrame != null)
-            myCurrentFrame.openWindow(buffer);
     }
 
     public void updateBuffer(LispBuffer buffer) {
@@ -132,37 +144,22 @@ public class BufferManager {
         }
         return LispList.list(bufferList);
     }
-
-    public void closeCurrentBuffer () {
-        LispBuffer b = getCurrentBuffer();
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(b);
-        myBuffers.remove(b);
-    }
-
-    // for test
-    public void removeBuffer(String name) {
-        LispBuffer buffer = findBuffer(name);
-        if (buffer == null)
-            throw new NoBufferException(name);
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(buffer);
+    
+    public void removeBuffer (LispBuffer buffer) {
         myBuffers.remove(buffer);
     }
 
-    public void killBuffer (String bufferName) {
+    /*public void killBuffer (String bufferName) {
         LispBuffer buffer = findBuffer(bufferName);
         if (buffer == null)
             throw new NoBufferException(bufferName);
         killBuffer(buffer);
-    }
+    }*/
 
     public void killBuffer (LispBuffer buffer) {
         buffer.kill();
-        myDeadBuffers.add(buffer);
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(buffer);
-        myBuffers.remove(buffer);
+        myDeadBuffers.add(buffer);        
+        myBuffers.remove(buffer);  
     }
 
     public void closeAllBuffers () {
@@ -213,6 +210,17 @@ public class BufferManager {
                 return true;
         }
         return false;
+    }
+    
+    public void clearRecorded() {
+        for (String name: myRecordedBuffers) {
+            GlobalEnvironment.INSTANCE.removeBuffer(name);
+        }
+        myRecordedBuffers.clear();
+    }
+    
+    public void startRecording() {
+        myRecordedBuffers.clear();
     }
 
 }

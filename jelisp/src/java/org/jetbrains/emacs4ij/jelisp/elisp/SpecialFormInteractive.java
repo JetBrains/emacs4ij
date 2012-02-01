@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -23,7 +23,7 @@ public class SpecialFormInteractive {
     private final static String ourEmptyMessage = "";
 
     private char myInteractiveChar;
-    private CustomEnvironment myEnvironment;
+    private Environment myEnvironment;
     private String myPrompt;
     private String myPromptDefaultValue;
     private String myParameterStartValue;
@@ -37,7 +37,7 @@ public class SpecialFormInteractive {
     private String[] myParameters;
     private int myIndex;
 
-    public SpecialFormInteractive (CustomEnvironment environment, String interactive) {
+    public SpecialFormInteractive (Environment environment, String interactive) {
         myEnvironment = environment;
         myParameters = interactive.split("\\\\n");
         myIndex = 0;
@@ -425,16 +425,16 @@ public class SpecialFormInteractive {
         ArrayList<String> completions = new ArrayList<String>();
         switch (myInteractiveChar) {
             case 'a':
-                completions = GlobalEnvironment.getInstance().getFunctionList(parameter);
+                completions = GlobalEnvironment.INSTANCE.getFunctionList(parameter);
                 break;
             case 'b': // -- Name of existing buffer.
-                completions = GlobalEnvironment.getInstance().getBufferNamesList(parameter);
+                completions = GlobalEnvironment.INSTANCE.getBufferNamesList(parameter);
                 break;
             case 'B': // -- Name of buffer, possibly nonexistent.
-                completions = GlobalEnvironment.getInstance().getBufferNamesList(parameter);
+                completions = GlobalEnvironment.INSTANCE.getBufferNamesList(parameter);
                 break;
             case 'C': // -- Command name: symbol with interactive function definition.
-                completions = GlobalEnvironment.getInstance().getCommandList(parameter);
+                completions = GlobalEnvironment.INSTANCE.getCommandList(parameter);
                 break;
             case 'D': // -- Directory name.
                 completions = fileCompletions(parameter, true);

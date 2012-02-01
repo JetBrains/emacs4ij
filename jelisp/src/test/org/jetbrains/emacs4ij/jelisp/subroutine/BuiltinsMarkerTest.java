@@ -28,13 +28,13 @@ public class BuiltinsMarkerTest {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.getInstance().startRecording();
+        GlobalEnvironment.INSTANCE.startRecording();
     }
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.getInstance().clearRecorded();
-        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        GlobalEnvironment.INSTANCE.clearRecorded();
+        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

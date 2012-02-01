@@ -17,7 +17,10 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class GlobalEnvironment extends Environment {
-    private ArrayList<String> myBufferDescriptors = new ArrayList<>();
+    //private ArrayList<String> myBufferDescriptors = new ArrayList<>();
+    // private BufferManager myBufferManager = null;
+    // private ArrayList<LispBuffer> myBuffers = new ArrayList<>();
+    // private LispBufferFactory myBufferFactory = null;
     private ArrayList<LispFrame> myFrames = new ArrayList<>();
     private LispFrame myCurrentFrame = null;
 
@@ -46,7 +49,7 @@ public class GlobalEnvironment extends Environment {
     public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         if (INSTANCE.myCurrentFrame != null) {
-            onFrameOpened(INSTANCE.myCurrentFrame);
+            INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
 
         if (!INSTANCE.setConstants()) {
@@ -64,33 +67,24 @@ public class GlobalEnvironment extends Environment {
         }
 
         myIde = ide;
-        INSTANCE.myBufferFactory = bufferFactory;
+        ourBufferManager = new BufferManager(bufferFactory);
 
-        //myInstance.myProject = project;
+        //INSTANCE.myProject = project;
         return 0;
         //findAndRegisterEmacsFunction(ourFinder);
     }
 
-    
-   /* public static void setProject (Object project) {
-        myInstance.myProject = project;
+
+    /* public static void setProject (Object project) {
+        INSTANCE.myProject = project;
     }*/
 
     private GlobalEnvironment () {
-       // myProject = project;
-       // myBufferFactory = bufferFactory;
-       // myOuterEnv = null;
+        // myProject = project;
+        // myBufferFactory = bufferFactory;
+        // myOuterEnv = null;
     }
 
-    @Override
-    public void clearRecorded() {
-        super.clearRecorded();
-        for (String name: myRecordedBuffers) {
-            INSTANCE.removeBuffer(name);
-        }
-        myRecordedBuffers.clear();
-    }
-    
     private void addVariable(String name, @Nullable LObject value, int documentation) {
         LispSymbol symbol = new LispSymbol(name, value);
         symbol.setVariableDocumentation(new LispInteger(documentation));
@@ -117,7 +111,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("load-history", LispSymbol.ourNil, 550505);
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
 
-       // addVariable("default-directory", LispSymbol.ourNil, 316938);
+        // addVariable("default-directory", LispSymbol.ourNil, 316938);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
@@ -154,7 +148,7 @@ public class GlobalEnvironment extends Environment {
         }
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
-       // System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
+        // System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
         return true;
     }
 
@@ -203,7 +197,7 @@ public class GlobalEnvironment extends Environment {
     }*/
 
 
-
+    @Override
     public void updateFunction (LispSymbol symbol) {
         LispSymbol function = mySymbols.get(symbol.getName());
         if (function == null) {
@@ -213,17 +207,54 @@ public class GlobalEnvironment extends Environment {
     }
 
     //============================= buffer processing =====================================
+    @Override
+    public void defineServiceBuffer (LispBuffer buffer) {
+        ourBufferManager.defineServiceBuffer(buffer);
+        if (myCurrentFrame != null)
+            myCurrentFrame.openWindow(buffer);
+    }
+
+    @Override
+    public void defineBuffer (LispBuffer buffer) {
+        if (ourBufferManager.defineBuffer(buffer) && myCurrentFrame != null) {
+            myCurrentFrame.openWindow(buffer);
+        }
+    }
+
+    @Override
+    public void closeCurrentBuffer () {
+        LispBuffer b = ourBufferManager.getCurrentBuffer();
+        if (myCurrentFrame != null)
+            myCurrentFrame.closeWindow(b);
+        ourBufferManager.removeBuffer(b);
+    }
+
+    // for test
+    public void removeBuffer(String name) {
+        LispBuffer buffer = findBufferSafe(name);
+        if (myCurrentFrame != null)
+            myCurrentFrame.closeWindow(buffer);
+        ourBufferManager.removeBuffer(buffer);
+    }
+
+    @Override
+    public void killBuffer (LispBuffer buffer) {
+        super.killBuffer(buffer);
+        if (myCurrentFrame != null)
+            myCurrentFrame.closeWindow(buffer);
+    }
+
+    @Override
+    public void killBuffer (String bufferName) {
+        killBuffer(findBufferSafe(bufferName));
+    }
 
 
 
 
 
 
-
-
-
-
-   /* public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
+    /* public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
         CustomEnvironment main = getMainEnvironment();
         ArrayList<LispBuffer> noSpace = new ArrayList<LispBuffer>();
         for (LispBuffer buffer: main.myBuffers) {
@@ -256,9 +287,7 @@ public class GlobalEnvironment extends Environment {
 
 
 
-    public LispBuffer lastBuffer () {
-        return lastBuffer("");
-    }
+
 
 
 
@@ -296,7 +325,7 @@ public class GlobalEnvironment extends Environment {
 
     public ArrayList<String> getBufferNamesList (String begin) {
         ArrayList<String> bufferNamesList = new ArrayList<String>();
-        for (String bufferName: myBufferDescriptors) {
+        for (String bufferName: ourBufferManager.getBuffersNames()) {
             if (bufferName.length() >= begin.length()) {
                 if (bufferName.substring(0, begin.length()).equals(begin)) {
                     bufferNamesList.add(bufferName);
@@ -345,7 +374,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     public static LispList findEmacsFunctionFileName(LispSymbol functionName, File sourceDir) {
-       // File lispSource = new File(path);
+        // File lispSource = new File(path);
         File[] src = sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
@@ -364,55 +393,55 @@ public class GlobalEnvironment extends Environment {
             try {
                 return getFunctionFromFile(file, functionName.getName());
             } catch (RuntimeException e) {
-               //skip
+                //skip
             }
         }
         return null;
     }
 
     //TODO: it is public only for test
-   /* public static String findEmacsFunctionFileName(LispSymbol functionName) {
-        if (ourEmacsPath.equals("")) {
-            throw new RuntimeException("Emacs path is not set!");
-        }
+    /* public static String findEmacsFunctionFileName(LispSymbol functionName) {
+if (ourEmacsPath.equals("")) {
+    throw new RuntimeException("Emacs path is not set!");
+}
 
-        LispSymbol finder = myInstance.find(ourFinder.getName());
-        if (finder == null) {
-            if (functionName.getName().equals(ourFinder.getName()))
-                return ourEmacsPath + ourFinderPath;
-            throw new RuntimeException("I don't know where to find function " + functionName);
-        }
-        if (functionName.getName().equals("symbol-file"))
-            return ourEmacsPath + "/lisp/subr.el";
+LispSymbol finder = INSTANCE.find(ourFinder.getName());
+if (finder == null) {
+    if (functionName.getName().equals(ourFinder.getName()))
+        return ourEmacsPath + ourFinderPath;
+    throw new RuntimeException("I don't know where to find function " + functionName);
+}
+if (functionName.getName().equals("symbol-file"))
+    return ourEmacsPath + "/lisp/subr.el";
 
-        myInstance.setArgumentsEvaluated(true);
+INSTANCE.setArgumentsEvaluated(true);
 
 
-        try {
-                LObject symbolFunction = BuiltinsSymbol.symbolFunction(myInstance, functionName);
-                LObject f = finder.evaluateFunction(myInstance, new LispList(functionName, symbolFunction).getData());
-            } catch (VoidFunctionException e) {
-                LObject f = null;
-            }
+try {
+        LObject symbolFunction = BuiltinsSymbol.symbolFunction(INSTANCE, functionName);
+        LObject f = finder.evaluateFunction(INSTANCE, new LispList(functionName, symbolFunction).getData());
+    } catch (VoidFunctionException e) {
+        LObject f = null;
+    }
 
-        LObject f = finder.evaluateFunction(myInstance, new LispList(functionName, new LispSymbol("variable")).getData());
-        if (f == null || f == LispSymbol.ourNil) {
-            try {
-                LObject symbolFunction = BuiltinsSymbol.symbolFunction(myInstance, functionName);
-                f = finder.evaluateFunction(myInstance, new LispList(functionName, symbolFunction).getData());
-            } catch (VoidFunctionException e) {
-                f = null;
-            }
-            if (f == null || f == LispSymbol.ourNil) {
-                f = finder.evaluateFunction(myInstance, new LispList(functionName, new LispSymbol("face")).getData());
-            }
-        }
-        if (f == null || f == LispSymbol.ourNil) {
-            throw new RuntimeException("I don't know where to find function " + functionName);
-        }
-        return ((LispString)f).getData();
+LObject f = finder.evaluateFunction(INSTANCE, new LispList(functionName, new LispSymbol("variable")).getData());
+if (f == null || f == LispSymbol.ourNil) {
+    try {
+        LObject symbolFunction = BuiltinsSymbol.symbolFunction(INSTANCE, functionName);
+        f = finder.evaluateFunction(INSTANCE, new LispList(functionName, symbolFunction).getData());
+    } catch (VoidFunctionException e) {
+        f = null;
+    }
+    if (f == null || f == LispSymbol.ourNil) {
+        f = finder.evaluateFunction(INSTANCE, new LispList(functionName, new LispSymbol("face")).getData());
+    }
+}
+if (f == null || f == LispSymbol.ourNil) {
+    throw new RuntimeException("I don't know where to find function " + functionName);
+}
+return ((LispString)f).getData();
 
-    }        */
+}        */
 
     public LispSymbol findAndRegisterEmacsFunction (LispSymbol name) {
         LispSymbol emacsFunction = find(name.getName());
@@ -444,11 +473,11 @@ public class GlobalEnvironment extends Environment {
             return;
         myFrames.add(newFrame);
     }
-    
+
     public void onFrameReleased (LispFrame frame) {
         myFrames.remove(frame);
     }
-    
+
     public void setSelectedFrame (LispFrame frame) {
         int k = frameIndex(frame);
         if (k < 0) {
@@ -456,44 +485,42 @@ public class GlobalEnvironment extends Environment {
         }
         myCurrentFrame = myFrames.get(k);
     }
-    
+
     public LispFrame getSelectedFrame() {
         return myCurrentFrame;
     }
-    
+
     private static int frameIndex (LispFrame frame) {
-        for (int i = 0; i != myInstance.myFrames.size(); ++i) {
-            if (myInstance.myFrames.get(i).areIdeFramesEqual(frame))
+        for (int i = 0; i != INSTANCE.myFrames.size(); ++i) {
+            if (INSTANCE.myFrames.get(i).areIdeFramesEqual(frame))
                 return i;
         }
         return -1;
-    } 
-                    
+    }
+
     public static void setFrameVisible (LispFrame frame, boolean status) {
-        if (myInstance == null)
+        if (INSTANCE == null)
             return;
         int k = frameIndex(frame);
-        myInstance.myFrames.get(k).setVisible(status);
+        INSTANCE.myFrames.get(k).setVisible(status);
     }
-    
+
     public static void setFrameIconified (LispFrame frame, boolean status) {
-        if (myInstance == null)
+        if (INSTANCE == null)
             return;
         int k = frameIndex(frame);
-        myInstance.myFrames.get(k).setIconified(status);
+        INSTANCE.myFrames.get(k).setIconified(status);
     }
-    
+
     public static boolean isFrameAlive (LispFrame frame) {
-        if (myInstance == null)
-            return false;
-        return frameIndex(frame) >= 0;
+        return INSTANCE != null && frameIndex(frame) >= 0;
     }
-    
+
     public static ArrayList<LispFrame> getVisibleFrames () {
         ArrayList<LispFrame> visibleFrames = new ArrayList<>();
-        if (myInstance == null)
+        if (INSTANCE == null)
             return visibleFrames;
-        for (LispFrame frame: myInstance.myFrames) {
+        for (LispFrame frame: INSTANCE.myFrames) {
             if (BuiltinPredicates.frameVisibleP(frame).equals(LispSymbol.ourT))
                 visibleFrames.add(frame);
         }
@@ -502,9 +529,9 @@ public class GlobalEnvironment extends Environment {
 
     public static ArrayList<LispFrame> getVisibleAndIconifiedFrames () {
         ArrayList<LispFrame> frames = new ArrayList<>();
-        if (myInstance == null)
+        if (INSTANCE == null)
             return frames;
-        for (LispFrame frame: myInstance.myFrames) {
+        for (LispFrame frame: INSTANCE.myFrames) {
             LispSymbol predicate = BuiltinPredicates.frameVisibleP(frame);
             if (predicate.equals(LispSymbol.ourT) || predicate.equals(new LispSymbol("icon")))
                 frames.add(frame);
@@ -514,8 +541,8 @@ public class GlobalEnvironment extends Environment {
 
 
     public static ArrayList<LispFrame> getAllFrames () {
-        if (myInstance == null)
+        if (INSTANCE == null)
             return new ArrayList<>();
-        return myInstance.myFrames;
+        return INSTANCE.myFrames;
     }
 }

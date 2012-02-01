@@ -31,7 +31,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
 
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
 //        GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
 
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);

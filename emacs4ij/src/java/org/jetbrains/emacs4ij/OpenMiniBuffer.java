@@ -52,7 +52,7 @@ public class OpenMiniBuffer extends AnAction {
             name = GlobalEnvironment.ourScratchBufferName;
         }
 
-        LispBuffer parent = environment.findBuffer(name);
+        LispBuffer parent = environment.findBufferSafe(name);
         parent.setEditor(editor);
         environment.updateBuffer(parent);
 

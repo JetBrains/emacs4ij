@@ -48,7 +48,7 @@ public class OpenScratchBuffer extends AnAction {
         editor.setHeaderComponent(input);
 
         String name = ((EditorImpl)editor).getVirtualFile().getName();
-        LispBuffer parent = environment.findBuffer(name);
+        LispBuffer parent = environment.findBufferSafe(name);
         parent.setEditor(editor);
         environment.updateBuffer(parent);
 

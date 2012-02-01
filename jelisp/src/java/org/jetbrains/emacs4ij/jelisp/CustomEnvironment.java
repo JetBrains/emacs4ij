@@ -1,8 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 
 /**
@@ -15,19 +13,15 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 public class CustomEnvironment extends Environment {
     private boolean mySelectionManagedBySubroutine = false;
 
-    protected LispBuffer myBufferCurrentForEditing = null;
+    //protected LispBuffer myBufferCurrentForEditing = null;
 
     public CustomEnvironment(@NotNull final Environment outerEnv) {
         myOuterEnv = outerEnv;
     }
 
-    public void setSelectionManagedBySubroutine(boolean selectionManagedBySubroutine) {
-       mySelectionManagedBySubroutine = selectionManagedBySubroutine;
-    }
 
-    public boolean isSelectionManagedBySubroutine () {
-        return mySelectionManagedBySubroutine;
-    }
+
+
 
 
     /*public boolean isMainEnvironment() {
@@ -63,14 +57,6 @@ public class CustomEnvironment extends Environment {
     }        */
 
 
-
-    public String getBufferCurrentForEditing() {
-        if (myBufferCurrentForEditing == null) {
-            return GlobalEnvironment.INSTANCE.getCurrentBuffer();
-        }
-        return myBufferCurrentForEditing;
-    }
-
    /* public LispBuffer findBuffer (String bufferName) {
         return GlobalEnvironment.getInstance().findBuffer(bufferName);
     }
@@ -84,9 +70,7 @@ public class CustomEnvironment extends Environment {
         return GlobalEnvironment.getInstance().getBuffers();
     }*/
 
-    public LispBuffer getOtherBuffer () {
-        return getOtherBuffer(getBufferCurrentForEditing());
-    }
+
 
    /* public LispBuffer getOtherBuffer (String bufferName) {
         return GlobalEnvironment.getInstance().getOtherBuffer(bufferName);
@@ -154,12 +138,5 @@ public class CustomEnvironment extends Environment {
         return GlobalEnvironment.getInstance().getCommandList(begin);
     }                                                                   */
 
-    //========== mini buffer ==========================
 
-    public LispMiniBuffer getMiniBuffer () {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer) getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
-        if (miniBuffer == null)
-            throw new RuntimeException("mini buffer does not exist!");
-        return miniBuffer;
-    }
 }

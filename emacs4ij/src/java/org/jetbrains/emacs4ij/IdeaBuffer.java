@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -123,7 +122,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         throw new RuntimeException("Cannot evaluate buffer!");
     }
 
@@ -239,7 +238,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
 
     public void close () {
         if (isHeaderBuffer()) {
-            LispBuffer displayedBuffer = myEnvironment.findBuffer(getDisplayedBufferName());
+            LispBuffer displayedBuffer = myEnvironment.findBufferSafe(getDisplayedBufferName());
             displayedBuffer.closeHeader();
             return;
         }

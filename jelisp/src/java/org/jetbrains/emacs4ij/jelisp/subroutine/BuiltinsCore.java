@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -69,7 +69,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("set")
-    public static LObject set (CustomEnvironment environment, LispSymbol variable, LObject initValue) {
+    public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
         LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
         variable.setValue(value);
         environment.setVariable(variable);
@@ -117,7 +117,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("call-interactively")
-    public static LObject callInteractively (CustomEnvironment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
+    public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
         if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         //read args
@@ -128,7 +128,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("funcall")
-    public static LObject functionCall (CustomEnvironment environment, LObject function, @Optional LObject... args) {
+    public static LObject functionCall (Environment environment, LObject function, @Optional LObject... args) {
         environment.setArgumentsEvaluated(true);
         ArrayList<LObject> data = new ArrayList<LObject>();
         data.add(function);
@@ -148,7 +148,7 @@ public abstract class BuiltinsCore {
         return new LispString(msg);
     }
 
-    private static void runFunction (CustomEnvironment environment, LispSymbol function) {
+    private static void runFunction (Environment environment, LispSymbol function) {
         if (function.equals(LispSymbol.ourNil))
             return;
         if (!function.isFunction()) {
@@ -158,7 +158,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("run-hooks")
-    public static LObject runHooks (CustomEnvironment environment, @Optional LispSymbol... hooks) {
+    public static LObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
         if (hooks == null)
             return LispSymbol.ourNil;
         for (LispSymbol hook: hooks) {
@@ -185,7 +185,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("macroexpand")
-    public static LObject macroExpand (CustomEnvironment environment, LObject macroCall) {
+    public static LObject macroExpand (Environment environment, LObject macroCall) {
         if (!(macroCall instanceof LispList))
             return macroCall;
         LispSymbol macro;
@@ -202,7 +202,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("fset")
-    public static LObject functionSet (CustomEnvironment environment, LispSymbol symbol, LObject function) {
+    public static LObject functionSet (Environment environment, LispSymbol symbol, LObject function) {
         symbol.setFunction(function);
         environment.setVariable(symbol);
         return function;

@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
@@ -39,7 +39,7 @@ public abstract class LispNumber<T> extends LispAtom {
     /**
      * no parameters required
      */
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         return this;
     }
 

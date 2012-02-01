@@ -127,7 +127,7 @@ public class LispList extends LispObject {
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("upload " + fun.getName());
-            symbol = GlobalEnvironment.findAndRegisterEmacsFunction(fun);
+            symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(fun);
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
         }
@@ -136,11 +136,14 @@ public class LispList extends LispObject {
     }
 
     public List<LObject> toLObjectList() {
+        ArrayList<LObject> list = new ArrayList<>();
         if (!isTrueList) {
-            throw new RuntimeException("wrong usage??");
+            list.add(myCar);
+            list.add(myCdr);
+            return list;
+            //throw new RuntimeException("wrong usage??");
         }
        // if (isEmpty()) return new ArrayList<LObject>();
-        ArrayList<LObject> list = new ArrayList<>();
         for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
             list.add(((LispList)cdr).car());
         }
@@ -149,7 +152,7 @@ public class LispList extends LispObject {
 
     @Override
     public String toString() {
-        if (isEmpty())
+        if (toLObjectList().isEmpty())
             return "nil";
         String list = "(";
         for (LObject cdr = this; !cdr.equals(LispSymbol.ourNil); ) {

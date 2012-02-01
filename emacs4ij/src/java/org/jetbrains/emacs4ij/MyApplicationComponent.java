@@ -29,7 +29,7 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void windowGainedFocus(WindowEvent e) {
                 super.windowGainedFocus(e);
                 if (Checker.isGlobalEnvironmentInitialized)
-                    GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
+                    GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
             }
 
             @Override
@@ -90,13 +90,13 @@ public class MyApplicationComponent implements ApplicationComponent {
                 ((IdeFrameImpl)ideFrame).addWindowFocusListener(myWindowAdapter);
                 ((IdeFrameImpl)ideFrame).addWindowListener(myWindowAdapter);
                 IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) ideFrame);
-                GlobalEnvironment.onFrameOpened(ideaFrame);
+                GlobalEnvironment.INSTANCE.onFrameOpened(ideaFrame);
                 //GlobalEnvironment.setSelectedFrame(ideaFrame);
             }
 
             @Override
             public void beforeFrameReleased(IdeFrame ideFrame) {
-                GlobalEnvironment.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
+                GlobalEnvironment.INSTANCE.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
             }
         });
 

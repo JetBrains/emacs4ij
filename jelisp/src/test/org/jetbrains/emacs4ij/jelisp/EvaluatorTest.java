@@ -24,7 +24,7 @@ public class EvaluatorTest {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
         GlobalEnvironment.initialize(null, null);
-        environment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
     private LObject evaluateString (String lispCode) throws LispException {

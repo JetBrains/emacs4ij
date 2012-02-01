@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -38,7 +38,7 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

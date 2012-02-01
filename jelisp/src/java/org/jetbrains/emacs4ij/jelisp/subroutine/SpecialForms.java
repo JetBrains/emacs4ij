@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -63,7 +64,7 @@ public abstract class SpecialForms {
             }
     }
 
-    private static LObject executeLet (boolean isStar, CustomEnvironment environment, LispList varList, LObject... body) {
+    private static LObject executeLet (boolean isStar, Environment environment, LispList varList, LObject... body) {
         CustomEnvironment inner = new CustomEnvironment(environment);
         bindLetVariables(isStar, inner, varList);
         LObject result = LispSymbol.ourNil;
@@ -74,7 +75,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("quote")
-    public static LObject quote(CustomEnvironment environment, LObject arg) {
+    public static LObject quote(Environment environment, LObject arg) {
         if (arg instanceof LispSymbol) {
             LispSymbol symbol = environment.find(((LispSymbol) arg).getName());
             if (symbol != null)
@@ -84,17 +85,17 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("let")
-    public static LObject let (CustomEnvironment environment, LispList varList, @Optional LObject... body) {
+    public static LObject let (Environment environment, LispList varList, @Optional LObject... body) {
         return executeLet(false, environment, varList, body);
     }
 
     @Subroutine("let*")
-    public static LObject letStar (CustomEnvironment environment, LispList varList, @Optional LObject... body) {
+    public static LObject letStar (Environment environment, LispList varList, @Optional LObject... body) {
         return executeLet(true, environment, varList, body);
     }
 
     @Subroutine("cond")
-    public static LObject cond (CustomEnvironment environment, @Optional LObject... args) {
+    public static LObject cond (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
 
@@ -122,7 +123,7 @@ public abstract class SpecialForms {
         return result;
     }
     @Subroutine("while")
-    public static LObject lispWhile(CustomEnvironment environment, LObject cond, @Optional LObject... body) {
+    public static LObject lispWhile(Environment environment, LObject cond, @Optional LObject... body) {
         CustomEnvironment inner = new CustomEnvironment(environment);
         LObject condition = cond.evaluate(inner);
         while (condition != LispSymbol.ourNil) {
@@ -134,7 +135,7 @@ public abstract class SpecialForms {
         return condition;
     }
     @Subroutine(value = "if")
-    public static LObject lispIf (CustomEnvironment environment, LObject cond, LObject then, @Optional LObject... elseBody) {
+    public static LObject lispIf (Environment environment, LObject cond, LObject then, @Optional LObject... elseBody) {
         LObject condition = cond.evaluate(environment);
         if (condition != LispSymbol.ourNil) {
             return then.evaluate(environment);
@@ -150,7 +151,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("and")
-    public static LObject lispAnd(CustomEnvironment environment, @Optional LObject... conditions) {
+    public static LObject lispAnd(Environment environment, @Optional LObject... conditions) {
         if (conditions == null)
             return LispSymbol.ourT;
         LObject result = LispSymbol.ourT;
@@ -163,7 +164,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("or")
-    public static LObject lispOr(CustomEnvironment environment, @Optional LObject... conditions) {
+    public static LObject lispOr(Environment environment, @Optional LObject... conditions) {
         if (conditions == null)
             return LispSymbol.ourNil;
         for (LObject condition: conditions) {
@@ -174,15 +175,15 @@ public abstract class SpecialForms {
         return LispSymbol.ourNil;
     }
 
-    private static LispSymbol defSymbol (CustomEnvironment environment, LispSymbol name, LObject initValue, boolean overwrite, LObject docString) {
-        LispSymbol variable = GlobalEnvironment.getInstance().find(name.getName());
+    private static LispSymbol defSymbol (Environment environment, LispSymbol name, LObject initValue, boolean overwrite, LObject docString) {
+        LispSymbol variable = GlobalEnvironment.INSTANCE.find(name.getName());
         if (variable == null) {
             LObject value = (initValue == null) ? null : initValue.evaluate(environment);
             name.setValue(value);
             if (docString != null) {
                 name.setVariableDocumentation(docString.evaluate(environment));
             }
-            GlobalEnvironment.getInstance().defineSymbol(name);
+            GlobalEnvironment.INSTANCE.defineSymbol(name);
             return name;
         }
         if (overwrite || (!variable.hasValue() && initValue != null)) {
@@ -194,34 +195,34 @@ public abstract class SpecialForms {
         if (docString != null) {
             variable.setVariableDocumentation(docString.evaluate(environment));
         }
-        GlobalEnvironment.getInstance().defineSymbol(variable);
+        GlobalEnvironment.INSTANCE.defineSymbol(variable);
         return variable;
     }
     
     @Subroutine("defvar")
-    public static LObject defineVariable(CustomEnvironment environment, LispSymbol name, @Optional LObject initValue, @Optional LObject docString) {
+    public static LObject defineVariable(Environment environment, LispSymbol name, @Optional LObject initValue, @Optional LObject docString) {
         return defSymbol(environment, name, initValue, false, docString);
     }
 
     @Subroutine("defconst")
-    public static LObject defineConstant (CustomEnvironment environment, LispSymbol name, LObject value, @Optional LObject docString) {
+    public static LObject defineConstant (Environment environment, LispSymbol name, LObject value, @Optional LObject docString) {
         return defSymbol(environment, name, value, true, docString);
     }
 
     @Subroutine(value = "defun")
-    public static LispSymbol defineFunction(CustomEnvironment environment, LispSymbol name, LObject... body) {
-        LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
+    public static LispSymbol defineFunction(Environment environment, LispSymbol name, LObject... body) {
+        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         ArrayList<LObject> data = new ArrayList<>();
         data.add(new LispSymbol("lambda"));
         Collections.addAll(data, body);
         f.setFunction(LispList.list(data));
-        GlobalEnvironment.getInstance().defineSymbol(f);
+        GlobalEnvironment.INSTANCE.defineSymbol(f);
         return f;
     }
 
     @Subroutine("interactive")
-    public static LObject interactive(CustomEnvironment environment, @Optional LObject args) {
+    public static LObject interactive(Environment environment, @Optional LObject args) {
         return null;
 
 
@@ -248,7 +249,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("progn")
-    public static LObject progn (CustomEnvironment environment, @Optional LObject... args) {
+    public static LObject progn (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
         CustomEnvironment inner = new CustomEnvironment(environment);
@@ -260,7 +261,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("prog1")
-    public static LObject prog1 (CustomEnvironment environment, LObject p, @Optional LObject... args) {
+    public static LObject prog1 (Environment environment, LObject p, @Optional LObject... args) {
         CustomEnvironment inner = new CustomEnvironment(environment);
         LObject result = p.evaluate(inner);
         for (LObject arg: args) {
@@ -270,7 +271,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("prog2")
-    public static LObject prog1 (CustomEnvironment environment, LObject p1, LObject p2, @Optional LObject... args) {
+    public static LObject prog1 (Environment environment, LObject p1, LObject p2, @Optional LObject... args) {
         CustomEnvironment inner = new CustomEnvironment(environment);
         p1.evaluate(inner);
         LObject result = p2.evaluate(inner);
@@ -281,7 +282,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("setq")
-    public static LObject setq (CustomEnvironment environment, @Optional LObject... args) {
+    public static LObject setq (Environment environment, @Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
         CustomEnvironment inner = new CustomEnvironment(environment);
@@ -316,7 +317,7 @@ public abstract class SpecialForms {
 
     @Subroutine("defmacro")
     public static LispSymbol defmacro (LispSymbol name, LObject argList, @Optional LObject ... body) {
-        LispSymbol symbol = GlobalEnvironment.getInstance().find(name.getName());
+        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getName());
         LispSymbol f = symbol != null ? symbol : name;
         ArrayList<LObject> data = new ArrayList<>();
         data.add(new LispSymbol("macro"));
@@ -339,7 +340,7 @@ public abstract class SpecialForms {
             }
         }
         f.setFunction(LispList.list(data));
-        GlobalEnvironment.getInstance().defineSymbol(f);
+        GlobalEnvironment.INSTANCE.defineSymbol(f);
         return f;
     }
 
@@ -349,7 +350,7 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("condition-case")
-    public static LObject conditionCase (CustomEnvironment environment, LispSymbol var, LObject bodyForm, @Optional LObject... handlers) {
+    public static LObject conditionCase (Environment environment, LispSymbol var, LObject bodyForm, @Optional LObject... handlers) {
         ArrayList<LispList> h = new ArrayList<LispList>();
         if (handlers != null) {
             for (LObject element: handlers) {

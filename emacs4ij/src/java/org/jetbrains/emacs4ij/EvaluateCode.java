@@ -36,7 +36,7 @@ public class EvaluateCode extends AnAction {
             LObject result = parser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(result.toString(), "Evaluation result");
 
-            environment.findBuffer(displayedBufferName).closeHeader();
+            environment.findBufferSafe(displayedBufferName).closeHeader();
 
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");

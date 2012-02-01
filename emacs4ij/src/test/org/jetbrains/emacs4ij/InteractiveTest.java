@@ -40,7 +40,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
         //GlobalEnvironment.getInstance().startRecording();
        // GlobalEnvironment.setProject(myFixture.getProject());
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.getInstance());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         //GlobalEnvironment.getInstance().clearRecorded();
 
         myFixture.configureByFile(myTestsPath + myFileName);

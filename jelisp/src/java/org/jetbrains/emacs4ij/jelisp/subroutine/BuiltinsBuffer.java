@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -15,15 +16,11 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
-    public static LispBuffer getBufferByBufferNameOrNil (CustomEnvironment environment, @Optional LObject bufferOrName) {
+    public static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LObject bufferOrName) {
         if (bufferOrName == null || bufferOrName.equals(LispSymbol.ourNil))
             return environment.getBufferCurrentForEditing();
         if (bufferOrName instanceof LispString) {
-            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
-            if (buffer == null) {
-                throw new NoBufferException(((LispString) bufferOrName).getData());
-            }
-            return buffer;
+            return environment.findBufferSafe(((LispString) bufferOrName).getData());
         }
         if (bufferOrName instanceof LispBuffer)
             return (LispBuffer) bufferOrName;
@@ -31,12 +28,12 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "current-buffer")
-    public static LispBuffer getCurrentBuffer(CustomEnvironment environment) {
+    public static LispBuffer getCurrentBuffer(Environment environment) {
         return environment.getBufferCurrentForEditing();
     }
 
     @Subroutine("buffer-size")
-    public static LispObject bufferSize(CustomEnvironment environment, @Optional LObject buffer) {
+    public static LispObject bufferSize(Environment environment, @Optional LObject buffer) {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
@@ -45,7 +42,7 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine("buffer-name")
-    public static LispObject bufferName (CustomEnvironment environment, @Optional LObject buffer) {
+    public static LispObject bufferName (Environment environment, @Optional LObject buffer) {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
@@ -54,9 +51,9 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine("get-buffer")
-    public static LObject getBuffer (CustomEnvironment environment, LObject bufferOrName) {
+    public static LObject getBuffer (Environment environment, LObject bufferOrName) {
         if (bufferOrName instanceof  LispString) {
-            LispBuffer buffer = environment.findBuffer(((LispString)bufferOrName).getData());
+            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
             if (buffer == null)
                 return LispSymbol.ourNil;
             return buffer;
@@ -68,7 +65,7 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine("get-buffer-create")
-    public static LObject getBufferCreate (CustomEnvironment environment, LObject bufferOrName) {
+    public static LObject getBufferCreate (Environment environment, LObject bufferOrName) {
         if (bufferOrName instanceof LispBuffer)
             return bufferOrName;
         if (bufferOrName instanceof LispString) {
@@ -82,19 +79,19 @@ public abstract class BuiltinsBuffer {
 
     // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
     @Subroutine("other-buffer")
-    public static LispBuffer otherBuffer (CustomEnvironment environment, @Optional LObject buffer) {
+    public static LispBuffer otherBuffer (Environment environment, @Optional LObject buffer) {
         if (buffer == null || !(buffer instanceof LispBuffer))
             return environment.getOtherBuffer();
-        return environment.getOtherBuffer(((LispBuffer)buffer).getName());
+        return environment.getOtherBuffer((LispBuffer)buffer);
     }
 
     @Subroutine("set-buffer")
-    public static LObject setBuffer (CustomEnvironment environment, LObject bufferOrName) {
+    public static LObject setBuffer (Environment environment, LObject bufferOrName) {
         LObject lispObject = getBuffer(environment, bufferOrName);
         if (lispObject.equals(LispSymbol.ourNil)) {
             throw new NoBufferException(bufferOrName.toString());
         }
-        if (!environment.isGlobalEnvironment() && !environment.isMainEnvironment()) {
+        if (!environment.isMainOrGlobal()) {
             environment.setBufferCurrentForEditing((LispBuffer)lispObject);
         }
         return lispObject;
@@ -102,7 +99,7 @@ public abstract class BuiltinsBuffer {
 
     //todo: bound to C-x b, <menu-bar> <buffer> <select-named-buffer>
     @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer")
-    public static LObject switchToBuffer (CustomEnvironment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
+    public static LObject switchToBuffer (Environment environment, LObject bufferOrName, @Optional LObject noRecordObject) {
         boolean noRecord = false;
         if (noRecordObject != null) {
             if (!(noRecordObject.equals(LispSymbol.ourNil)))
@@ -142,37 +139,37 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine("point")
-    public static LObject point (CustomEnvironment environment) {
+    public static LObject point (Environment environment) {
         return new LispInteger(environment.getBufferCurrentForEditing().point());
     }
 
     @Subroutine("point-min")
-    public static LObject pointMin (CustomEnvironment environment) {
+    public static LObject pointMin (Environment environment) {
         return new LispInteger(environment.getBufferCurrentForEditing().pointMin());
     }
 
     @Subroutine("point-max")
-    public static LObject pointMax (CustomEnvironment environment) {
+    public static LObject pointMax (Environment environment) {
         return new LispInteger(environment.getBufferCurrentForEditing().pointMax());
     }
 
     //todo: it's a compiled lisp function
     /*@Subroutine("buffer-end")
-    public static LObject bufferEnd (CustomEnvironment environment, LispNumber arg) {
+    public static LObject bufferEnd (Environment environment, LispNumber arg) {
         return new LispInteger(environment.getBufferCurrentForEditing().bufferEnd((Double)arg.getData()));
     } */
 
     //todo: accepts integer OR MARKER
     //todo:  bound to <menu-bar> <edit> <goto> <go-to-pos>
     @Subroutine(value = "goto-char", isCmd = true, interactive = "nGoto char: ")
-    public static LObject gotoChar (CustomEnvironment environment, LispInteger pos) {
+    public static LObject gotoChar (Environment environment, LispInteger pos) {
         environment.getBufferCurrentForEditing().gotoChar(pos.getData());
         return pos;
     }
 
     //todo: bound to C-f, <right>
     @Subroutine(value = "forward-char", isCmd = true, interactive = "")
-    public static LObject forwardChar (CustomEnvironment environment, @Optional LispInteger shift) {
+    public static LObject forwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);
         }
@@ -184,7 +181,7 @@ public abstract class BuiltinsBuffer {
 
     //todo: bound to C-b, <left>
     @Subroutine(value = "backward-char", isCmd = true, interactive = "")
-    public static LObject backwardChar (CustomEnvironment environment, @Optional LispInteger shift) {
+    public static LObject backwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);
         }
@@ -195,7 +192,7 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine("buffer-list")
-    public static LObject bufferList (CustomEnvironment environment, @Optional LObject frame) {
+    public static LObject bufferList (Environment environment, @Optional LObject frame) {
         //TODO: If frame is a frame, this returns frame's local buffer list.
         // If frame is nil or omitted, the fundamental buffer list is used: the buffers appear in order of most recent display or selection, regardless of which frames they were displayed on.
        
@@ -211,15 +208,12 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "bury-buffer", isCmd = true, interactive = "")
-    public static LObject buryBuffer (CustomEnvironment environment, @Optional LObject bufferOrName) {
+    public static LObject buryBuffer (Environment environment, @Optional LObject bufferOrName) {
         LispBuffer buffer;
         if (bufferOrName == null) {
             buffer = environment.getBufferCurrentForEditing();
         } else if (bufferOrName instanceof LispString) {
-            buffer = environment.findBuffer(((LispString) bufferOrName).getData());
-            if (buffer == null) {
-                throw new NoBufferException(((LispString) bufferOrName).getData());
-            }
+            buffer = environment.findBufferSafe(((LispString) bufferOrName).getData());
         } else if (bufferOrName instanceof LispBuffer) {
             buffer = (LispBuffer) bufferOrName;
         } else {
@@ -235,7 +229,7 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourNil;
     }
     @Subroutine("generate-new-buffer-name")
-    public static LispString generateNewBufferName (CustomEnvironment environment, LispString startingName, @Optional LispString ignore) {
+    public static LispString generateNewBufferName (Environment environment, LispString startingName, @Optional LispString ignore) {
         String result = startingName.getData();
         for (int n = 2; ; ++n) {
             if (!environment.containsBuffer(result))
@@ -247,7 +241,7 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "replace-buffer-in-windows", isCmd = true, interactive = "bReplace buffer in windows")
-    public static LObject replaceBufferInWindows (CustomEnvironment environment, @Optional LObject bufferOrName) {
+    public static LObject replaceBufferInWindows (Environment environment, @Optional LObject bufferOrName) {
         //todo: replace given buffer in all windows where it is opened
         if (bufferOrName == null)
             bufferOrName = environment.getBufferCurrentForEditing();
@@ -257,7 +251,7 @@ public abstract class BuiltinsBuffer {
 
     //todo: interactive, bound to C-x k
     @Subroutine(value="kill-buffer", isCmd = true, interactive = "bKill buffer")
-    public static LObject killBuffer (CustomEnvironment environment, @Optional LObject bufferOrName) {
+    public static LObject killBuffer (Environment environment, @Optional LObject bufferOrName) {
         replaceBufferInWindows(environment, bufferOrName);
 
         LispSymbol killBufferQueryFunctions = environment.find("kill-buffer-query-functions");
@@ -279,7 +273,7 @@ public abstract class BuiltinsBuffer {
        // environment.getMainEnvironment().killBuffer(buffer);
 
         environment.setSelectionManagedBySubroutine(true);
-        environment.killBuffer(buffer);
+        GlobalEnvironment.INSTANCE.killBuffer(buffer);
 
         return LispSymbol.ourT;
     }

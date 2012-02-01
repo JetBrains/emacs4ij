@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
@@ -37,7 +37,7 @@ public class IdeaWindow implements LispWindow {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

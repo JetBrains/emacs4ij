@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.lang.annotation.Annotation;
@@ -70,7 +71,7 @@ public class Primitive extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(CustomEnvironment environment) {
+    public LObject evaluate(Environment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
