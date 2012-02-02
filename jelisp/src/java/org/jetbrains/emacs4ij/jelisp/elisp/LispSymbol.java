@@ -172,16 +172,24 @@ public class LispSymbol extends LispAtom {
      * takes Environment
      */
     public LObject evaluate(Environment environment) {
-        if (equals(ourNil) || equals(ourT) || equals(ourVoid))
+        if (equals(ourNil) || equals(ourT) || equals(ourVoid) || myName.startsWith(":"))
             return this;
-        //if (myName.equals("default-directory"))
-        //    return environment.getDefaultDirectory();
         if (hasValue()) {
             return getValue();
         }
         LispSymbol symbol = environment.find(myName);
-        if (symbol == null || (!symbol.hasValue()))
-            throw new VoidVariableException(myName);
+        if (symbol == null || (!symbol.hasValue())) {
+            System.out.println("upload " + myName);
+            try { //it may be a macro
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunctionOrMacro(myName);
+            } catch (Exception e) {
+                //it's not a macro
+                //todo: find variable
+                throw new VoidVariableException(myName);
+            }
+            if (symbol == null || (!symbol.hasValue()))
+                throw new VoidVariableException(myName);
+        }
         return symbol.getValue();
     }
 
@@ -206,7 +214,7 @@ public class LispSymbol extends LispAtom {
         }
 
         if (isMacro()) {
-            result =  evaluateMacro(environment, args);
+            result = evaluateMacro(environment, args);
             checkCallStack();
             return result;
         }

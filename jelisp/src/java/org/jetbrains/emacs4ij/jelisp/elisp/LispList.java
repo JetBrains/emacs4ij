@@ -127,7 +127,12 @@ public class LispList extends LispObject {
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("upload " + fun.getName());
-            symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(fun);
+            try {
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunctionOrMacro(fun);
+            } catch (RuntimeException e) {
+                System.err.println(e.getMessage());
+                throw new VoidFunctionException(fun.getName());
+            }
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
         }

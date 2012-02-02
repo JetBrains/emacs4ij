@@ -5,11 +5,11 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,10 +19,14 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class Lambda extends LispObject implements FunctionCell {
-    private LinkedHashMap<LispSymbol, String> myArgumentList = null;
+    private LinkedList<LambdaArgument> myArgumentList = null;
     private LispString myDocString = null;
     private LispList myInteractive = null;
     private List<LObject> myBody = new ArrayList<LObject>();
+    private int nRequiredArguments;
+    private boolean infiniteArgs = false;
+    private int nKeywords = 0;
+    private int nOptional = 0;
 
     public Lambda (LispList def, Environment environment) {
         List<LObject> data = def.toLObjectList();
@@ -58,28 +62,41 @@ public class Lambda extends LispObject implements FunctionCell {
         }
     }
 
+    //todo: for test only
+    public List<LambdaArgument> getArguments () {
+        return myArgumentList;
+    }
+    
     public void parseArgumentsList (LispList args) {
-        myArgumentList = new LinkedHashMap<LispSymbol, String>();
+        nRequiredArguments = 0;
+        myArgumentList = new LinkedList<>();
         if (args.isEmpty())
             return;
-
         List<LObject> data = args.toLObjectList();
-        String type = "required";
-        for (int i = 0, dataSize = data.size(); i < dataSize; i++) {
-            LispSymbol argName = (LispSymbol)data.get(i);
-            if (!type.equals("rest")) {
-                if (argName.equals(new LispSymbol("&rest"))) {
-                    type = "rest";
+        LambdaArgument.Type type = LambdaArgument.Type.REQUIRED;
+        for (LObject aData : data) {
+            if (aData instanceof LispSymbol) {
+                if (aData.equals(new LispSymbol("&rest"))) {
+                    type = LambdaArgument.Type.REST;
+                    infiniteArgs = true;
                     continue;
                 }
-                if (!type.equals("optional")) {
-                    if (argName.equals(new LispSymbol("&optional"))) {
-                        type = "optional";
-                        continue;
-                    }
+                if (aData.equals(new LispSymbol("&optional"))) {
+                    type = LambdaArgument.Type.OPTIONAL;
+                    continue;
+                }
+                if (aData.equals(new LispSymbol("&key"))) {
+                    type = LambdaArgument.Type.KEYWORD;
+                    continue;
                 }
             }
-            myArgumentList.put(argName, type);
+            myArgumentList.add(new LambdaArgument(type, aData, "lambda"));
+            if (type == LambdaArgument.Type.REQUIRED)
+                nRequiredArguments++;
+            else if (type == LambdaArgument.Type.KEYWORD)
+                nKeywords++;
+            else if (type == LambdaArgument.Type.OPTIONAL)
+                nOptional++;
         }
     }
 
@@ -109,34 +126,47 @@ public class Lambda extends LispObject implements FunctionCell {
     public LObject evaluate(Environment environment, List<LObject> args) {
         return evaluateBody(substituteArguments(environment, args));
     }
+    
+    private boolean checkOversize(int n) {
+        return !infiniteArgs && myArgumentList.size() + nKeywords * 2 < n;
+    }
 
     public CustomEnvironment substituteArguments (Environment environment, List<LObject> args) {
-        int nRequiredArguments = 0;
-        for (Map.Entry<LispSymbol, String> arg: myArgumentList.entrySet()) {
-            if (arg.getValue().equals("required"))
-                ++nRequiredArguments;
-        }
-        if (nRequiredArguments > args.size() || myArgumentList.size() < args.size())
+        if (nRequiredArguments > args.size() || checkOversize(args.size()))
             throw new WrongNumberOfArgumentsException(toString(), args.size());
 
         CustomEnvironment inner = new CustomEnvironment(environment);
-        List<LispSymbol> keys = new ArrayList<LispSymbol>(myArgumentList.keySet());
         if (!myArgumentList.isEmpty()) {
+            int j = args.size();
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
                 LObject argValue = args.get(i);
-                LispSymbol argName =  keys.get(i);
-                if (!myArgumentList.get(argName).equals("rest")) {
-                    inner.defineSymbol(new LispSymbol(argName.getName(), argValue));
+                LambdaArgument argument = myArgumentList.get(i);
+                if (argument.getType() == LambdaArgument.Type.REQUIRED || argument.getType() == LambdaArgument.Type.OPTIONAL) {
+                    argument.setValue(inner, argValue);
+                    continue;
+                }
+                if (argument.getType() == LambdaArgument.Type.KEYWORD) {                    
+                    LObject keyword = argValue.evaluate(inner); //todo: if this code has side effects, we shouldn't do this!
+                    if (!(keyword instanceof LispSymbol))
+                        throw new WrongTypeArgumentException("keyword", keyword.getClass().getSimpleName()); 
+                    if (!argument.getKeyword().equals(keyword)) {
+                        //can the keywords go in random order? Now can't. + this saves us from unknown keywords
+                        throw new WrongTypeArgumentException(argument.getKeyword().getName(), ((LispSymbol) keyword).getName());
+                    }
+                    if (i+1 >= argsSize) {
+                        throw new RuntimeException("Keyword with no value: " + keyword);
+                    }
+                    argument.setValue(inner, args.get(i+1));
+                    i++;
                     continue;
                 }
                 List<LObject> rest = args.subList(i, argsSize);
-                inner.defineSymbol(new LispSymbol(argName.getName(), LispList.list(rest)));
-                for (int k = i+1; k!=keys.size(); ++k)
-                    inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
+                argument.setValue(inner, LispList.list(rest));
+                j = i + 1;
                 break;
             }
-            for (int k = args.size(); k!=keys.size(); ++k)
-                inner.defineSymbol(new LispSymbol(keys.get(k).getName(), LispSymbol.ourNil));
+            for (int k = j; k < myArgumentList.size(); ++k)
+                myArgumentList.get(k).setValue(inner, null);
         }
         return inner;
     }
