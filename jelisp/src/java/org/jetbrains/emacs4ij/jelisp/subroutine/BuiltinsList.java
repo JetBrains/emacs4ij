@@ -67,4 +67,47 @@ public abstract class BuiltinsList {
     public static LObject nReverse (LispList list) {
         return list.nReverse();
     }
+
+    @Subroutine("nconc")
+    public static LObject nConcatenate (@Optional LObject... lists) {
+       /* if (args == null || args.length == 0)
+            return LispSymbol.ourNil;
+        int argnum;
+        LObject tail = LispSymbol.ourNil, tem, val = LispSymbol.ourNil;
+        for (argnum = 0; argnum < args.length; ++argnum) {
+            tem = args[argnum];
+            if (tem.equals(LispSymbol.ourNil))
+                continue;
+            if (val.equals(LispSymbol.ourNil))
+                val = tem;
+            if (argnum + 1 == args.length)
+                break;
+            if (!(tem instanceof LispList))
+                throw new WrongTypeArgumentException("list", tem.toString());
+            while (tem instanceof LispList) {
+                tail = tem;
+                tem = ((LispList)tail).cdr();
+                //quit
+            }
+            tem = args[argnum + 1];
+            ((LispList)tail).setCdr(tem);
+            if (tem.equals(LispSymbol.ourNil))
+                args[argnum + 1] = tail;
+        }
+        return val; */
+
+
+
+
+        if (lists == null || lists.length == 0)
+            return LispSymbol.ourNil;
+        if (lists.length == 1)
+            return lists[0];
+        for (int i = lists.length - 2; i > -1; --i) {
+            if (!(lists[i] instanceof LispList))
+                throw new WrongTypeArgumentException("list", lists[i].toString());
+            ((LispList)lists[i]).append(lists[i+1]);
+        }
+        return lists[0];
+    }
 }

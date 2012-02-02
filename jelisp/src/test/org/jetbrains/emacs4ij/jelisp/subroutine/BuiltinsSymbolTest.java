@@ -221,7 +221,7 @@ public class BuiltinsSymbolTest {
         Assert.assertEquals(new LispString("doc"), doc);
     }
 
-       @Test
+    @Test
     public void testResetLambdaDocumentation() {
         evaluateString("(defun a () \"doc1\")");
         LObject doc = evaluateString("(documentation 'a)");
@@ -232,14 +232,14 @@ public class BuiltinsSymbolTest {
 
         //fun staff:
         LObject f = evaluateString("(symbol-function 'a)");
-        org.junit.Assert.assertEquals("(lambda nil \"doc1\")", f.toString());
+        Assert.assertEquals("(lambda nil \"doc1\")", f.toString());
     }
 
     @Test
        public void testFunctionDocumentationNil () {
            evaluateString("(defun a () \"doc\" 2)");
            LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
-           org.junit.Assert.assertEquals(LispSymbol.ourNil, doc);
+           Assert.assertEquals(LispSymbol.ourNil, doc);
        }
 
        @Test

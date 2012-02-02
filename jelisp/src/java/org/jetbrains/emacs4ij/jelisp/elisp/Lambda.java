@@ -38,19 +38,19 @@ public class Lambda extends LispObject implements FunctionCell {
             throw new InvalidFunctionException(def.toString());
         }
         if (data.size() > 2) {
-            int index = 2;
+         //   int index = 2;
             try {
                 //todo: if those instructions have some side effects, this is wrong behaviour
                 //LObject docString = data.get(2).evaluate(environment);
                 LObject docString = data.get(2);
                 if (docString instanceof LispString) {
                     myDocString = (LispString) docString;
-                    index = 3;
+                    //index = 3;
                 }
             } catch (LispException e) {
                 myDocString = null;
             }
-            myBody = data.subList(index, data.size());
+            myBody = data.subList(2, data.size());
 
             for (LObject bodyForm: myBody) {
                 if (bodyForm instanceof LispList) {

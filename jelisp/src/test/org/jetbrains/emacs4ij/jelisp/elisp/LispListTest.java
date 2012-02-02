@@ -54,4 +54,10 @@ public class LispListTest {
         tList.add(LispSymbol.ourNil);
         Assert.assertEquals(tList, list.toLObjectList());
     }
+
+    @Test
+    public void testtool() {
+        LispList list = LispList.list(new LispInteger(1), new LispInteger(2));
+        list.toString();
+    }
 }

@@ -203,6 +203,68 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispList.list(new LispInteger(1)), evaluateString("x"));
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(2), new LispInteger(1)), reversed);
     }
+    
+    @Test
+    public void testNconcNil() {
+        LObject r = evaluateString("(nconc)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
 
+    @Test
+    public void testNconcOne() {
+        LObject r = evaluateString("(nconc 1)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("(nconc '(1))");
+        Assert.assertEquals(LispList.list(new LispInteger(1)), r);        
+    }
 
+    @Test
+    public void testNconcTwoSingle() {
+        LObject r = evaluateString("(nconc '(1) 2)");
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), r);
+        evaluateString("(setq a '(1))");
+        r = evaluateString("(nconc a '(2))");
+        LispList expected = LispList.list(new LispInteger(1), new LispInteger(2));
+        Assert.assertEquals(expected, r);
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void testNconcTwoDouble() {
+        LObject r = evaluateString("(nconc '(1 2) 3)");
+        Assert.assertEquals(LispList.testList(new LispInteger(1), LispList.testList(new LispInteger(2), new LispInteger(3))), r);
+        evaluateString("(setq a '(1 2))");
+        r = evaluateString("(nconc a '(3))");
+        LispList expected = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
+        Assert.assertEquals(expected, r);
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void testNconcAnyLastIsList() {
+        evaluateString("(setq a '(1 2))");
+        evaluateString("(setq b '(3 4))");
+        evaluateString("(setq c '(5))");
+        LObject r = evaluateString("(nconc a b c)");
+        LispList expectedA = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3), new LispInteger(4), new LispInteger(5));
+        Assert.assertEquals(expectedA, r);
+        Assert.assertEquals(expectedA, evaluateString("a"));
+        LispList expectedB = LispList.list(new LispInteger(3), new LispInteger(4), new LispInteger(5));
+        Assert.assertEquals(expectedB, evaluateString("b"));
+        Assert.assertEquals(LispList.list(new LispInteger(5)), evaluateString("c"));
+    }
+
+    @Test
+    public void testNconcAnyLastIsOther() {
+        evaluateString("(setq a '(1 2))");
+        evaluateString("(setq b '(3 4))");
+        evaluateString("(setq c \"q\")");
+        LObject r = evaluateString("(nconc a b c)");
+        LispList expectedA = LispList.testList(new LispInteger(1), new LispInteger(2), new LispInteger(3), LispList.testList(new LispInteger(4), new LispString("q")));
+        Assert.assertEquals(expectedA, r);
+        Assert.assertEquals(expectedA, evaluateString("a"));
+        LispList expectedB = LispList.testList(new LispInteger(3), LispList.testList(new LispInteger(4), new LispString("q")));
+        Assert.assertEquals(expectedB, evaluateString("b"));
+        Assert.assertEquals(new LispString("q"), evaluateString("c"));
+    }
 }
