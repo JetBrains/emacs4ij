@@ -114,12 +114,13 @@ public class GlobalEnvironment extends Environment {
     private void defineGlobalVariables() {
         addVariable("load-history", LispSymbol.ourNil, 550505);
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
-
-        // addVariable("default-directory", LispSymbol.ourNil, 316938);
+        addVariable("purify-flag", LispSymbol.ourNil, 415585);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
         addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379);
+
+
     }
 
     private void setSubroutinesFromClass (HashMap<String, String> documentation,  Class[] subroutineContainers, Primitive.Type type) {

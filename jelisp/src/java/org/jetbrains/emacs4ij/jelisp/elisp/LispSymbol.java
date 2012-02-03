@@ -292,7 +292,7 @@ public class LispSymbol extends LispAtom {
 
     public void setVariableDocumentation (LObject value) {
         if (value instanceof LispString)
-            setProperty("variable-documentation", (LispString)value);
+            setProperty("variable-documentation", value);
     }
 
     public void setGlobalVariableDocumentation (LObject value) {

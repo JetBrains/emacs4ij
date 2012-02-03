@@ -139,12 +139,6 @@ public class LispList extends LispObject {
 
     public List<LObject> toLObjectList() {
         ArrayList<LObject> list = new ArrayList<>();
-       /* if (!isTrueList) {
-            list.add(myCar);
-            list.add(myCdr);
-            return list;
-        } */
-       // if (isEmpty()) return new ArrayList<LObject>();
         LObject cell = this;
         do {
             LObject cdr = ((LispList)cell).cdr();

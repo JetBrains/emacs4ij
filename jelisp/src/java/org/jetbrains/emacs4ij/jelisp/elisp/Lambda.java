@@ -105,7 +105,7 @@ public class Lambda extends LispObject implements FunctionCell {
         String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
         boolean first = true;
         for (LObject bodyForm: myBody) {
-            if (first && bodyForm instanceof LispString) { //don't print doc for debug
+            if (first && bodyForm instanceof LispString) { //todo: remove this clause == don't print doc for debug
                 first = false;
                 continue;
             }
@@ -129,34 +129,11 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     public LObject evaluate(Environment environment, List<LObject> args) {
-        //System.out.println(toString());
         return evaluateBody(substituteArguments(environment, args));
     }
     
     private boolean checkOversize(int n) {
         return !infiniteArgs && myArgumentList.size() + nKeywords * 2 < n;
-    }
-        
-    private boolean isKeyword(LObject object) {
-        return (object instanceof LispSymbol && ((LispSymbol) object).isKeyword());
-    }
-    
-    private List<LObject> makeRestList(Environment inner, List<LObject> list) {
-        return list;
-       /* ArrayList<LObject> rest = new ArrayList<>();
-        for (int i=0; i<list.size(); ++i) {
-            LObject element = list.get(i);
-            if (isKeyword(element) && !((LispSymbol) element).hasValue()) {
-                if (i + 1 >= list.size() || isKeyword(list.get(i+1)))
-                    throw new RuntimeException("Keyword "+ ((LispSymbol) element).getName() + " without value in lambda!");
-                String name = ((LispSymbol) element).getName();//.substring(1);
-                rest.add(new LispSymbol(name, list.get(i+1))); //.evaluate(inner)));
-                i++;
-                continue;
-            }
-            rest.add(element);
-        }
-        return rest; */
     }
 
     public CustomEnvironment substituteArguments (Environment environment, List<LObject> args) {
@@ -188,9 +165,7 @@ public class Lambda extends LispObject implements FunctionCell {
                     i++;
                     continue;
                 }
-                
-                List<LObject> rest = makeRestList(inner, args.subList(i, argsSize));
-                argument.setValue(inner, LispList.list(rest));
+                argument.setValue(inner, LispList.list(args.subList(i, argsSize)));
                 j = i + 1;
                 break;
             }
