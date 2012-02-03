@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -59,5 +60,12 @@ public class LispListTest {
     public void testtool() {
         LispList list = LispList.list(new LispInteger(1), new LispInteger(2));
         list.toString();
+    }
+    
+    @Test
+    public void testToObjectList() {
+        LispList list = LispList.testList(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.ourNil, LispList.list(new LispSymbol("b"))));
+        List<LObject> a = list.toLObjectList();
+        Assert.assertEquals(3, a.size());
     }
 }

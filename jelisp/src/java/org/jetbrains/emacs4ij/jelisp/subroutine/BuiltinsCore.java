@@ -5,7 +5,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 
@@ -274,10 +276,28 @@ public abstract class BuiltinsCore {
         } catch (IndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(array.toString(), index.toString());
         }
-        
-        
+    }
+
+    @Subroutine(value = "apply")
+    public static LObject apply (Environment environment, LObject function, LObject... args) {
+        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction())
+            throw new InvalidFunctionException(function.toString());
+        if (!(args[args.length-1] instanceof LispList))
+            throw new WrongTypeArgumentException("listp", args[args.length-1].toString());
+        ArrayList<LObject> list = new ArrayList<>();
+        list.addAll(Arrays.asList(args).subList(0, args.length - 1));
+        List<LObject> last =((LispList)args[args.length-1]).toLObjectList();
+        list.addAll(last);
+        return ((LispSymbol) function).evaluateFunction(environment, list);
     }
     
+    @Subroutine(value = "purecopy")
+    public static LObject pureCopy (LObject object) {
+        /*
+        TODO: ?
+         */
+        return object;
+    }
 
     @Subroutine(value = "string-match")
     public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {

@@ -172,7 +172,7 @@ public class LispSymbol extends LispAtom {
      * takes Environment
      */
     public LObject evaluate(Environment environment) {
-        if (equals(ourNil) || equals(ourT) || equals(ourVoid) || myName.startsWith(":"))
+        if (equals(ourNil) || equals(ourT) || equals(ourVoid) || isKeyword())
             return this;
         if (hasValue()) {
             return getValue();
@@ -189,6 +189,7 @@ public class LispSymbol extends LispAtom {
             }
             if (symbol == null || (!symbol.hasValue()))
                 throw new VoidVariableException(myName);
+            System.out.println("uploaded " + myName);
         }
         return symbol.getValue();
     }
@@ -298,7 +299,6 @@ public class LispSymbol extends LispAtom {
         setProperty("variable-documentation", value);
     }
 
-
     public String getInteractiveString (Environment environment) {
         if (myFunction == null)
             return null;
@@ -306,6 +306,8 @@ public class LispSymbol extends LispAtom {
         return ((FunctionCell)myFunction).getInteractiveString();
     }
 
-
+    public boolean isKeyword () {
+        return myName.startsWith(":");
+    }
 
 }

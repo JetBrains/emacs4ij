@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -434,6 +435,28 @@ public class BuiltinsCoreTest {
             return;
         }
         Assert.fail();
+    }
+    
+    @Test(expected = WrongNumberOfArgumentsException.class)
+    public void testApplyNoArgs() {
+        evaluateString("(apply '+)");
+    }
+
+    @Test
+    public void testApplyNotListLastArg() {
+        try {
+            evaluateString("(apply '+ 1 2)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 2)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testApply() {
+        LObject r = evaluateString("(apply '+ 1 2 '(3 4))");
+        Assert.assertEquals(new LispInteger(10), r);
     }
 
 }

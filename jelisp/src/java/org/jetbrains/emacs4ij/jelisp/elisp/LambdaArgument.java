@@ -116,4 +116,15 @@ public class LambdaArgument {
         result = 31 * result + (myType != null ? myType.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "LambdaArgument{" +
+                "myKeyword=" + myKeyword +
+                ", myVar=" + myVar +
+                ", myInitForm=" + myInitForm +
+                ", mySetVar=" + mySetVar +
+                ", myType=" + myType +
+                '}';
+    }
 }

@@ -131,6 +131,7 @@ public class LispList extends LispObject {
             }
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
+            System.out.println("uploaded " + fun.getName());
         }
         List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
@@ -138,11 +139,11 @@ public class LispList extends LispObject {
 
     public List<LObject> toLObjectList() {
         ArrayList<LObject> list = new ArrayList<>();
-        if (!isTrueList) {
+       /* if (!isTrueList) {
             list.add(myCar);
             list.add(myCdr);
             return list;
-        }
+        } */
        // if (isEmpty()) return new ArrayList<LObject>();
         LObject cell = this;
         do {
@@ -230,7 +231,6 @@ public class LispList extends LispObject {
         if (!isTrueList) {
             throw new RuntimeException("wrong usage??");
         }
-
         for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
             if (((LispList)cdr).car().equals(element)) {
                 return (LispList)cdr;
