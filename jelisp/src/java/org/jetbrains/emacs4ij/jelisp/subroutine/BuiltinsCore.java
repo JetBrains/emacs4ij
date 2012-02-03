@@ -147,7 +147,9 @@ public abstract class BuiltinsCore {
         msg += ": " + data.toString();
 //        GlobalEnvironment.showErrorMessage(msg);
         //todo: this method returns for test only
-        return new LispString(msg);
+      //  return new LispString(msg);
+        System.out.println(msg);
+        throw new LispException(msg);
     }
 
     private static void runFunction (Environment environment, LispSymbol function) {
@@ -290,7 +292,73 @@ public abstract class BuiltinsCore {
         list.addAll(last);
         return ((LispSymbol) function).evaluateFunction(environment, list);
     }
-    
+
+    @Subroutine(value = "format")
+    public static LispString format (LispString formatString, @Optional LObject... objects) {
+        String s = formatString.getData();
+        int k = s.indexOf('%');
+        String result = s.substring(0, (k == -1 ? s.length() : k));
+        char p = '%';
+        int index = 0;
+        Character[] formatCharsArray = new Character[] {'s', 'S', 'd', 'o', 'x', 'X', 'e', 'f', 'g', 'c'};
+        List<Character> formatChars = Arrays.asList(formatCharsArray);
+        
+        while (k != -1) {
+            k++;
+            while (k < s.length() && s.charAt(k) < 'A' && s.charAt(k) != '%') { //skip flags,width,precision: %<flags><width><precision>character
+                k++;                    
+            }
+            if (k == s.length())
+                throw new LispException("Format string ends in middle of format specifier");
+            if (s.charAt(k) == '%') {
+                result += '%';
+            } else {
+                if (index >= objects.length)
+                    throw new LispException("Not enough arguments for format string");
+                if (!(formatChars.contains(s.charAt(k))))
+                    throw new LispException("Invalid format operation %" + s.charAt(k));
+                result += objects[index].toString();
+                index++;
+            }
+           /* switch (s.charAt(k)) {
+                case 's': //print a string argument.  Actually, prints any object, with `princ'.
+                    break;
+                case 'S': //print any object as an s-expression (using `prin1').
+                    break;
+                case '%':
+                    break;
+
+                //todo: The argument used for %d, %o, %x, %e, %f, %g or %c must be a number.
+                
+                case 'd': //print as number in decimal (%o octal, %x hex)
+                    break;
+                case 'o': //print as number in octal
+                    break;
+                case 'x': //print as number in hex
+                    break;
+                case 'X': //is like %x, but uses upper case.
+                    break;
+                case 'e': //print a number in exponential notation.
+                    break;
+                case 'f': //print a number in decimal-point notation.
+                    break;
+                case 'g': //print a number in exponential notation or decimal-point notation, whichever uses fewer characters.
+                    break;
+                case 'c': //print a number as a single character.
+                    break;
+
+
+                default:
+                    throw new LispException("Invalid format operation %" + s.charAt(k));
+            } */
+            k++;
+            int nextPercent = s.indexOf('%', k); 
+            result += s.substring(k, (nextPercent == -1 ? s.length() : nextPercent));
+            k = nextPercent;
+        }
+        return new LispString(result);
+    }
+
     @Subroutine(value = "purecopy")
     public static LObject pureCopy (LObject object) {
         /*

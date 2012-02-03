@@ -458,5 +458,55 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("(apply '+ 1 2 '(3 4))");
         Assert.assertEquals(new LispInteger(10), r);
     }
+    
+    @Test
+    public void testFormatEmpty() {
+        LObject s = evaluateString("(format \"\")");
+        Assert.assertEquals(new LispString(""), s);
+    }
 
+    @Test
+    public void testFormatNoNeedInArgs() {
+        LObject s = evaluateString("(format \"hello\" 1 2 3)");
+        Assert.assertEquals(new LispString("hello"), s);
+    }
+
+    @Test
+    public void testFormatNotEnoughArgs() {
+        try {
+            evaluateString("(format \"%d\")");
+        } catch (Exception e) {
+            Assert.assertEquals("Not enough arguments for format string", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testFormatUnexpectedEndOfFormatString() {
+        try {
+            evaluateString("(format \"%123456\" 1)");
+        } catch (Exception e) {
+            Assert.assertEquals("Format string ends in middle of format specifier", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testFormatInvalidFormatCharacter() {
+        try {
+            evaluateString("(format \"%123456q\" 1)");
+        } catch (Exception e) {
+            Assert.assertEquals("Invalid format operation %q", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testFormatSimple() {
+        LObject s = evaluateString("(format \"%1234d\" 1 2 3)");
+        Assert.assertEquals(new LispString("1"), s);
+    }
 }

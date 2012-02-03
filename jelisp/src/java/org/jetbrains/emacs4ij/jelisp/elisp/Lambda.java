@@ -142,9 +142,9 @@ public class Lambda extends LispObject implements FunctionCell {
     }
     
     private List<LObject> makeRestList(Environment inner, List<LObject> list) {
-        ArrayList<LObject> rest = new ArrayList<>();
+        return list;
+       /* ArrayList<LObject> rest = new ArrayList<>();
         for (int i=0; i<list.size(); ++i) {
-            //LObject element =
             LObject element = list.get(i);
             if (isKeyword(element) && !((LispSymbol) element).hasValue()) {
                 if (i + 1 >= list.size() || isKeyword(list.get(i+1)))
@@ -156,7 +156,7 @@ public class Lambda extends LispObject implements FunctionCell {
             }
             rest.add(element);
         }
-        return rest;
+        return rest; */
     }
 
     public CustomEnvironment substituteArguments (Environment environment, List<LObject> args) {
