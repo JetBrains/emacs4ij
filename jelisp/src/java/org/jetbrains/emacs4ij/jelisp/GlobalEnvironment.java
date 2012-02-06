@@ -91,6 +91,12 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put(name, symbol);
     }
 
+    private void addBufferLocalVariable(String name, @Nullable LObject value, int documentation) {
+        LispSymbol symbol = new LispSymbol(name, value, true);
+        symbol.setGlobalVariableDocumentation(new LispInteger(documentation));
+        mySymbols.put(name, symbol);
+    }
+
     private void defineDefForms () {
         findAndRegisterEmacsForm("defcustom");
     }
@@ -102,27 +108,20 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineBufferLocalVariables() {
-        /*addVariable("mark-active", LispSymbol.ourBufferLocalVariable, 329910);
-        addVariable("default-directory", LispSymbol.ourBufferLocalVariable, 316938);
-        addVariable("addSymbol", LispSymbol.ourBufferLocalVariable, 2103159);  */
-
-        addVariable("mark-active", null, 329910);
-        addVariable("default-directory", null, 316938);
-        addVariable("mark-ring", null, 2103159);
+        addBufferLocalVariable("mark-active", LispSymbol.ourNil, 329910);
+        addBufferLocalVariable("default-directory", LispSymbol.ourNil, 316938);
+        addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159);
     }
 
     private void defineGlobalVariables() {
         addVariable("load-history", LispSymbol.ourNil, 550505);
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
         addVariable("purify-flag", LispSymbol.ourNil, 415585);
-
         addVariable("current-load-list", LispSymbol.ourNil, 552006);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
         addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379);
-
-
     }
 
     private void setSubroutinesFromClass (HashMap<String, String> documentation,  Class[] subroutineContainers, Primitive.Type type) {
@@ -212,6 +211,13 @@ public class GlobalEnvironment extends Environment {
         }
         defineSymbol(symbol);
     }
+    
+    public LObject getBufferLocalSymbolValue (LispSymbol symbol) {
+        LispSymbol real = mySymbols.get(symbol.getName());
+        if (real == null || !real.isBufferLocal())
+            return null;
+        return real.getValue();
+    }
 
     //============================= buffer processing =====================================
     @Override
@@ -255,6 +261,7 @@ public class GlobalEnvironment extends Environment {
     public void killBuffer (String bufferName) {
         killBuffer(findBufferSafe(bufferName));
     }
+
 
 
 
@@ -551,8 +558,7 @@ return ((LispString)f).getData();
         }
         return frames;
     }
-
-
+    
     public static ArrayList<LispFrame> getAllFrames () {
         if (INSTANCE == null)
             return new ArrayList<>();

@@ -243,47 +243,59 @@ public class BuiltinsSymbolTest {
     }
 
     @Test
-       public void testFunctionDocumentationNil () {
-           evaluateString("(defun a () \"doc\" 2)");
-           LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
-           Assert.assertEquals(LispSymbol.ourNil, doc);
-       }
+    public void testFunctionDocumentationNil () {
+        evaluateString("(defun a () \"doc\" 2)");
+        LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
+        Assert.assertEquals(LispSymbol.ourNil, doc);
+    }
 
-       @Test
-       public void testDocumentationNoDef () {
-           try {
-               evaluateString("(documentation 'a)");
-           } catch (Exception e) {
-               Throwable q = getCause(e);
-               if (!(q instanceof VoidFunctionException))
-                   org.junit.Assert.fail(q.getLocalizedMessage());
-           }
-       }
+    @Test
+    public void testDocumentationNoDef () {
+        try {
+            evaluateString("(documentation 'a)");
+        } catch (Exception e) {
+            Throwable q = getCause(e);
+            if (!(q instanceof VoidFunctionException))
+                org.junit.Assert.fail(q.getLocalizedMessage());
+        }
+    }
 
-       @Test
-       public void testDocumentationString () {
-           evaluateString("(defun a () \"doc\" 2)");
-           LObject doc = evaluateString("(documentation 'a)");
-           org.junit.Assert.assertEquals(new LispString("doc"), doc);
-       }
+    @Test
+    public void testDocumentationString () {
+        evaluateString("(defun a () \"doc\" 2)");
+        LObject doc = evaluateString("(documentation 'a)");
+        org.junit.Assert.assertEquals(new LispString("doc"), doc);
+    }
 
-       @Test
-       public void testDocumentationProperty () {
-           evaluateString("(defun a () 2)");
-           evaluateString("(put 'a 'function-documentation \"doc\")");
-           LObject doc = evaluateString("(documentation 'a)");
-           org.junit.Assert.assertEquals(new LispString("doc"), doc);
-           doc = evaluateString("(documentation-property 'a 'function-documentation)");
-           org.junit.Assert.assertEquals(new LispString("doc"), doc);
-       }
+    @Test
+    public void testDocumentationProperty () {
+        evaluateString("(defun a () 2)");
+        evaluateString("(put 'a 'function-documentation \"doc\")");
+        LObject doc = evaluateString("(documentation 'a)");
+        org.junit.Assert.assertEquals(new LispString("doc"), doc);
+        doc = evaluateString("(documentation-property 'a 'function-documentation)");
+        org.junit.Assert.assertEquals(new LispString("doc"), doc);
+    }
 
-       @Test
-       public void testDocumentationPropertyFun () {
-           evaluateString("(defvar a 2)");
-           evaluateString("(put 'a 'function-documentation \"doc\")");
-           LObject doc = evaluateString("(documentation 'a)");
-           org.junit.Assert.assertEquals(new LispString("doc"), doc);
-       }
+    @Test
+    public void testDocumentationPropertyFun () {
+        evaluateString("(defvar a 2)");
+        evaluateString("(put 'a 'function-documentation \"doc\")");
+        LObject doc = evaluateString("(documentation 'a)");
+        org.junit.Assert.assertEquals(new LispString("doc"), doc);
+    }
 
+    @Test
+    public void testDefaultValueDefvar () {
+        evaluateString("(defvar a 1)");
+        LObject r = evaluateString("(default-value 'a)");
+        Assert.assertEquals(new LispInteger(1), r);
+    }
 
+    @Test
+    public void testDefaultValueSetq () {
+        evaluateString("(setq a 1)");
+        LObject r = evaluateString("(default-value 'a)");
+        Assert.assertEquals(new LispInteger(1), r);
+    }
 }

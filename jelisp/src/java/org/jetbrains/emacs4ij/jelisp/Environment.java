@@ -73,7 +73,7 @@ public abstract class Environment {
         LispSymbol lispObject = mySymbols.get(name);
 
         if (lispObject != null) {
-            if (!lispObject.isFunction() && lispObject.getValue() == null) {
+            if (!lispObject.isFunction() && lispObject.isBufferLocal()) {
                 try {
                     lispObject = getBufferCurrentForEditing().getLocalVariable(name);
                 } catch (NoOpenedBufferException e1) {

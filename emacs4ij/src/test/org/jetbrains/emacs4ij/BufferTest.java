@@ -620,6 +620,27 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
         Assert.fail();
     }
+    
+    @Test
+    public void testDefaultValueGlobals() {
+        LObject r = eval("(default-value 'default-directory)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = eval("(default-value 'mark-active)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = eval("(default-value 'mark-ring)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testDefaultValueBufferLocals() {
+        try {
+            eval("(default-value 'is-alive)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-variable is-alive)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 }
 
 

@@ -27,9 +27,7 @@ public class LispSymbol extends LispAtom {
     private String myName = null;
     private LObject myValue = null; //ourVoid;
     private LObject myFunction = null;
-    //private boolean isInteractive = false;
-    //private String myInteractiveString;
-
+    private boolean isBufferLocal = false;
 
     private HashMap<LispSymbol, LObject> myProperties = new HashMap<LispSymbol, LObject>();
 
@@ -37,11 +35,26 @@ public class LispSymbol extends LispAtom {
         this.myName = myName;
     }
 
+    public LispSymbol(String myName, boolean bufferLocal) {
+        this.myName = myName;
+        isBufferLocal = bufferLocal;
+    }
+
     public LispSymbol (String myName, LObject value) {
         this.myName = myName;
         myValue = value;
     }
 
+    public LispSymbol (String myName, LObject value, boolean bufferLocal) {
+        this.myName = myName;
+        myValue = value;
+        isBufferLocal = bufferLocal;
+    }
+
+    public boolean isBufferLocal() {
+        return isBufferLocal;
+    }
+    
     public String getName() {
         return myName;
     }
@@ -310,5 +323,4 @@ public class LispSymbol extends LispAtom {
     public boolean isKeyword () {
         return myName.startsWith(":");
     }
-
 }
