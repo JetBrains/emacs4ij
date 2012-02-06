@@ -118,7 +118,7 @@ public class EvaluatorTest {
     @Test
     public void testFindMark () throws Throwable {
         try {
-            GlobalEnvironment.getFunctionFromFile(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
+            GlobalEnvironment.getDefFromFile(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
             throw getCause(e);

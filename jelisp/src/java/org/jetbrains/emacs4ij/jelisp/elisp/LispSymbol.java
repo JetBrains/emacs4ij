@@ -179,13 +179,14 @@ public class LispSymbol extends LispAtom {
         }
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || (!symbol.hasValue())) {
-            System.out.println("upload " + myName);
+            System.out.println("VAR " + myName);
             try { //it may be a macro
-                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunctionOrMacro(myName);
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName);
             } catch (Exception e) {
                 //it's not a macro
                 //todo: find variable
-                throw new VoidVariableException(myName);
+                //throw new VoidVariableException(myName);
+                throw e;
             }
             if (symbol == null || (!symbol.hasValue()))
                 throw new VoidVariableException(myName);

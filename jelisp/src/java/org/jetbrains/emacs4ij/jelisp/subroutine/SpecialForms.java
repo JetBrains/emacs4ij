@@ -137,7 +137,7 @@ public abstract class SpecialForms {
     @Subroutine(value = "if")
     public static LObject lispIf (Environment environment, LObject cond, LObject then, @Optional LObject... elseBody) {
         LObject condition = cond.evaluate(environment);
-        if (condition != LispSymbol.ourNil) {
+        if (!condition.equals(LispSymbol.ourNil)) {
             return then.evaluate(environment);
         }
         if (elseBody == null)

@@ -46,7 +46,7 @@ public class CustomEnvironmentTest {
     public void testGetFunctionFromFile() {
         String lispObjectFileNameFile = GlobalEnvironment.ourEmacsSource + "/lisp/help-fns.el";
         String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = GlobalEnvironment.INSTANCE.getFunctionFromFile(lispObjectFileNameFile, lispFunctionName);
+        LispList functionFromFile = GlobalEnvironment.INSTANCE.getDefFromFile(lispObjectFileNameFile, lispFunctionName);
         Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList)functionFromFile.cdr()).car());
     }
 

@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -124,7 +125,7 @@ public class LispList extends LispObject {
             //while we are not loading all elisp code, perform search on request
             System.out.println("upload " + fun.getName());
             try {
-                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunctionOrMacro(fun);
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());
                 throw new VoidFunctionException(fun.getName());
@@ -221,16 +222,28 @@ public class LispList extends LispObject {
         return result;
     }
 
-    public LispObject memq (LObject element) {
+    public LispObject memq (LObject element, String equalityFunctionName) {
         if (!isTrueList) {
             throw new RuntimeException("wrong usage??");
         }
-        for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-            if (((LispList)cdr).car().equals(element)) {
-                return (LispList)cdr;
+        if (equalityFunctionName.equals("eq")) {
+            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+                if (BuiltinsCore.eq(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                    return (LispList)cdr;
+                }                
             }
+            return LispSymbol.ourNil;
         }
-        return LispSymbol.ourNil;
+
+        if (equalityFunctionName.equals("equal")) {
+            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+                if (BuiltinsCore.equal(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                    return (LispList)cdr;
+                }
+            }
+            return LispSymbol.ourNil;
+        }
+        throw new RuntimeException("Wrong usage!");
     }
 
     public void setCar (LObject car) {

@@ -64,15 +64,15 @@ public abstract class BuiltinsSymbol {
                 RandomAccessFile docFile = new RandomAccessFile(((LispString)GlobalEnvironment.INSTANCE.find("doc-directory").getValue()).getData() +
                         ((LispString)GlobalEnvironment.INSTANCE.find("internal-doc-file-name").getValue()).getData(), "r");
                 docFile.seek(offset);
+                String doc = "";
                 String line = docFile.readLine();
-                String doc = line;
-                while ((line = docFile.readLine()) != null) {
-                    if (line.contains(""))  // \u001F
-                        break;
-                    doc += '\n' + line;
+                while (line != null && !line.contains("")) {
+                    doc += (doc.length() > 0 ? '\n' : "") + line;
+                    line = docFile.readLine();
                 }
                 docFile.close();
-                doc += '\n' + line.substring(0, line.indexOf(''));
+                if (line != null)
+                    doc += (doc.length() > 0 ? '\n' : "") + line.substring(0, line.indexOf(''));
                 return new LispString(doc);
             } catch (IOException e) {
                 //throw new RuntimeException(e.getMessage());

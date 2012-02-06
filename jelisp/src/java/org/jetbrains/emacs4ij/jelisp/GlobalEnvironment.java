@@ -92,7 +92,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineDefForms () {
-        findAndRegisterEmacsFunctionOrMacro("defcustom");
+        findAndRegisterEmacsForm("defcustom");
     }
 
     private void defineUserOptions() {
@@ -115,6 +115,8 @@ public class GlobalEnvironment extends Environment {
         addVariable("load-history", LispSymbol.ourNil, 550505);
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
         addVariable("purify-flag", LispSymbol.ourNil, 415585);
+
+        addVariable("current-load-list", LispSymbol.ourNil, 552006);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
@@ -341,12 +343,11 @@ public class GlobalEnvironment extends Environment {
     }
 
     //TODO: its only for test
-    public static LispList getFunctionFromFile(String fileName, String functionName) {
-        return getFunctionOrMacroFromFile(new File(fileName), functionName);
+    public static LispList getDefFromFile(String fileName, String functionName) {
+        return getDefFromFile(new File(fileName), functionName);
     }
 
-    private static LispList getFunctionOrMacroFromFile(File file, String functionName) {
-        //File file = new File(fileName);
+    private static LispList getDefFromFile(File file, String name) {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -361,27 +362,28 @@ public class GlobalEnvironment extends Environment {
                 throw new RuntimeException("Error while reading " + file.getName());
             }
             if (line == null)
-                throw new RuntimeException("function " + functionName + " not found in " + file.getName());
-            if (line.contains("(defun " + functionName + ' '))
+                throw new RuntimeException("definition " + name + " not found in " + file.getName());
+            if (line.contains("(defun " + name + ' '))
                 break;
-            if (line.contains("(defmacro " + functionName + ' '))
+            if (line.contains("(defmacro " + name + ' '))
                 break;
-            if (line.contains("(defcustom " + functionName + ' '))
+            if (line.contains("(defcustom " + name + ' '))
+                break;
+            if (line.contains("(defvar " + name + ' '))
                 break;
         }
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LispObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
             String first = ((LispSymbol)((LispList) parsed).car()).getName();
-            if (first.equals("defun") || first.equals("defmacro") || first.equals("defcustom"))
+            if (first.equals("defun") || first.equals("defmacro") || first.equals("defcustom") || first.equals("defvar"))
                 return (LispList) parsed;
-            throw new RuntimeException("Parsed list is not a function or macro definition!");
+            throw new RuntimeException("Parsed list is not a specified definition!");
         }
         throw new RuntimeException("Parsed object is not a LispList!");
     }
 
-    public static LispList findEmacsFunctionOrMacroDefinition(String functionOrMacroName, File sourceDir) {
-        // File lispSource = new File(path);
+    public static LispList findEmacsDefinition(String name, File sourceDir) {
         File[] src = sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
@@ -390,14 +392,14 @@ public class GlobalEnvironment extends Environment {
         });
         for (File file: src) {
             if (file.isDirectory()) {
-                LispList searchResult = findEmacsFunctionOrMacroDefinition(functionOrMacroName, file);
+                LispList searchResult = findEmacsDefinition(name, file);
                 if (searchResult != null)
                     return searchResult;
             }
             if (!file.getName().endsWith(".el"))
                 continue;
             try {
-                return getFunctionOrMacroFromFile(file, functionOrMacroName);
+                return getDefFromFile(file, name);
             } catch (RuntimeException e) {
                 //skip
             }
@@ -449,31 +451,31 @@ return ((LispString)f).getData();
 
 }        */
 
-    public LispSymbol findAndRegisterEmacsFunctionOrMacro(String name) {
+    public LispSymbol findAndRegisterEmacsForm(String name) {
         LispSymbol emacsFunction = find(name);
         if (emacsFunction != null)
             return emacsFunction;
 
-        LispList definition = findEmacsFunctionOrMacroDefinition(name, new File(ourEmacsSource + "/lisp"));
+        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
 
         if (definition == null)
-            throw new RuntimeException("Function " + name + " not found.");
+            throw new RuntimeException("Form " + name + " not found.");
 
         LObject evaluated = definition.evaluate(this);
         
         if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
-            throw new RuntimeException("findAndRegisterEmacsFunction FAILED : " + name);
+            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
         }
         return find(name);
     }
     
-    public LispSymbol findAndRegisterEmacsFunctionOrMacro(LispSymbol name) {
-        return findAndRegisterEmacsFunctionOrMacro(name.getName());
+    public LispSymbol findAndRegisterEmacsForm(LispSymbol name) {
+        return findAndRegisterEmacsForm(name.getName());
     }
 
     //TODO: for test only
     public void findAndRegisterEmacsFunction (String file, String name) {
-        LispList function = getFunctionFromFile(file, name);
+        LispList function = getDefFromFile(file, name);
         function.evaluate(this);
     }
 

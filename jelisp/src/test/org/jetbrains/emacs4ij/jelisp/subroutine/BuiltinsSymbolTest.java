@@ -158,6 +158,13 @@ public class BuiltinsSymbolTest {
     }
 
     @Test
+    public void testDocumentationProperty_GlobalVar1 () {
+        LObject doc = evaluateString("(documentation-property 'current-load-list 'variable-documentation)");
+        LispString trueDoc = new LispString("Used for internal purposes by `load'.");
+        Assert.assertEquals(trueDoc, doc);
+    }
+
+    @Test
     public void testDocumentationProperty_Negative () {
         LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
         LObject trueDoc = new LispString("*Non-nil if Transient Mark mode is enabled.\n" +
