@@ -11,7 +11,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString extends LispAtom {
+public class LispString extends LispAtom implements LispSequence {
     private String myData;
 
     public LispString (String data) {
@@ -49,5 +49,10 @@ public class LispString extends LispAtom {
      */
     public LObject evaluate(Environment environment) {
         return this;
+    }
+
+    @Override
+    public int length() {
+        return myData.length();
     }
 }

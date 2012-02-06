@@ -22,7 +22,7 @@ import java.util.HashMap;
  * Time: 8:08 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MarkTest extends CodeInsightFixtureTestCase {
+public class MarkerTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
     Parser myParser = new Parser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
@@ -151,13 +151,18 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     @Test
     public void testMark () throws Throwable {
         try {
-            GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
-            LObject mark = evaluateString("(mark)");
-            Assert.assertEquals(LispSymbol.ourNil, mark);
+            evaluateString("(mark)");
         } catch (Exception e) {
-            System.out.println(getCause(e).getMessage());
-            throw getCause(e);
+            Assert.assertTrue(getCause(e).getMessage().contains("mark-inactive"));
+            return;
         }
+        Assert.fail();
+    }
+
+    @Test
+    public void testMarkForced () throws Throwable {
+        LObject mark = evaluateString("(mark t)");
+        Assert.assertEquals(LispSymbol.ourNil, mark);
     }
 
     @Test
@@ -172,12 +177,23 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         }
     }
 
-     /*
     @Test
-    public void testSetMark() {
-
+    public void testMarkMarker() {
+        LObject m = evaluateString("(setq m (mark-marker))");
+        Assert.assertEquals("#<marker in no buffer>", m.toString());
+        m = evaluateString("(set-marker m 5)");
+        Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
+        m = evaluateString("(mark-marker)");
+        Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
+    }
+    
+    @Test
+    public void testPushMarkNoArgs () {
+        LObject r = evaluateString("(push-mark)");
+        System.out.print(1);
     }
 
+     /*
     @Test
     public void testUserOption() {
         LObject result = evaluateString("(setq mark-ring-max \"lol\")");

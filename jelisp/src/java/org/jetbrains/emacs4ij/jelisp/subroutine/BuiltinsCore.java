@@ -371,7 +371,6 @@ public abstract class BuiltinsCore {
         return object;
     }
 
-    
     @Subroutine(value = "eval")
     public static LObject evaluate (Environment environment, LObject object) {
         return object.evaluate(environment);

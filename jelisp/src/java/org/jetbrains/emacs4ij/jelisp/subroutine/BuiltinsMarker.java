@@ -72,6 +72,11 @@ public abstract class BuiltinsMarker {
         marker.setPosition(position);
         return marker;
     }
+
+    @Subroutine("move-marker")
+    public static LispMarker moveMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
+        return setMarker(marker, position, buffer);
+    }
     
     @Subroutine("marker-position")
     public static LObject markerPosition (LispMarker marker) {
@@ -88,6 +93,12 @@ public abstract class BuiltinsMarker {
         if (position instanceof LispInteger) 
             return LispSymbol.bool(GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
         return LispSymbol.ourNil;
+    }
+
+    @Subroutine("mark-marker")
+    public static LispMarker markMarker (Environment environment) {
+        //todo:  Moving this marker changes the mark position
+        return (LispMarker) environment.getBufferCurrentForEditing().getLocalVariableValue("my-mark");
     }
 
 }

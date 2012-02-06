@@ -165,6 +165,20 @@ public class BuiltinsSymbolTest {
     }
 
     @Test
+    public void testDocumentationProperty_GlobalVar2 () {
+        LObject doc = evaluateString("(documentation-property 'global-mark-ring 'variable-documentation)");
+        LispString trueDoc = new LispString("The list of saved global marks, most recent first.");
+        Assert.assertEquals(trueDoc, doc);
+    }
+
+    @Test
+    public void testDocumentationProperty_GlobalVar3 () {
+        LObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
+        LispString trueDoc = new LispString("Maximum size of global mark ring.  Start discarding off end if gets this big.");
+        Assert.assertEquals(trueDoc, doc);
+    }
+
+    @Test
     public void testDocumentationProperty_Negative () {
         LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
         LObject trueDoc = new LispString("*Non-nil if Transient Mark mode is enabled.\n" +

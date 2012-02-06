@@ -40,6 +40,10 @@ public class LispSymbol extends LispAtom {
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
+    
+    public boolean toBoolean () {
+        return !this.equals(ourNil);
+    }
 
     public LispSymbol(String myName, boolean bufferLocal) {
         this.myName = myName;

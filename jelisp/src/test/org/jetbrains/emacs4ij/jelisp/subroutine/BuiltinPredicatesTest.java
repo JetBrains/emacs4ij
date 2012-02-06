@@ -138,4 +138,27 @@ public class BuiltinPredicatesTest {
         Assert.assertEquals(LispSymbol.ourNil, result);
     }
 
+    @Test
+    public void testSequenceP() {
+        LObject r = evaluateString("(sequencep ())");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep '())");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep nil)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep \"hello\")");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep [])");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep '[])");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep '[1 2])");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(sequencep '(1 2))");
+        Assert.assertEquals(LispSymbol.ourT, r);
+
+        r = evaluateString("(sequencep 'a)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+    
 }

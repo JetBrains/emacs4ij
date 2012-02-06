@@ -105,6 +105,8 @@ public class GlobalEnvironment extends Environment {
         addVariable("transient-mark-mode", LispSymbol.ourT, -2109012);
         addVariable("mark-even-if-inactive", LispSymbol.ourNil, -467784);
         addVariable("mark-ring-max", new LispInteger(16), 2103241);
+        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330);
+        addVariable("global-mark-ring-max", new LispInteger(16), 2103403);
     }
 
     private void defineBufferLocalVariables() {
@@ -149,7 +151,7 @@ public class GlobalEnvironment extends Environment {
     private boolean setSubroutines () {
         //int n = mySymbols.size();
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        if (d.scanAll() > 1) {
+        if (d.scanAll() > 2) {
             return false;
         }
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);

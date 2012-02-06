@@ -17,18 +17,18 @@ public abstract class BuiltinPredicates {
     private BuiltinPredicates() {}
 
     @Subroutine("stringp")
-    public static LispObject stringp (LObject arg) {
-        return (arg instanceof LispString) ? LispSymbol.ourT : LispSymbol.ourNil;
+    public static LispSymbol stringp (LObject arg) {
+        return LispSymbol.bool(arg instanceof LispString);
     }
 
     @Subroutine("symbolp")
-    public static LispObject symbolp (LObject arg) {
-        return (arg instanceof LispSymbol) ? LispSymbol.ourT : LispSymbol.ourNil;
+    public static LispSymbol symbolp (LObject arg) {
+        return LispSymbol.bool(arg instanceof LispSymbol);
     }
 
     @Subroutine("integerp")
-    public static LispObject integerp (LObject arg) {
-        return (arg instanceof LispInteger) ? LispSymbol.ourT : LispSymbol.ourNil;
+    public static LispSymbol integerp (LObject arg) {
+        return LispSymbol.bool(arg instanceof LispInteger);
     }
 
     @Subroutine("subrp")
@@ -41,8 +41,8 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("bufferp")
-    public static LispObject bufferp (LObject arg) {
-        return (arg instanceof LispBuffer) ? LispSymbol.ourT : LispSymbol.ourNil;
+    public static LispSymbol bufferp (LObject arg) {
+        return LispSymbol.bool(arg instanceof LispBuffer);
     }
 
     @Subroutine("commandp")
@@ -101,16 +101,12 @@ public abstract class BuiltinPredicates {
 
     @Subroutine("listp")
     public static LispSymbol listp (LObject object) {
-        if (object instanceof LispList || object.equals(LispSymbol.ourNil))
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispList || object.equals(LispSymbol.ourNil));
     }
 
     @Subroutine("consp")
     public static LispSymbol consp (LObject object) {
-        if (object instanceof LispList)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispList);
     }
 
     @Subroutine("framep")
@@ -153,37 +149,27 @@ public abstract class BuiltinPredicates {
 
     @Subroutine("windowp")
     public static LispSymbol windowP (LObject object) {
-        if (object instanceof LispWindow)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispWindow);
     }
     
     @Subroutine("number-or-marker-p") 
     public static LispSymbol numberOrMarkerP (LObject object) {
-        if (object instanceof LispNumber || object instanceof LispMarker)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispNumber || object instanceof LispMarker);
     }
 
     @Subroutine("integer-or-marker-p")
     public static LispSymbol integerOrMarkerP (LObject object) {
-        if (object instanceof LispInteger || object instanceof LispMarker)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispInteger || object instanceof LispMarker);
     }
 
     @Subroutine("markerp")
     public static LispSymbol markerP (LObject object) {
-        if (object instanceof LispMarker)
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool(object instanceof LispMarker);
     }
 
     @Subroutine("keywordp")
     public static LispSymbol keywordP (LObject object) {
-        if (object instanceof LispSymbol && ((LispSymbol) object).getName().startsWith(":"))
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool (object instanceof LispSymbol && ((LispSymbol) object).getName().startsWith(":"));
     }
 
     @Subroutine("default-boundp")
@@ -195,7 +181,17 @@ public abstract class BuiltinPredicates {
         }
         return LispSymbol.ourT;
     }
+    
+    @Subroutine("vectorp")
+    public static LispSymbol vectorP (LObject object) {
+        return LispSymbol.bool(object instanceof LispVector);
+    }
 
+    @Subroutine("sequencep")
+    public static LispSymbol sequenceP (LObject object) {
+        //Returns t if object is a list, vector, string, todo: bool-vector, or char-table, nil otherwise. 
+        return LispSymbol.bool(object instanceof LispSequence || object.equals(LispSymbol.ourNil));
+    }
 
 
 }

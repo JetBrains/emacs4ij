@@ -24,8 +24,8 @@ public abstract class LispSubroutine {
                                                     BuiltinsCore.class,
                                                     BuiltinsFrame.class,
                                                     BuiltinsList.class,
-                                                    BuiltinsMark.class,
                                                     BuiltinsMarker.class,
+                                                    BuiltinsSequence.class,
                                                     BuiltinsSymbol.class};
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 

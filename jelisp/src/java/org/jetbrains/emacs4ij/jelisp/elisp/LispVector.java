@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVector extends LispObject {
+public class LispVector extends LispObject implements LispSequence {
     private ArrayList<LObject> myData = null;
 
     public LispVector() {
@@ -64,5 +64,10 @@ public class LispVector extends LispObject {
     
     public LObject get (int index) throws IndexOutOfBoundsException {
         return myData.get(index);
+    }
+
+    @Override
+    public int length() {
+        return myData.size();
     }
 }

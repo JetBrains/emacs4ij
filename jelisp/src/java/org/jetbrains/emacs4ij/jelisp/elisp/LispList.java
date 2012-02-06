@@ -21,7 +21,7 @@ import java.util.List;
  *
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
-public class LispList extends LispObject {
+public class LispList extends LispObject implements LispSequence {
     private LObject myCar = null;
     private LObject myCdr = null;
     
@@ -278,5 +278,10 @@ public class LispList extends LispObject {
             if (!(object instanceof LispList))
                 isTrueList = false;
         }
+    }
+
+    @Override
+    public int length() {
+        return toLObjectList().size();
     }
 }
