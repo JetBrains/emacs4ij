@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -184,6 +185,17 @@ public abstract class BuiltinPredicates {
             return LispSymbol.ourT;
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("default-boundp")
+    public static LispSymbol defaultBoundP (Environment environment, LispSymbol symbol) {
+        try {
+            BuiltinsCore.defaultValue(environment, symbol);            
+        } catch (VoidVariableException e) {
+            return LispSymbol.ourNil;
+        }
+        return LispSymbol.ourT;
+    }
+
 
 
 }

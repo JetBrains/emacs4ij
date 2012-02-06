@@ -125,6 +125,17 @@ public class BuiltinPredicatesTest {
         Assert.assertEquals(LispSymbol.ourT, result);
     }
 
-
+    @Test
+    public void testDefaultBoundP() {
+        LObject result = evaluateString("(default-boundp 'f)");
+        Assert.assertEquals(LispSymbol.ourNil, result);
+        evaluateString("(setq f 1)");
+        result = evaluateString("(default-boundp 'f)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+        result = evaluateString("(default-boundp 'default-directory)");
+        Assert.assertEquals(LispSymbol.ourT, result);
+        result = evaluateString("(default-boundp 'is-alive)");
+        Assert.assertEquals(LispSymbol.ourNil, result);
+    }
 
 }
