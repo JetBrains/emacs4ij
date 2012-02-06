@@ -107,4 +107,32 @@ public abstract class BuiltinsSymbol {
         }
         throw new InvalidFunctionException(function.toString());
     }
+
+
+    @Subroutine(value = "default-value")
+    public static LObject defaultValue (Environment environment, LispSymbol symbol) {
+        LispSymbol real = environment.find(symbol.getName());
+        if (real == null)// || !real.hasValue())
+            throw new VoidVariableException(symbol.getName());
+        if (!real.isBufferLocal()) {
+            if (!real.hasValue())
+                throw new VoidVariableException(symbol.getName());
+            return real.getValue();
+        }
+        LObject value = GlobalEnvironment.INSTANCE.getBufferLocalSymbolValue(symbol);
+        if (value == null)
+            throw new VoidVariableException(symbol.getName());
+        return value;
+    }
+
+    @Subroutine("set-default")
+    public static LObject setDefault (Environment environment, LispSymbol symbol, LObject value) {
+        LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
+        if (real != null) {
+            real.setBufferLocal(true); //?
+            real.setValue(value);
+        } else
+            GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol.getName(), value, true));
+        return value;
+    }
 }

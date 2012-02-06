@@ -55,6 +55,10 @@ public class LispSymbol extends LispAtom {
         return isBufferLocal;
     }
     
+    public void setBufferLocal (boolean bufferLocal) {
+        isBufferLocal = bufferLocal;
+    }
+    
     public String getName() {
         return myName;
     }

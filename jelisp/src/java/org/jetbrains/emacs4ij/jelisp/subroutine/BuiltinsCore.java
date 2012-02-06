@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -368,20 +367,10 @@ public abstract class BuiltinsCore {
         return object;
     }
 
-    @Subroutine(value = "default-value")
-    public static LObject defaultValue (Environment environment, LispSymbol symbol) {
-        LispSymbol real = environment.find(symbol.getName());
-        if (real == null)// || !real.hasValue())
-            throw new VoidVariableException(symbol.getName());
-        if (!real.isBufferLocal()) {
-            if (!real.hasValue())
-                throw new VoidVariableException(symbol.getName());
-            return real.getValue();
-        }
-        LObject value = GlobalEnvironment.INSTANCE.getBufferLocalSymbolValue(symbol);
-        if (value == null)
-            throw new VoidVariableException(symbol.getName());
-        return value;
+    
+    @Subroutine(value = "eval")
+    public static LObject evaluate (Environment environment, LObject object) {
+        return object.evaluate(environment);
     }
     
     @Subroutine(value = "string-match")

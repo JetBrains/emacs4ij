@@ -298,4 +298,26 @@ public class BuiltinsSymbolTest {
         LObject r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
     }
+    
+    @Test
+    public void testSetDefault() {
+        LObject r = evaluateString("(set-default 'a 1)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("(default-value 'a)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("a");
+        Assert.assertEquals(new LispInteger(1), r);
+    }
+
+    @Test
+    public void testSetDefaultIndirect() {
+        LObject r = evaluateString("(set-default (car '(a b c)) 1)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("(default-value 'a)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("a");
+        Assert.assertEquals(new LispInteger(1), r);
+    }
+
+
 }

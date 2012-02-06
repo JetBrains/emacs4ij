@@ -189,7 +189,7 @@ public abstract class BuiltinPredicates {
     @Subroutine("default-boundp")
     public static LispSymbol defaultBoundP (Environment environment, LispSymbol symbol) {
         try {
-            BuiltinsCore.defaultValue(environment, symbol);            
+            BuiltinsSymbol.defaultValue(environment, symbol);
         } catch (VoidVariableException e) {
             return LispSymbol.ourNil;
         }
