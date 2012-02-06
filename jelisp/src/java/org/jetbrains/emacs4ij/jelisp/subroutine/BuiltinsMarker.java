@@ -64,13 +64,30 @@ public abstract class BuiltinsMarker {
 
     @Subroutine("set-marker")
     public static LispMarker setMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
-        if (BuiltinPredicates.integerOrMarkerP(position).equals(LispSymbol.ourNil))
+        if (BuiltinPredicates.integerOrMarkerP(position).equals(LispSymbol.ourNil) && !position.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("integer-or-marker-p", position.toString());
         if (buffer == null)
             buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
         marker.setBuffer(buffer);
         marker.setPosition(position);
         return marker;
+    }
+    
+    @Subroutine("marker-position")
+    public static LObject markerPosition (LispMarker marker) {
+        return marker.getPosition();
+    }
+
+    @Subroutine("marker-buffer")
+    public static LObject markerBuffer (LispMarker marker) {
+        return marker.getBuffer() == null ? LispSymbol.ourNil : marker.getBuffer();
+    }
+    
+    @Subroutine("buffer-has-markers-at")
+    public static LispSymbol bufferHasMarkersAt (LObject position) {
+        if (position instanceof LispInteger) 
+            return LispSymbol.bool(GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
+        return LispSymbol.ourNil;
     }
 
 }

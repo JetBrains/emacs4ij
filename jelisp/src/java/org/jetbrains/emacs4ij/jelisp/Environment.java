@@ -58,7 +58,7 @@ public abstract class Environment {
     }
 
     public LispString getDefaultDirectory () {
-        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
+        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("default-directory");
     }
 
     public LObject find(String name, String methodName) {

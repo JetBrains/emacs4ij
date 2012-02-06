@@ -28,16 +28,11 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     protected String myName;
     protected Editor myEditor;
     protected Environment myEnvironment;
+    protected ArrayList<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
 
     private ArrayList<LispSymbol> myLocalVariables = new ArrayList<LispSymbol>();
 
-    //buffer-local elisp variables
-    //private String myDefaultDirectory;
-    //private boolean isAlive;
-    //private Integer myMark = null;
-    //private boolean isMarkActive = false;
-    //private ArrayDeque<Integer> myMarkRing = new ArrayDeque<Integer>();
 
     protected IdeaBuffer() {}
 
@@ -226,11 +221,6 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         }
     }
 
-   /* @Override
-    public String getDefaultDirectory() {
-        return myDefaultDirectory;
-    }    */
-
     @Override
     public void closeHeader () {
         if (myEditor.getHeaderComponent() == null)
@@ -268,8 +258,26 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         Messages.showInfoMessage(message, "Elisp message");
     }
 
-
     //--------------- mark --------------------------------
+    @Override
+    public void addMarker (LispMarker marker) {
+        if (!myMarkers.contains(marker))
+            myMarkers.add(marker);
+    }
+
+    @Override
+    public void removeMarker (LispMarker marker) {
+        myMarkers.remove(marker);
+    }
+
+    @Override
+    public boolean hasMarkersAt (int position) {
+        for (LispMarker marker: myMarkers) {
+            if (marker.getPosition() instanceof LispInteger && ((LispInteger) marker.getPosition()).getData() == position)
+                return true;
+        }
+        return false;
+    }
 
    /* @Override
     public Integer getMark() {

@@ -32,6 +32,10 @@ public interface LispBuffer extends LObject {
     public void setEditor (Editor editor);
     public void closeHeader();
 
+    public void addMarker (LispMarker marker);
+    public void removeMarker (LispMarker marker);
+    public boolean hasMarkersAt (int position);
+
    // public Integer getMark();
     //public void setMark (int position);
     //public void pushMark (@Nullable Integer position, boolean activate);

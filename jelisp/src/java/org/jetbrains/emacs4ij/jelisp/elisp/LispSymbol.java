@@ -34,6 +34,12 @@ public class LispSymbol extends LispAtom {
     public LispSymbol(String myName) {
         this.myName = myName;
     }
+    
+    public static LispSymbol bool (boolean value) {
+        if (value)
+            return LispSymbol.ourT;
+        return LispSymbol.ourNil;
+    }
 
     public LispSymbol(String myName, boolean bufferLocal) {
         this.myName = myName;
