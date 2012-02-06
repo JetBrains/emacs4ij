@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 
 /**
@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
  */
 public abstract class BuiltinsMark {
      @Subroutine("mark-marker")
-    public static LispMarker markMarker (CustomEnvironment environment) {
+    public static LispMarker markMarker (Environment environment) {
         //todo:  Moving this marker changes the mark position
         return (LispMarker) environment.getBufferCurrentForEditing().getLocalVariableValue("my-mark");
     }

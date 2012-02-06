@@ -32,7 +32,6 @@ public class MarkTest extends CodeInsightFixtureTestCase {
     public static void runBeforeClass() {
         GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-
     }
 
     @Before
@@ -68,6 +67,16 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         return myParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
+    @Test
+    public void testSetMarker() {
+        LObject marker = evaluateString("(setq m (point-marker))");
+        Assert.assertEquals("#<marker at 1 in 3.txt>", marker.toString());
+        marker = evaluateString("(set-marker m 5)");
+        Assert.assertEquals("#<marker at 5 in 3.txt>", marker.toString());
+        marker = evaluateString("(set-marker m 0 (get-buffer \"2.txt\"))");
+        Assert.assertEquals("#<marker at 1 in 2.txt>", marker.toString());
+    }
+
 
     @Test
     public void testMark () throws Throwable {
@@ -86,13 +95,11 @@ public class MarkTest extends CodeInsightFixtureTestCase {
         try {
             GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
             LObject mark = evaluateString("(set-mark 10)");
-            System.out.println("Mark set: " + mark.toString());
-            Assert.assertEquals(LispSymbol.ourNil, mark);
+            Assert.assertEquals("#<marker at 9 in 3.txt>", mark.toString());
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
             throw getCause(e);
         }
-
     }
 
      /*

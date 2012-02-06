@@ -26,7 +26,11 @@ public abstract class BuiltinsCore {
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
         LispNumber n;
         if (BuiltinPredicates.markerP(lispObject).equals(LispSymbol.ourT)) {
-            n = new LispInteger(((LispMarker)lispObject).getPosition());
+            LObject pos = ((LispMarker)lispObject).getPosition();
+            if (!pos.equals(LispSymbol.ourNil)) {
+                n = (LispInteger)pos;
+            } else
+                throw new RuntimeException("Marker " + lispObject.toString() + " points nowhere!");
         } else {
             n = (LispNumber) lispObject;
         }

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -53,20 +54,23 @@ public abstract class BuiltinsMarker {
                 marker.setInsertionType(insertionType);
             return marker;
         }
-        if (markerOrInteger instanceof LispInteger) {
-            LispBuffer buffer = environment.getBufferCurrentForEditing();
-            int position = ((LispInteger) markerOrInteger).getData();
-            if (position < 1)
-                position = 1;
-            if (position > buffer.pointMax())
-                position = buffer.pointMax();
-            LispMarker marker = new LispMarker(position, buffer);
-            if (insertionType != null) {
-                marker.setInsertionType(insertionType);
-            }
-            return marker;
+        LispBuffer buffer = environment.getBufferCurrentForEditing();
+        LispMarker marker = new LispMarker(markerOrInteger, buffer);
+        if (insertionType != null) {
+            marker.setInsertionType(insertionType);
         }
-        throw new WrongTypeArgumentException("number-or-marker-p", markerOrInteger.getClass().getSimpleName());
+        return marker;
+    }
+
+    @Subroutine("set-marker")
+    public static LispMarker setMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
+        if (BuiltinPredicates.integerOrMarkerP(position).equals(LispSymbol.ourNil))
+            throw new WrongTypeArgumentException("integer-or-marker-p", position.toString());
+        if (buffer == null)
+            buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
+        marker.setBuffer(buffer);
+        marker.setPosition(position);
+        return marker;
     }
 
 }
