@@ -65,11 +65,16 @@ public class BuiltinsCoreTest {
         LispNumber n = BuiltinsCore.plus(new LispInteger(5), new LispFloat(6.6));
         Assert.assertEquals(new LispFloat(11.6), n);
     }
-    
-    @Test 
+
+    @Test
     public void testPlusMarker () {
-        LispNumber n = BuiltinsCore.plus(new LispMarker(), new LispMarker());
-        Assert.assertEquals(new LispInteger(0), n);
+        try {
+            BuiltinsCore.plus(new LispMarker(), new LispMarker());
+        } catch (Exception e) {
+            Assert.assertEquals("'(error \"Marker does not point anywhere\")", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
     }
 
     @Test
@@ -77,7 +82,7 @@ public class BuiltinsCoreTest {
         LispSymbol more = BuiltinsCore.more(new LispInteger(5), new LispFloat(1.3));
         Assert.assertEquals(LispSymbol.ourT, more);
     }
-    
+
     @Test
     public void testMultiplySimple () {
         LispNumber n = BuiltinsCore.multiply(new LispInteger(5), new LispFloat(2.0));
@@ -256,8 +261,8 @@ public class BuiltinsCoreTest {
         LObject expansion = evaluateString("(macroexpand '(inc r))");
         //(setq r (+ r 1))
         Assert.assertEquals(LispList.list(new LispSymbol("setq"),
-                                        new LispSymbol("r"),
-                                        LispList.list(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
+                new LispSymbol("r"),
+                LispList.list(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
                 expansion);
     }
 
@@ -275,8 +280,8 @@ public class BuiltinsCoreTest {
         LObject expansion = evaluateString("(macroexpand '(inc2 r s))");
         //(progn (inc r) (inc s))  ; inc not expanded here.
         Assert.assertEquals(LispList.list(new LispSymbol("progn"),
-                                         LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
-                                         LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
+                LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
+                LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
                 expansion);
     }
 
@@ -290,7 +295,7 @@ public class BuiltinsCoreTest {
         expansion = evaluateString("(macroexpand '(f))");
         Assert.assertEquals(LispList.list(new LispSymbol("f")), expansion);
     }
-    
+
     @Test
     public void testFset() {
         LObject f = evaluateString("(fset 'f2 'f1)");
@@ -301,7 +306,7 @@ public class BuiltinsCoreTest {
         Assert.assertNotNull(f2);
         Assert.assertEquals(new LispSymbol("f1"), f2.getFunction());
     }
-    
+
     @Test
     public void testFsetWta() {
         try {
@@ -313,7 +318,7 @@ public class BuiltinsCoreTest {
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testIndirectFunction() {
         evaluateString("(defun f1 () (+ 1 2))");
@@ -342,7 +347,7 @@ public class BuiltinsCoreTest {
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testIndirectFunctionCycle() {
         evaluateString("(fset 'f 'g)");
@@ -381,7 +386,7 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(new LispInteger(2), ((Primitive) f.getFunction()).getMinNumArgs());
         Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive)f.getFunction()).getMaxNumArgs());
     }
-    
+
     @Test
     public void testSubrArityWta() {
         try {
@@ -436,7 +441,7 @@ public class BuiltinsCoreTest {
         }
         Assert.fail();
     }
-    
+
     @Test(expected = WrongNumberOfArgumentsException.class)
     public void testApplyNoArgs() {
         evaluateString("(apply '+)");
@@ -458,7 +463,7 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("(apply '+ 1 2 '(3 4))");
         Assert.assertEquals(new LispInteger(10), r);
     }
-    
+
     @Test
     public void testFormatEmpty() {
         LObject s = evaluateString("(format \"\")");
@@ -492,7 +497,7 @@ public class BuiltinsCoreTest {
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testFormatInvalidFormatCharacter() {
         try {
@@ -509,4 +514,147 @@ public class BuiltinsCoreTest {
         LObject s = evaluateString("(format \"%1234d\" 1 2 3)");
         Assert.assertEquals(new LispString("1"), s);
     }
+
+    @Test
+    public void testDefAliasVoidVar() {
+        try {
+            evaluateString("(defalias a nil)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-variable a)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testDefAliasVoidFun() {
+        evaluateString("(defun f ())");
+        LObject r = evaluateString("(defalias 'a (symbol-function 'f))");
+        Assert.assertEquals("(lambda nil)", r.toString());
+    }
+
+    @Test
+    public void testDefAliasSetDoc() {
+        evaluateString("(defun f ())");
+        LObject r = evaluateString("(defalias 'a (symbol-function 'f) (make-marker))");
+        Assert.assertEquals("(lambda nil)", r.toString());
+        r = evaluateString("(symbol-function 'a)");
+        Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil), environment);
+        test.setDocumentation(new LispMarker());
+        Assert.assertEquals(test, r);
+        r = evaluateString("(get 'variable-documentation 'a)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(documentation 'a)");
+        Assert.assertEquals(new LispMarker(), r);
+        r = evaluateString("(documentation 'f)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testAtom() {
+        LObject r = evaluateString("(atom 5)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(atom [])");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(atom nil)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(atom 'a)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(atom ())");
+        Assert.assertEquals(LispSymbol.ourT, r);
+
+        r = evaluateString("(atom '(5))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(atom (cons 1 2))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testNumOrMarkersEqual() {
+        LObject r = evaluateString("(= 1 2)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(= 1 1.0)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+    }
+
+    @Test
+    public void testNumOrMarkersNilMarker() {
+        try {
+            evaluateString("(= 1 (make-marker))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(error \"Marker does not point anywhere\")", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testNumOrMarkersWrongArg() {
+        try {
+            evaluateString("(= 1 'a)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testNumOrMarkersNotEqual() {
+        LObject r = evaluateString("(/= 1 2)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(/= 1 1.0)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testBackQuoteSimplest_Atom() {
+        String form = "5";
+        LObject expected = evaluateString("'" + form);
+        LObject r = evaluateString("`" + form);
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteSimplest_Symbol() {
+        String form = "a";
+        LObject expected = evaluateString("'" + form);
+        LObject r = evaluateString("`" + form);
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testEvalEmptyVector() {
+        LObject r = evaluateString("[]");
+        Assert.assertEquals(new LispVector(), r);
+    }
+    
+    @Test
+    public void testBackQuoteSimplest_Vector() {
+        String form = "[]";
+        LObject expected = evaluateString("'" + form);
+        LObject r = evaluateString("`" + form);
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteSimplest_List() {
+        String form = "(1)";
+        LObject expected = evaluateString("'" + form);
+        LObject r = evaluateString("`" + form);
+        Assert.assertEquals(expected, r);
+    }
+
+    
+    @Test
+    public void testBackQuoteSimple() {
+        LispList expected = LispList.list(new LispSymbol("a"), new LispSymbol("list"),
+                new LispSymbol("of"), LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3)),
+                new LispSymbol("elements"));
+        LObject r = evaluateString("'(a list of (+ 2 3) elements)");
+        Assert.assertEquals(expected, r);
+        r = evaluateString("`(a list of (+ 2 3) elements)");
+        Assert.assertEquals(expected, r);
+    }
+
 }

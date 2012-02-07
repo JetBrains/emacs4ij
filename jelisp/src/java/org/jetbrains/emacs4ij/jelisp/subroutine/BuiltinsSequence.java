@@ -1,10 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSequence;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,4 +23,32 @@ public class BuiltinsSequence {
             return new LispInteger(0);
         return new LispInteger(((LispSequence)sequence).length());
     }
+
+    private static boolean isSequence (LObject object) {
+        return BuiltinPredicates.sequenceP(object).toBoolean();
+    }
+
+    @Subroutine(value = "append")
+    public static LObject append (@Optional LObject... args) {
+        if (args == null || args.length == 0)
+            return LispSymbol.ourNil;
+        ArrayList<LObject> list = new ArrayList<>();
+        for (int i = 0; i < args.length - 1; ++i) {
+            LObject sequence = args[i];
+            if (!isSequence(sequence))
+                throw new WrongTypeArgumentException("sequencep", sequence.toString());
+            if (sequence.equals(LispSymbol.ourNil))
+                continue;
+            list.addAll(((LispSequence)sequence).toLObjectList());
+        }
+        if (!list.isEmpty()) {
+            if (list.size() == 1)
+                System.out.print(1);
+            LispList result = LispList.list(list);
+            result.append(args[args.length-1]);
+            return result;
+        }
+        return args[args.length-1];
+    }
+
 }

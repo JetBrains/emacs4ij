@@ -99,14 +99,14 @@ public class LispSymbol extends LispAtom {
     private void castToLambda (Environment environment) {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
-            environment.updateFunction(this);
+            environment.updateSymbol(this);
         }
     }
 
     private void castToMacro (Environment environment) {
         if (isMacro() && !(myFunction instanceof Macro)) {
             myFunction = new Macro((LispList) myFunction, environment);
-            environment.updateFunction(this);
+            environment.updateSymbol(this);
         }
     }
 
@@ -267,6 +267,7 @@ public class LispSymbol extends LispAtom {
     }
 
     private LObject evaluateCustomFunction (Environment environment, List<LObject> args) {
+        //CustomEnvironment environment = new CustomEnvironment(environment1);
         if (!environment.areArgumentsEvaluated()) {
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));
@@ -315,12 +316,19 @@ public class LispSymbol extends LispAtom {
         if (myFunction == null)
             return getProperty("variable-documentation");
         castFunctionCell(environment);
-        return ((FunctionCell)myFunction).getDocString();
+        return ((FunctionCell)myFunction).getDocumentation();
     }
 
     public void setVariableDocumentation (LObject value) {
         if (value instanceof LispString)
             setProperty("variable-documentation", value);
+    }
+    
+    public void setFunctionDocumentation (LObject doc, Environment environment) {
+        if (myFunction == null)
+            return;
+        castFunctionCell(environment);
+        ((FunctionCell) myFunction).setDocumentation(doc);
     }
 
     public void setGlobalVariableDocumentation (LObject value) {

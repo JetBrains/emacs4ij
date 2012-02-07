@@ -179,6 +179,15 @@ public class BuiltinsSymbolTest {
     }
 
     @Test
+    public void testDocumentationProperty_GlobalVar4 () {
+        LObject doc = evaluateString("(documentation-property 'executing-kbd-macro 'variable-documentation)");
+        LispString trueDoc = new LispString("Currently executing keyboard macro (string or vector).\n"+
+                "This is nil when not executing a keyboard macro.");
+        Assert.assertEquals(trueDoc, doc);
+    }
+
+
+    @Test
     public void testDocumentationProperty_Negative () {
         LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
         LObject trueDoc = new LispString("*Non-nil if Transient Mark mode is enabled.\n" +

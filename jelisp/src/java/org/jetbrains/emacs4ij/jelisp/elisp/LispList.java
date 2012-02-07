@@ -24,7 +24,7 @@ import java.util.List;
 public class LispList extends LispObject implements LispSequence {
     private LObject myCar = null;
     private LObject myCdr = null;
-    
+
     private Boolean isTrueList;
 
     public static LispList list (LObject ... objects) {
@@ -134,16 +134,19 @@ public class LispList extends LispObject implements LispSequence {
                 throw new VoidFunctionException(fun.getName());
             System.out.println("uploaded " + fun.getName());
         }
+        if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
+            System.out.print(1);
         List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
     }
 
+    @Override
     public List<LObject> toLObjectList() {
         ArrayList<LObject> list = new ArrayList<>();
         LObject cell = this;
         do {
             LObject cdr = ((LispList)cell).cdr();
-            if (cdr instanceof LispList || ((LispList)cell).isTrueList())
+            if (cdr instanceof LispList || cdr.equals(LispSymbol.ourNil) || ((LispList)cell).isTrueList())
                 list.add(((LispList)cell).car());
             else {
                 list.add(cell);
@@ -157,12 +160,12 @@ public class LispList extends LispObject implements LispSequence {
     private boolean isNil (LObject object) {
         return (object instanceof LispSymbol && ((LispSymbol) object).getName().equals("nil"));
     }
-    
+
     @Override
     public String toString() {
         return toString(true);
     }
-    
+
     private String toString (boolean drawBrackets) {
         List<LObject> objectList = toLObjectList();
         if (objectList.isEmpty())
@@ -189,7 +192,7 @@ public class LispList extends LispObject implements LispSequence {
             }
             return list;
         }
-        
+
     }
 
     public LObject car () {
@@ -223,37 +226,39 @@ public class LispList extends LispObject implements LispSequence {
     }
 
     public LispObject memq (LObject element, String equalityFunctionName) {
-        if (!isTrueList) {
-            throw new RuntimeException("wrong usage??");
-        }
-        if (equalityFunctionName.equals("eq")) {
-            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-                if (BuiltinsCore.eq(((LispList) cdr).car(), element) == LispSymbol.ourT) {
-                    return (LispList)cdr;
-                }                
-            }
-            return LispSymbol.ourNil;
-        }
-
-        if (equalityFunctionName.equals("equal")) {
-            for (LObject cdr = this; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-                if (BuiltinsCore.equal(((LispList) cdr).car(), element) == LispSymbol.ourT) {
-                    return (LispList)cdr;
+        LObject cdr = this;
+        try {
+            if (equalityFunctionName.equals("eq")) {
+                for (; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+                    if (BuiltinsCore.eq(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                        return (LispList)cdr;
+                    }
                 }
+                return LispSymbol.ourNil;
             }
-            return LispSymbol.ourNil;
+
+            if (equalityFunctionName.equals("equal")) {
+                for (; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
+                    if (BuiltinsCore.equal(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                        return (LispList)cdr;
+                    }
+                }
+                return LispSymbol.ourNil;
+            }
+            throw new RuntimeException("Wrong usage!");
+        } catch (ClassCastException e) {
+            throw new WrongTypeArgumentException("listp", cdr.toString());
         }
-        throw new RuntimeException("Wrong usage!");
     }
 
     public void setCar (LObject car) {
         myCar = car;
     }
-    
+
     public void setCdr (LObject cdr) {
         myCdr = cdr;
     }
-        
+
     public LObject nReverse () {
         if (isEmpty())
             return this;
@@ -269,8 +274,10 @@ public class LispList extends LispObject implements LispSequence {
         }
         return prev;
     }
-    
+
     public void append (LObject object) {
+        if (object.equals(LispSymbol.ourNil))
+            return;
         if (myCdr != null && myCdr instanceof LispList)
             ((LispList) myCdr).append(object);
         else {

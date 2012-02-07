@@ -17,7 +17,7 @@ public class DocumentationExtractorTest {
         String ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
         // it is not = alias null
-        Assert.assertEquals(1, d.scanAll());
+        Assert.assertEquals(2, d.scanAll());
     }
 
     @Test

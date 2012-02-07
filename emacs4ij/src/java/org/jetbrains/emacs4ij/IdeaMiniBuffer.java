@@ -26,6 +26,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public enum MiniBufferStatus {READ_COMMAND, READ_ARG}
     public static String ourEvalPrompt = "M-x ";
     private MiniBufferStatus myStatus;
+    private int myActivationsDepth = 0;
 
    // private LObject myDefaultValue;
     private SpecialFormInteractive myInteractive;
@@ -218,7 +219,19 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
         cancelNoMatchMessageUpdate();
         write(myPrompt);
+        myActivationsDepth--;
         close();
+    }
+
+    @Override
+    public void setBufferActive() {
+        super.setBufferActive();    
+        myActivationsDepth++;
+    }
+
+    @Override
+    public int getActivationsDepth() {
+        return myActivationsDepth;
     }
 
     //for test

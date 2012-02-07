@@ -188,9 +188,30 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     }
     
     @Test
-    public void testPushMarkNoArgs () {
+    public void testPushMark () {
         LObject r = evaluateString("(push-mark)");
-        System.out.print(1);
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(mark t)");
+        Assert.assertEquals(new LispInteger(1), r);
+
+        r = evaluateString("(push-mark 5)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+
+        r = evaluateString("(push-mark 5 t)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+
+        r = evaluateString("(push-mark 5 t t)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(mark t)");
+        Assert.assertEquals(new LispInteger(5), r);
+    }
+
+    @Test
+    public void testPopMark () {
+        evaluateString("(push-mark 5 t t)");
+        evaluateString("(pop-mark)");
+        LObject r = evaluateString("(mark t)");
+        Assert.assertEquals(new LispInteger(5), r);
     }
 
      /*

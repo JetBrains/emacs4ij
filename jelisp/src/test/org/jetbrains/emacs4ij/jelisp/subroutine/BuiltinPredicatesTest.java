@@ -160,5 +160,4 @@ public class BuiltinPredicatesTest {
         r = evaluateString("(sequencep 'a)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
-    
 }

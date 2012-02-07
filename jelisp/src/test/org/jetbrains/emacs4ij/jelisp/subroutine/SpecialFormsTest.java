@@ -609,10 +609,12 @@ default-directory
         Assert.assertEquals(new LispString("hi"), r);
     }
 
-
-
-
-
-
+    @Test
+    public void testDefunEnvironment() {
+        evaluateString("(defun f (s) (cond ((eq s 4) (f 5) (message \"%d\" s))\n" +
+                "\t\t   ((eq s 5) (message \"Second=%d\" s))))");
+        LObject r = evaluateString("(f 4)");
+        Assert.assertEquals("\"4\"", r.toString());
+    }
 
 }

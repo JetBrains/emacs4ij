@@ -4,8 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Parser;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,5 +50,21 @@ public class BuiltinsSequenceTest {
         r = evaluateString("(length [1 2 3])");
         Assert.assertEquals(new LispInteger(3), r);
         //todo: (length (make-bool-vector 5 nil)) ⇒ 5
+    }
+    
+    @Test
+    public void testAppend() {
+        LObject r = evaluateString("(append \"h\" [1] \"llo\")");
+        Assert.assertEquals(LispList.testList(new LispInteger(104), new LispInteger(1), new LispString("llo")), r);
+        r = evaluateString("(append '() 'a)");
+        Assert.assertEquals(new LispSymbol("a"), r);
+        r = evaluateString("(append nil nil nil nil)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(append)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        
+        r = evaluateString("(append '(+ 2 3) '(+ 2 3 nil))");
+        Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3),
+                new LispSymbol("+"), new LispInteger(2), new LispInteger(3)), r);
     }
 }

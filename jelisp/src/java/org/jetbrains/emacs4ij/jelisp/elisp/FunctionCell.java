@@ -8,7 +8,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface FunctionCell extends LObject {
-    public LispObject getDocString();
+    public LObject getDocumentation();
+    public void setDocumentation (LObject doc);
     public boolean isInteractive();
     public String getInteractiveString();
 }

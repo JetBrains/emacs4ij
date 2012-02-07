@@ -137,7 +137,7 @@ public class BuiltinsListTest {
             evaluateString("(setq x (cons 1 (cons (cons 5 6) 3)))");
             evaluateString("(memq 6 x)");
         } catch (Exception e) {
-            Assert.assertEquals("(wrong-type-argument listp 3)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 3)", getCause(e).getMessage());
         }
     }
 

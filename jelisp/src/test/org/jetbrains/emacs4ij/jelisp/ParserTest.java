@@ -427,5 +427,29 @@ public class ParserTest {
         Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(127 == ((LispInteger)c).getData());
     }
+    
+    @Test
+    public void testParseBackQuoteSimple() {
+        LispObject c = p.parseLine("`()");
+        Assert.assertEquals("(\\` nil)", c.toString());
+    }
+
+    @Test
+    public void testParseBackQuoteComma() {
+        LispObject c = p.parseLine("`(1 ,2)");
+        Assert.assertEquals("(\\` (1 (\\, 2)))", c.toString());
+    }
+
+    @Test
+    public void testParseBackQuoteDog() {
+        LispObject c = p.parseLine("`(1 ,2 ,@3)");
+        Assert.assertEquals("(\\` (1 (\\, 2) (\\,@ 3)))", c.toString());
+    }
+
+    @Test
+    public void testParseBackQuoteNested() {
+        LispObject c = p.parseLine("`(1 ,2 ,@`3)");
+        Assert.assertEquals("(\\` (1 (\\, 2) (\\,@ (\\` 3))))", c.toString());
+    }
 }
 

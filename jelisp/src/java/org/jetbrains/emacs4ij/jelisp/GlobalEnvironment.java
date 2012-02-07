@@ -17,10 +17,6 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class GlobalEnvironment extends Environment {
-    //private ArrayList<String> myBufferDescriptors = new ArrayList<>();
-    // private BufferManager myBufferManager = null;
-    // private ArrayList<LispBuffer> myBuffers = new ArrayList<>();
-    // private LispBufferFactory myBufferFactory = null;
     private ArrayList<LispFrame> myFrames = new ArrayList<>();
     private LispFrame myCurrentFrame = null;
 
@@ -64,8 +60,8 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.mySymbols.clear();
             return -2;
         }
+        INSTANCE.loadFile(ourEmacsSource + "/lisp/emacs-lisp/backquote.el");
         INSTANCE.defineDefForms();
-
         myIde = ide;
         ourBufferManager = new BufferManager(bufferFactory);
 
@@ -99,6 +95,7 @@ public class GlobalEnvironment extends Environment {
 
     private void defineDefForms () {
         findAndRegisterEmacsForm("defcustom");
+        findAndRegisterEmacsForm("defsubst");
     }
 
     private void defineUserOptions() {
@@ -107,6 +104,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("mark-ring-max", new LispInteger(16), 2103241);
         addVariable("global-mark-ring", LispSymbol.ourNil, 2103330);
         addVariable("global-mark-ring-max", new LispInteger(16), 2103403);
+        addVariable("enable-recursive-minibuffers", LispSymbol.ourT, 353727);
     }
 
     private void defineBufferLocalVariables() {
@@ -120,6 +118,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
         addVariable("purify-flag", LispSymbol.ourNil, 415585);
         addVariable("current-load-list", LispSymbol.ourNil, 552006);
+        addVariable("executing-kbd-macro", LispSymbol.ourNil, 275692);
 
         //wtf?
         addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
@@ -164,8 +163,6 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
         mySymbols.put("void", LispSymbol.ourVoid);
-
-
         String docDir = ourEmacsPath + "/etc/";
         File file = new File (docDir);
         if (file.isDirectory()) {
@@ -184,10 +181,29 @@ public class GlobalEnvironment extends Environment {
                 return false;
         } else
             return false;
-
-
         return true;
+    }
 
+    private void loadFile (String fileName) {
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(fileName));
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException("File not found: " + fileName);
+        }
+        String line;
+        BufferedReaderParser p = new BufferedReaderParser(reader);
+        while (true){
+            try {
+                line = reader.readLine();
+            } catch (IOException e) {
+                throw new RuntimeException("Error while reading " + fileName);
+            }
+            if (line == null)
+                break;
+            LispObject parsed = p.parse(line);
+            parsed.evaluate(this);
+        }
     }
 
     public static void showMessage (String message) {
@@ -198,19 +214,12 @@ public class GlobalEnvironment extends Environment {
         myIde.showErrorMessage(message);
     }
 
-
-
-    /*public Object getProject () {
-        return myProject;
-    }*/
-
-
     @Override
-    public void updateFunction (LispSymbol symbol) {
-        LispSymbol function = mySymbols.get(symbol.getName());
-        if (function == null) {
-            throw new EnvironmentException("Trying to update nonexistent function!");
-        }
+    public void updateSymbol(LispSymbol symbol) {
+        //LispSymbol function = mySymbols.get(symbol.getName());
+        /*if (function == null) {
+            throw new VoidVariableException(symbol.getName());
+        }*/
         defineSymbol(symbol);
     }
     
@@ -355,8 +364,13 @@ public class GlobalEnvironment extends Environment {
     public static LispList getDefFromFile(String fileName, String functionName) {
         return getDefFromFile(new File(fileName), functionName);
     }
+    
+    private static List<String> myDefForms = Arrays.asList("defun", "defmacro",
+            "defcustom", "defvar", "defsubst", "defconst", "defalias");
 
     private static LispList getDefFromFile(File file, String name) {
+        if (file.getName().contains("byte-run.el"))
+            System.out.print(1);
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -364,7 +378,8 @@ public class GlobalEnvironment extends Environment {
             throw new RuntimeException("File not found: " + file.getName());
         }
         String line;
-        while (true) {
+        boolean loop = true;
+        do {
             try {
                 line = reader.readLine();
             } catch (IOException e) {
@@ -372,20 +387,18 @@ public class GlobalEnvironment extends Environment {
             }
             if (line == null)
                 throw new RuntimeException("definition " + name + " not found in " + file.getName());
-            if (line.contains("(defun " + name + ' '))
-                break;
-            if (line.contains("(defmacro " + name + ' '))
-                break;
-            if (line.contains("(defcustom " + name + ' '))
-                break;
-            if (line.contains("(defvar " + name + ' '))
-                break;
-        }
+            for (String defForm: myDefForms) {
+                if (line.contains('(' + defForm + ' ' + name + ' ')) {
+                    loop = false;
+                    break;
+                }
+            }
+        } while (loop);
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LispObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
             String first = ((LispSymbol)((LispList) parsed).car()).getName();
-            if (first.equals("defun") || first.equals("defmacro") || first.equals("defcustom") || first.equals("defvar"))
+            if (myDefForms.contains(first))
                 return (LispList) parsed;
             throw new RuntimeException("Parsed list is not a specified definition!");
         }
@@ -461,17 +474,12 @@ return ((LispString)f).getData();
 }        */
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
-        LispSymbol emacsFunction = find(name);
-        if (emacsFunction != null)
-            return emacsFunction;
-
+        if (name.equals("deactivate-mark"))
+            System.out.print(1);
         LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
-
         if (definition == null)
-            throw new RuntimeException("Form " + name + " not found.");
-
+            return null;
         LObject evaluated = definition.evaluate(this);
-        
         if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
         }

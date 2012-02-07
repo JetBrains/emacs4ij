@@ -30,7 +30,7 @@ public abstract class BuiltinsCore {
             if (!pos.equals(LispSymbol.ourNil)) {
                 n = (LispInteger)pos;
             } else
-                throw new RuntimeException("Marker " + lispObject.toString() + " points nowhere!");
+                throw new LispException("'(error \"Marker does not point anywhere\")");
         } else {
             n = (LispNumber) lispObject;
         }
@@ -379,5 +379,59 @@ public abstract class BuiltinsCore {
     @Subroutine(value = "string-match")
     public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {
         return null;
+    }
+    
+    @Subroutine("message") 
+    public static LispString message (LispString formatString, @Optional LObject... args) {
+        //todo: write in echo area
+        LispString s = format(formatString, args);
+        System.out.println(s.getData());
+        return s;
+    }
+    
+   /* private static boolean checkFunction (Environment environment, LObject object) {
+        CustomEnvironment inner = new CustomEnvironment(environment);
+        inner.setArgumentsEvaluated(true);
+        LispList list = LispList.list(new LispSymbol("functionp"), object);
+        LObject result = list.evaluate(inner);
+        return true;
+    } */
+
+    @Subroutine("defalias")
+    public static LObject defineAlias (Environment environment, LispSymbol symbol, LObject functionDefinition, @Optional LObject docString) {
+        LispSymbol real = environment.find(symbol.getName());
+        if (real == null)
+            real = symbol;
+        real.setFunction(functionDefinition);
+        if (docString != null && !(docString instanceof LispNumber)) {
+            real.setFunctionDocumentation(docString, environment);
+        }
+        environment.updateSymbol(real);
+        return functionDefinition;
+    }
+    
+    @Subroutine("provide")
+    public static LispSymbol provide (LispSymbol feature, @Optional LObject subFeatures) {
+        //todo: implement
+        return feature;
+    }
+    
+    @Subroutine("atom")
+    public static LispSymbol atom (LObject object) {
+        return LispSymbol.bool(!(object instanceof LispList));
+    }
+    
+    @Subroutine("=")
+    public static LispSymbol equalNumbersOrMarkers (LObject num1, LObject num2) {
+        double n1 = numberOrMarkerToNumber(num1).getDoubleData();
+        double n2 = numberOrMarkerToNumber(num2).getDoubleData();
+        return LispSymbol.bool(n1 == n2);
+    }
+
+    @Subroutine("/=")
+    public static LispSymbol notEqualNumbersOrMarkers (LObject num1, LObject num2) {
+        double n1 = numberOrMarkerToNumber(num1).getDoubleData();
+        double n2 = numberOrMarkerToNumber(num2).getDoubleData();
+        return LispSymbol.bool(n1 != n2);
     }
 }

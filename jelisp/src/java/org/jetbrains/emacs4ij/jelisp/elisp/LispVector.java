@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -69,5 +70,10 @@ public class LispVector extends LispObject implements LispSequence {
     @Override
     public int length() {
         return myData.size();
+    }
+
+    @Override
+    public List<LObject> toLObjectList() {
+        return myData;
     }
 }

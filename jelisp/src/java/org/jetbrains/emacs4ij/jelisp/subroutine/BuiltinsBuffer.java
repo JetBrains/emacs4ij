@@ -278,9 +278,8 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourT;
     }
 
-
-   /* @Subroutine(value = "bury", isCmd = true, interactive = "")
-    public static LObject buryBuffer () {
-        return LispSymbol.ourNil;
-    }   */
+    @Subroutine("minibuffer-depth")
+    public static LispInteger minibufferDepth (Environment environment) {
+        return new LispInteger(environment.getMiniBufferActivationsDepth());
+    }
 }

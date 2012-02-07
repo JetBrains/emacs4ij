@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -9,4 +11,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  */
 public interface LispSequence {
     public int length();
+    public List<LObject> toLObjectList();
 }

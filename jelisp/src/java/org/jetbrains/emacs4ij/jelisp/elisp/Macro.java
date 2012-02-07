@@ -14,7 +14,7 @@ import java.util.List;
 public class Macro extends LispObject implements FunctionCell {
    // private String myName;
     private Lambda myLambda;
-    private LispList myDeclaration;
+    //private LispList myDeclaration;
 
     public Macro (LispList def, Environment environment) {
         List<LObject> data = def.toLObjectList();
@@ -23,17 +23,22 @@ public class Macro extends LispObject implements FunctionCell {
         myLambda = new Lambda(LispList.list(data.subList(1, data.size())), environment);
     }
 
-    public void setDeclaration(LispList declaration) {
+    /*public void setDeclaration(LispList declaration) {
         myDeclaration = declaration;
-    }
+    }*/
 
     public LObject expand (Environment environment, List<LObject> args) {
         return myLambda.evaluate(environment, args);
     }
 
     @Override
-    public LispObject getDocString() {
-        return myLambda.getDocString();
+    public LObject getDocumentation() {
+        return myLambda.getDocumentation();
+    }
+
+    @Override
+    public void setDocumentation(LObject doc) {
+        myLambda.setDocumentation(doc);
     }
 
     @Override

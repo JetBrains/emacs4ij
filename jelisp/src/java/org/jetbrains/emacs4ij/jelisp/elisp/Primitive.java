@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
  */
 public class Primitive extends LispObject implements FunctionCell {
     private String myName;
-    private String myDocumentation;
+    private LObject myDocumentation;
     private boolean isInteractive;
     private String myInteractiveString;
     private Type myType;
@@ -29,7 +29,7 @@ public class Primitive extends LispObject implements FunctionCell {
         myName = annotation.value();
         isInteractive = annotation.isCmd();
         myInteractiveString = annotation.interactive();
-        myDocumentation = documentation;
+        myDocumentation = documentation == null ? null : new LispString(documentation);
         myType = type;
 
         countMinMaxNumArgs();
@@ -45,14 +45,17 @@ public class Primitive extends LispObject implements FunctionCell {
     }     */
 
     @Override
-    public LispObject getDocString() {
-
+    public LObject getDocumentation() {
         if (myDocumentation == null)
-            return LispSymbol.ourNil;
-        /*int i = myDocumentation.indexOf("usage: ");
-        if (i == -1)
-            return new LispString(myDocumentation);  */
-        return new LispString (myDocumentation.replace("usage: (" + myName, "\n(fn"));
+            return LispSymbol.ourNil;        
+        if (myDocumentation instanceof LispString)
+            return new LispString (((LispString) myDocumentation).getData().replace("usage: (" + myName, "\n(fn"));
+        return myDocumentation;
+    }
+
+    @Override
+    public void setDocumentation(LObject doc) {
+        myDocumentation = doc;
     }
 
     @Override

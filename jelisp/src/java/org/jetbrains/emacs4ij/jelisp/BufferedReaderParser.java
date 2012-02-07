@@ -18,8 +18,6 @@ import java.util.Observer;
  */
 public class BufferedReaderParser implements Observer {
     private Parser myParser = new Parser();
-    //private Stack<Character> myForms = new Stack<Character>();
-    //private String myCurrentLine;
     private BufferedReader myReader;
 
     public BufferedReaderParser (BufferedReader reader) {

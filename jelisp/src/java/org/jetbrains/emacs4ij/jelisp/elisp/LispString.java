@@ -2,6 +2,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -54,5 +57,14 @@ public class LispString extends LispAtom implements LispSequence {
     @Override
     public int length() {
         return myData.length();
+    }
+
+    @Override
+    public List<LObject> toLObjectList() {
+        ArrayList<LObject> data = new ArrayList<>();
+        for (int i = 0; i < myData.length(); ++i) {
+            data.add(new LispInteger(myData.charAt(i)));
+        }
+        return data;
     }
 }

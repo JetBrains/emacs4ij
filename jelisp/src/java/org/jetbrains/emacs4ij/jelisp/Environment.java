@@ -32,7 +32,7 @@ public abstract class Environment {
     private Environment getOuterEnv() {
         return myOuterEnv;
     }
-    
+
     public boolean areArgumentsEvaluated() {
         return myArgumentsEvaluated;
     }
@@ -48,7 +48,7 @@ public abstract class Environment {
     public boolean isSelectionManagedBySubroutine () {
         return mySelectionManagedBySubroutine;
     }
-    
+
     public void setBufferCurrentForEditing (LispBuffer buffer) {
         myBufferCurrentForEditing = buffer;
     }
@@ -115,8 +115,8 @@ public abstract class Environment {
         mySymbols.put(symbol.getName(), symbol);
     }
 
-    public void updateFunction (LispSymbol f) {
-        GlobalEnvironment.INSTANCE.updateFunction(f);
+    public void updateSymbol(LispSymbol f) {
+        GlobalEnvironment.INSTANCE.updateSymbol(f);
     }
 
     public LispBuffer getOtherBuffer () {
@@ -126,7 +126,7 @@ public abstract class Environment {
     public LispBuffer getOtherBuffer (LispBuffer buffer) {
         return ourBufferManager.getOtherBuffer(buffer.getName());
     }
-    
+
     public LispBuffer createBuffer (String bufferName) {
         return ourBufferManager.createBuffer(bufferName);
     }
@@ -142,7 +142,7 @@ public abstract class Environment {
     public void buryBuffer (LispBuffer buffer) {
         ourBufferManager.buryBuffer(buffer);
     }
-    
+
     public void defineServiceBuffer (LispBuffer buffer) {
         GlobalEnvironment.INSTANCE.defineServiceBuffer(buffer);
     }
@@ -154,11 +154,11 @@ public abstract class Environment {
     public void defineBuffer (LispBuffer buffer) {
         GlobalEnvironment.INSTANCE.defineBuffer(buffer);
     }
-    
+
     public void printBuffers() {
         ourBufferManager.printBuffers();
     }
-    
+
     public void killBuffer (String bufferName) {
         ourBufferManager.killBuffer(findBufferSafe(bufferName));
     }
@@ -198,11 +198,11 @@ public abstract class Environment {
     public boolean isBufferDead (String bufferName) {
         return ourBufferManager.isDead(bufferName);
     }
-    
+
     public boolean containsBuffer (String bufferName) {
         return ourBufferManager.containsBuffer(bufferName);
     }
-    
+
     protected boolean containsSymbol (String name) {
         return mySymbols.containsKey(name);
     }
@@ -244,5 +244,13 @@ public abstract class Environment {
         if (miniBuffer == null)
             throw new RuntimeException("mini buffer does not exist!");
         return miniBuffer;
+    }
+
+    public int getMiniBufferActivationsDepth() {
+        try {
+            return getMiniBuffer().getActivationsDepth();
+        } catch (RuntimeException e) {
+            return 0;
+        }
     }
 }

@@ -42,7 +42,7 @@ public class Parser extends Observable {
         return myLispCode.charAt(getMyCurrentIndex());
     }
 
-    private LispObject parseList() throws LispException {
+    private LispObject parseList(boolean isBackQuote) throws LispException {
         ArrayList<LObject> data = new ArrayList<>();
         while (true) {
             try {
@@ -51,7 +51,7 @@ public class Parser extends Observable {
                         advance();
                         continue;
                     }
-                    LObject object = parseObject();
+                    LObject object = parseObject(isBackQuote);
                     if (object != null)
                         data.add(object);
                 }
@@ -68,7 +68,7 @@ public class Parser extends Observable {
         return LispList.list(data);
     }
 
-    private LispObject parseVector() throws LispException {
+    private LispObject parseVector(boolean isBackQuote) throws LispException {
         LispVector vector = new LispVector();
         while (true) {
             try {
@@ -77,7 +77,7 @@ public class Parser extends Observable {
                         advance();
                         continue;
                     }
-                    vector.add(parseObject());
+                    vector.add(parseObject(isBackQuote));
                 }
                 break;
             } catch (EndOfLineException e) {
@@ -294,56 +294,74 @@ public class Parser extends Observable {
         throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
     }
 
-    private LispObject parseQuote() throws LispException {
-        try {
+    private LispObject parseQuote(boolean isBackQuote) throws LispException {
+        /*try {
             while (getCurrentChar() == '\'') {
                 advance();
             }
         } catch (EndOfLineException ignored) {
 
-        }
-        LispObject lispObject = parseObject();
+        }*/
+        LispObject lispObject = parseObject(isBackQuote);
         return LispList.list(new LispSymbol("quote"), lispObject);
+    }
+    
+    private LispObject parseBackQuote() throws LispException {
+        LispObject lispObject = parseObject(true);
+        return LispList.list(new LispSymbol("\\`"), lispObject);
+    }
+
+    private LispObject parseComma() throws LispException {
+        String spec = "\\,";
+        if (getCurrentChar() == '@') {
+            advance();
+            spec += '@';
+        }
+        LispObject lispObject = parseObject(true);
+        return LispList.list(new LispSymbol(spec), lispObject);
     }
 
     private LispObject parseObject() throws LispException {
+        return parseObject(false);
+    }
+    
+    private LispObject parseObject(boolean isBackQuote) throws LispException {
         try {
             getCurrentChar();
         } catch (EndOfLineException e) {
             return LispSymbol.ourNil;
         }
 
-        if (getCurrentChar() == '\'') {
-            advance();
-            return parseQuote();
+        switch (getCurrentChar()) {
+            case '\'':
+                advance();
+                return parseQuote(isBackQuote);
+            case '"':
+                advance();
+                return parseString();
+            case '(':
+                advance();
+                return parseList(isBackQuote);
+            case '[':
+                advance();
+                return parseVector(isBackQuote);
+            case '?':
+                advance();
+                return parseCharacter();
+            case ';':
+                //it is a comment, skip to the end of line
+                advanceTo(getNextIndexOf('\n'));
+                return null;
+            case '`':
+                advance();
+                return parseBackQuote();
+            case ',':
+                if (!isBackQuote)
+                    break;
+                advance();
+                return parseComma();
         }
-
-        if (getCurrentChar() == '"') {
-            advance();
-            return parseString();
-        }
-
-        if (getCurrentChar() == '(') {
-            advance();
-            return parseList();
-        }
-
-        if (getCurrentChar() == '[') {
-            advance();
-            return parseVector();
-        }
-
-        if (getCurrentChar() == '?') {
-            advance();
-            return parseCharacter();
-        }
-
-        if (getCurrentChar() == ';') {
-            //it is a comment, skip to the end of line
-            advanceTo(getNextIndexOf('\n'));
-            return null;
-        }
-
+        
         LispObject lispObject = parseNumber();
         if (lispObject == LispSymbol.ourNil) {
             lispObject = parseSymbol();

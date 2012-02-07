@@ -19,36 +19,36 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class Lambda extends LispObject implements FunctionCell {
-    private LinkedList<LambdaArgument> myArgumentList = null;
-    private LispString myDocString = null;
+    private LinkedList<LambdaArgument> myArgumentList = new LinkedList<>();
+    private LObject myDocumentation = null;
     private LispList myInteractive = null;
     private List<LObject> myBody = new ArrayList<LObject>();
-    private int nRequiredArguments;
+    private int nRequiredArguments = 0;
     private boolean infiniteArgs = false;
     private int nKeywords = 0;
-    private int nOptional = 0;
 
     public Lambda (LispList def, Environment environment) {
         List<LObject> data = def.toLObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
         try {
-            parseArgumentsList((LispList) data.get(1));
+            if (!data.get(1).equals(LispSymbol.ourNil))
+                parseArgumentsList((LispList) data.get(1));
         } catch (ClassCastException e) {
             throw new InvalidFunctionException(def.toString());
         }
         if (data.size() > 2) {
-         //   int index = 2;
+            //int index = 2;
             try {
                 //todo: if those instructions have some side effects, this is wrong behaviour
                 //LObject docString = data.get(2).evaluate(environment);
                 LObject docString = data.get(2);
                 if (docString instanceof LispString) {
-                    myDocString = (LispString) docString;
+                    myDocumentation = docString;
                     //index = 3;
                 }
             } catch (LispException e) {
-                myDocString = null;
+                myDocumentation = null;
             }
             myBody = data.subList(2, data.size());
 
@@ -95,20 +95,15 @@ public class Lambda extends LispObject implements FunctionCell {
                 nRequiredArguments++;
             else if (type == LambdaArgument.Type.KEYWORD)
                 nKeywords++;
-            else if (type == LambdaArgument.Type.OPTIONAL)
-                nOptional++;
         }
     }
 
     @Override
     public String toString() {
         String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
-        boolean first = true;
+       // if (myDocumentation != null)
+       //     s += " " + myDocumentation.toString();
         for (LObject bodyForm: myBody) {
-            if (first && bodyForm instanceof LispString) { //todo: remove this clause == don't print doc for debug
-                first = false;
-                continue;
-            }
             s += " " + bodyForm.toString();
         }
         s += ")";
@@ -176,8 +171,13 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LispObject getDocString () {
-        return myDocString == null ? LispSymbol.ourNil : myDocString;
+    public LObject getDocumentation() {
+        return myDocumentation == null ? LispSymbol.ourNil : myDocumentation;
+    }
+
+    @Override
+    public void setDocumentation(LObject doc) {
+        myDocumentation = doc;
     }
 
     @Override
@@ -194,5 +194,38 @@ public class Lambda extends LispObject implements FunctionCell {
             return ((LispString) args.toLObjectList().get(0)).getData();
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Lambda)) return false;
+
+        Lambda lambda = (Lambda) o;
+
+        if (infiniteArgs != lambda.infiniteArgs) return false;
+        if (nKeywords != lambda.nKeywords) return false;
+        if (nRequiredArguments != lambda.nRequiredArguments) return false;
+        if (myArgumentList != null ? !myArgumentList.equals(lambda.myArgumentList) : lambda.myArgumentList != null)
+            return false;
+        if (myBody != null ? !myBody.equals(lambda.myBody) : lambda.myBody != null) return false;
+        if (myDocumentation != null ? !myDocumentation.equals(lambda.myDocumentation) : lambda.myDocumentation != null)
+            return false;
+        if (myInteractive != null ? !myInteractive.equals(lambda.myInteractive) : lambda.myInteractive != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = myArgumentList != null ? myArgumentList.hashCode() : 0;
+        result = 31 * result + (myDocumentation != null ? myDocumentation.hashCode() : 0);
+        result = 31 * result + (myInteractive != null ? myInteractive.hashCode() : 0);
+        result = 31 * result + (myBody != null ? myBody.hashCode() : 0);
+        result = 31 * result + nRequiredArguments;
+        result = 31 * result + (infiniteArgs ? 1 : 0);
+        result = 31 * result + nKeywords;
+        return result;
     }
 }

@@ -99,11 +99,11 @@ public abstract class BuiltinsSymbol {
             return f.getDocumentation(environment);
 
         } else if (function instanceof Lambda) {
-            return ((Lambda) function).getDocString();
+            return ((Lambda) function).getDocumentation();
         } else if (function instanceof Macro) {
-            return ((Macro)function).getDocString();
+            return ((Macro)function).getDocumentation();
         } else if (function instanceof Primitive) {
-            return ((Primitive) function).getDocString();
+            return ((Primitive) function).getDocumentation();
         }
         throw new InvalidFunctionException(function.toString());
     }

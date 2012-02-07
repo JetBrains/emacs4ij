@@ -11,6 +11,7 @@ public interface LispMiniBuffer extends LispBuffer {
     public void startRead();
     public void readParameter(SpecialFormInteractive interactive);
     public void addCharListener();
+    public int getActivationsDepth();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
     public LObject onReadInput();
