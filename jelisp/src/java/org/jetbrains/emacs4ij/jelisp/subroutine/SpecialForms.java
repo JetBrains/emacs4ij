@@ -127,7 +127,7 @@ public abstract class SpecialForms {
     public static LObject lispWhile(Environment environment, LObject cond, @Optional LObject... body) {
         CustomEnvironment inner = new CustomEnvironment(environment);
         LObject condition = cond.evaluate(inner);
-        while (condition != LispSymbol.ourNil) {
+        while (!condition.equals(LispSymbol.ourNil)) {
             if (body != null)
                 for (LObject bodyForm: body)
                     bodyForm.evaluate(inner);

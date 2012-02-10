@@ -103,4 +103,19 @@ public abstract class BuiltinsList {
             return elements.get(0);
         return elements.get(index);
     }
+    
+    @Subroutine("assoc")
+    public static LObject assoc (LObject key, LObject list) {
+        if (!BuiltinPredicates.listp(list).toBoolean())
+            throw new WrongTypeArgumentException("listp", list.toString());
+        if (list == LispSymbol.ourNil)
+            return LispSymbol.ourNil;
+        for (LObject element : ((LispList)list).toLObjectList()) {
+            if (element instanceof LispList) {
+                if (key.equals(((LispList) element).car()))
+                    return element;
+            }
+        }
+        return LispSymbol.ourNil;
+    }
 }

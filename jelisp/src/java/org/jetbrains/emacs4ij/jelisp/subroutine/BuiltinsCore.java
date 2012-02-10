@@ -288,12 +288,17 @@ public abstract class BuiltinsCore {
     public static LObject apply (Environment environment, LObject function, LObject... args) {
         if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction())
             throw new InvalidFunctionException(function.toString());
-        if (!(args[args.length-1] instanceof LispList))
+
+        if (!(args[args.length-1] instanceof LispList) && args[args.length-1] != LispSymbol.ourNil)
             throw new WrongTypeArgumentException("listp", args[args.length-1].toString());
         ArrayList<LObject> list = new ArrayList<>();
         list.addAll(Arrays.asList(args).subList(0, args.length - 1));
-        List<LObject> last =((LispList)args[args.length-1]).toLObjectList();
-        list.addAll(last);
+
+        if (!args[args.length-1].equals(LispSymbol.ourNil)) {
+            List<LObject> last = ((LispList)args[args.length-1]).toLObjectList();
+            list.addAll(last);
+        }
+
         return ((LispSymbol) function).evaluateFunction(environment, list);
     }
 

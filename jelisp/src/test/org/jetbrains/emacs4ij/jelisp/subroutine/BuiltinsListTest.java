@@ -278,4 +278,17 @@ public class BuiltinsListTest {
         r = evaluateString("(nth 5 a)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
+    
+    @Test
+    public void testAssoc() {
+        LObject r = evaluateString("(assoc 1 '(1 2 3 4 (1 . \"alla\") 5))");
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispString("alla")), r);
+        r = evaluateString("(assoc nil '(1 (nil . nil) 2))");
+        Assert.assertEquals(LispList.list(), r);
+        //Assert.assertEquals("(nil)", r.toString());
+        r = evaluateString("(assoc 1 '((1 2 3) (nil . nil) 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("(assoc nil '((() 2 3) (nil . nil) 2))");
+        Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(2), new LispInteger(3)), r);
+    }
 }

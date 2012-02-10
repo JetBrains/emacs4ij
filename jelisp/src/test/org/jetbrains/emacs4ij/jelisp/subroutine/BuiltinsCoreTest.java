@@ -751,4 +751,15 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("`((,@some-list))");
         Assert.assertEquals("((2 3))", r.toString());
     }
+    
+    @Test
+    public void testSimple() {
+        LObject r = GlobalEnvironment.INSTANCE.find("defface");
+        Assert.assertNotNull(r);
+        r = GlobalEnvironment.INSTANCE.find("defgroup");
+        Assert.assertNotNull(r);
+
+        GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
+        GlobalEnvironment.INSTANCE.loadFile("simple.el");
+    }
 }

@@ -211,8 +211,6 @@ public class LispSymbol extends LispAtom {
             try { //it may be a macro
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName);
             } catch (Exception e) {
-                //it's not a macro
-                //todo: find variable
                 //throw new VoidVariableException(myName);
                 throw e;
             }
