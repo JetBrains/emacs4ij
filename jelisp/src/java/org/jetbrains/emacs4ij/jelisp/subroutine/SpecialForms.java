@@ -30,7 +30,7 @@ public abstract class SpecialForms {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
         for (LObject var: varList.toLObjectList()) {
             if (var instanceof LispList) {
-                LispSymbol symbol = (LispSymbol) ((LispList) var).car();
+                LispSymbol symbol = new LispSymbol(((LispSymbol) ((LispList) var).car()).getName());
                 LObject valueForm = ((LispList) var).cdr();
                 if (valueForm instanceof LispList) {
                     LObject value = ((LispList)valueForm).car().evaluate(inner);
@@ -47,11 +47,12 @@ public abstract class SpecialForms {
                 continue;
             }
             if (var instanceof LispSymbol) {
-                ((LispSymbol) var).setValue(LispSymbol.ourNil);
+                LispSymbol symbol = new LispSymbol (((LispSymbol) var).getName(), LispSymbol.ourNil);
+               // ((LispSymbol) var).setValue(LispSymbol.ourNil);
                 if (isStar)
-                    inner.defineSymbol((LispSymbol) var);
+                    inner.defineSymbol(symbol);
                 else
-                    vars.add((LispSymbol) var);
+                    vars.add(symbol);
 
                 continue;
             }
@@ -116,8 +117,8 @@ public abstract class SpecialForms {
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
                     result = data.get(k).evaluate(environment);
-                if (!result.equals(LispSymbol.ourNil))
-                    return result;
+                //if (!result.equals(LispSymbol.ourNil))
+                return result;
             }
         }
         return result;
@@ -179,17 +180,21 @@ public abstract class SpecialForms {
         LispSymbol variable = GlobalEnvironment.INSTANCE.find(name.getName());
         if (variable == null) {
             LObject value = (initValue == null) ? null : initValue.evaluate(environment);
-            name.setValue(value);
+
+            LispSymbol symbol = new LispSymbol(name.getName());
+            symbol.setValue(value);
+
             if (docString != null) {
-                name.setVariableDocumentation(docString.evaluate(environment));
+                symbol.setVariableDocumentation(docString.evaluate(environment));
             }
-            GlobalEnvironment.INSTANCE.defineSymbol(name);
+            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
             return name;
         }
         if (overwrite || (!variable.hasValue() && initValue != null)) {
             if (initValue == null)
                 throw new RuntimeException("Init value is null!"); 
             LObject value = initValue.evaluate(environment);
+            //LispSymbol symbol = new LispSymbol(name.getName(), value);
             variable.setValue(value);
         }
         if (docString != null) {
@@ -212,7 +217,7 @@ public abstract class SpecialForms {
     @Subroutine(value = "defun")
     public static LispSymbol defineFunction(Environment environment, LispSymbol name, LObject... body) {
         LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getName());
-        LispSymbol f = symbol != null ? symbol : name;
+        LispSymbol f = symbol != null ? symbol : new LispSymbol(name.getName());
         ArrayList<LObject> data = new ArrayList<>();
         data.add(new LispSymbol("lambda"));
         Collections.addAll(data, body);
@@ -292,8 +297,8 @@ public abstract class SpecialForms {
             if (!(args[index] instanceof LispSymbol))
                 throw new WrongTypeArgumentException("symbolp", args[index].getClass().getSimpleName());
             value = (index+1 == args.length) ? LispSymbol.ourNil : args[index+1].evaluate(inner);
-            ((LispSymbol) args[index]).setValue(value);
-            environment.setVariable((LispSymbol) args[index]);
+            LispSymbol symbol = new LispSymbol(((LispSymbol) args[index]).getName(), value);
+            environment.setVariable(symbol);
             index += 2;
         }
         return value;
@@ -318,7 +323,7 @@ public abstract class SpecialForms {
     @Subroutine("defmacro")
     public static LispSymbol defmacro (LispSymbol name, LObject argList, @Optional LObject ... body) {
         LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getName());
-        LispSymbol f = symbol != null ? symbol : name;
+        LispSymbol f = symbol != null ? symbol : new LispSymbol(name.getName());
         ArrayList<LObject> data = new ArrayList<>();
         data.add(new LispSymbol("macro"));
         data.add(new LispSymbol("lambda"));

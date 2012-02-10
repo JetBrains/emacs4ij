@@ -214,6 +214,8 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispInteger(5), r);
     }
 
+    //TODO: test function handle-shift-selection
+
      /*
     @Test
     public void testUserOption() {

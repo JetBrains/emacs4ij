@@ -3,6 +3,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -89,5 +91,16 @@ public abstract class BuiltinsList {
                 ((LispList)lists[i]).append(lists[i+1]);
         }
         return lists[0];
+    }
+    
+    @Subroutine("nth")
+    public static LObject nthElement (LispInteger n, LispList list) {
+        List<LObject> elements = list.toLObjectList();
+        int index = n.getData();
+        if (elements.size() < index)
+            return LispSymbol.ourNil;
+        if (index < 0)
+            return elements.get(0);
+        return elements.get(index);
     }
 }

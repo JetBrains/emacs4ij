@@ -3,9 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Observable;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,14 +40,71 @@ public class Parser extends Observable {
         return myLispCode.charAt(getMyCurrentIndex());
     }
 
-    private LispObject parseList(boolean isBackQuote) throws LispException {
+    private char getNextChar() {
+        return myLispCode.charAt(getMyCurrentIndex() + 1);
+    }
+
+    private boolean hasNextChar() {
+        return myCurrentIndex < myLispCode.length() - 1;
+    }
+
+    private List<Character> myListElementsSeparators = Arrays.asList('\n', ' ', '\t');
+
+    private void skipListSeparators() throws LispException {
+        while (true) {
+            if (myListElementsSeparators.contains(getCurrentChar())) {
+                advance();
+                continue;
+            }
+            break;
+        }
+    }
+
+    private LObject parseList(boolean isBackQuote) throws LispException {
         ArrayList<LObject> data = new ArrayList<>();
+        boolean makeList = true;
+        boolean wasCons = false;
         while (true) {
             try {
-                while (getCurrentChar() != ')') {
-                    if ((getCurrentChar() == ' ') || (getCurrentChar() == '\n') || (getCurrentChar() == '\t')) {
-                        advance();
-                        continue;
+                while (true) {
+                    skipListSeparators();
+                    if (getCurrentChar() == ')')
+                        break;
+                    if (!makeList)
+                        throw new InvalidReadSyntax(". in wrong context");
+                    if (getCurrentChar() == '.') {
+                        if (!hasNextChar())
+                            throw new InvalidReadSyntax(".");
+                        if (myListElementsSeparators.contains(getNextChar())) {
+                            advance();
+                            skipListSeparators();
+                            if (getCurrentChar() == ')')
+                                throw new InvalidReadSyntax(")");
+                            if (data.size() == 0) {
+                                makeList = false;
+                                LObject object = parseObject(isBackQuote);
+                                if (object != null)
+                                    data.add(object);
+                                continue;
+                            }
+                            LObject car = data.get(data.size()-1);
+                            LObject cdr = parseObject(isBackQuote);
+                            while (cdr == null) {
+                                advance();
+                                if (getCurrentChar() == ')')
+                                    throw new InvalidReadSyntax(")");
+                                cdr = parseObject(isBackQuote);
+                            }
+                            //while (cdr != null) {
+                            data.set(data.size()-1, LispList.cons(car, cdr));
+                            wasCons = true;
+                            skipListSeparators();
+                            if (getCurrentChar() != ')')
+                                throw new InvalidReadSyntax(". in wrong context");
+                            break;
+                            // } else
+                            //     throw new RuntimeException("Cons cdr is null!");
+                        }
                     }
                     LObject object = parseObject(isBackQuote);
                     if (object != null)
@@ -65,7 +120,10 @@ public class Parser extends Observable {
             }
         }
         advanceTo(getMyCurrentIndex() + 1);
-        return LispList.list(data);
+        if (makeList && (!(data.size() == 1 && wasCons)))// && !(data.size() == 1 && extraBrackets && data.get(0) instanceof LispList)))
+            return LispList.list(data);
+            
+        return data.get(0);
     }
 
     private LispObject parseVector(boolean isBackQuote) throws LispException {
@@ -169,10 +227,29 @@ public class Parser extends Observable {
         }
     }
 
+    private List<Character> mySpecialChars = Arrays.asList('.', ',', '?');
+
     private LispObject parseSymbol () throws EndOfLineException {
         int nextSeparatorIndex = getNextSeparatorIndex();
         int currentIndex = getMyCurrentIndex();
         String symbol = myLispCode.substring(currentIndex, nextSeparatorIndex);
+        /*for (int i = 0; i < symbol.length(); ++i) {
+            char c = symbol.charAt(i);
+            if (c == '\\') {
+                if (i < symbol.length() - 1 &&
+                        (mySpecialChars.contains(symbol.charAt(i+1)) || symbol.charAt(i+1) == '\\')) {
+                    i++;
+                    continue;
+                }
+                symbol = symbol.substring(0, i) + symbol.substring(i+1);
+                i--;
+                continue;
+            }
+            if (mySpecialChars.contains(symbol.charAt(i))) {
+                symbol = symbol.substring(0, i) + '\\' + symbol.substring(i);
+                i++;
+            }
+        }*/
         advanceTo(nextSeparatorIndex);
         return new LispSymbol(symbol);
     }
@@ -276,11 +353,11 @@ public class Parser extends Observable {
         return new LispInteger(answer);
     }
 
-    public LispObject parseLine (String lispCode) throws LispException {
+    public LObject parseLine (String lispCode) throws LispException {
         myCurrentIndex = 0;
         myLispCode = lispCode;
         myLispCode = myLispCode.trim();
-        LispObject lispObject = parseObject();
+        LObject lispObject = parseObject();
         if (lispObject == null)
             lispObject = LispSymbol.ourNil;
 
@@ -295,19 +372,12 @@ public class Parser extends Observable {
     }
 
     private LispObject parseQuote(boolean isBackQuote) throws LispException {
-        /*try {
-            while (getCurrentChar() == '\'') {
-                advance();
-            }
-        } catch (EndOfLineException ignored) {
-
-        }*/
-        LispObject lispObject = parseObject(isBackQuote);
+        LObject lispObject = parseObject(isBackQuote);
         return LispList.list(new LispSymbol("quote"), lispObject);
     }
-    
+
     private LispObject parseBackQuote() throws LispException {
-        LispObject lispObject = parseObject(true);
+        LObject lispObject = parseObject(true);
         return LispList.list(new LispSymbol("\\`"), lispObject);
     }
 
@@ -317,15 +387,15 @@ public class Parser extends Observable {
             advance();
             spec += '@';
         }
-        LispObject lispObject = parseObject(true);
+        LObject lispObject = parseObject(true);
         return LispList.list(new LispSymbol(spec), lispObject);
     }
 
-    private LispObject parseObject() throws LispException {
+    private LObject parseObject() throws LispException {
         return parseObject(false);
     }
-    
-    private LispObject parseObject(boolean isBackQuote) throws LispException {
+
+    private LObject parseObject(boolean isBackQuote) throws LispException {
         try {
             getCurrentChar();
         } catch (EndOfLineException e) {
@@ -360,8 +430,13 @@ public class Parser extends Observable {
                     break;
                 advance();
                 return parseComma();
+            case '.':
+                if (hasNextChar()) {
+                    if (myListElementsSeparators.contains(getNextChar()))
+                        throw new InvalidReadSyntax(".");
+                }
         }
-        
+
         LispObject lispObject = parseNumber();
         if (lispObject == LispSymbol.ourNil) {
             lispObject = parseSymbol();

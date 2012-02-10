@@ -134,6 +134,12 @@ public class SpecialFormsTest {
                 Assert.fail(q.getLocalizedMessage());
         }
     }
+    
+    @Test
+    public void testCondResult() {
+        LObject r = evaluateString("(cond (t (message \"a\") nil) (t (message \"b\")))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
 
     @Test
     public void testWhile() {

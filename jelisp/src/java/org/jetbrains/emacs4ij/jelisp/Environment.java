@@ -115,9 +115,9 @@ public abstract class Environment {
         mySymbols.put(symbol.getName(), symbol);
     }
 
-    public void updateSymbol(LispSymbol f) {
+    /*public void updateSymbol(LispSymbol f) {
         GlobalEnvironment.INSTANCE.updateSymbol(f);
-    }
+    }*/
 
     public LispBuffer getOtherBuffer () {
         return ourBufferManager.getOtherBuffer(getBufferCurrentForEditing().getName());
@@ -147,9 +147,9 @@ public abstract class Environment {
         GlobalEnvironment.INSTANCE.defineServiceBuffer(buffer);
     }
 
-    public void updateBuffer(LispBuffer buffer) {
-        ourBufferManager.updateBuffer(buffer);
-    }
+//    public void updateBuffer(LispBuffer buffer) {
+//        ourBufferManager.updateBuffer(buffer);
+//    }
 
     public void defineBuffer (LispBuffer buffer) {
         GlobalEnvironment.INSTANCE.defineBuffer(buffer);
@@ -167,9 +167,9 @@ public abstract class Environment {
         ourBufferManager.killBuffer(buffer);
     }
 
-    public void updateServiceBuffer (LispBuffer buffer) {
-        ourBufferManager.updateServiceBuffer(buffer);
-    }
+//    public void updateServiceBuffer (LispBuffer buffer) {
+//        ourBufferManager.updateServiceBuffer(buffer);
+//    }
 
     public ArrayList<LispBuffer> getBuffers () {
         return ourBufferManager.getBuffers();

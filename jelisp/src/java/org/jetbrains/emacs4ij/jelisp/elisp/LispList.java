@@ -134,8 +134,8 @@ public class LispList extends LispObject implements LispSequence {
                 throw new VoidFunctionException(fun.getName());
             System.out.println("uploaded " + fun.getName());
         }
-        if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
-            System.out.print(1);
+        /*if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
+            System.out.print(1);*/
         List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
     }

@@ -39,7 +39,8 @@ public class BuiltinsCoreTest {
 
     private LObject evaluateString (String lispCode) throws LispException {
         Parser parser = new Parser();
-        return parser.parseLine(lispCode).evaluate(environment);
+        LObject object = parser.parseLine(lispCode);
+        return object.evaluate(environment);
     }
 
     private Throwable getCause (Throwable e) {
@@ -608,6 +609,16 @@ public class BuiltinsCoreTest {
     }
 
     @Test
+    public void testNumOrMarkersLessOrEqual() {
+        LObject r = evaluateString("(<= 1 2)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(<= 1 1.0)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(<= 2 1.0)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
     public void testBackQuoteSimplest_Atom() {
         String form = "5";
         LObject expected = evaluateString("'" + form);
@@ -624,12 +635,6 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testEvalEmptyVector() {
-        LObject r = evaluateString("[]");
-        Assert.assertEquals(new LispVector(), r);
-    }
-    
-    @Test
     public void testBackQuoteSimplest_Vector() {
         String form = "[]";
         LObject expected = evaluateString("'" + form);
@@ -639,13 +644,20 @@ public class BuiltinsCoreTest {
 
     @Test
     public void testBackQuoteSimplest_List() {
-        String form = "(1)";
+        String form = "(1 a)";
         LObject expected = evaluateString("'" + form);
         LObject r = evaluateString("`" + form);
         Assert.assertEquals(expected, r);
     }
 
-    
+    @Test
+    public void testBackQuoteRecursiveList() {
+        String form = "(1 a (5))";
+        LObject expected = evaluateString("'" + form);
+        LObject r = evaluateString("`" + form);
+        Assert.assertEquals(expected, r);
+    }
+
     @Test
     public void testBackQuoteSimple() {
         LispList expected = LispList.list(new LispSymbol("a"), new LispSymbol("list"),
@@ -657,4 +669,86 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(expected, r);
     }
 
+    @Test
+    public void testBackQuoteComma() {
+        LObject expected = evaluateString("(list 'a 'list 'of (+ 2 3) 'elements)");  //(a list of 5 elements)
+        LObject result = evaluateString("`(a list of ,(+ 2 3) elements)");
+        Assert.assertEquals(expected, result);
+    }
+    
+    @Test
+    public void testBackQuoteCommaDeep() {
+        evaluateString("(defmacro t-becomes-nil (variable)\n" +
+                "       `(if (eq ,variable t)\n" +
+                "            (setq ,variable nil)))");
+        evaluateString("(setq foo t)");
+        LObject r = evaluateString("(t-becomes-nil foo)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("foo");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testBackQuoteDog_Simple() {
+        evaluateString("(setq some-list '(2 3))");
+        LObject expected = evaluateString("some-list");
+        Assert.assertEquals("(2 3)", expected.toString());
+        LObject r = evaluateString("some-list");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("`,@some-list");
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteDog_SimpleList() {
+        evaluateString("(setq some-list '(2 3))");
+        LObject expected = evaluateString("some-list");
+        Assert.assertEquals("(2 3)", expected.toString());
+        LObject r = evaluateString("some-list");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("`(,@some-list)");
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteDog_List() {
+        evaluateString("(setq some-list '(2 3))");
+        LObject expected = evaluateString("(cons 1 some-list)");
+        Assert.assertEquals("(1 2 3)", expected.toString());
+        LObject r = evaluateString("some-list");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("`(1 ,@some-list)");
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteListify() {
+        LObject r = evaluateString("(backquote-listify '((2 . (8 9))) '(0 . nil))");
+        Assert.assertEquals(LispList.list(new LispSymbol("list"), LispList.list(new LispInteger(8), new LispInteger(9))), r);
+    }
+    
+    @Test
+    public void testBackQuoteDog() {
+        evaluateString("(setq some-list '(2 3))");
+        LObject expected = evaluateString("(cons 1 (append some-list '(4) some-list))");
+        Assert.assertEquals("(1 2 3 4 2 3)", expected.toString());
+        LObject r = evaluateString("some-list");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("`(1 ,@some-list 4 ,@some-list)");
+        Assert.assertEquals(expected, r);
+    }
+
+    @Test
+    public void testBackQuoteAtoms () {
+        evaluateString("(setq a 1 b 2)");
+        LObject r = evaluateString("`(,a b)");
+        Assert.assertEquals("(1 b)", r.toString());
+    }
+
+    @Test
+    public void testBackQuoteBrackets () {
+        evaluateString("(setq some-list '(2 3))");
+        LObject r = evaluateString("`((,@some-list))");
+        Assert.assertEquals("((2 3))", r.toString());
+    }
 }

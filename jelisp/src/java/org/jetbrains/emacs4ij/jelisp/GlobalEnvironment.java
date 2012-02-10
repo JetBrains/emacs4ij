@@ -99,18 +99,18 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineUserOptions() {
-        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012);
+        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012); //defined in simple.el
         addVariable("mark-even-if-inactive", LispSymbol.ourNil, -467784);
-        addVariable("mark-ring-max", new LispInteger(16), 2103241);
-        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330);
-        addVariable("global-mark-ring-max", new LispInteger(16), 2103403);
+        addVariable("mark-ring-max", new LispInteger(16), 2103241); //defined in simple.el
+        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330); //defined in simple.el
+        addVariable("global-mark-ring-max", new LispInteger(16), 2103403); //defined in simple.el
         addVariable("enable-recursive-minibuffers", LispSymbol.ourT, 353727);
     }
 
     private void defineBufferLocalVariables() {
         addBufferLocalVariable("mark-active", LispSymbol.ourNil, 329910);
         addBufferLocalVariable("default-directory", LispSymbol.ourNil, 316938);
-        addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159);
+        addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159); //defined in simple.el
     }
 
     private void defineGlobalVariables() {
@@ -121,8 +121,8 @@ public class GlobalEnvironment extends Environment {
         addVariable("executing-kbd-macro", LispSymbol.ourNil, 275692);
 
         //wtf?
-        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203);
-        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379);
+        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203); //defined in simple.el
+        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379); //defined in simple.el
     }
 
     private void setSubroutinesFromClass (HashMap<String, String> documentation,  Class[] subroutineContainers, Primitive.Type type) {
@@ -201,7 +201,8 @@ public class GlobalEnvironment extends Environment {
             }
             if (line == null)
                 break;
-            LispObject parsed = p.parse(line);
+            LObject parsed = p.parse(line);
+            //if (parsed == null)continue;
             parsed.evaluate(this);
         }
     }
@@ -214,14 +215,14 @@ public class GlobalEnvironment extends Environment {
         myIde.showErrorMessage(message);
     }
 
-    @Override
+    /*@Override
     public void updateSymbol(LispSymbol symbol) {
         //LispSymbol function = mySymbols.get(symbol.getName());
         /*if (function == null) {
             throw new VoidVariableException(symbol.getName());
-        }*/
+        }
         defineSymbol(symbol);
-    }
+    }    */
     
     public LObject getBufferLocalSymbolValue (LispSymbol symbol) {
         LispSymbol real = mySymbols.get(symbol.getName());
@@ -395,7 +396,7 @@ public class GlobalEnvironment extends Environment {
             }
         } while (loop);
         BufferedReaderParser p = new BufferedReaderParser(reader);
-        LispObject parsed = p.parse(line);
+        LObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
             String first = ((LispSymbol)((LispList) parsed).car()).getName();
             if (myDefForms.contains(first))

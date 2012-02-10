@@ -267,4 +267,15 @@ public class BuiltinsListTest {
         Assert.assertEquals(expectedB, evaluateString("b"));
         Assert.assertEquals(new LispString("q"), evaluateString("c"));
     }
+    
+    @Test
+    public void testNthListElement() {
+        evaluateString("(setq a '(1 2 3 4))");
+        LObject r = evaluateString("(nth 1 a)");
+        Assert.assertEquals(new LispInteger(2), r);
+        r = evaluateString("(nth -1 a)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("(nth 5 a)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
 }

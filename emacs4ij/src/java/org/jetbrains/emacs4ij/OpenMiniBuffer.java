@@ -54,7 +54,7 @@ public class OpenMiniBuffer extends AnAction {
 
         LispBuffer parent = environment.findBufferSafe(name);
         parent.setEditor(editor);
-        environment.updateBuffer(parent);
+        //environment.updateBuffer(parent);
 
         miniBuffer.setEditor(input.getEditor());
 

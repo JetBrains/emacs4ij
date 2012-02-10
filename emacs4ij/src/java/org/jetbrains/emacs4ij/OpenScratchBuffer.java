@@ -50,7 +50,7 @@ public class OpenScratchBuffer extends AnAction {
         String name = ((EditorImpl)editor).getVirtualFile().getName();
         LispBuffer parent = environment.findBufferSafe(name);
         parent.setEditor(editor);
-        environment.updateBuffer(parent);
+        //environment.updateBuffer(parent);
 
         scratch.setEditor(input.getEditor());
 

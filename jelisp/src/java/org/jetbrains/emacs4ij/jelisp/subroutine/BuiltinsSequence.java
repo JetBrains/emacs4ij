@@ -42,8 +42,6 @@ public class BuiltinsSequence {
             list.addAll(((LispSequence)sequence).toLObjectList());
         }
         if (!list.isEmpty()) {
-            if (list.size() == 1)
-                System.out.print(1);
             LispList result = LispList.list(list);
             result.append(args[args.length-1]);
             return result;

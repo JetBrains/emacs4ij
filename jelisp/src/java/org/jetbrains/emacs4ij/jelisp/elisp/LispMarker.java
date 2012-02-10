@@ -57,21 +57,21 @@ public class LispMarker extends LispObject {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof LispMarker)) return false;
 
         LispMarker marker = (LispMarker) o;
 
-        if (myPosition != marker.myPosition) return false;
         if (myBuffer != null ? !myBuffer.equals(marker.myBuffer) : marker.myBuffer != null) return false;
         if (myInsertionType != null ? !myInsertionType.equals(marker.myInsertionType) : marker.myInsertionType != null)
             return false;
+        if (myPosition != null ? !myPosition.equals(marker.myPosition) : marker.myPosition != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = myPosition.hashCode();
+        int result = myPosition != null ? myPosition.hashCode() : 0;
         result = 31 * result + (myBuffer != null ? myBuffer.hashCode() : 0);
         result = 31 * result + (myInsertionType != null ? myInsertionType.hashCode() : 0);
         return result;

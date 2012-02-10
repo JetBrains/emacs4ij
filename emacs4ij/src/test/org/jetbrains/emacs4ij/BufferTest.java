@@ -398,7 +398,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void testPointMarkerOk() {
         LObject lispObject = eval("(point-marker)");
         LispBuffer currentBuffer = (LispBuffer) eval("(current-buffer)");
-        Assert.assertEquals(new LispMarker(currentBuffer.point(), currentBuffer), lispObject);
+        LispMarker marker = new LispMarker(currentBuffer.point(), currentBuffer);
+        Assert.assertEquals(marker, lispObject);
     }
 
     @Test

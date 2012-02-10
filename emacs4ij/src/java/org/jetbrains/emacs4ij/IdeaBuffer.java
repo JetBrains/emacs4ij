@@ -198,7 +198,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
             throw new RuntimeException("null editor!");
         if (!(this instanceof IdeaMiniBuffer))
             write("");
-        myEnvironment.updateServiceBuffer(this);
+        //myEnvironment.updateServiceBuffer(this);
         myEditor.getContentComponent().grabFocus();
     }
 
@@ -226,7 +226,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         if (myEditor.getHeaderComponent() == null)
             return;
         myEditor.setHeaderComponent(null);
-        myEnvironment.updateBuffer(this);
+       // myEnvironment.updateBuffer(this);
     }
 
     public void close () {

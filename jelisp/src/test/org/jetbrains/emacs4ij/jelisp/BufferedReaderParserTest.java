@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class BufferedReaderParserTest {
         } catch (IOException e) {
             throw e;
         }
-        LispObject lispObject = bufferedReaderParser.parse(s);
+        LObject lispObject = bufferedReaderParser.parse(s);
         Assert.assertEquals(new LispString("one\ntwo"), lispObject);
     }
 
@@ -44,7 +44,7 @@ public class BufferedReaderParserTest {
         } catch (IOException e) {
             throw e;
         }
-        LispObject lispObject = bufferedReaderParser.parse(s);
+        LObject lispObject = bufferedReaderParser.parse(s);
         Assert.assertEquals(LispList.list(new LispSymbol("defun"), new LispSymbol("test"), LispList.list(), LispList.list(new LispSymbol("message"), new LispString("test"))), lispObject);
     }
 }

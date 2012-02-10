@@ -99,14 +99,14 @@ public class LispSymbol extends LispAtom {
     private void castToLambda (Environment environment) {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
-            environment.updateSymbol(this);
+            //environment.updateSymbol(this);
         }
     }
 
     private void castToMacro (Environment environment) {
         if (isMacro() && !(myFunction instanceof Macro)) {
             myFunction = new Macro((LispList) myFunction, environment);
-            environment.updateSymbol(this);
+            //environment.updateSymbol(this);
         }
     }
 
@@ -233,9 +233,7 @@ public class LispSymbol extends LispAtom {
 
     public LObject evaluateFunction (Environment environment, List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-
         LObject result;
-
         if (isSubroutine()) {
             result = LispSubroutine.evaluate(this, environment, args);
             checkCallStack();
@@ -247,7 +245,6 @@ public class LispSymbol extends LispAtom {
             checkCallStack();
             return result;
         }
-
         result = evaluateCustomFunction(environment, args);
         checkCallStack();
         return result;

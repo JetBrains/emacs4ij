@@ -77,16 +77,17 @@ public class LambdaArgument {
     }
 
     public void setValue (Environment inner, @Nullable LObject value) {
+        myVar = new LispSymbol(myVar.getName());
         if (value == null) {
             myVar.setValue(myInitForm.evaluate(inner));
             if (!mySetVar.equals(LispSymbol.ourNil))
-                mySetVar.setValue(LispSymbol.ourNil);
+                mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourNil);
             inner.defineSymbol(myVar);
             return;
         }
         myVar.setValue(value);
         if (!mySetVar.equals(LispSymbol.ourNil))
-            mySetVar.setValue(LispSymbol.ourT);
+            mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourT);
         inner.defineSymbol(myVar);
     }
 

@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
@@ -25,7 +25,7 @@ public class BufferedReaderParser implements Observer {
         myParser.addObserver(this);
     }
 
-    public LispObject parse (String firstLine) {
+    public LObject parse (String firstLine) {
         try {
             return myParser.parseLine(firstLine);
         } catch (LispException e) {

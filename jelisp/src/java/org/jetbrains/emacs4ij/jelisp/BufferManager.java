@@ -107,13 +107,13 @@ public class BufferManager {
         myServiceBuffers.add(buffer);
     }
 
-    public void updateBuffer(LispBuffer buffer) {
-        myBuffers.set(getIndexByName(myBuffers, buffer.getName()), buffer);
-    }
-
-    public void updateServiceBuffer (LispBuffer buffer) {
-        myServiceBuffers.set(getIndexByName(myServiceBuffers, buffer.getName()), buffer);
-    }
+//    public void updateBuffer(LispBuffer buffer) {
+//        myBuffers.set(getIndexByName(myBuffers, buffer.getName()), buffer);
+//    }
+//
+//    public void updateServiceBuffer (LispBuffer buffer) {
+//        myServiceBuffers.set(getIndexByName(myServiceBuffers, buffer.getName()), buffer);
+//    }
 
     public ArrayList<LispBuffer> getBuffers () {
         return myBuffers;

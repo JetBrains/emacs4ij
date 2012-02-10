@@ -25,7 +25,7 @@ public class InterruptMiniBuffer extends AnAction {
         CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
         miniBuffer.hide();
-        environment.updateServiceBuffer(miniBuffer);
+        //environment.updateServiceBuffer(miniBuffer);
 
         Messages.showInfoMessage("Quit " + miniBuffer.getName(), "MiniBuffer");
     }

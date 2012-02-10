@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -77,8 +78,9 @@ public abstract class BuiltinsCore {
     @Subroutine("set")
     public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
         LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
-        variable.setValue(value);
-        environment.setVariable(variable);
+        LispSymbol symbol = new LispSymbol(variable.getName(), value);
+        //variable.setValue(value);
+        environment.setVariable(symbol);
         return value;
     }
 
@@ -399,14 +401,14 @@ public abstract class BuiltinsCore {
 
     @Subroutine("defalias")
     public static LObject defineAlias (Environment environment, LispSymbol symbol, LObject functionDefinition, @Optional LObject docString) {
-        LispSymbol real = environment.find(symbol.getName());
+        LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
-            real = symbol;
+            real = new LispSymbol(symbol.getName());
         real.setFunction(functionDefinition);
         if (docString != null && !(docString instanceof LispNumber)) {
             real.setFunctionDocumentation(docString, environment);
         }
-        environment.updateSymbol(real);
+        GlobalEnvironment.INSTANCE.defineSymbol(real);
         return functionDefinition;
     }
     
@@ -433,5 +435,12 @@ public abstract class BuiltinsCore {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 != n2);
+    }
+
+    @Subroutine("<=")
+    public static LispSymbol lessOrEqualNumbersOrMarkers (LObject num1, LObject num2) {
+        double n1 = numberOrMarkerToNumber(num1).getDoubleData();
+        double n2 = numberOrMarkerToNumber(num2).getDoubleData();
+        return LispSymbol.bool(n1 <= n2);
     }
 }
