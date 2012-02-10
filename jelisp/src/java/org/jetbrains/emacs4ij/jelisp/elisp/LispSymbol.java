@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -231,9 +232,11 @@ public class LispSymbol extends LispAtom {
         //    System.out.println("symbol-file FINISHED");
     }
 
-    public LObject evaluateFunction (Environment environment, List<LObject> args) {
+    public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
         LObject result;
+        if (args == null)
+            args = new ArrayList<>();
         if (isSubroutine()) {
             result = LispSubroutine.evaluate(this, environment, args);
             checkCallStack();

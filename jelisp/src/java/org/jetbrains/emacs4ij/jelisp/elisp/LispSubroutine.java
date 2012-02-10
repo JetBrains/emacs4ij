@@ -198,6 +198,7 @@ public abstract class LispSubroutine {
                     } catch (IllegalAccessException e) {
                         throw new RuntimeException(e);
                     } catch (InvocationTargetException e) {
+                        System.err.print(e.getCause().getMessage());
                         throw new RuntimeException(e);
                     }
                 }

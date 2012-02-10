@@ -97,8 +97,28 @@ public abstract class BuiltinsMarker {
 
     @Subroutine("mark-marker")
     public static LispMarker markMarker (Environment environment) {
-        //todo:  Moving this marker changes the mark position
         return (LispMarker) environment.getBufferCurrentForEditing().getLocalVariableValue("my-mark");
     }
+    
+    @Subroutine("region-beginning")
+    public static LispInteger regionBeginning (Environment environment) {
+        LObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+        LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
+        if (!mark.equals(LispSymbol.ourNil)) {
+            if (BuiltinsCore.less(mark, point).toBoolean())
+                return (LispInteger)mark;
+        }
+        return point;
+    }
 
+    @Subroutine("region-end")
+    public static LispInteger regionEnd (Environment environment) {
+        LObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+        LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
+        if (!mark.equals(LispSymbol.ourNil)) {
+            if (BuiltinsCore.more(mark, point).toBoolean())
+                return (LispInteger)mark;
+        }
+        return point;
+    }
 }

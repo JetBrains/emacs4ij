@@ -168,8 +168,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetMark () throws Throwable {
         try {
-            GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
-            LObject mark = evaluateString("(set-mark 10)");
+            //GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
+            LObject mark = evaluateString("(set-mark 5)");
+            Assert.assertEquals("#<marker at 5 in 3.txt>", mark.toString());
+            mark = evaluateString("(set-mark 50)");
             Assert.assertEquals("#<marker at 9 in 3.txt>", mark.toString());
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
@@ -216,19 +218,30 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     //TODO: test function handle-shift-selection
 
-     /*
     @Test
-    public void testUserOption() {
-        LObject result = evaluateString("(setq mark-ring-max \"lol\")");
-        Assert.assertEquals(new LispString("lol"), result);
-        try {
-            evaluateString("(push-mark)");
-        } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
-            return;
-        }
-        Assert.fail("Reset mark-ring-max to string failed.");
+    public void testRegionBeginning() {
+        LObject r = evaluateString("(region-beginning)");
+        Assert.assertEquals(new LispInteger(1), r);
+        evaluateString("(set-mark 2)");
+        myEnvironment.getBufferCurrentForEditing().gotoChar(6);
+        r = evaluateString("(region-beginning)");
+        Assert.assertEquals(new LispInteger(2), r);
     }
-    */
+
+    @Test
+    public void testRegionEnd() {
+        LObject r = evaluateString("(region-end)");
+        Assert.assertEquals(new LispInteger(1), r);
+        evaluateString("(set-mark 5)");
+        r = evaluateString("(region-end)");
+        Assert.assertEquals(new LispInteger(5), r);
+    }
+
+    @Test
+    public void testUseRegionP() {
+        LObject r = evaluateString("(use-region-p)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+        
 
 }

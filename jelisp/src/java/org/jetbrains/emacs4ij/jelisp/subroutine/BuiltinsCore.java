@@ -70,9 +70,7 @@ public abstract class BuiltinsCore {
     public static LispSymbol more (LObject num1, LObject num2) {
         LispNumber n1 = numberOrMarkerToNumber(num1);
         LispNumber n2 = numberOrMarkerToNumber(num2);
-        if (n1.getDoubleData() > n2.getDoubleData())
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool(n1.getDoubleData() > n2.getDoubleData());
     }
 
     @Subroutine("set")
@@ -442,5 +440,12 @@ public abstract class BuiltinsCore {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 <= n2);
+    }
+
+    @Subroutine("<")
+    public static LispSymbol less (LObject num1, LObject num2) {
+        double n1 = numberOrMarkerToNumber(num1).getDoubleData();
+        double n2 = numberOrMarkerToNumber(num2).getDoubleData();
+        return LispSymbol.bool(n1 < n2);
     }
 }
