@@ -22,13 +22,18 @@ import java.awt.event.WindowEvent;
  */
 public class MyApplicationComponent implements ApplicationComponent {
     private WindowAdapter myWindowAdapter;
+    private boolean isGlobalEnvironmentInitialized = false;
+
+    public boolean isGlobalEnvironmentInitialized() {
+        return isGlobalEnvironmentInitialized;
+    }
 
     public MyApplicationComponent() {
         myWindowAdapter = new WindowAdapter() {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 super.windowGainedFocus(e);
-                if (Checker.isGlobalEnvironmentInitialized)
+                if (isGlobalEnvironmentInitialized)
                     GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
             }
 
@@ -36,57 +41,73 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void windowIconified(WindowEvent e) {
                 super.windowIconified(e);
                 //GlobalEnvironment.setFrameVisible(new IdeaFrame((IdeFrame) e.getWindow()), false);
-                if (Checker.isGlobalEnvironmentInitialized)
+                if (isGlobalEnvironmentInitialized)
                     GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
                 super.windowDeiconified(e);
-                if (Checker.isGlobalEnvironmentInitialized)
+                if (isGlobalEnvironmentInitialized)
                     GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
             }
-        };
-
-        if (!Checker.isReady()) {
-            Checker.isGlobalEnvironmentInitialized = false;
-        } else {
-            initGlobalEnvironment();
-        }
+        };        
     }
 
-    public static boolean initGlobalEnvironment() {
-        if (Checker.isGlobalEnvironmentInitialized)
+    public boolean silentGlobalEnvInit() {
+        if (isGlobalEnvironmentInitialized)
             return true;
+        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+        EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
+        if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
+            isGlobalEnvironmentInitialized = (GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider()) == 0);
+        }
+        return isGlobalEnvironmentInitialized;
+    }
+    
+    public boolean globalEnvInit() {
+        if (isGlobalEnvironmentInitialized)
+            return true;
+        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
+        if (!emacsHomeService.checkSetEmacsHome())
+            return false;
+        EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
+        if (!emacsSourceService.checkSetEmacsSource())
+            return false;
         int k;
-        while ((k = GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider())) < 0) {
-            //Checker.isEnvironmentInitialized = false;
+        isGlobalEnvironmentInitialized = true;
+        IdeProvider ideProvider = new IdeProvider();
+        while ((k = GlobalEnvironment.initialize(new BufferCreator(), ideProvider)) != 0) {
             if (k == -1) {
                 Messages.showInfoMessage("You might have mistaken when you set Emacs Home directory. Try again.", "Emacs4ij");
-                EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-                if (!emacsHomeService.resetEmacsHome())
-                    return false;
+                if (!emacsHomeService.resetEmacsHome()) {
+                    isGlobalEnvironmentInitialized = false;
+                    break;
+                }
                 continue;
             }
             if (k == -2) {
                 Messages.showInfoMessage("You might have mistaken when you set Emacs Source directory. Try again.", "Emacs4ij");
-                EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
-                if (!emacsSourceService.resetEmacsSource())
-                    return false;
+                if (!emacsSourceService.resetEmacsSource()) {
+                    isGlobalEnvironmentInitialized = false;
+                    break;
+                }
                 continue;
             }
-            return false;
+            isGlobalEnvironmentInitialized = false;
+            break;
         }
-        Checker.isGlobalEnvironmentInitialized = true;
-        return true;
+        return isGlobalEnvironmentInitialized;
     }
 
     public void initComponent() {
-     //   GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+        //   GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
         WindowManager.getInstance().addListener(new WindowManagerListener() {
             @Override
             public void frameCreated(IdeFrame ideFrame) {
+                if (!isGlobalEnvironmentInitialized)
+                    return;
                 ((IdeFrameImpl)ideFrame).addWindowFocusListener(myWindowAdapter);
                 ((IdeFrameImpl)ideFrame).addWindowListener(myWindowAdapter);
                 IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) ideFrame);
@@ -96,13 +117,12 @@ public class MyApplicationComponent implements ApplicationComponent {
 
             @Override
             public void beforeFrameReleased(IdeFrame ideFrame) {
+                if (!isGlobalEnvironmentInitialized)
+                    return;
                 GlobalEnvironment.INSTANCE.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
             }
         });
-
     }
-
-
 
     public void disposeComponent() {
         // TODO: insert component disposal logic here

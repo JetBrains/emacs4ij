@@ -199,15 +199,15 @@
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="ParserTest" type="JUnit" factoryName="JUnit">
-      <module name="jelisp" />
+    <configuration default="false" name="All in emacs4ij" type="JUnit" factoryName="JUnit">
+      <module name="emacs4ij" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.ParserTest" />
+      <option name="PACKAGE_NAME" />
+      <option name="MAIN_CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
+      <option name="TEST_OBJECT" value="pattern" />
+      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
@@ -216,14 +216,13 @@
         <value defaultName="moduleWithDependencies" />
       </option>
       <envs />
-      <patterns />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
+      <patterns>
+        <pattern testClass="org.jetbrains.emacs4ij.BufferTest" />
+        <pattern testClass="org.jetbrains.emacs4ij.IdeaMiniBufferTest" />
+        <pattern testClass="org.jetbrains.emacs4ij.InteractiveTest" />
+        <pattern testClass="org.jetbrains.emacs4ij.MarkerTest" />
+      </patterns>
       <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
@@ -255,15 +254,15 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="BuiltinsBufferTest" type="JUnit" factoryName="JUnit">
-      <module name="jelisp" />
+    <configuration default="false" name="BufferTest.testLastBuffer" type="JUnit" factoryName="JUnit">
+      <module name="emacs4ij" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsBufferTest" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="METHOD_NAME" value="testLastBuffer" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
@@ -273,19 +272,25 @@
       </option>
       <envs />
       <patterns />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="BuiltinPredicatesTest" type="JUnit" factoryName="JUnit">
-      <module name="jelisp" />
+    <configuration default="false" name="BufferTest.testPointMarkerOk" type="JUnit" factoryName="JUnit">
+      <module name="emacs4ij" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicatesTest" />
-      <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="METHOD_NAME" value="testPointMarkerOk" />
+      <option name="TEST_OBJECT" value="method" />
+      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />
@@ -295,7 +300,13 @@
       </option>
       <envs />
       <patterns />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
@@ -324,6 +335,50 @@
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="BuiltinPredicatesTest" type="JUnit" factoryName="JUnit">
+      <module name="jelisp" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicatesTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="BuiltinsBufferTest" type="JUnit" factoryName="JUnit">
+      <module name="jelisp" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsBufferTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="moduleWithDependencies" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
@@ -371,70 +426,15 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="All in emacs4ij" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+    <configuration default="false" name="ParserTest" type="JUnit" factoryName="JUnit">
+      <module name="jelisp" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.jelisp" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.jelisp.ParserTest" />
       <option name="METHOD_NAME" value="" />
-      <option name="TEST_OBJECT" value="pattern" />
-      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs />
-      <patterns>
-        <pattern testClass="org.jetbrains.emacs4ij.BufferTest" />
-        <pattern testClass="org.jetbrains.emacs4ij.IdeaMiniBufferTest" />
-        <pattern testClass="org.jetbrains.emacs4ij.InteractiveTest" />
-        <pattern testClass="org.jetbrains.emacs4ij.MarkTest" />
-      </patterns>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method />
-    </configuration>
-    <configuration default="false" name="BufferTest.testLastBuffer" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
-      <option name="METHOD_NAME" value="testLastBuffer" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
-      <option name="PARAMETERS" value="" />
-      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="moduleWithDependencies" />
-      </option>
-      <envs />
-      <patterns />
-      <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="" />
-        <option name="TRANSPORT" value="0" />
-        <option name="LOCAL" value="true" />
-      </RunnerSettings>
-      <RunnerSettings RunnerId="Run" />
-      <ConfigurationWrapper RunnerId="Debug" />
-      <ConfigurationWrapper RunnerId="Run" />
-      <method />
-    </configuration>
-    <configuration default="false" name="BufferTest.testPointMarkerOk" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
-      <option name="METHOD_NAME" value="testPointMarkerOk" />
-      <option name="TEST_OBJECT" value="method" />
-      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
+      <option name="TEST_OBJECT" value="class" />
+      <option name="VM_PARAMETERS" value="" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
       <option name="ENV_VARIABLES" />

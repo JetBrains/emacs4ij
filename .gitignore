@@ -5,3 +5,4 @@
 *.jar
 *.lisp
 *.properties
+out/

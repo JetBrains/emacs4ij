@@ -21,7 +21,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
         roamingType = RoamingType.DISABLED
     )
 public class EmacsSourceService extends EmacsService implements PersistentStateComponent<EmacsSourceService>  {
-
     public boolean checkSetEmacsSource  () {
         if (GlobalEnvironment.ourEmacsSource.equals(""))
             GlobalEnvironment.ourEmacsSource = checkSetEmacsParameter("source");
@@ -41,5 +40,14 @@ public class EmacsSourceService extends EmacsService implements PersistentStateC
     @Override
     public void loadState(EmacsSourceService emacsSourceService) {
         XmlSerializerUtil.copyBean(emacsSourceService, this);
+    }
+
+    @Override
+    protected boolean isParameterSet() {
+        if (myEmacsParameter != null && !myEmacsParameter.equals("")) {
+            GlobalEnvironment.ourEmacsSource = myEmacsParameter;
+            return true;
+        }
+        return false;
     }
 }

@@ -13,6 +13,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.FileNotFoundException;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -760,6 +762,11 @@ public class BuiltinsCoreTest {
         Assert.assertNotNull(r);
 
         GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
-        GlobalEnvironment.INSTANCE.loadFile("simple.el");
+        try {
+            GlobalEnvironment.INSTANCE.loadFile("simple.el");
+        } catch (FileNotFoundException e) {
+            System.err.println(e.getMessage());
+            Assert.fail();
+        }
     }
 }

@@ -1,16 +1,18 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
@@ -24,42 +26,27 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
  * To change this template use File | Settings | File Templates.
  */
 public class MyProjectComponent implements ProjectComponent {
-    private CustomEnvironment myEnvironment;
+    private CustomEnvironment myEnvironment = null;
+    private MyApplicationComponent myApplication;
     private Project myProject;
 
     public MyProjectComponent(Project project) {
-        Application application = ApplicationManager.getApplication();
         myProject = project;
+        myApplication = ApplicationManager.getApplication().getComponent(MyApplicationComponent.class);
         IdeaBuffer.setProject(project);
-      //  IdeFrameImpl ifi = (IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0];
-    //    GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
-       // GlobalEnvironment.setSelectedFrame(new IdeaFrame(ifi);
-        if (!Checker.isReady()) {
-            Checker.isGlobalEnvironmentInitialized = false;
-            myEnvironment = null;
-            // Messages.showInfoMessage("Until you set Emacs environment, no Emacs emulation will work.\nYou can set it by clicking on any of Emacs4ij icons.", "Emacs4ij");
-        } else {
-            initEnvironment();
-        }
     }
 
-    public boolean initEnvironment () {
-        if (myEnvironment != null)
-            return true;
-
-        if (!MyApplicationComponent.initGlobalEnvironment())
-            return false;
-
+    private void initEnvironment() {
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
             GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
             if (((IdeFrameImpl) frame).hasFocus())
                 GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
-          //  boolean isActive = ((IdeFrameImpl) frame).isActive();
+            //  boolean isActive = ((IdeFrameImpl) frame).isActive();
 
-          //  System.out.println("Project environment initializing");
-          //  if (((IdeFrameImpl) frame).hasFocus())
-          //      GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
+            //  System.out.println("Project environment initializing");
+            //  if (((IdeFrameImpl) frame).hasFocus())
+            //      GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
         }
 
         //for test:
@@ -73,14 +60,54 @@ public class MyProjectComponent implements ProjectComponent {
         IdeaBuffer scratchBuffer = new IdeaBuffer(myEnvironment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
         myEnvironment.defineServiceBuffer(scratchBuffer);
 
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
-        for (VirtualFile virtualFile : fileEditorManager.getOpenFiles()) {
-            IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
-            myEnvironment.defineBuffer(newBuffer);
-            //System.out.print("open: ");
-            //setHeaders(newBuffer);
-            //myEnvironment.printBuffers();
-        }
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runReadAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
+                        for (final VirtualFile virtualFile : fileEditorManager.getOpenFiles()) {
+                            ApplicationManager.getApplication().runReadAction(new Runnable() {
+                                @Override
+                                public void run() {
+                                    IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
+                                    myEnvironment.defineBuffer(newBuffer);
+                                    //System.out.print("open: ");
+                                    //setHeaders(newBuffer);
+                                    //myEnvironment.printBuffers();
+                                }
+                            });
+                        }
+
+                    }
+                });
+
+            }
+        });
+
+//        final FileEditorManager fileEditorManager = FileEditorManager.getInstance(myProject);
+//        for (final VirtualFile virtualFile : fileEditorManager.getOpenFiles()) {
+//            ApplicationManager.getApplication().runReadAction(new Runnable() {
+//                @Override
+//                public void run() {
+//                    IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
+//                    myEnvironment.defineBuffer(newBuffer);
+//                    //System.out.print("open: ");
+//                    //setHeaders(newBuffer);
+//                    //myEnvironment.printBuffers();
+//                }
+//            });
+//        }
+    }
+
+    public boolean initEnv () {
+        //todo: invoke on form action
+        if (myEnvironment != null)
+            return true;
+        if (!myApplication.globalEnvInit())
+            return false;
+        initEnvironment();
         return true;
     }
 
@@ -105,7 +132,7 @@ public class MyProjectComponent implements ProjectComponent {
         myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
             @Override
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                if (!Checker.isGlobalEnvironmentInitialized)
+                if (myEnvironment == null)
                     return;
 
                 IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
@@ -117,7 +144,7 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
-                if (!Checker.isGlobalEnvironmentInitialized)
+                if (myEnvironment == null)
                     return;
 
                 if (!(myEnvironment.isSelectionManagedBySubroutine()))
@@ -130,7 +157,7 @@ public class MyProjectComponent implements ProjectComponent {
 
             @Override
             public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) {
-                if (!Checker.isGlobalEnvironmentInitialized)
+                if (myEnvironment == null)
                     return;
 
                 if (fileEditorManagerEvent.getNewFile() == null) {
@@ -150,6 +177,27 @@ public class MyProjectComponent implements ProjectComponent {
                 }
             }
         });
+
+//        UIUtil.invokeLaterIfNeeded(new Runnable() {
+//            @Override
+//            public void run() {
+                new Task.Backgroundable(myProject, "Initializing Emacs environment", false) {
+                    public void run(@NotNull ProgressIndicator indicator) {
+                        indicator.setText("Loading Emacs functions");
+                        indicator.setFraction(0.0);
+
+                        if (myApplication.silentGlobalEnvInit()) {
+                            initEnvironment();
+                        }
+
+                        indicator.setFraction(1.0);
+                    }
+                }.setCancelText("Stop loading").queue();
+
+//            }
+//        });
+
+
     }
 
     public void projectClosed() {

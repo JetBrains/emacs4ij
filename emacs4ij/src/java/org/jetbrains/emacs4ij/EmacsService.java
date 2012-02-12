@@ -54,11 +54,13 @@ public abstract class EmacsService  {
     }
 
     protected String checkSetEmacsParameter(String name) {
-        if (myEmacsParameter == null || myEmacsParameter.equals("")) {
+        if (!isParameterSet()) {
             myEmacsParameter = "";
             showInfoMessage(name);
         }
         return myEmacsParameter;
     }
+    
+    protected abstract boolean isParameterSet();
 }
 

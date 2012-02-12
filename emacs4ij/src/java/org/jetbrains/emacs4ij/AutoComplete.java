@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -28,21 +29,13 @@ public class AutoComplete extends AnAction {
         return lcp;
     }
 
-
     @Override
     public void actionPerformed(AnActionEvent e) {
+        if (!ApplicationManager.getApplication().getComponent(MyApplicationComponent.class).isGlobalEnvironmentInitialized())
+            return;
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-        if (!Checker.isReady())
-            return;
-
-        /*EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-        if (!emacsHomeService.checkSetEmacsHome())
-            return;*/
-
-       // CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-
         try {
             IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) GlobalEnvironment.INSTANCE.getMiniBuffer();
             String parameter = miniBuffer.readInputString();
