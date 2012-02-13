@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -63,22 +62,22 @@ public class BackwardParserTest {
         Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
     }
 
-    //Todo: expected = MissingClosingBracketException.class
-    @Test(expected = UnknownCodeBlockException.class)
+    @Test
     public void testMissingClosingBracket () throws LispException {
-        p.parseLine("(5 \"la la\"");
+        LObject r = p.parseLine("(5 \"la la\"");
+        Assert.assertEquals(new LispString("la la"), r);
     }
 
-    //Todo: expected = MissingClosingBracketException.class
-    @Test(expected = UnknownCodeBlockException.class)
+    @Test
     public void testMissingClosingDblQuote () throws LispException {
-        p.parseLine("(5 \"la la");
+        LObject r = p.parseLine("(5 \"la la");
+        Assert.assertEquals(new LispSymbol("la"), r);
     }
 
-    @Test (expected = UnknownCodeBlockException.class)
+    @Test
     public void testQuotedList () throws LispException {
         LObject lispObject = p.parseLine("'    (5 \"la la\")");
-        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
+        Assert.assertEquals(LispList.list(new LispInteger(5), new LispString("la la")), lispObject);
     }
 
     @Test
@@ -183,10 +182,11 @@ public class BackwardParserTest {
         Assert.assertEquals(LispList.list(), lispObject);
     }
 
-    //todo expected = MissingClosingBracketException.class
-    @Test (expected = UnknownCodeBlockException.class)
+    @Ignore
+    @Test
     public void testUnclosedListWithComments() throws LispException {
-        p.parseLine("(5 10 ;); a comment");
+        LObject r = p.parseLine("(5 10 ;); a comment");
+        Assert.assertEquals(new LispSymbol("comment"), r);
     }
 
     @Test
@@ -195,10 +195,11 @@ public class BackwardParserTest {
         Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
+    @Ignore
     @Test
     public void testQuotedSpace() throws LispException {
         LObject lispObject = p.parseLine("' ");
-        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+        Assert.assertEquals(new LispInteger(32), lispObject);
     }
 
     @Test

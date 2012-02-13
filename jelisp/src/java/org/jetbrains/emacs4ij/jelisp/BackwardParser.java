@@ -4,7 +4,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
-import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,37 +45,38 @@ public class BackwardParser extends Parser {
 
     private String extractSymmetricForm(char formStart, char formEnd) {
         String form = "";
+        int n = 1;
+        int end = getMyCurrentIndex();
         while (true) {
-            int end = getMyCurrentIndex();
-            int start;
-            while (true) {
-                int falseEnd = myLispCode.lastIndexOf(formEnd, end-1);
-                start = myLispCode.lastIndexOf(formStart, end-1);
-                if (falseEnd > start) {
-                    end = start;
-                } else {
-                    end = getMyCurrentIndex();
-                    break;
+            try {
+                advance();
+                if (getCurrentChar() == formStart) {
+                    n--;
+                } else if (getCurrentChar() == formEnd)
+                    n++;
+
+                if (n == 0) {
+                    int start = getMyCurrentIndex();
+                    form = myLispCode.substring(start, end+1) + form;// + formEnd;
+                    advanceTo(start - 1);
+                    if (myCurrentIndex > -1) {
+                        int k = getNextSeparatorIndex();
+                        form = myLispCode.substring(k + 1, start) + form;
+                        advanceTo(k);
+                    }
+                    return form;
                 }
-            }
-            if (start == -1) {
+            } catch (EndOfLineException e) {
                 if (countObservers() == 0)
                     throw new ScanException("Unbalanced parentheses");
-                form = form + myLispCode.substring(0, end + 1);
+               // form = myLispCode.substring(0, end+1) + form;
                 setChanged();
                 notifyObservers(new ScanException("Unbalanced parentheses"));
                 clearChanged();
-            } else {
-                form = myLispCode.substring(start, end + 1) + form;
-                advanceTo(start - 1);
-                if (start > 0) {
-                    int n = getNextSeparatorIndex();
-                    form = myLispCode.substring(n + 1, start) + form;
-                    advanceTo(n);
-                }
-                return form;
+                end += myCurrentIndex + 1;
             }
         }
+
     }
 
     private int getNextDoubleQuoteIndex (int from) {
@@ -115,7 +115,7 @@ public class BackwardParser extends Parser {
     public LObject parseLine (String lispCode, int index) {
         myCurrentIndex = index;
         myLispCode = lispCode;
-        myLispCode = myLispCode.trim();
+        //myLispCode = myLispCode.trim();
 
         String tail = "";
         int k = myLispCode.lastIndexOf(';', myCurrentIndex);
@@ -139,18 +139,18 @@ public class BackwardParser extends Parser {
         }
 
         myLispCode += tail;
-        myCurrentIndex = myLispCode.length()-1;
+        myCurrentIndex += tail.length();
 
         LObject lispObject = parseObject();
         if (lispObject == null)
             lispObject = LispSymbol.ourNil;
-
-        try {
+        return lispObject;
+        /*try {
             getMyCurrentIndex();
         } catch (EndOfLineException ignored) {
             return lispObject;
         }
-        throw new UnknownCodeBlockException(myLispCode.substring(0, getMyCurrentIndex()));
+        throw new UnknownCodeBlockException(myLispCode.substring(0, getMyCurrentIndex()));*/
     }
 
     @Override
@@ -182,7 +182,7 @@ public class BackwardParser extends Parser {
     @Override
     public void append (String lispCode) {
         myLispCode = lispCode + "\n" + myLispCode;
-        myCurrentIndex += lispCode.length() - 1;
+        myCurrentIndex = lispCode.length();
     }
 
 }

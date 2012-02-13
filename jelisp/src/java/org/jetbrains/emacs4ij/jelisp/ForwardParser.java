@@ -295,7 +295,7 @@ public class ForwardParser extends Parser {
     public LObject parseLine (String lispCode) {
         myCurrentIndex = 0;
         myLispCode = lispCode;
-        myLispCode = myLispCode.trim();
+        //myLispCode = myLispCode.trim();
         LObject lispObject = parseObject();
         if (lispObject == null)
             lispObject = LispSymbol.ourNil;
