@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.google.common.collect.Lists;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
 import java.util.ArrayList;
@@ -20,8 +21,12 @@ public class LispVector extends LispObject implements LispSequence {
         myData = new ArrayList<LObject>();
     }
 
-     public LispVector (LObject ... objects) {
+    public LispVector (LObject ... objects) {
         myData = new ArrayList<LObject>(Arrays.asList(objects));
+    }
+    
+    public LispVector (List<LObject> list) {
+        myData = Lists.newArrayList(list);
     }
 
     @Override
@@ -62,7 +67,7 @@ public class LispVector extends LispObject implements LispSequence {
             return;
         myData.add(object);
     }
-    
+
     public LObject get (int index) throws IndexOutOfBoundsException {
         return myData.get(index);
     }
