@@ -22,9 +22,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
     )
 
 public class EmacsHomeService extends EmacsService implements PersistentStateComponent<EmacsHomeService> {
-
-
-
     public boolean checkSetEmacsHome () {
         if (GlobalEnvironment.ourEmacsPath.equals(""))
             GlobalEnvironment.ourEmacsPath = checkSetEmacsParameter("home");
@@ -44,5 +41,14 @@ public class EmacsHomeService extends EmacsService implements PersistentStateCom
     @Override
     public void loadState(EmacsHomeService emacsHomeService) {
         XmlSerializerUtil.copyBean(emacsHomeService, this);
+    }
+    
+    @Override
+    protected boolean isParameterSet() {
+        if (myEmacsParameter != null && !myEmacsParameter.equals("")) {
+            GlobalEnvironment.ourEmacsPath = myEmacsParameter;
+            return true;
+        }
+        return false;
     }
 }

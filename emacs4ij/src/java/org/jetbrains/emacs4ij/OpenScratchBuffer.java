@@ -23,15 +23,18 @@ import java.awt.event.KeyEvent;
 public class OpenScratchBuffer extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
+        CustomEnvironment environment;
+        try {
+            environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+        } catch (NullPointerException exc) {
+            return;
+        }
+        if (environment == null)
+            return;
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
         if (editor.isOneLineMode())
-            return;
-        if (!Checker.isReady())
-            return;
-
-        if (!PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment())
             return;
 
         String myName = GlobalEnvironment.ourScratchBufferName;
@@ -39,7 +42,6 @@ public class OpenScratchBuffer extends AnAction {
         if (editorComponentName != null && editorComponentName.equals(myName))
             return;
 
-        CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         LispBuffer scratch = environment.getServiceBuffer(myName);
         if (scratch == null)
             throw new NoBufferException(myName);

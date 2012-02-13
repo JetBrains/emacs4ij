@@ -23,8 +23,6 @@ public class GlobalEnvironment extends Environment {
     public static String ourEmacsPath = "";
     public static String ourEmacsSource = "";
 
-    private Object myProject = null;
-
     public static final String ourMiniBufferName = " *Minibuf-0*";
     public static final String ourScratchBufferName = "*scratch*";
     public static final String ourUnsetInteractiveString = "0";
@@ -37,7 +35,6 @@ public class GlobalEnvironment extends Environment {
     private static final String ourFinderPath = "/lisp/help-fns.el";
 
     private static Ide myIde = null;
-
 
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
@@ -60,26 +57,20 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.mySymbols.clear();
             return -2;
         }
-        INSTANCE.loadFile("emacs-lisp/backquote.el");
+        try {
+            INSTANCE.loadFile("emacs-lisp/backquote.el");
+        } catch (FileNotFoundException e) {
+            return -2;
+        }
         INSTANCE.defineDefForms();
         
         myIde = ide;
         ourBufferManager = new BufferManager(bufferFactory);
-
-        //INSTANCE.myProject = project;
         return 0;
         //findAndRegisterEmacsFunction(ourFinder);
     }
 
-
-    /* public static void setProject (Object project) {
-        INSTANCE.myProject = project;
-    }*/
-
     private GlobalEnvironment () {
-        // myProject = project;
-        // myBufferFactory = bufferFactory;
-        // myOuterEnv = null;
     }
 
     //-------- loading ------------------
@@ -180,7 +171,7 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put("void", LispSymbol.ourVoid);
         String docDir = ourEmacsPath + "/etc/";
         File file = new File (docDir);
-        if (file.isDirectory()) {
+        if (file.exists() && file.isDirectory()) {
             addVariable("doc-directory", new LispString(docDir), 601973);
 
             String[] docs = file.list(new FilenameFilter() {
@@ -209,14 +200,9 @@ public class GlobalEnvironment extends Environment {
     }
 
     //todo it is public only for test
-    public void loadFile (String fileName) {
-        BufferedReader reader;
+    public void loadFile (String fileName) throws FileNotFoundException {
         String fullName = ourEmacsSource + "/lisp/" + fileName;
-        try {
-            reader = new BufferedReader(new FileReader(fullName));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException("File not found: " + fullName);
-        }
+        BufferedReader reader = new BufferedReader(new FileReader(fullName));
         String line;
         BufferedReaderParser p = new BufferedReaderParser(reader);
         while (true){
@@ -228,7 +214,7 @@ public class GlobalEnvironment extends Environment {
             if (line == null)
                 break;
             LObject parsed = p.parse(line);
-            //if (parsed == null)continue;
+            if (parsed == null) continue;
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
             parsed.evaluate(this);
@@ -241,8 +227,8 @@ public class GlobalEnvironment extends Environment {
     }   
 
     private static LispList getDefFromFile(File file, String name) {
-        if (file.getName().contains("byte-run.el"))
-            System.out.print(1);
+//        if (file.getName().contains("byte-run.el"))
+//            System.out.print(1);
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -269,10 +255,10 @@ public class GlobalEnvironment extends Environment {
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
-            String first = ((LispSymbol)((LispList) parsed).car()).getName();
-            if (myDefForms.contains(first))
+            //String first = ((LispSymbol)((LispList) parsed).car()).getName();
+            //if (myDefForms.contains(first))
                 return (LispList) parsed;
-            throw new RuntimeException("Parsed list is not a specified definition!");
+            //throw new RuntimeException("Parsed list is not a specified definition!");
         }
         throw new RuntimeException("Parsed object is not a LispList!");
     }

@@ -19,16 +19,20 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 public class EvaluateCode extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
+        CustomEnvironment environment;
+        try {
+            environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+        } catch (NullPointerException exc) {
+            return;
+        }
+        if (environment == null)
+            return;
+
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-        if (!Checker.isReady())
-            return;
-       // PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment();
 
         String parameterValue = editor.getDocument().getText();
-        CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-
         try {
             Parser parser = new Parser();
             String displayedBufferName = IdeaBuffer.getDisplayedBufferName();

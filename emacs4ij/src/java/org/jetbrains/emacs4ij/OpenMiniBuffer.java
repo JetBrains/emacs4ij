@@ -22,13 +22,16 @@ import java.awt.event.KeyEvent;
 public class OpenMiniBuffer extends AnAction {
 
     public void actionPerformed(AnActionEvent e) {
+        CustomEnvironment environment;
+        try {
+            environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+        } catch (NullPointerException exc) {
+            return;
+        }
+        if (environment == null)
+            return;
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
-            return;
-        if (!Checker.isReady())
-            return;
-
-        if (!PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment())
             return;
 
         String myName = GlobalEnvironment.ourMiniBufferName;
@@ -36,8 +39,6 @@ public class OpenMiniBuffer extends AnAction {
         String editorComponentName = editor.getContentComponent().getName();
         if (editorComponentName != null && editorComponentName.equals(myName))
             return;
-
-        CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
 
         //todo: open new mini buffer over old ones
         IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
