@@ -195,12 +195,9 @@ public abstract class LispSubroutine {
                     checkArguments(arguments, args);
                     try {
                         return (LObject) m.invoke(null, arguments.getValues());
-                    } catch (IllegalAccessException e) {
+                    } catch (IllegalAccessException | InvocationTargetException e) {
                         System.err.println(e.getCause().getMessage());
-                        throw new RuntimeException(e);
-                    } catch (InvocationTargetException e) {
-                        System.err.println(e.getCause().getMessage());
-                        throw new RuntimeException(e);
+                        throw new RuntimeException(e.getCause());
                     }
                 }
             }

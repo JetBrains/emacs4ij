@@ -40,7 +40,7 @@ public class OpenMiniBuffer extends AnAction {
         if (editorComponentName != null && editorComponentName.equals(myName))
             return;
 
-        //todo: open new mini buffer over old ones
+        //todo: open new mini buffer over old ones and increase recursion depth
         IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
 
         EditorTextField input = new EditorTextField();

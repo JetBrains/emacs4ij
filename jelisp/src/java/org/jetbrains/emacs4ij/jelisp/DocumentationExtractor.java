@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSubroutine;
+import org.jetbrains.emacs4ij.jelisp.exception.DocumentationExtractorException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
@@ -35,10 +36,6 @@ public class DocumentationExtractor {
                 if (annotation == null)
                     continue;
                 String name = annotation.value();
-                /*if (!annotation.doc().equals("")) {
-                    System.out.println(c.getSimpleName() + '.' + name + " is already documented.");
-                    continue;
-                } */
                 mySubroutineDoc.put(name, null);
             }
         }
@@ -73,14 +70,13 @@ public class DocumentationExtractor {
         }
     }
 
-    private void scanFile (File file) {
+    private void scanFile (File file) throws DocumentationExtractorException {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("File not found: " + file.getName());
+            throw new DocumentationExtractorException(e.getMessage());
         }
-
         String line = readLine(reader, file.getName());
         String subroutine;
         final String myDocStartFlag = "doc: /* ";
@@ -96,13 +92,13 @@ public class DocumentationExtractor {
                 if (line.contains(myDocEndFlag)) {
                     mySubroutineDoc.put(subroutine,
                             line.substring(line.indexOf(myDocStartFlag) + myDocStartFlag.length(),
-                                           line.indexOf(myDocEndFlag)));
+                                    line.indexOf(myDocEndFlag)));
                 } else {
                     String doc = line.substring(line.indexOf(myDocStartFlag) + myDocStartFlag.length());
                     while (true) {
                         line = readLine(reader, file.getName());
                         if (line == null)
-                            throw new RuntimeException("function definition&documentation found, but documentation is not finished! File = " + file.getName() + ", function = " + subroutine);
+                            throw new DocumentationExtractorException("function definition&documentation found, but documentation is not finished! File = " + file.getName() + ", function = " + subroutine);
                         if (line.contains(myDocEndFlag)) {
                             doc += '\n' + line.substring(0, line.indexOf(myDocEndFlag)-1);
                             mySubroutineDoc.put(subroutine, doc);
@@ -119,11 +115,11 @@ public class DocumentationExtractor {
         try {
             reader.close();
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
+            throw new DocumentationExtractorException(e.getMessage());
         }
     }
 
-    public int scanAll () {
+    public int scanAll () throws DocumentationExtractorException {
         File sourceDir = new File(mySourcePath);
         File[] cSrc = sourceDir.listFiles(new FilenameFilter() {
             @Override
@@ -135,7 +131,7 @@ public class DocumentationExtractor {
         if (cSrc!=null && cSrc.length != 0)
             for (File file: cSrc) {
                 if (getUndocumentedSubroutines().isEmpty())
-                        break;
+                    break;
                 scanFile(file);
             }
 
@@ -202,7 +198,7 @@ public class DocumentationExtractor {
                 if (line.contains(myDocEndFlag)) {
                     try {
                         writer.write(" == " + subroutine + " == \n" + line.substring(line.indexOf(myDocStartFlag) + myDocStartFlag.length()-1,
-                                               line.indexOf(myDocEndFlag)) + "\n\n");
+                                line.indexOf(myDocEndFlag)) + "\n\n");
                         n++;
                     } catch (StringIndexOutOfBoundsException e1) {
                         throw new RuntimeException("Write error.");

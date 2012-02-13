@@ -1,8 +1,6 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.components.ApplicationComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.WindowManagerListener;
@@ -22,18 +20,13 @@ import java.awt.event.WindowEvent;
  */
 public class MyApplicationComponent implements ApplicationComponent {
     private WindowAdapter myWindowAdapter;
-    private boolean isGlobalEnvironmentInitialized = false;
-
-    public boolean isGlobalEnvironmentInitialized() {
-        return isGlobalEnvironmentInitialized;
-    }
 
     public MyApplicationComponent() {
         myWindowAdapter = new WindowAdapter() {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 super.windowGainedFocus(e);
-                if (isGlobalEnvironmentInitialized)
+                if (EnvironmentInitializer.isGlobalInitialized())
                     GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
             }
 
@@ -41,63 +34,17 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void windowIconified(WindowEvent e) {
                 super.windowIconified(e);
                 //GlobalEnvironment.setFrameVisible(new IdeaFrame((IdeFrame) e.getWindow()), false);
-                if (isGlobalEnvironmentInitialized)
+                if (EnvironmentInitializer.isGlobalInitialized())
                     GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
                 super.windowDeiconified(e);
-                if (isGlobalEnvironmentInitialized)
+                if (EnvironmentInitializer.isGlobalInitialized())
                     GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
             }
-        };        
-    }
-
-    public boolean silentGlobalEnvInit() {
-        if (isGlobalEnvironmentInitialized)
-            return true;
-        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-        EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
-        if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
-            isGlobalEnvironmentInitialized = (GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider()) == 0);
-        }
-        return isGlobalEnvironmentInitialized;
-    }
-    
-    public boolean globalEnvInit() {
-        if (isGlobalEnvironmentInitialized)
-            return true;
-        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-        if (!emacsHomeService.checkSetEmacsHome())
-            return false;
-        EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
-        if (!emacsSourceService.checkSetEmacsSource())
-            return false;
-        int k;
-        isGlobalEnvironmentInitialized = true;
-        IdeProvider ideProvider = new IdeProvider();
-        while ((k = GlobalEnvironment.initialize(new BufferCreator(), ideProvider)) != 0) {
-            if (k == -1) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Home directory. Try again.", "Emacs4ij");
-                if (!emacsHomeService.resetEmacsHome()) {
-                    isGlobalEnvironmentInitialized = false;
-                    break;
-                }
-                continue;
-            }
-            if (k == -2) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Source directory. Try again.", "Emacs4ij");
-                if (!emacsSourceService.resetEmacsSource()) {
-                    isGlobalEnvironmentInitialized = false;
-                    break;
-                }
-                continue;
-            }
-            isGlobalEnvironmentInitialized = false;
-            break;
-        }
-        return isGlobalEnvironmentInitialized;
+        };
     }
 
     public void initComponent() {
@@ -106,7 +53,7 @@ public class MyApplicationComponent implements ApplicationComponent {
         WindowManager.getInstance().addListener(new WindowManagerListener() {
             @Override
             public void frameCreated(IdeFrame ideFrame) {
-                if (!isGlobalEnvironmentInitialized)
+                if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
                 ((IdeFrameImpl)ideFrame).addWindowFocusListener(myWindowAdapter);
                 ((IdeFrameImpl)ideFrame).addWindowListener(myWindowAdapter);
@@ -117,7 +64,7 @@ public class MyApplicationComponent implements ApplicationComponent {
 
             @Override
             public void beforeFrameReleased(IdeFrame ideFrame) {
-                if (!isGlobalEnvironmentInitialized)
+                if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
                 GlobalEnvironment.INSTANCE.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
             }

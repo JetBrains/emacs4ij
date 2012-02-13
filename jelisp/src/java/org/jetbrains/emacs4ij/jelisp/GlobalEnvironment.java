@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.DocumentationExtractorException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
@@ -35,10 +36,22 @@ public class GlobalEnvironment extends Environment {
     private static final String ourFinderPath = "/lisp/help-fns.el";
 
     private static Ide myIde = null;
-
+    
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
+    //temporary solution while i'm not loading all sources
+    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
+    
+    private static boolean validateSourcePaths() {
+        for (String fileName: myFilesToLoad) {
+            File file = new File(ourEmacsSource + "/lisp/" + fileName);
+            if (!file.exists())
+                return false;
+        }
+        return true;
+    }
+        
     public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         if (INSTANCE.myCurrentFrame != null) {
@@ -53,16 +66,20 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.defineBufferLocalVariables();
         INSTANCE.defineGlobalVariables();
         INSTANCE.defineUserOptions();
+        
+        if (!validateSourcePaths())
+            return -2;
+        
         if (!INSTANCE.setSubroutines()) {
             INSTANCE.mySymbols.clear();
             return -2;
         }
-        try {
-            INSTANCE.loadFile("emacs-lisp/backquote.el");
-        } catch (FileNotFoundException e) {
-            return -2;
-        }
+        
+        //note: it's important to load backquote before defsubst
+        INSTANCE.loadFile(myFilesToLoad.get(0));        
         INSTANCE.defineDefForms();
+        for (int i = 1; i < myFilesToLoad.size(); ++i)
+            INSTANCE.loadFile(myFilesToLoad.get(i));
         
         myIde = ide;
         ourBufferManager = new BufferManager(bufferFactory);
@@ -154,16 +171,45 @@ public class GlobalEnvironment extends Environment {
     }
 
     private boolean setSubroutines () {
-        int n = mySymbols.size();
+        //int n = mySymbols.size();
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        if (d.scanAll() > 2) {
+        try {
+            if (d.scanAll() > 2) {
+                return false;
+            }
+        } catch (DocumentationExtractorException e) {
+            System.err.println(e.getMessage());
             return false;
         }
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
         setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
-        System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
+        //System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
         return true;
     }
+
+    private boolean validateEmacsPath() {
+        String docDir = ourEmacsPath + "/etc/";
+        File file = new File (docDir);
+        if (file.exists() && file.isDirectory()) {
+            //addVariable("doc-directory", new LispString(docDir), 601973);
+
+            String[] docs = file.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return s.startsWith("DOC-");
+                }
+            });
+            if (docs != null && docs.length == 1) {
+                //"DOC-23.2.1"
+                //addVariable("internal-doc-file-name", new LispString(docs[0]), 432776);
+            } else
+                return false;
+        } else
+            return false;
+        return true;
+    }
+
+
 
     private boolean setConstants() {
         mySymbols.put("nil", LispSymbol.ourNil);
@@ -200,9 +246,15 @@ public class GlobalEnvironment extends Environment {
     }
 
     //todo it is public only for test
-    public void loadFile (String fileName) throws FileNotFoundException {
+    public void loadFile (String fileName) {
         String fullName = ourEmacsSource + "/lisp/" + fileName;
-        BufferedReader reader = new BufferedReader(new FileReader(fullName));
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(fullName));
+        } catch (FileNotFoundException e) {
+            System.err.println(e.getMessage());
+            return;
+        }
         String line;
         BufferedReaderParser p = new BufferedReaderParser(reader);
         while (true){
