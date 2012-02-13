@@ -196,9 +196,10 @@ public abstract class LispSubroutine {
                     try {
                         return (LObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
+                        System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e);
                     } catch (InvocationTargetException e) {
-                        System.err.print(e.getCause().getMessage());
+                        System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e);
                     }
                 }

@@ -108,7 +108,7 @@ public abstract class BuiltinsList {
     public static LObject assoc (LObject key, LObject list) {
         if (!BuiltinPredicates.listp(list).toBoolean())
             throw new WrongTypeArgumentException("listp", list.toString());
-        if (list == LispSymbol.ourNil)
+        if (list.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         for (LObject element : ((LispList)list).toLObjectList()) {
             if (element instanceof LispList) {
@@ -117,5 +117,11 @@ public abstract class BuiltinsList {
             }
         }
         return LispSymbol.ourNil;
+    }
+    
+    @Subroutine("setcdr")
+    public static LObject setCdr (LispList cell, LObject newCdr) {
+        cell.setCdr(newCdr);
+        return newCdr;
     }
 }

@@ -290,5 +290,9 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
         r = evaluateString("(assoc nil '((() 2 3) (nil . nil) 2))");
         Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("(assoc nil nil)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
     }
+
+    
 }
