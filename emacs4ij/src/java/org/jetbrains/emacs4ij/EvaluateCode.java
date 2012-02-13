@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 
 /**
@@ -34,10 +34,10 @@ public class EvaluateCode extends AnAction {
 
         String parameterValue = editor.getDocument().getText();
         try {
-            Parser parser = new Parser();
+            ForwardParser forwardParser = new ForwardParser();
             String displayedBufferName = IdeaBuffer.getDisplayedBufferName();
 
-            LObject result = parser.parseLine(parameterValue).evaluate(environment);
+            LObject result = forwardParser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(result.toString(), "Evaluation result");
 
             environment.findBufferSafe(displayedBufferName).closeHeader();

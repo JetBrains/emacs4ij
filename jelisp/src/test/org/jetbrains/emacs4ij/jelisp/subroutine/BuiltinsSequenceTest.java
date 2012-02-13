@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Before;
@@ -35,8 +35,8 @@ public class BuiltinsSequenceTest {
     }
 
     private LObject evaluateString (String lispCode) throws LispException {
-        Parser parser = new Parser();
-        return parser.parseLine(lispCode).evaluate(environment);
+        ForwardParser forwardParser = new ForwardParser();
+        return forwardParser.parseLine(lispCode).evaluate(environment);
     }
 
     @Test

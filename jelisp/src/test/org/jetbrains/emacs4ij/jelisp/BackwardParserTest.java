@@ -3,8 +3,6 @@ package org.jetbrains.emacs4ij.jelisp;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -14,17 +12,17 @@ import java.util.Arrays;
 
 /**
  * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 7/12/11
- * Time: 1:01 PM
+ * User: kate
+ * Date: 2/13/12
+ * Time: 5:14 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ParserTest {
-    private Parser p;
+public class BackwardParserTest {
+    private BackwardParser p;
 
     @Before
     public void setUp() throws Exception {
-        p = new Parser();
+        p = new BackwardParser();
     }
 
     @Test
@@ -65,12 +63,14 @@ public class ParserTest {
         Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
     }
 
-    @Test(expected = MissingClosingBracketException.class)
+    //Todo: expected = MissingClosingBracketException.class
+    @Test(expected = UnknownCodeBlockException.class)
     public void testMissingClosingBracket () throws LispException {
         p.parseLine("(5 \"la la\"");
     }
 
-    @Test(expected = MissingClosingDoubleQuoteException.class)
+    //Todo: expected = MissingClosingBracketException.class
+    @Test(expected = UnknownCodeBlockException.class)
     public void testMissingClosingDblQuote () throws LispException {
         p.parseLine("(5 \"la la");
     }
@@ -183,7 +183,8 @@ public class ParserTest {
         Assert.assertEquals(LispList.list(), lispObject);
     }
 
-    @Test (expected = MissingClosingBracketException.class)
+    //todo expected = MissingClosingBracketException.class
+    @Test (expected = UnknownCodeBlockException.class)
     public void testUnclosedListWithComments() throws LispException {
         p.parseLine("(5 10 ;); a comment");
     }
@@ -246,6 +247,12 @@ public class ParserTest {
     public void testParseSymbol() throws LispException {
         LObject lispObject = p.parseLine("test");
         Assert.assertEquals(new LispSymbol("test"), lispObject);
+    }
+
+    @Test
+    public void testParseVectorSimple() {
+        LObject lispObject = p.parseLine("[1 \"hello\" anna [(quote q)]]");
+        Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(LispList.list(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
     }
 
     @Test
@@ -633,6 +640,5 @@ public class ParserTest {
         }
         Assert.fail();
     }
+
 }
-
-

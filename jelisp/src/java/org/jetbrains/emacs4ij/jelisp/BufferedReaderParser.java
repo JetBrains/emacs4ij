@@ -17,17 +17,17 @@ import java.util.Observer;
  * To change this template use File | Settings | File Templates.
  */
 public class BufferedReaderParser implements Observer {
-    private Parser myParser = new Parser();
+    private ForwardParser myForwardParser = new ForwardParser();
     private BufferedReader myReader;
 
     public BufferedReaderParser (BufferedReader reader) {
         myReader = reader;
-        myParser.addObserver(this);
+        myForwardParser.addObserver(this);
     }
 
     public LObject parse (String firstLine) {
         try {
-            return myParser.parseLine(firstLine);
+            return myForwardParser.parseLine(firstLine);
         } catch (LispException e) {
             System.out.println(e.getMessage());
             return null;
@@ -43,7 +43,7 @@ public class BufferedReaderParser implements Observer {
                 else
                     throw new EndOfLineException();
 
-            myParser.append("\n" + nextLine);
+            myForwardParser.append(nextLine);
 
         } catch (IOException e) {
             if (arg instanceof LispException) {

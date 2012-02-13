@@ -3,6 +3,8 @@ package org.jetbrains.emacs4ij.jelisp;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
+import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -12,17 +14,17 @@ import java.util.Arrays;
 
 /**
  * Created by IntelliJ IDEA.
- * User: kate
- * Date: 2/13/12
- * Time: 5:14 PM
+ * User: Ekaterina.Polishchuk
+ * Date: 7/12/11
+ * Time: 1:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BackwardsParserTest {
-    private BackwardsParser p;
+public class ForwardParserTest {
+    private ForwardParser p;
 
     @Before
     public void setUp() throws Exception {
-        p = new BackwardsParser();
+        p = new ForwardParser();
     }
 
     @Test
@@ -63,14 +65,12 @@ public class BackwardsParserTest {
         Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5), new LispString("la la"))), lispObject);
     }
 
-    //Todo: expected = MissingClosingBracketException.class
-    @Test(expected = UnknownCodeBlockException.class)
+    @Test(expected = MissingClosingBracketException.class)
     public void testMissingClosingBracket () throws LispException {
         p.parseLine("(5 \"la la\"");
     }
 
-    //Todo: expected = MissingClosingBracketException.class
-    @Test(expected = UnknownCodeBlockException.class)
+    @Test(expected = MissingClosingDoubleQuoteException.class)
     public void testMissingClosingDblQuote () throws LispException {
         p.parseLine("(5 \"la la");
     }
@@ -183,8 +183,7 @@ public class BackwardsParserTest {
         Assert.assertEquals(LispList.list(), lispObject);
     }
 
-    //todo expected = MissingClosingBracketException.class
-    @Test (expected = UnknownCodeBlockException.class)
+    @Test (expected = MissingClosingBracketException.class)
     public void testUnclosedListWithComments() throws LispException {
         p.parseLine("(5 10 ;); a comment");
     }
@@ -247,12 +246,6 @@ public class BackwardsParserTest {
     public void testParseSymbol() throws LispException {
         LObject lispObject = p.parseLine("test");
         Assert.assertEquals(new LispSymbol("test"), lispObject);
-    }
-
-    @Test
-    public void testParseVectorSimple() {
-        LObject lispObject = p.parseLine("[1 \"hello\" anna [(quote q)]]");
-        Assert.assertEquals(new LispVector(new LispInteger(1), new LispString("hello"), new LispSymbol("anna"), new LispVector(LispList.list(new LispSymbol("quote"), new LispSymbol("q")))), lispObject);
     }
 
     @Test
@@ -640,5 +633,6 @@ public class BackwardsParserTest {
         }
         Assert.fail();
     }
-
 }
+
+

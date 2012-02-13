@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
@@ -23,7 +23,7 @@ import java.util.HashMap;
  */
 public class MarkerTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
-    Parser myParser = new Parser();
+    ForwardParser myForwardParser = new ForwardParser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
@@ -64,7 +64,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     }
 
     private LObject evaluateString (String lispCode) {
-        return myParser.parseLine(lispCode).evaluate(myEnvironment);
+        return myForwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
     @Test

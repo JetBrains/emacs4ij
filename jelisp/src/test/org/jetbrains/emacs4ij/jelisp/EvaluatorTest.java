@@ -28,8 +28,8 @@ public class EvaluatorTest {
     }
 
     private LObject evaluateString (String lispCode) throws LispException {
-        Parser parser = new Parser();
-        return parser.parseLine(lispCode).evaluate(environment);
+        ForwardParser forwardParser = new ForwardParser();
+        return forwardParser.parseLine(lispCode).evaluate(environment);
     }
 
     private Throwable getCause (Throwable e) {

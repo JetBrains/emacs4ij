@@ -3,8 +3,8 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
@@ -26,7 +26,7 @@ import java.util.HashMap;
  */
 public class BufferTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
-    Parser myParser = new Parser();
+    ForwardParser myForwardParser = new ForwardParser();
     String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
@@ -68,7 +68,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     }
 
     private LObject eval (String lispCode) {
-        return myParser.parseLine(lispCode).evaluate(myEnvironment);
+        return myForwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
     @Test

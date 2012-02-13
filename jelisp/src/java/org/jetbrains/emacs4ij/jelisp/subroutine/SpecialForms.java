@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.Error;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -384,8 +384,8 @@ public abstract class SpecialForms {
                         // todo: unbind all bindings; clean-ups for all unwind-protect forms
 
 
-                        Parser parser = new Parser();
-                        LispList errorInfo = (LispList) parser.parseLine(exc.getMessage());
+                        ForwardParser forwardParser = new ForwardParser();
+                        LispList errorInfo = (LispList) forwardParser.parseLine(exc.getMessage());
                         while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
                             //todo: make full error list and store it in errorInfo
                             // make somehow new error message
