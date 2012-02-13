@@ -33,6 +33,11 @@
           <add-to-group group-id="MainToolBar" anchor="last"/>
           <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
       </action>
+      <action id="org.jetbrains.emacs4ij.OpenSettings" class="org.jetbrains.emacs4ij.OpenSettings"
+              text="Emacs4ij settings" icon="icons/options.png"
+              description="View and edit Emacs4ij settings">
+          <add-to-group group-id="MainToolBar" anchor="last"/>
+      </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

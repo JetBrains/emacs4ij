@@ -29,8 +29,8 @@ public class BuiltinsSymbolTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
+        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
         GlobalEnvironment.initialize(null, null);
         GlobalEnvironment.INSTANCE.startRecording();
     }

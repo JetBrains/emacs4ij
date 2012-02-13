@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DocumentationExtractorException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
@@ -21,8 +22,8 @@ public class GlobalEnvironment extends Environment {
     private ArrayList<LispFrame> myFrames = new ArrayList<>();
     private LispFrame myCurrentFrame = null;
 
-    public static String ourEmacsPath = "";
-    public static String ourEmacsSource = "";
+    private static String ourEmacsHome = "";
+    private static String ourEmacsSource = "";
 
     public static final String ourMiniBufferName = " *Minibuf-0*";
     public static final String ourScratchBufferName = "*scratch*";
@@ -36,13 +37,34 @@ public class GlobalEnvironment extends Environment {
     private static final String ourFinderPath = "/lisp/help-fns.el";
 
     private static Ide myIde = null;
-    
+
+    private boolean isEmacsSourceOk = false;
+    private boolean isEmacsHomeOk = false;
+
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
-    
+
+    public static String getEmacsHome() {
+        return ourEmacsHome;
+    }
+
+    public static String getEmacsSource() {
+        return ourEmacsSource;
+    }
+
+    public static void setEmacsHome(String emacsPath) {
+        ourEmacsHome = emacsPath;
+        INSTANCE.isEmacsHomeOk = false;
+    }
+
+    public static void setEmacsSource(String emacsSource) {
+        ourEmacsSource = emacsSource;
+        INSTANCE.isEmacsSourceOk = false;
+    }
+
     private static boolean validateSourcePaths() {
         for (String fileName: myFilesToLoad) {
             File file = new File(ourEmacsSource + "/lisp/" + fileName);
@@ -51,37 +73,59 @@ public class GlobalEnvironment extends Environment {
         }
         return true;
     }
-        
+
+    public boolean testEmacsHome() {
+        File file = new File(ourEmacsSource + "/lisp/simple.el");
+
+        if (!isEmacsHomeOk) {
+            isEmacsHomeOk = setConstants();
+            if (!isEmacsHomeOk) {
+                mySymbols.clear();
+            }
+        }
+        return isEmacsHomeOk;
+    }
+
+    public boolean testEmacsSource() {
+        if (!isEmacsSourceOk)
+            isEmacsSourceOk = validateSourcePaths() && extractDocs();
+        return isEmacsSourceOk;
+    }
+
     public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
+        myIde = ide;
+
         if (INSTANCE.myCurrentFrame != null) {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
 
-        if (!INSTANCE.setConstants()) {
+        if (!INSTANCE.testEmacsHome()) {
             INSTANCE.mySymbols.clear();
+            showErrorMessage("Emacs home directory is invalid!");
             return -1;
+            //throw new EnvironmentException("Emacs home directory is invalid!");
         }
-
+       
         INSTANCE.defineBufferLocalVariables();
         INSTANCE.defineGlobalVariables();
         INSTANCE.defineUserOptions();
-        
-        if (!validateSourcePaths())
-            return -2;
-        
-        if (!INSTANCE.setSubroutines()) {
+
+        if (!INSTANCE.testEmacsSource()) {
             INSTANCE.mySymbols.clear();
+            showErrorMessage("Emacs source directory is invalid!");
             return -2;
+            //throw new EnvironmentException("Emacs source directory is invalid!");
         }
-        
+
+        INSTANCE.setSubroutines();
+
         //note: it's important to load backquote before defsubst
-        INSTANCE.loadFile(myFilesToLoad.get(0));        
+        INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
-        
-        myIde = ide;
+
         ourBufferManager = new BufferManager(bufferFactory);
         return 0;
         //findAndRegisterEmacsFunction(ourFinder);
@@ -111,7 +155,7 @@ public class GlobalEnvironment extends Environment {
 
     private static List<String> myDefForms = Arrays.asList("defun", "defmacro",
             "defcustom", "defvar", "defsubst", "defconst", "defalias", "defgroup", "defface");
-    
+
     private void defineDefForms () {
         findAndRegisterEmacsForm("defcustom");
         findAndRegisterEmacsForm("defsubst");
@@ -157,9 +201,9 @@ public class GlobalEnvironment extends Environment {
                     continue;
                 String name = annotation.value();
                 if (mySymbols.containsKey(name))
-                    throw new RuntimeException("Duplicate symbol: " + name + '!');
+                    throw new LispException("Duplicate symbol: " + name + '!');
                 if (annotation.isCmd() && annotation.interactive().equals(ourUnsetInteractiveString))
-                    throw new RuntimeException("Interactive string not set! Subroutine " + name);
+                    throw new LispException("Interactive string not set! Subroutine " + name);
 
                 LispSymbol subroutine = new LispSymbol(name);
                 subroutine.setFunction(new Primitive(annotation, documentation.get(name), type));
@@ -170,52 +214,45 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    private boolean setSubroutines () {
-        //int n = mySymbols.size();
-        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        try {
-            if (d.scanAll() > 2) {
+    private DocumentationExtractor myDocumentationExtractor;
+
+    private boolean extractDocs() {
+        if (!isEmacsSourceOk) {
+            myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
+            try {
+                if (myDocumentationExtractor.scanAll() > 2) {
+                    return false;
+                }
+            } catch (DocumentationExtractorException e) {
+                System.err.println(e.getMessage());
                 return false;
             }
-        } catch (DocumentationExtractorException e) {
-            System.err.println(e.getMessage());
-            return false;
         }
-        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
-        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
+        return true;
+    }
+
+    private void setSubroutines () {
+        //int n = mySymbols.size();
+
+//        isEmacsSourceOk = extractDocs();
+//        if (!isEmacsSourceOk)
+//            return false;
+
+        try {
+            setSubroutinesFromClass(myDocumentationExtractor.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
+            setSubroutinesFromClass(myDocumentationExtractor.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
+        } catch (LispException e) {
+            System.err.println(e.getMessage());
+            throw e;
+        }
         //System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
-        return true;
     }
-
-    private boolean validateEmacsPath() {
-        String docDir = ourEmacsPath + "/etc/";
-        File file = new File (docDir);
-        if (file.exists() && file.isDirectory()) {
-            //addVariable("doc-directory", new LispString(docDir), 601973);
-
-            String[] docs = file.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return s.startsWith("DOC-");
-                }
-            });
-            if (docs != null && docs.length == 1) {
-                //"DOC-23.2.1"
-                //addVariable("internal-doc-file-name", new LispString(docs[0]), 432776);
-            } else
-                return false;
-        } else
-            return false;
-        return true;
-    }
-
-
 
     private boolean setConstants() {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
         mySymbols.put("void", LispSymbol.ourVoid);
-        String docDir = ourEmacsPath + "/etc/";
+        String docDir = ourEmacsHome + "/etc/";
         File file = new File (docDir);
         if (file.exists() && file.isDirectory()) {
             addVariable("doc-directory", new LispString(docDir), 601973);
@@ -248,7 +285,7 @@ public class GlobalEnvironment extends Environment {
     //todo it is public only for test
     public void loadFile (String fileName) {
         String fullName = ourEmacsSource + "/lisp/" + fileName;
-        BufferedReader reader = null;
+        BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(fullName));
         } catch (FileNotFoundException e) {
@@ -276,11 +313,9 @@ public class GlobalEnvironment extends Environment {
     //TODO: its only for test
     public static LispList getDefFromFile(String fileName, String functionName) {
         return getDefFromFile(new File(fileName), functionName);
-    }   
+    }
 
     private static LispList getDefFromFile(File file, String name) {
-//        if (file.getName().contains("byte-run.el"))
-//            System.out.print(1);
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -309,7 +344,7 @@ public class GlobalEnvironment extends Environment {
         if (parsed instanceof LispList) {
             //String first = ((LispSymbol)((LispList) parsed).car()).getName();
             //if (myDefForms.contains(first))
-                return (LispList) parsed;
+            return (LispList) parsed;
             //throw new RuntimeException("Parsed list is not a specified definition!");
         }
         throw new RuntimeException("Parsed object is not a LispList!");
@@ -611,7 +646,7 @@ return ((LispString)f).getData();
         }
         return frames;
     }
-    
+
     public static ArrayList<LispFrame> getAllFrames () {
         if (INSTANCE == null)
             return new ArrayList<>();

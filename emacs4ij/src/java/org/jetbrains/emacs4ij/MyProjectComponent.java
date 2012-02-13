@@ -104,15 +104,9 @@ public class MyProjectComponent implements ProjectComponent {
         }.queue();
     }
 
-    public boolean initEnv () {
-        //todo: invoke on form action
-        if (myEnvironment != null)
-            return true;
-        if (!EnvironmentInitializer.initGlobal())
-            return false;
+    public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
-        return true;
     }
 
     public CustomEnvironment getEnvironment() {

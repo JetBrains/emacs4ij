@@ -21,8 +21,8 @@ public class EvaluatorTest {
 
     @Before
     public void setUp() {
-        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
+        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
         GlobalEnvironment.initialize(null, null);
         environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
@@ -118,7 +118,7 @@ public class EvaluatorTest {
     @Test
     public void testFindMark () throws Throwable {
         try {
-            GlobalEnvironment.getDefFromFile(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "mark");
+            GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/simple.el", "mark");
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
             throw getCause(e);

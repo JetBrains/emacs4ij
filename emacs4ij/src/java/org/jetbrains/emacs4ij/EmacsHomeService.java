@@ -22,15 +22,16 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
     )
 
 public class EmacsHomeService extends EmacsService implements PersistentStateComponent<EmacsHomeService> {
+
     public boolean checkSetEmacsHome () {
-        if (GlobalEnvironment.ourEmacsPath.equals(""))
-            GlobalEnvironment.ourEmacsPath = checkSetEmacsParameter("home");
-        return !GlobalEnvironment.ourEmacsPath.equals("");
+        if (GlobalEnvironment.getEmacsHome().equals(""))
+            GlobalEnvironment.setEmacsHome(checkSetEmacsParameter("home"));
+        return !GlobalEnvironment.getEmacsHome().equals("");
     }
 
     public boolean resetEmacsHome () {
-        GlobalEnvironment.ourEmacsPath = reset("home");
-        return !GlobalEnvironment.ourEmacsPath.equals("");
+        GlobalEnvironment.setEmacsHome(reset("home"));
+        return !GlobalEnvironment.getEmacsHome().equals("");
     }
 
     @Override
@@ -46,7 +47,7 @@ public class EmacsHomeService extends EmacsService implements PersistentStateCom
     @Override
     protected boolean isParameterSet() {
         if (myEmacsParameter != null && !myEmacsParameter.equals("")) {
-            GlobalEnvironment.ourEmacsPath = myEmacsParameter;
+            GlobalEnvironment.setEmacsHome(myEmacsParameter);
             return true;
         }
         return false;

@@ -1,11 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.util.ui.UIUtil;
-
-import javax.swing.*;
-
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -25,7 +19,7 @@ public abstract class EmacsService  {
         this.myEmacsParameter = myEmacsParameter;
     }
 
-    private void showInfoMessage (final String name) {
+   /* private void showInfoMessage (final String name) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {
@@ -45,7 +39,7 @@ public abstract class EmacsService  {
                 });
             }
         });
-    }
+    }*/
 
     protected String reset (String name) {
         myEmacsParameter = "";
@@ -62,5 +56,6 @@ public abstract class EmacsService  {
     }
     
     protected abstract boolean isParameterSet();
+
 }
 
