@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.DocumentationExtractorException;
+import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
@@ -38,8 +38,8 @@ public class GlobalEnvironment extends Environment {
 
     private static Ide myIde = null;
 
-    private boolean isEmacsSourceOk = false;
-    private boolean isEmacsHomeOk = false;
+    private static boolean isEmacsSourceOk = false;
+    private static boolean isEmacsHomeOk = false;
 
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
@@ -57,42 +57,53 @@ public class GlobalEnvironment extends Environment {
 
     public static void setEmacsHome(String emacsPath) {
         ourEmacsHome = emacsPath;
-        INSTANCE.isEmacsHomeOk = false;
+        isEmacsHomeOk = false;
     }
 
     public static void setEmacsSource(String emacsSource) {
         ourEmacsSource = emacsSource;
-        INSTANCE.isEmacsSourceOk = false;
+        isEmacsSourceOk = false;
     }
-
-    private static boolean validateSourcePaths() {
-        for (String fileName: myFilesToLoad) {
-            File file = new File(ourEmacsSource + "/lisp/" + fileName);
-            if (!file.exists())
+    
+    public enum PropertyType {HOME, SRC} 
+    
+    public static boolean isEmacsPropertyOk (PropertyType type) {
+        switch (type) {
+            case HOME:
+                return isEmacsHomeOk;
+            case SRC:
+                return isEmacsSourceOk;
+            default:
                 return false;
         }
-        return true;
     }
 
     public boolean testEmacsHome() {
-        File file = new File(ourEmacsSource + "/lisp/simple.el");
-
-        if (!isEmacsHomeOk) {
-            isEmacsHomeOk = setConstants();
-            if (!isEmacsHomeOk) {
-                mySymbols.clear();
-            }
+        if (isEmacsHomeOk)
+            return true;
+        String docDir = ourEmacsHome + "/etc/";
+        File file = new File (docDir);
+        if (file.exists() && file.isDirectory()) {
+            String[] docs = file.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return s.startsWith("DOC-");
+                }
+            });
+            isEmacsHomeOk =  docs != null && docs.length == 1;
         }
         return isEmacsHomeOk;
     }
 
     public boolean testEmacsSource() {
-        if (!isEmacsSourceOk)
-            isEmacsSourceOk = validateSourcePaths() && extractDocs();
+        if (!isEmacsSourceOk) {
+            File file = new File(ourEmacsSource + "/lisp/simple.el");
+            isEmacsSourceOk = file.exists();
+        }
         return isEmacsSourceOk;
     }
 
-    public static int initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
+    public static void initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         myIde = ide;
 
@@ -102,20 +113,17 @@ public class GlobalEnvironment extends Environment {
 
         if (!INSTANCE.testEmacsHome()) {
             INSTANCE.mySymbols.clear();
-            showErrorMessage("Emacs home directory is invalid!");
-            return -1;
-            //throw new EnvironmentException("Emacs home directory is invalid!");
+            throw new EnvironmentException("Emacs home directory is invalid!");
         }
-       
+
+        INSTANCE.setConstants();
         INSTANCE.defineBufferLocalVariables();
         INSTANCE.defineGlobalVariables();
         INSTANCE.defineUserOptions();
 
         if (!INSTANCE.testEmacsSource()) {
             INSTANCE.mySymbols.clear();
-            showErrorMessage("Emacs source directory is invalid!");
-            return -2;
-            //throw new EnvironmentException("Emacs source directory is invalid!");
+            throw new EnvironmentException("Emacs source directory is invalid!");
         }
 
         INSTANCE.setSubroutines();
@@ -127,7 +135,6 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.loadFile(myFilesToLoad.get(i));
 
         ourBufferManager = new BufferManager(bufferFactory);
-        return 0;
         //findAndRegisterEmacsFunction(ourFinder);
     }
 
@@ -214,37 +221,13 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    private DocumentationExtractor myDocumentationExtractor;
-
-    private boolean extractDocs() {
-        if (!isEmacsSourceOk) {
-            myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
-            try {
-                if (myDocumentationExtractor.scanAll() > 2) {
-                    return false;
-                }
-            } catch (DocumentationExtractorException e) {
-                System.err.println(e.getMessage());
-                return false;
-            }
-        }
-        return true;
-    }
-
     private void setSubroutines () {
         //int n = mySymbols.size();
-
-//        isEmacsSourceOk = extractDocs();
-//        if (!isEmacsSourceOk)
-//            return false;
-
-        try {
-            setSubroutinesFromClass(myDocumentationExtractor.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
-            setSubroutinesFromClass(myDocumentationExtractor.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
-        } catch (LispException e) {
-            System.err.println(e.getMessage());
-            throw e;
-        }
+        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
+        if (d.scanAll() > 2)
+            throw new EnvironmentException("Unexpected number of undocumented forms!");
+        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
+        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
         //System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
     }
 

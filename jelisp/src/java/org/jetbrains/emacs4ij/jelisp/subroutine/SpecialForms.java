@@ -349,11 +349,6 @@ public abstract class SpecialForms {
         return f;
     }
 
-    private static LObject parseString(String lispCode, CustomEnvironment environment) throws LispException {
-        Parser parser = new Parser();
-        return parser.parseLine(lispCode);
-    }
-
     @Subroutine("condition-case")
     public static LObject conditionCase (Environment environment, LispSymbol var, LObject bodyForm, @Optional LObject... handlers) {
         ArrayList<LispList> h = new ArrayList<LispList>();

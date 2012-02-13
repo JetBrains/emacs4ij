@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 

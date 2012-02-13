@@ -10,9 +10,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,12 +23,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
  */
 public class MyProjectComponent implements ProjectComponent {
     private CustomEnvironment myEnvironment = null;
-  //  private MyApplicationComponent myApplication;
     private Project myProject;
 
     public MyProjectComponent(Project project) {
         myProject = project;
-       // myApplication = ApplicationManager.getApplication().getComponent(MyApplicationComponent.class);
         IdeaBuffer.setProject(project);
     }
 

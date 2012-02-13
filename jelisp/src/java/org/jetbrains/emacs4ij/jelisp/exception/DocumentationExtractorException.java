@@ -7,7 +7,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 9:32 AM
  * To change this template use File | Settings | File Templates.
  */
-public class DocumentationExtractorException extends Exception {
+public class DocumentationExtractorException extends LispException {
     public DocumentationExtractorException (String message) {
         super(message);
     }

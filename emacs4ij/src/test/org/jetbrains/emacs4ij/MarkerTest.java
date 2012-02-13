@@ -9,7 +9,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
@@ -29,16 +28,16 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
 
-    @BeforeClass
+   /* @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
-    }
+        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
+        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
+    } */
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        GlobalEnvironment.ourEmacsPath = "/usr/share/emacs/23.2";
+        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
+        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();

@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
@@ -12,6 +11,7 @@ import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,6 +26,10 @@ public class EnvironmentInitializer {
     public static boolean isGlobalInitialized() {
         return isGlobalInitialized;
     }
+    
+    public static void reset() {
+        isGlobalInitialized = false;
+    }
 
     public static boolean silentInitGlobal() {
         if (isGlobalInitialized)
@@ -33,7 +37,13 @@ public class EnvironmentInitializer {
         EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
-            isGlobalInitialized = (GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider()) == 0);
+            try {
+                GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
+                isGlobalInitialized = true;
+            } catch (LispException e) {
+                //skip
+                System.out.println(e.getMessage());
+            }
         }
         return isGlobalInitialized;
     }
@@ -41,34 +51,11 @@ public class EnvironmentInitializer {
     public static boolean initGlobal() {
         if (isGlobalInitialized)
             return true;
-        EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
-        if (!emacsHomeService.checkSetEmacsHome())
-            return false;
-        EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
-        if (!emacsSourceService.checkSetEmacsSource())
-            return false;
-        int k;
-        isGlobalInitialized = true;
-        IdeProvider ideProvider = new IdeProvider();
-        while ((k = GlobalEnvironment.initialize(new BufferCreator(), ideProvider)) != 0) {
-            if (k == -1) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Home directory. Try again.", "Emacs4ij");
-                if (!emacsHomeService.resetEmacsHome()) {
-                    isGlobalInitialized = false;
-                    break;
-                }
-                continue;
-            }
-            if (k == -2) {
-                Messages.showInfoMessage("You might have mistaken when you set Emacs Source directory. Try again.", "Emacs4ij");
-                if (!emacsSourceService.resetEmacsSource()) {
-                    isGlobalInitialized = false;
-                    break;
-                }
-                continue;
-            }
-            isGlobalInitialized = false;
-            break;
+        try {
+            GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
+            isGlobalInitialized = true;
+        } catch (LispException e) {
+            GlobalEnvironment.showErrorMessage(e.getMessage());
         }
         return isGlobalInitialized;
     }

@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.exception;
 
 /**
  * Created by IntelliJ IDEA.
@@ -7,7 +7,7 @@ package org.jetbrains.emacs4ij.jelisp;
  * Time: 3:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EnvironmentException extends RuntimeException {
+public class EnvironmentException extends LispException {
     public EnvironmentException (String message) {
         super(message);
     }

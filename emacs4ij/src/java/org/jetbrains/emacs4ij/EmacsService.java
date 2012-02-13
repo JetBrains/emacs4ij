@@ -41,19 +41,6 @@ public abstract class EmacsService  {
         });
     }*/
 
-    protected String reset (String name) {
-        myEmacsParameter = "";
-        showInfoMessage(name);
-        return myEmacsParameter;
-    }
-
-    protected String checkSetEmacsParameter(String name) {
-        if (!isParameterSet()) {
-            myEmacsParameter = "";
-            showInfoMessage(name);
-        }
-        return myEmacsParameter;
-    }
     
     protected abstract boolean isParameterSet();
 

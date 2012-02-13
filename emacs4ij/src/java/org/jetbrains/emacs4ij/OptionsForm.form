@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="org.jetbrains.emacs4ij.OptionsForm">
   <grid id="27dc6" binding="panel1" default-binding="true" layout-manager="FormLayout">
+    <rowspec value="center:d:grow"/>
+    <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:d:noGrow"/>
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
@@ -11,9 +13,9 @@
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
     <rowspec value="top:4dlu:noGrow"/>
-    <rowspec value="center:d:grow"/>
-    <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
+    <rowspec value="top:4dlu:noGrow"/>
+    <rowspec value="center:d:grow"/>
     <colspec value="fill:d:grow"/>
     <colspec value="left:4dlu:noGrow"/>
     <colspec value="fill:d:noGrow"/>
@@ -24,23 +26,27 @@
     <colspec value="left:4dlu:noGrow"/>
     <colspec value="fill:d:grow"/>
     <constraints>
-      <xy x="20" y="20" width="584" height="217"/>
+      <xy x="20" y="20" width="694" height="211"/>
     </constraints>
-    <properties/>
-    <border type="none"/>
+    <properties>
+      <enabled value="true"/>
+    </properties>
+    <border type="line" title-justification="1" title-position="1">
+      <title-color color="-16777216"/>
+    </border>
     <children>
       <component id="4769e" class="javax.swing.JLabel" binding="homeLabel">
         <constraints>
-          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
-          <text value="Emacs home directory (where it was installed):"/>
+          <text value="Emacs home directory (where it was installed):           "/>
         </properties>
       </component>
       <component id="e9214" class="javax.swing.JTextField" binding="homeTextField">
         <constraints>
-          <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
           <forms defaultalign-horz="false"/>
@@ -51,7 +57,7 @@
       </component>
       <component id="a1552" class="javax.swing.JLabel" binding="srcLabel">
         <constraints>
-          <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
@@ -60,7 +66,7 @@
       </component>
       <component id="72f55" class="javax.swing.JTextField" binding="srcTextField">
         <constraints>
-          <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+          <grid row="8" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>
           </grid>
           <forms defaultalign-horz="false"/>
@@ -69,27 +75,9 @@
           <toolTipText value="To enable Emacs4ij plugin you need to download Emacs sources from http://www.gnu.org/software/emacs/ . Here you should specify the location of the downloaded extracted sources."/>
         </properties>
       </component>
-      <component id="82c9b" class="javax.swing.JButton" binding="testHomeButton">
-        <constraints>
-          <grid row="2" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties>
-          <text value="Test"/>
-        </properties>
-      </component>
-      <component id="c364c" class="javax.swing.JButton" binding="testSrcButton">
-        <constraints>
-          <grid row="6" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties>
-          <text value="Test"/>
-        </properties>
-      </component>
       <component id="2dc30" class="javax.swing.JButton" binding="applyButton" default-binding="true">
         <constraints>
-          <grid row="8" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="10" column="6" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
@@ -98,19 +86,19 @@
       </component>
       <hspacer id="4ff83">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
           <forms defaultalign-horz="false"/>
         </constraints>
       </hspacer>
       <hspacer id="2b7b2">
         <constraints>
-          <grid row="0" column="8" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="8" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
           <forms defaultalign-horz="false"/>
         </constraints>
       </hspacer>
       <component id="1c576" class="javax.swing.JButton" binding="browseHomeButton">
         <constraints>
-          <grid row="2" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
@@ -119,7 +107,7 @@
       </component>
       <component id="a223" class="javax.swing.JButton" binding="browseSrcButton">
         <constraints>
-          <grid row="6" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="8" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
@@ -132,24 +120,31 @@
           <forms/>
         </constraints>
         <properties>
-          <text value=""/>
+          <opaque value="true"/>
+          <text value=" "/>
         </properties>
       </component>
-      <vspacer id="ca644">
-        <constraints>
-          <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
-          <forms defaultalign-vert="false"/>
-        </constraints>
-      </vspacer>
       <component id="cdb06" class="javax.swing.JButton" binding="quitButton">
         <constraints>
-          <grid row="8" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="10" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
           <forms/>
         </constraints>
         <properties>
           <text value="Quit"/>
         </properties>
       </component>
+      <vspacer id="371b0">
+        <constraints>
+          <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-vert="false"/>
+        </constraints>
+      </vspacer>
+      <vspacer id="28810">
+        <constraints>
+          <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <forms defaultalign-vert="false"/>
+        </constraints>
+      </vspacer>
     </children>
   </grid>
 </form>
