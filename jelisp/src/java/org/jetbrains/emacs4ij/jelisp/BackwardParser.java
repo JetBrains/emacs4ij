@@ -57,7 +57,7 @@ public class BackwardParser extends Parser {
 
                 if (n == 0) {
                     int start = getMyCurrentIndex();
-                    form = myLispCode.substring(start, end+1) + form;// + formEnd;
+                    form = myLispCode.substring(start, end+1) + form;
                     advanceTo(start - 1);
                     if (myCurrentIndex > -1) {
                         int k = getNextSeparatorIndex();
@@ -69,14 +69,12 @@ public class BackwardParser extends Parser {
             } catch (EndOfLineException e) {
                 if (countObservers() == 0)
                     throw new ScanException("Unbalanced parentheses");
-               // form = myLispCode.substring(0, end+1) + form;
                 setChanged();
                 notifyObservers(new ScanException("Unbalanced parentheses"));
                 clearChanged();
                 end += myCurrentIndex + 1;
             }
         }
-
     }
 
     private int getNextDoubleQuoteIndex (int from) {
@@ -115,42 +113,10 @@ public class BackwardParser extends Parser {
     public LObject parseLine (String lispCode, int index) {
         myCurrentIndex = index;
         myLispCode = lispCode;
-        //myLispCode = myLispCode.trim();
-
-        String tail = "";
-        int k = myLispCode.lastIndexOf(';', myCurrentIndex);
-        while (k != -1) {
-            int j = myLispCode.lastIndexOf('\n', myCurrentIndex);
-            int n = myLispCode.lastIndexOf("\"", myCurrentIndex);
-            if (n == -1 || n < k) {
-                if (j == -1 || j < k ) {
-                    myCurrentIndex = k - 1;
-                    myLispCode = myLispCode.substring(0, k);
-                }
-                else {
-                    String head = myLispCode.substring(0, k);
-                    tail = myLispCode.substring(j, myCurrentIndex+1) + tail;
-                    myLispCode = head;
-                    myCurrentIndex = k - 1;
-                }
-            } else
-                break;
-            k = myLispCode.lastIndexOf(';', myCurrentIndex);
-        }
-
-        myLispCode += tail;
-        myCurrentIndex += tail.length();
-
         LObject lispObject = parseObject();
         if (lispObject == null)
             lispObject = LispSymbol.ourNil;
         return lispObject;
-        /*try {
-            getMyCurrentIndex();
-        } catch (EndOfLineException ignored) {
-            return lispObject;
-        }
-        throw new UnknownCodeBlockException(myLispCode.substring(0, getMyCurrentIndex()));*/
     }
 
     @Override
