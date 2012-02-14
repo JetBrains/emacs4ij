@@ -9,9 +9,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -84,6 +86,22 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     public void kill () {
         setLocalVariable("is-alive", LispSymbol.ourNil);
         close();
+    }
+
+    @Override
+    public LObject evaluateLastForm() {
+        String[] code = myEditor.getDocument().getText().split("\n");
+        int line = myEditor.getCaretModel().getVisualPosition().getLine();
+        int column = myEditor.getCaretModel().getVisualPosition().getColumn() - 1;
+        if (code.length-1 < line) {
+            line = code.length - 1;
+            if (line < 0)
+                throw new LispException("End of file during parsing");
+            column = code[line].length() - 1;
+        }
+        BackwardMultilineParser parser = new BackwardMultilineParser(code);
+        LObject parsed = parser.parse(line, column);
+        return parsed.evaluate(myEnvironment);
     }
 
     @Override

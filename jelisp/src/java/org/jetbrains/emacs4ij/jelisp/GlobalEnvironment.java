@@ -31,8 +31,6 @@ public class GlobalEnvironment extends Environment {
 
     public static GlobalEnvironment INSTANCE = null;
 
-    private HashMap<String, LObject> ourUserOptions = new HashMap<String, LObject>();
-
     public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
     private static final String ourFinderPath = "/lisp/help-fns.el";
 
@@ -40,6 +38,7 @@ public class GlobalEnvironment extends Environment {
 
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
+    private static DocumentationExtractor myDocumentationExtractor;
 
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
@@ -111,6 +110,15 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
 
+        if (!INSTANCE.testEmacsSource()) {
+            INSTANCE.mySymbols.clear();
+            throw new EnvironmentException("Emacs source directory is invalid!");
+        }
+
+        myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
+        if (myDocumentationExtractor.scanAll() > 4)
+            throw new EnvironmentException("Unexpected number of undocumented forms!");
+
         if (!INSTANCE.testEmacsHome()) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs home directory is invalid!");
@@ -120,12 +128,6 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.defineBufferLocalVariables();
         INSTANCE.defineGlobalVariables();
         INSTANCE.defineUserOptions();
-
-        if (!INSTANCE.testEmacsSource()) {
-            INSTANCE.mySymbols.clear();
-            throw new EnvironmentException("Emacs source directory is invalid!");
-        }
-
         INSTANCE.setSubroutines();
 
         //note: it's important to load backquote before defsubst
@@ -142,21 +144,15 @@ public class GlobalEnvironment extends Environment {
     }
 
     //-------- loading ------------------
-    private void addVariable(String name, @Nullable LObject value, int documentation) {
+    private void addVariable(String name, @Nullable LObject value) {
         LispSymbol symbol = new LispSymbol(name, value);
-        symbol.setGlobalVariableDocumentation(new LispInteger(documentation));
+        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
         mySymbols.put(name, symbol);
     }
 
-    private void addVariable(String name, @Nullable LObject value, String documentation) {
-        LispSymbol symbol = new LispSymbol(name, value);
-        symbol.setGlobalVariableDocumentation(new LispString(documentation));
-        mySymbols.put(name, symbol);
-    }
-
-    private void addBufferLocalVariable(String name, @Nullable LObject value, int documentation) {
+    private void addBufferLocalVariable(String name, @Nullable LObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
-        symbol.setGlobalVariableDocumentation(new LispInteger(documentation));
+        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
         mySymbols.put(name, symbol);
     }
 
@@ -171,35 +167,36 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineUserOptions() {
-        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012); //defined in simple.el
-        addVariable("mark-even-if-inactive", LispSymbol.ourNil, -467784);
-        addVariable("mark-ring-max", new LispInteger(16), 2103241); //defined in simple.el
-        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330); //defined in simple.el
-        addVariable("global-mark-ring-max", new LispInteger(16), 2103403); //defined in simple.el
-        addVariable("enable-recursive-minibuffers", LispSymbol.ourT, 353727);
+//        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012); //defined in simple.el
+//        addVariable("mark-ring-max", new LispInteger(16), 2103241); //defined in simple.el
+//        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330); //defined in simple.el
+//        addVariable("global-mark-ring-max", new LispInteger(16), 2103403); //defined in simple.el
+
+        addVariable("mark-even-if-inactive", LispSymbol.ourNil);   //callint.c
+        addVariable("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
     }
 
     private void defineBufferLocalVariables() {
-        addBufferLocalVariable("mark-active", LispSymbol.ourNil, 329910);
-        addBufferLocalVariable("default-directory", LispSymbol.ourNil, 316938);
-        addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159); //defined in simple.el
+        addBufferLocalVariable("mark-active", LispSymbol.ourNil); //buffer.c
+        addBufferLocalVariable("default-directory", LispSymbol.ourNil);  //BUFER.C
+
+       // addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159); //defined in simple.el
     }
 
     private void defineGlobalVariables() {
-        addVariable("load-history", LispSymbol.ourNil, 550505);
-        addVariable("deactivate-mark", LispSymbol.ourNil, 264600);
-        addVariable("purify-flag", LispSymbol.ourNil, 415585);
-        addVariable("current-load-list", LispSymbol.ourNil, 552006);
-        addVariable("executing-kbd-macro", LispSymbol.ourNil, 275692);
-        //todo: extract doc from C-source
-        addVariable("load-file-name", LispSymbol.ourNil, "Full name of file being loaded by `load'.");
+        addVariable("load-history", LispSymbol.ourNil);   //lread.c
+        addVariable("deactivate-mark", LispSymbol.ourNil);  //keyboard.c
+        addVariable("purify-flag", LispSymbol.ourNil);   //alloc.c
+        addVariable("current-load-list", LispSymbol.ourNil);//lread.c
+        addVariable("executing-kbd-macro", LispSymbol.ourNil); //macros.c
+        addVariable("load-file-name", LispSymbol.ourNil); //lread.c
 
         //wtf?
-        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203); //defined in simple.el
-        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379); //defined in simple.el
+//        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203); //defined in simple.el
+//        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379); //defined in simple.el
     }
 
-    private void setSubroutinesFromClass (HashMap<String, String> documentation,  Class[] subroutineContainers, Primitive.Type type) {
+    private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
         for (Class subroutineContainer: subroutineContainers) {
             Method[] methods = subroutineContainer.getMethods();
             for (Method m: methods) {
@@ -213,7 +210,7 @@ public class GlobalEnvironment extends Environment {
                     throw new LispException("Interactive string not set! Subroutine " + name);
 
                 LispSymbol subroutine = new LispSymbol(name);
-                subroutine.setFunction(new Primitive(annotation, documentation.get(name), type));
+                subroutine.setFunction(new Primitive(annotation, myDocumentationExtractor.getSubroutineDoc(name), type));
 
                 mySymbols.put(name, subroutine);
                 //System.out.print(name + ' ');
@@ -223,23 +220,19 @@ public class GlobalEnvironment extends Environment {
 
     private void setSubroutines () {
         //int n = mySymbols.size();
-        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        if (d.scanAll() > 2)
-            throw new EnvironmentException("Unexpected number of undocumented forms!");
-        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
-        setSubroutinesFromClass(d.getSubroutineDoc(), LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
+        setSubroutinesFromClass(LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
+        setSubroutinesFromClass(LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
         //System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
     }
 
-    private boolean setConstants() {
+    private void setConstants() {
         mySymbols.put("nil", LispSymbol.ourNil);
         mySymbols.put("t", LispSymbol.ourT);
         mySymbols.put("void", LispSymbol.ourVoid);
         String docDir = ourEmacsHome + "/etc/";
         File file = new File (docDir);
         if (file.exists() && file.isDirectory()) {
-            addVariable("doc-directory", new LispString(docDir), 601973);
-
+            addVariable("doc-directory", new LispString(docDir));     //callproc.c
             String[] docs = file.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
@@ -248,12 +241,9 @@ public class GlobalEnvironment extends Environment {
             });
             if (docs != null && docs.length == 1) {
                 //"DOC-23.2.1"
-                addVariable("internal-doc-file-name", new LispString(docs[0]), 432776);
-            } else
-                return false;
-        } else
-            return false;
-        return true;
+                addVariable("internal-doc-file-name", new LispString(docs[0]));  //doc.c
+            }
+        }
     }
 
     //for test

@@ -3,6 +3,8 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -11,19 +13,23 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class DocumentationExtractorTest {
-
     @Test
     public void testScanAll() throws Exception {
         String ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
         // it is not = alias null
-        Assert.assertEquals(2, d.scanAll());
+        Assert.assertEquals(4, d.scanAll());
     }
-
+    
     @Test
-    public void testScanAll2() {
-        String ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
-        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        d.scanAll2();
+    public void testKillBufferDoc() {
+        String ourEmacsSource = "/home/kate/Downloads/emacs-23.4/src";
+        DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource);
+        d.scanFile(new File(ourEmacsSource + "/mytest.c"));
+        Assert.assertNotNull(d.getSubroutineDoc("kill-buffer"));
+        System.out.println(d.getSubroutineDoc("kill-buffer"));
+        System.out.println(d.getSubroutineDoc("listp"));
+        System.out.println(d.getSubroutineDoc("eval"));
+
     }
 }

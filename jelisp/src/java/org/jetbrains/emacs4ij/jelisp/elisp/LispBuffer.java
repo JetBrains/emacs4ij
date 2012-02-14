@@ -26,6 +26,8 @@ public interface LispBuffer extends LObject {
   //  public boolean isAlive();
     public void kill();
     ////public String getDefaultDirectory();
+    
+    public LObject evaluateLastForm ();
 
     public void setBufferActive ();
     public Editor getEditor();

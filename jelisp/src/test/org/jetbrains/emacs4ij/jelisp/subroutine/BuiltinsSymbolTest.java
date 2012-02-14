@@ -153,8 +153,6 @@ public class BuiltinsSymbolTest {
                 "directory.  These file names are converted to absolute at startup.");
 
         Assert.assertEquals(trueDoc, doc);
-        doc = evaluateString("(get 'load-history 'variable-documentation)");
-        Assert.assertEquals(new LispInteger(550505), doc);
     }
 
     @Test
@@ -166,6 +164,7 @@ public class BuiltinsSymbolTest {
 
     @Test
     public void testDocumentationProperty_GlobalVar2 () {
+        evaluateString("global-mark-ring");
         LObject doc = evaluateString("(documentation-property 'global-mark-ring 'variable-documentation)");
         LispString trueDoc = new LispString("The list of saved global marks, most recent first.");
         Assert.assertEquals(trueDoc, doc);
@@ -173,8 +172,9 @@ public class BuiltinsSymbolTest {
 
     @Test
     public void testDocumentationProperty_GlobalVar3 () {
-        LObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
-        LispString trueDoc = new LispString("Maximum size of global mark ring.  Start discarding off end if gets this big.");
+        evaluateString("mark-ring-max");
+        LObject doc = evaluateString("(documentation-property 'mark-ring-max 'variable-documentation)");
+        LispString trueDoc = new LispString("Maximum size of global mark ring.   Start discarding off end if gets this big.");
         Assert.assertEquals(trueDoc, doc);
     }
 
@@ -186,9 +186,9 @@ public class BuiltinsSymbolTest {
         Assert.assertEquals(trueDoc, doc);
     }
 
-
     @Test
     public void testDocumentationProperty_Negative () {
+        evaluateString("transient-mark-mode");
         LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
         LObject trueDoc = new LispString("*Non-nil if Transient Mark mode is enabled.\n" +
                 "See the command `transient-mark-mode' for a description of this minor mode.\n" +
@@ -199,7 +199,7 @@ public class BuiltinsSymbolTest {
                 "\n" +
                 "If the value is `lambda', that enables Transient Mark mode temporarily.\n" +
                 "After any subsequent action that would normally deactivate the mark\n" +
-                "(such as buffer modification), Transient Mark mode is turned off.\n" +
+                "\\(such as buffer modification), Transient Mark mode is turned off.\n" +
                 "\n" +
                 "If the value is (only . OLDVAL), that enables Transient Mark mode\n" +
                 "temporarily.  After any subsequent point motion command that is not\n" +
@@ -207,8 +207,6 @@ public class BuiltinsSymbolTest {
                 "the mark (such as buffer modification), the value of\n" +
                 "`transient-mark-mode' is set to OLDVAL.");
         Assert.assertEquals(trueDoc, doc);
-        doc = evaluateString("(get 'transient-mark-mode 'variable-documentation)");
-        Assert.assertEquals(new LispInteger(-2109012), doc);
     }
 
     @Test
@@ -342,5 +340,31 @@ public class BuiltinsSymbolTest {
         Assert.assertEquals(new LispInteger(1), r);
     }
 
+    @Test
+    public void test1() {
+        LispSymbol q = environment.find("b");
+        Assert.assertNull(q);
 
+        LObject r = environment.find("b", "setProperty", new Class[] {LispSymbol.class, LObject.class}, "some-prop", 123);
+        Assert.assertNull(r);
+
+        evaluateString("(setq b 1)");
+        r = environment.find("b", "setProperty", new Class[] {LispSymbol.class, LObject.class}, new LispSymbol("some-prop"), new LispInteger(123));
+        Assert.assertNotNull(r);
+        
+    }
+    
+    @Test
+    public void testDefCustom() {
+        LObject r = evaluateString("(defcustom a 5 \"doc\")");
+        LObject b = evaluateString("(documentation-property 'a 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), b);
+    }
+
+    @Test
+    public void testCustomDeclareVariable() {
+        evaluateString("(custom-declare-variable 'b 10 \"doc\")");
+        LObject b = evaluateString("(documentation-property 'b 'variable-documentation)");
+        Assert.assertEquals(new LispString("doc"), b);
+    }
 }

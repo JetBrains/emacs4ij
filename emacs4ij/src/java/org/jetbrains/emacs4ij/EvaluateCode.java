@@ -6,8 +6,9 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,15 +33,18 @@ public class EvaluateCode extends AnAction {
         if (editor == null)
             return;
 
-        String parameterValue = editor.getDocument().getText();
+        //String parameterValue = editor.getDocument().getText();
         try {
-            ForwardParser forwardParser = new ForwardParser();
-            String displayedBufferName = IdeaBuffer.getDisplayedBufferName();
+            LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
+            LObject result = buffer.evaluateLastForm();
 
-            LObject result = forwardParser.parseLine(parameterValue).evaluate(environment);
+//             ForwardParser forwardParser = new ForwardParser();
+//            String displayedBufferName = IdeaBuffer.getDisplayedBufferName();
+//
+//            LObject result = forwardParser.parseLine(parameterValue).evaluate(environment);
             Messages.showInfoMessage(result.toString(), "Evaluation result");
 
-            environment.findBufferSafe(displayedBufferName).closeHeader();
+           // environment.findBufferSafe(displayedBufferName).closeHeader();
 
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), "Evaluation result");

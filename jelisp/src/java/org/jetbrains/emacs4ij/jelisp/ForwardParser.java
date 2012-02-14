@@ -297,8 +297,7 @@ public class ForwardParser extends Parser {
         myLispCode = lispCode;
         //myLispCode = myLispCode.trim();
         LObject lispObject = parseObject();
-        if (lispObject == null)
-            lispObject = LispSymbol.ourNil;
+        //if (lispObject == null) lispObject = LispSymbol.ourNil;
         try {
             getMyCurrentIndex();
         } catch (EndOfLineException ignored) {

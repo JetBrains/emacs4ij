@@ -22,9 +22,12 @@
 
   <actions>
     <!-- Add your actions here -->
-      <action id="org.jetbrains.emacs4ij.OpenScratchBuffer" class="org.jetbrains.emacs4ij.OpenScratchBuffer"
+      <!--action id="org.jetbrains.emacs4ij.OpenScratchBuffer" class="org.jetbrains.emacs4ij.OpenScratchBuffer"
               text="Open *scratch* buffer" description="Open *scratch* buffer" icon="icons/emacs.png">
           <add-to-group group-id="MainToolBar" anchor="last"/>
+          <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
+      </action-->
+      <action id="org.jetbrains.emacs4ij.EvaluateCode" class="org.jetbrains.emacs4ij.EvaluateCode">
           <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
       </action>
       <action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
