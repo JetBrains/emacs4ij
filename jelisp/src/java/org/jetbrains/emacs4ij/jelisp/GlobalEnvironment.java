@@ -266,20 +266,28 @@ public class GlobalEnvironment extends Environment {
             return;
         }
         String line;
+        int index = 0;
         BufferedReaderParser p = new BufferedReaderParser(reader);
         while (true){
             try {
                 line = reader.readLine();
+                index++;
             } catch (IOException e) {
-                throw new RuntimeException("Error while reading " + fullName);
+                throw new RuntimeException("Error while reading " + fullName + ", line " + index);
             }
             if (line == null)
                 break;
             LObject parsed = p.parse(line);
             if (parsed == null) continue;
+            index += p.getLines();
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
-            parsed.evaluate(this);
+            try {
+                parsed.evaluate(this);
+            } catch (LispException e) {
+                System.err.println(fullName + ", line " + index + ": " + e.getMessage());
+                throw e;
+            }
         }
     }
 

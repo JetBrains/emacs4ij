@@ -110,14 +110,12 @@ public abstract class Environment {
 
     public void defineSymbol (LispSymbol symbol) {
         if (isRecording) {
+            if (symbol.getName().equals("current-load-list"))
+                System.out.print(1);
             myRecordedSymbols.add(symbol.getName());
         }
         mySymbols.put(symbol.getName(), symbol);
     }
-
-    /*public void updateSymbol(LispSymbol f) {
-        GlobalEnvironment.INSTANCE.updateSymbol(f);
-    }*/
 
     public LispBuffer getOtherBuffer () {
         return ourBufferManager.getOtherBuffer(getBufferCurrentForEditing().getName());
@@ -215,7 +213,7 @@ public abstract class Environment {
                 return;
             }
             variable.setValue(symbol.getValue());
-            defineSymbol(variable);
+           // defineSymbol(variable);
             return;
         }
         myOuterEnv.setVariable(symbol);

@@ -19,6 +19,7 @@ import java.util.Observer;
 public class BufferedReaderParser implements Observer {
     private ForwardParser myForwardParser = new ForwardParser();
     private BufferedReader myReader;
+    int lines = 1;
 
     public BufferedReaderParser (BufferedReader reader) {
         myReader = reader;
@@ -27,6 +28,7 @@ public class BufferedReaderParser implements Observer {
 
     public LObject parse (String firstLine) {
         try {
+            lines = 1;
             return myForwardParser.parseLine(firstLine);
         } catch (LispException e) {
             System.out.println(e.getMessage());
@@ -37,6 +39,7 @@ public class BufferedReaderParser implements Observer {
     public void update(Observable o, Object arg) {
         try {
             String nextLine = myReader.readLine();
+            lines++;
             if (nextLine == null)
                 if (arg instanceof LispException)
                     throw (LispException) arg;
@@ -51,5 +54,9 @@ public class BufferedReaderParser implements Observer {
             }
             throw new RuntimeException("Error while reading " + myReader.toString());
         }
+    }
+    
+    public int getLines() {
+        return lines;
     }
 }

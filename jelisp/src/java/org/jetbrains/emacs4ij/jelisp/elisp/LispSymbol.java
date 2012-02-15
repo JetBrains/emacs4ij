@@ -22,18 +22,25 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
-    public static final LispSymbol ourBufferLocalVariable = new LispSymbol("");
-    public static final LispSymbol ourUserOption = new LispSymbol("");
+//    public static final LispSymbol ourBufferLocalVariable = new LispSymbol("");
+//    public static final LispSymbol ourUserOption = new LispSymbol("");
 
     private String myName = null;
     private LObject myValue = null; //ourVoid;
     private LObject myFunction = null;
     private boolean isBufferLocal = false;
-
     private HashMap<LispSymbol, LObject> myProperties = new HashMap<LispSymbol, LObject>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
+    }
+    
+    public LispSymbol (LispSymbol symbol) {
+        myName = symbol.myName;
+        myValue = symbol.myValue;
+        myFunction = symbol.myFunction;
+        isBufferLocal = symbol.isBufferLocal;
+        myProperties = symbol.myProperties;
     }
     
     public static LispSymbol bool (boolean value) {
@@ -214,9 +221,11 @@ public class LispSymbol extends LispAtom {
                 //throw new VoidVariableException(myName);
                 throw e;
             }
-            if (symbol == null || (!symbol.hasValue()))
+            if (symbol == null || (!symbol.hasValue())) {
+                System.err.println("void-var '" + myName + "'");
                 throw new VoidVariableException(myName);
-            System.out.println("uploaded " + myName);
+            }
+            //System.out.println("uploaded " + myName);
         }
         return symbol.getValue();
     }

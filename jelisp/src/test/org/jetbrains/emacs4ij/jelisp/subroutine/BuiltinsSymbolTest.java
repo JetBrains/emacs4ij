@@ -172,9 +172,9 @@ public class BuiltinsSymbolTest {
 
     @Test
     public void testDocumentationProperty_GlobalVar3 () {
-        evaluateString("mark-ring-max");
-        LObject doc = evaluateString("(documentation-property 'mark-ring-max 'variable-documentation)");
-        LispString trueDoc = new LispString("Maximum size of global mark ring.   Start discarding off end if gets this big.");
+        evaluateString("global-mark-ring-max");
+        LObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
+        LispString trueDoc = new LispString("Maximum size of global mark ring.  \\\nStart discarding off end if gets this big.");
         Assert.assertEquals(trueDoc, doc);
     }
 
@@ -352,6 +352,31 @@ public class BuiltinsSymbolTest {
         r = environment.find("b", "setProperty", new Class[] {LispSymbol.class, LObject.class}, new LispSymbol("some-prop"), new LispInteger(123));
         Assert.assertNotNull(r);
         
+        LispSymbol s = (LispSymbol) environment.find("nil", "setProperty", new Class[] {LispSymbol.class, LObject.class}, new LispSymbol("some-prop"), new LispInteger(123));
+        System.out.println(s.getPropertyList().toString());
+
+        evaluateString("(put 'q 'prop 1)");
+        r = evaluateString("(get 'q 'prop)");
+        Assert.assertEquals(new LispInteger(1), r);
+        
+        try {
+            evaluateString("q");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-variable q)", getCause(e).getMessage());
+        }
+        
+    }
+    
+    @Test
+    public void testCustomInitReset() {
+        evaluateString("(put 'q 'prop 1)");
+        LObject r = evaluateString("(get 'q 'prop)");
+        Assert.assertEquals(new LispInteger(1), r);
+        evaluateString("(custom-initialize-reset 'q 2)");
+        r = evaluateString("q");
+        Assert.assertEquals(new LispInteger(2), r);
+        r = evaluateString("(get 'q 'prop)");
+        Assert.assertEquals(new LispInteger(1), r);
     }
     
     @Test
@@ -364,7 +389,9 @@ public class BuiltinsSymbolTest {
     @Test
     public void testCustomDeclareVariable() {
         evaluateString("(custom-declare-variable 'b 10 \"doc\")");
-        LObject b = evaluateString("(documentation-property 'b 'variable-documentation)");
+        LObject b = evaluateString("b");
+        Assert.assertNotNull(b);
+        b = evaluateString("(documentation-property 'b 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
     }
 }

@@ -162,7 +162,7 @@ public class ForwardParserTest {
     @Test
     public void testEmptyLineWithComments() throws LispException {
         LObject lispObject = p.parseLine("; a comment");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        Assert.assertNull(lispObject);
     }
 
     @Test

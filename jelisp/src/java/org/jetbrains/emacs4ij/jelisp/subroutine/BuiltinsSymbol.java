@@ -47,6 +47,7 @@ public abstract class BuiltinsSymbol {
         LObject found = environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LObject.class}, propertyName, value);
         if (found == null) {
             symbol.setProperty(propertyName, value);
+            environment.defineSymbol(symbol);
         }
         return value;
     }
@@ -132,10 +133,12 @@ public abstract class BuiltinsSymbol {
     public static LObject setDefault (Environment environment, LispSymbol symbol, LObject value) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real != null) {
-            real.setBufferLocal(true); //?
+            //todo: check for buffer-locality
+           // real.setBufferLocal(true); //?
             real.setValue(value);
         } else
-            GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol.getName(), value, true));
+            symbol.setValue(value);
+            GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol));
         return value;
     }
 }

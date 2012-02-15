@@ -123,7 +123,7 @@ public class LispList extends LispObject implements LispSequence {
         LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
-            System.out.println("upload " + fun.getName());
+            System.out.println("FUN " + fun.getName());
             try {
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
             } catch (RuntimeException e) {
@@ -132,7 +132,7 @@ public class LispList extends LispObject implements LispSequence {
             }
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
-            System.out.println("uploaded " + fun.getName());
+            //System.out.println("uploaded " + fun.getName());
         }
         /*if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
             System.out.print(1);*/
