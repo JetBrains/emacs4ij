@@ -74,9 +74,9 @@ public class EnvironmentInitializer {
         //environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, environment);
         environment.defineServiceBuffer(miniBuffer);
-        String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-        IdeaBuffer scratchBuffer = new IdeaBuffer(environment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
-        environment.defineServiceBuffer(scratchBuffer);
+//        String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
+//        IdeaBuffer scratchBuffer = new IdeaBuffer(environment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
+//        environment.defineServiceBuffer(scratchBuffer);
 
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override

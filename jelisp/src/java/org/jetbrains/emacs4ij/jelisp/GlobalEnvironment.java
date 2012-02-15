@@ -26,7 +26,7 @@ public class GlobalEnvironment extends Environment {
     private static String ourEmacsSource = "";
 
     public static final String ourMiniBufferName = " *Minibuf-0*";
-    public static final String ourScratchBufferName = "*scratch*";
+    //public static final String ourScratchBufferName = "*scratch*";
     public static final String ourUnsetInteractiveString = "0";
 
     public static GlobalEnvironment INSTANCE = null;
@@ -167,11 +167,6 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineUserOptions() {
-//        addVariable("transient-mark-mode", LispSymbol.ourT, -2109012); //defined in simple.el
-//        addVariable("mark-ring-max", new LispInteger(16), 2103241); //defined in simple.el
-//        addVariable("global-mark-ring", LispSymbol.ourNil, 2103330); //defined in simple.el
-//        addVariable("global-mark-ring-max", new LispInteger(16), 2103403); //defined in simple.el
-
         addVariable("mark-even-if-inactive", LispSymbol.ourNil);   //callint.c
         addVariable("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
     }
@@ -179,8 +174,6 @@ public class GlobalEnvironment extends Environment {
     private void defineBufferLocalVariables() {
         addBufferLocalVariable("mark-active", LispSymbol.ourNil); //buffer.c
         addBufferLocalVariable("default-directory", LispSymbol.ourNil);  //BUFER.C
-
-       // addBufferLocalVariable("mark-ring", LispSymbol.ourNil, 2103159); //defined in simple.el
     }
 
     private void defineGlobalVariables() {
@@ -190,10 +183,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("current-load-list", LispSymbol.ourNil);//lread.c
         addVariable("executing-kbd-macro", LispSymbol.ourNil); //macros.c
         addVariable("load-file-name", LispSymbol.ourNil); //lread.c
-
-        //wtf?
-//        addVariable("activate-mark-hook", LispSymbol.ourNil, 2100203); //defined in simple.el
-//        addVariable("deactivate-mark-hook", LispSymbol.ourNil, 2100379); //defined in simple.el
+        addVariable("overlay-arrow-variable-list", LispSymbol.ourNil);//xdisp.c
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -278,11 +268,18 @@ public class GlobalEnvironment extends Environment {
             if (line == null)
                 break;
             LObject parsed = p.parse(line);
-            if (parsed == null) continue;
             index += p.getLines();
+            if (parsed == null || LispSymbol.ourNil.equals(parsed))
+                continue;
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
             try {
+                if (parsed instanceof LispList) {
+                    System.out.println("PARSED LIST " + ((LispList)parsed).car().toString() + ' ' + ((LispList)((LispList)parsed).cdr()).car().toString());
+                }
+                if (parsed instanceof LispSymbol) {
+                    System.out.println("PARSED SYMBOL " + ((LispSymbol)parsed).getName());
+                }
                 parsed.evaluate(this);
             } catch (LispException e) {
                 System.err.println(fullName + ", line " + index + ": " + e.getMessage());

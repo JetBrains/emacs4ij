@@ -4,11 +4,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 
 import java.awt.event.KeyEvent;
 
@@ -33,29 +30,21 @@ public class OpenMiniBuffer extends AnAction {
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-
-        String myName = GlobalEnvironment.ourMiniBufferName;
-
-        String editorComponentName = editor.getContentComponent().getName();
-        if (editorComponentName != null && editorComponentName.equals(myName))
+        if (editor.isOneLineMode()) {
+            //todo: open new mini buffer over old ones and increase recursion depth
             return;
-
-        //todo: open new mini buffer over old ones and increase recursion depth
+        }
         IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
 
-        String name;
-        try {
-            name = ((EditorImpl)editor).getVirtualFile().getName();
-        } catch (NullPointerException exc) {
-            name = GlobalEnvironment.ourScratchBufferName;
-        }
-
-        LispBuffer parent = environment.findBufferSafe(name);
-        parent.setEditor(editor);
-        //environment.updateBuffer(parent);
+//        try {
+//            String name = ((EditorImpl)editor).getVirtualFile().getName();
+//            LispBuffer parent = environment.findBufferSafe(name);
+//            parent.setEditor(editor);
+//        } catch (NullPointerException exc) {
+//            throw new RuntimeException("Open Minibuffer over buffer with no file bound!");
+//        }
 
         miniBuffer.setEditor(input.getEditor());
 

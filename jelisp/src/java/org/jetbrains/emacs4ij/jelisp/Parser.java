@@ -73,7 +73,7 @@ public abstract class Parser extends Observable {
 
     protected LispObject parseSymbol () {
         int nextSeparatorIndex = getNextSeparatorIndex();
-        String symbol = extractForm(nextSeparatorIndex);
+        String symbol = extractForm(nextSeparatorIndex);        
         
         /*for (int i = 0; i < symbol.length(); ++i) {
             char c = symbol.charAt(i);
@@ -93,6 +93,8 @@ public abstract class Parser extends Observable {
             }
         }*/
         advanceTo(nextSeparatorIndex);
+        if (symbol.equals(""))
+            return null;
         return new LispSymbol(symbol);
     }
 

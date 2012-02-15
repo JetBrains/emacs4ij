@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -221,7 +220,8 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     private boolean isHeaderBuffer () {
-        return (myName.equals(GlobalEnvironment.ourScratchBufferName) || this instanceof LispMiniBuffer);
+        return this instanceof LispMiniBuffer;
+        //return (myName.equals(GlobalEnvironment.ourScratchBufferName) || this instanceof LispMiniBuffer);
     }
 
     @Override
