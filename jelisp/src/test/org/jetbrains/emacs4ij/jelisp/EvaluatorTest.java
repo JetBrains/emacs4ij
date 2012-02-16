@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -19,11 +20,14 @@ public class EvaluatorTest {
 
     private CustomEnvironment environment;
 
+    @BeforeClass
+    public static void runBeforeClass() {
+        TestSetup.runBeforeClass();
+    }
+
     @Before
-    public void setUp() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
+    public void setUp() throws Exception {
+        GlobalEnvironment.INSTANCE.clearRecorded();
         environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 

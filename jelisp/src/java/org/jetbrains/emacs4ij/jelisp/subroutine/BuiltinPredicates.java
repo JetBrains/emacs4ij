@@ -80,9 +80,10 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("buffer-live-p")
-    public static LispSymbol bufferLivePredicate (LObject object) {
-        if (bufferp(object).equals(LispSymbol.ourT))
-            return (LispSymbol) ((LispBuffer)object).getLocalVariableValue("is-alive");
+    public static LispSymbol bufferLivePredicate (Environment environment, LObject object) {
+        if (object instanceof LispBuffer) {
+            return LispSymbol.bool(!environment.isBufferDead(((LispBuffer) object).getName()));
+        }
         return LispSymbol.ourNil;
     }
 

@@ -17,6 +17,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,9 +32,9 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     protected Environment myEnvironment;
     protected ArrayList<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
+    private boolean isAlive = true;
 
-    private ArrayList<LispSymbol> myLocalVariables = new ArrayList<LispSymbol>();
-
+    private HashMap<String, LispSymbol> myLocalVariables = new HashMap<String, LispSymbol>();
 
     protected IdeaBuffer() {}
 
@@ -41,15 +42,19 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         myEnvironment = environment;
         myName = name;
         myEditor = editor;
-        addLocalVar("default-directory", new LispString(path));
-        addLocalVar("is-alive", LispSymbol.ourT);
-        addLocalVar("my-mark", new LispMarker());
-        addLocalVar("mark-active", LispSymbol.ourNil);
-        addLocalVar("mark-ring", LispList.list());
+        myEnvironment.defineBuffer(this);
+        setLocalVariable("default-directory", new LispString(path));
+        //setLocalVariable("mark-active", LispSymbol.ourNil); == default value
+
+
+        //addLocalVar("is-alive", LispSymbol.ourT);
+       // addLocalVar("my-mark", new LispMarker());
+
+       // addLocalVar("mark-ring", LispList.list());
     }
     
     private void addLocalVar (String name, LObject value) {
-        myLocalVariables.add(new LispSymbol(name, value, true));
+        myLocalVariables.put(name, new LispSymbol(name, value, true));
     }
 
     public static void setProject(Project project) {
@@ -57,13 +62,10 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     private void setLocalVariable (String name, LObject value) {
-        for (LispSymbol variable: myLocalVariables) {
-            if (variable.getName().equals(name)) {
-                variable.setValue(value);
-                return;
-            }
-        }
-        throw new VoidVariableException(name);
+        LispSymbol var = myLocalVariables.get(name);
+        if (var == null)
+            throw new VoidVariableException(name);
+        var.setValue(value);
     }
 
     @Override
@@ -74,17 +76,20 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
 
     @Override
     public LispSymbol getLocalVariable(String name) {
-        for (LispSymbol variable: myLocalVariables) {
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
-        throw new VoidVariableException(name);
+        LispSymbol var = myLocalVariables.get(name);
+        if (var == null)
+            throw new VoidVariableException(name);
+        return var;
     }
 
-    public void kill () {
-        setLocalVariable("is-alive", LispSymbol.ourNil);
-        close();
+    @Override
+    public void defineLocalVariable(LispSymbol variable) {
+        myLocalVariables.put(variable.getName(), new LispSymbol(variable));
+    }
+
+    @Override
+    public void defineLocalVariable(LispSymbol variable, boolean noValue) {
+        myLocalVariables.put(variable.getName(), new LispSymbol(variable, null));
     }
 
     @Override
@@ -244,10 +249,9 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         if (myEditor.getHeaderComponent() == null)
             return;
         myEditor.setHeaderComponent(null);
-       // myEnvironment.updateBuffer(this);
     }
 
-    public void close () {
+    public void kill () {
         if (isHeaderBuffer()) {
             LispBuffer displayedBuffer = myEnvironment.findBufferSafe(getDisplayedBufferName());
             displayedBuffer.closeHeader();

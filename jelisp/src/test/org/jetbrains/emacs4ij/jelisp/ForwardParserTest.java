@@ -262,7 +262,6 @@ public class ForwardParserTest {
         Assert.assertTrue('a' == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharA() {
         // ?\a ⇒ 7                 ; control-g, C-g
@@ -279,7 +278,6 @@ public class ForwardParserTest {
         Assert.assertTrue(7 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharB() {
         // ?\b ⇒ 8                 ; backspace, <BS>, C-h
@@ -296,7 +294,6 @@ public class ForwardParserTest {
         Assert.assertTrue(8 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharT() {
         //?\t ⇒ 9                 ; tab, <TAB>, C-i

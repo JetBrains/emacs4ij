@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Before;
@@ -22,10 +23,7 @@ public class BuiltinsSequenceTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before

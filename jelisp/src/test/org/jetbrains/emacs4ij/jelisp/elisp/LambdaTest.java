@@ -4,7 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,10 +23,7 @@ public class LambdaTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before
@@ -35,15 +32,9 @@ public class LambdaTest {
         environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
-    private LObject evaluateString (String lispCode) throws LispException {
+    private LObject evaluateString (String lispCode) {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test

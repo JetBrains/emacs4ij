@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -25,10 +26,7 @@ public class BuiltinsCoreTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before
@@ -41,12 +39,6 @@ public class BuiltinsCoreTest {
         ForwardParser forwardParser = new ForwardParser();
         LObject object = forwardParser.parseLine(lispCode);
         return object.evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -72,7 +64,7 @@ public class BuiltinsCoreTest {
         try {
             BuiltinsCore.plus(new LispMarker(), new LispMarker());
         } catch (Exception e) {
-            Assert.assertEquals("'(error \"Marker does not point anywhere\")", getCause(e).getMessage());
+            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -217,7 +209,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(funcall 0 1 2)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             Assert.assertTrue(q instanceof InvalidFunctionException);
             return;
         }
@@ -239,7 +231,7 @@ public class BuiltinsCoreTest {
             evaluateString("(set 'hook1 5)");
             evaluateString("(run-hooks 'hook1)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             Assert.assertTrue(q instanceof InvalidFunctionException);
             return;
         }
@@ -343,7 +335,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(indirect-function 'g)");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-function g)", getCause(e).getMessage());
+            Assert.assertEquals("'(void-function g)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -356,7 +348,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(indirect-function 'g)");
         } catch (Exception e) {
-            Assert.assertEquals("'(cyclic-function-indirection f)", getCause(e).getMessage());
+            Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -393,7 +385,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(subr-arity 'if)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument subrp if)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -420,7 +412,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(aref '[1 2 3] 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -437,7 +429,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(aref \"hi\" 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -453,7 +445,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(apply '+ 1 2)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -482,7 +474,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(format \"%d\")");
         } catch (Exception e) {
-            Assert.assertEquals("Not enough arguments for format string", getCause(e).getMessage());
+            Assert.assertEquals("Not enough arguments for format string", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -493,7 +485,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(format \"%123456\" 1)");
         } catch (Exception e) {
-            Assert.assertEquals("Format string ends in middle of format specifier", getCause(e).getMessage());
+            Assert.assertEquals("Format string ends in middle of format specifier", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -504,7 +496,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(format \"%123456q\" 1)");
         } catch (Exception e) {
-            Assert.assertEquals("Invalid format operation %q", getCause(e).getMessage());
+            Assert.assertEquals("Invalid format operation %q", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -521,7 +513,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(defalias a nil)");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-variable a)", getCause(e).getMessage());
+            Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -583,7 +575,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(= 1 (make-marker))");
         } catch (Exception e) {
-            Assert.assertEquals("'(error \"Marker does not point anywhere\")", getCause(e).getMessage());
+            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -594,7 +586,7 @@ public class BuiltinsCoreTest {
         try {
             evaluateString("(= 1 'a)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
@@ -751,7 +743,13 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("`((,@some-list))");
         Assert.assertEquals("((2 3))", r.toString());
     }
-    
+
+    @Test
+    public void testDefineMinorMode() {
+        LObject r = evaluateString("(define-minor-mode m1 \"doc\")");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
     @Test
     public void testSimple() {
         LObject r = GlobalEnvironment.INSTANCE.find("defface");

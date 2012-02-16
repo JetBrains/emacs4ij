@@ -15,10 +15,10 @@ import java.io.File;
 public class DocumentationExtractorTest {
     @Test
     public void testScanAll() throws Exception {
-        String ourEmacsSource = "/home/kate/Downloads/emacs 23.2a/emacs-23.2";
+        String ourEmacsSource = "/home/kate/Downloads/emacs-23.4";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
         // it is not = alias null
-        Assert.assertEquals(4, d.scanAll());
+        Assert.assertEquals(3, d.scanAll());
     }
     
     @Test

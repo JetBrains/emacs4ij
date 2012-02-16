@@ -28,6 +28,7 @@ public class GlobalEnvironment extends Environment {
     public static final String ourMiniBufferName = " *Minibuf-0*";
     //public static final String ourScratchBufferName = "*scratch*";
     public static final String ourUnsetInteractiveString = "0";
+    public static final String ourUnsetKeyString = "";
 
     public static GlobalEnvironment INSTANCE = null;
 
@@ -39,6 +40,7 @@ public class GlobalEnvironment extends Environment {
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
     private static DocumentationExtractor myDocumentationExtractor;
+    private ArrayList<String> myBufferLocals = new ArrayList<>();
 
     //for debug
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
@@ -153,6 +155,7 @@ public class GlobalEnvironment extends Environment {
     private void addBufferLocalVariable(String name, @Nullable LObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
         symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
+        myBufferLocals.add(name);
         mySymbols.put(name, symbol);
     }
 
@@ -274,12 +277,12 @@ public class GlobalEnvironment extends Environment {
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
             try {
-                if (parsed instanceof LispList) {
-                    System.out.println("PARSED LIST " + ((LispList)parsed).car().toString() + ' ' + ((LispList)((LispList)parsed).cdr()).car().toString());
-                }
-                if (parsed instanceof LispSymbol) {
-                    System.out.println("PARSED SYMBOL " + ((LispSymbol)parsed).getName());
-                }
+//                if (parsed instanceof LispList) {
+//                    System.out.println("PARSED LIST " + ((LispList)parsed).car().toString() + ' ' + ((LispList)((LispList)parsed).cdr()).car().toString());
+//                }
+//                if (parsed instanceof LispSymbol) {
+//                    System.out.println("PARSED SYMBOL " + ((LispSymbol)parsed).getName());
+//                }
                 parsed.evaluate(this);
             } catch (LispException e) {
                 System.err.println(fullName + ", line " + index + ": " + e.getMessage());
@@ -294,6 +297,8 @@ public class GlobalEnvironment extends Environment {
     }
 
     private static LispList getDefFromFile(File file, String name) {
+        if (file.getName().contains("edmacro.el"))
+            System.out.print(1);
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -332,9 +337,13 @@ public class GlobalEnvironment extends Environment {
         File[] src = sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
+                if (file.getName().endsWith("edmacro.el"))
+                    System.out.print(2);
                 return (file.isDirectory() || file.getName().endsWith(".el"));
             }
         });
+
+
         for (File file: src) {
             if (file.isDirectory()) {
                 LispList searchResult = findEmacsDefinition(name, file);
@@ -389,6 +398,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     //============================= buffer processing =====================================
+    
     @Override
     public void defineServiceBuffer (LispBuffer buffer) {
         ourBufferManager.defineServiceBuffer(buffer);
@@ -398,9 +408,21 @@ public class GlobalEnvironment extends Environment {
 
     @Override
     public void defineBuffer (LispBuffer buffer) {
+        for (String local: myBufferLocals) {
+            buffer.defineLocalVariable(mySymbols.get(local), true);
+        }
         if (ourBufferManager.defineBuffer(buffer) && myCurrentFrame != null) {
             myCurrentFrame.openWindow(buffer);
         }
+    }
+
+    public void defineBufferLocalVariable (LispSymbol symbol) {
+        if (myBufferLocals.contains(symbol.getName()))
+            return;
+        symbol.setBufferLocal(true);
+        myBufferLocals.add(symbol.getName());
+        defineSymbol(symbol);
+        ourBufferManager.defineBufferLocalVariable(symbol);
     }
 
     @Override

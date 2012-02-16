@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
@@ -125,6 +126,8 @@ public class LispList extends LispObject implements LispSequence {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + fun.getName());
             try {
+                if (fun.getName().equals("edmacro-parse-keys"))
+                    System.out.print(1);
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());
@@ -207,7 +210,7 @@ public class LispList extends LispObject implements LispSequence {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof LispList)) {
-            return o == LispSymbol.ourNil && isEmpty();
+            return o.equals(LispSymbol.ourNil) && isEmpty();
         }
 
         LispList lispList = (LispList) o;
@@ -281,9 +284,12 @@ public class LispList extends LispObject implements LispSequence {
         if (myCdr != null && myCdr instanceof LispList)
             ((LispList) myCdr).append(object);
         else {
-            myCdr = object;
-            if (!(object instanceof LispList))
-                isTrueList = false;
+            if (myCdr == null || myCdr.equals(LispSymbol.ourNil)) {
+                myCdr = object;
+                if (!(object instanceof LispList))
+                    isTrueList = false;
+            } else
+                throw new WrongTypeArgumentException("listp", myCdr.toString());
         }
     }
 
@@ -291,4 +297,29 @@ public class LispList extends LispObject implements LispSequence {
     public int length() {
         return toLObjectList().size();
     }
+
+    public void resetTail (LObject newTail) {
+        if (myCdr instanceof LispList) {
+            ((LispList) myCdr).resetTail(newTail);
+            return;
+        }
+        if (myCdr == null || myCdr.equals(LispSymbol.ourNil)) {
+            myCdr = newTail;
+            isTrueList = false;
+        }
+    }
+    
+    public LObject tail() {
+        if (!isTrueList) 
+            return myCdr;        
+        if (myCdr instanceof LispList) 
+            return ((LispList) myCdr).tail();
+        if (myCdr.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        if (myCdr == null) 
+            return myCar;
+        throw new LispException("Invalid list: " + toString());
+    }
+
+
 }

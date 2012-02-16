@@ -1,9 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -17,7 +19,7 @@ import java.util.Collections;
 
 public class ForwardParser extends Parser {
 
-    @Override 
+    @Override
     protected void advance() {
         if (myCurrentIndex == myLispCode.length())
             throw new EndOfLineException();
@@ -113,7 +115,7 @@ public class ForwardParser extends Parser {
         advanceTo(getMyCurrentIndex() + 1);
         if (makeList && (!(data.size() == 1 && wasCons)))
             return LispList.list(data);
-            
+
         return data.get(0);
     }
 
@@ -193,103 +195,184 @@ public class ForwardParser extends Parser {
         return Collections.min(nextSeparatorIndex);
     }
 
+    //todo: find appropriate chars
+    private int convert(char c) {
+        switch (c) {
+            case 'a':  //control-g, C-g  == Quit
+                return 7;
+            case 'b': //backspace, <BS>, C-h
+                return '\b';
+            case 't': //tab, <TAB>, C-i
+                return '\t';
+            case 'n': //newline, C-j
+                return '\n';
+            case 'v': //vertical tab, C-k
+                return 11;
+            case 'f': //formfeed character, C-l
+                return '\f';
+            case 'r': //carriage return, <RET>, C-m
+                return '\r';
+            case 'e': //escape character, <ESC>, C-[
+                return 27;
+            case 's': //space character, <SPC>
+                return ' ';
+            case '\\': //backslash character, \
+                return '\\';
+            case 'd': //delete character, <DEL>
+                return 127;
+            default:
+                return -1;
+        }
+    }
+    
+    private int ctrlConvert (char c) {
+        switch (c) {
+            case 'g':
+                return convert('a');
+            case 'h':
+                return convert('b');
+            case 'i':
+                return convert('t');
+            case 'j':
+                return convert('n');
+            case 'k':
+                return convert('v');
+            case 'l':
+                return convert('f');
+            case 'm':
+                return convert('r');
+            case '[':
+                return convert('e');
+            default:
+                return c;
+        }
+    }
+    
+    private void validate (String charSequence) {
+        if (charSequence.length() != 3)
+            throw new InvalidReadSyntax("?");
+        if (charSequence.charAt(2) != '-' )
+            throw new ScanException("Invalid escape character syntax");
+    }
+
+    private static class Char {
+        public enum Modifier {M, C, S, H, s, A;
+            public static int indexOf (Modifier m) {
+                return Arrays.asList(values()).indexOf(m);
+            }
+        }
+        private char myModifiers[] = new char[] {'0','0','0','0','0','0'}; //MCSHsA
+        private int myKey = -1;
+        public Char() {}
+
+        public void setModifier(Modifier modifier) {
+            myModifiers[Modifier.indexOf(modifier)] = '1';
+        }
+
+        public void setKey(int myKey) {
+            this.myKey = myKey;
+        }
+        
+        public int toInteger() {
+            String number = new String(myModifiers);
+            String key = Integer.toBinaryString(myKey);
+            for (int i = 6; i != 27 - key.length(); ++i)
+                number += '0';
+            return Integer.valueOf(number.concat(key), 2);
+        }
+    }
+    
+    private void setCharKey (Char c, @Nullable Character key) {
+        if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))
+            throw new InvalidReadSyntax("?");
+        int ch = key == null ? getCurrentChar() : key;
+        c.setKey(ch);
+        advanceTo(myCurrentIndex + 1);
+    }
+
     private LispInteger parseCharacter () {
-        int nextSeparatorIndex = getNextSeparatorIndex();
-        String character = extractForm(nextSeparatorIndex);
-        int answer = -1;
-        if (character.charAt(0) == '\\') {
+        Char c = new Char();
+        while (true) {
+            advance();
+            if (getCurrentChar() != '\\' ) {
+                setCharKey(c, null);
+                break;
+            }
+            advance();            
+            int spec = convert(getCurrentChar());
+            if (spec != -1) {
+                setCharKey(c, (char)spec);
+                break;
+            }
+            
+            int next = hasNextChar() ? getNextChar() : '\n';
+            
+            if (next != '-' && getCurrentChar() != 's' && getCurrentChar() != '^')
+                throw new ScanException("Invalid escape character syntax");
+            
+            Char.Modifier m = Char.Modifier.valueOf(Character.toString(getCurrentChar())); 
+            if (m == null && getCurrentChar() == '^') {
+                m = Char.Modifier.C;
+                myCurrentIndex--;
+            }
+            if (m != null) {
+                if (m == Char.Modifier.s && next != '-') {
+                    setCharKey(c, ' ');
+                    break;
+                }
+                c.setModifier(m);
+                advance();                
+            } else if (getCurrentChar() == '^') {
+                
+            } else {
+                setCharKey(c, null);
+                break;                
+            }
+        }
+        return new LispInteger(c.toInteger());
+    }
+        
+        
+        /*if (character.charAt(0) == '\\') {
             if (character.length() == 1) {
-                throw new RuntimeException("You must have forgotten the <space> between <?\\ > character and next code!");
+                throw new ScanException("You must have forgotten the <space> between <?\\ > character and next code!");
             }
             switch (character.charAt(1)) {
-                case '^':
-                    //Ctrl+following
-                    switch (character.charAt(2)) {
-                        case 'j':
-                            answer = '\n';
-                            break;
-                        default:
-                            throw new RuntimeException("Character <?\\^...> not implemented yet.");
-                    }
+                case '^': //Ctrl + following
+                    answer = ctrlConvert(character.charAt(2));
                     break;
                 case 'C':
-                    if (character.length() < 3) {
-                        throw new RuntimeException("Error in syntax: " + character);
-                    }
-                    if (character.charAt(2) == '-') {
-                        switch (character.charAt(3)) {
-                            case 'j':
-                                answer = '\n';
-                                break;
-                            default:
-                                throw new RuntimeException("Character <?\\C-...> not implemented yet.");
-                        }
+                    validate(character);
+                    answer = ctrlConvert(character.charAt(3));
+                    break;
+                case 'M':  //meta 2**27
+                    validate(character);
+                    throw new RuntimeException("I don't know " + character + " yet.");
+                    break;
+                case 'S': //shift 2**25
+                    validate(character);
+                    break;
+                case 'H': //hyper 2**24
+                    break;
+                case 's': //super 2**23
+                    if (character.charAt(2) == ' ') {
+                        answer = ' ';
                         break;
                     }
-                    throw new RuntimeException("Unknown special character " + character);
-                case 'a':  //control-g, C-g
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    //  break;
-                case 'b': //backspace, <BS>, C-h
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    // break;
-                case 't': //tab, <TAB>, C-i
-                    answer = '\t';
-                    //throw new RuntimeException("I don't know " + character + " yet.");
+                    validate(character);
                     break;
-                case 'n': //newline, C-j
-                    answer = '\n';
+                case 'A': //alt 2**22
+                    validate(character);
                     break;
-                case 'v': //vertical tab, C-k
-                    //throw new RuntimeException("I don't know " + character + " yet.");
-                    break;
-                case 'f': //formfeed character, C-l
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    //break;
-                case 'r': //carriage return, <RET>, C-m
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    //break;
-                case 'e': //escape character, <ESC>, C-[
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    //break;
-                case 's': //space character, <SPC>
-                    answer = ' ';
-                    // throw new RuntimeException("I don't know " + character + " yet.");
-                    break;
-                case '\\': //backslash character, \
-                    answer = '\\';
-                    //throw new RuntimeException("I don't know " + character + " yet.");
-                    break;
-                case 'd': //delete character, <DEL>
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    //break;
                 default:
-                    throw new RuntimeException("I don't expect " + character + " here!");
-
-                    /*
-                   ?\a ⇒ 7                 ; control-g, C-g
-        ?\b ⇒ 8                 ; backspace, <BS>, C-h
-        ?\t ⇒ 9                 ; tab, <TAB>, C-i
-        ?\n ⇒ 10                ; newline, C-j
-        ?\v ⇒ 11                ; vertical tab, C-k
-        ?\f ⇒ 12                ; formfeed character, C-l
-        ?\r ⇒ 13                ; carriage return, <RET>, C-m
-        ?\e ⇒ 27                ; escape character, <ESC>, C-[
-        ?\s ⇒ 32                ; space character, <SPC>
-        ?\\ ⇒ 92                ; backslash character, \
-        ?\d ⇒ 127               ; delete character, <DEL>
-                    */
-
+                    answer = convert(character.charAt(1));
             }
-
-
         } else {
             answer = character.charAt(0);
         }
-
         advanceTo(nextSeparatorIndex);
         return new LispInteger(answer);
-    }
+    }                             */
 
     @Override
     public LObject parseLine (String lispCode) {
@@ -324,7 +407,7 @@ public class ForwardParser extends Parser {
                 advance();
                 return parseVector(isBackQuote);
             case '?':
-                advance();
+                //advance();
                 return parseCharacter();
             case ';':
                 //it is a comment, skip to the end of line

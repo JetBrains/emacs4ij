@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -23,10 +24,7 @@ public class BuiltinsListTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null,  null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before
@@ -38,12 +36,6 @@ public class BuiltinsListTest {
     private LObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -74,7 +66,7 @@ public class BuiltinsListTest {
             evaluateString("(set 'p 'defun)");
             evaluateString("(car p)");
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertTrue(TestSetup.getCause(e) instanceof WrongTypeArgumentException);
             return;
         }
         Assert.fail();
@@ -96,7 +88,7 @@ public class BuiltinsListTest {
             evaluateString("(set 'p 'defun)");
             evaluateString("(cdr p)");
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertTrue(TestSetup.getCause(e) instanceof WrongTypeArgumentException);
             return;
         }
         Assert.fail();
@@ -137,7 +129,7 @@ public class BuiltinsListTest {
             evaluateString("(setq x (cons 1 (cons (cons 5 6) 3)))");
             evaluateString("(memq 6 x)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 3)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 3)", TestSetup.getCause(e).getMessage());
         }
     }
 
@@ -190,7 +182,7 @@ public class BuiltinsListTest {
         try {
             evaluateString("(nreverse (cons 1 2))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp (1))", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp (1))", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();

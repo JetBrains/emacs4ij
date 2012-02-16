@@ -14,6 +14,8 @@ public interface LispBuffer extends LObject {
 
     public LObject getLocalVariableValue (String name);
     public LispSymbol getLocalVariable (String name);
+    public void defineLocalVariable (LispSymbol variable);
+    public void defineLocalVariable (LispSymbol variable, boolean noValue);
 
     public String getName();
     public int getSize();

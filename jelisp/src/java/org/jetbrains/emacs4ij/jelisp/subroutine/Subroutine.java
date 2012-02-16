@@ -21,4 +21,5 @@ public @interface Subroutine {
     String value();
     boolean isCmd () default false;
     String interactive () default GlobalEnvironment.ourUnsetInteractiveString;
+    String key() default GlobalEnvironment.ourUnsetKeyString;
 }

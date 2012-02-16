@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
@@ -29,10 +30,7 @@ public class BuiltinsSymbolTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before
@@ -44,12 +42,6 @@ public class BuiltinsSymbolTest {
     private LObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -68,7 +60,7 @@ public class BuiltinsSymbolTest {
         try {
             evaluateString("(symbol-function 'a)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof VoidFunctionException))
                 org.junit.Assert.fail(q.getLocalizedMessage());
         }
@@ -80,7 +72,7 @@ public class BuiltinsSymbolTest {
             evaluateString("(defvar a 10)");
             evaluateString("(symbol-function 'a)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof VoidFunctionException))
                 org.junit.Assert.fail(q.getLocalizedMessage());
         }
@@ -118,7 +110,7 @@ public class BuiltinsSymbolTest {
         try {
             evaluateString("(symbol-value 'a)");
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof VoidVariableException);
+            Assert.assertTrue(TestSetup.getCause(e) instanceof VoidVariableException);
             return;
         }
         Assert.assertTrue(false);
@@ -190,23 +182,14 @@ public class BuiltinsSymbolTest {
     public void testDocumentationProperty_Negative () {
         evaluateString("transient-mark-mode");
         LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
-        LObject trueDoc = new LispString("*Non-nil if Transient Mark mode is enabled.\n" +
+        String trueDoc = "*Non-nil if Transient Mark mode is enabled.\n" +
                 "See the command `transient-mark-mode' for a description of this minor mode.\n" +
                 "\n" +
                 "Non-nil also enables highlighting of the region whenever the mark is active.\n" +
                 "The variable `highlight-nonselected-windows' controls whether to highlight\n" +
-                "all windows or just the selected window.\n" +
-                "\n" +
-                "If the value is `lambda', that enables Transient Mark mode temporarily.\n" +
-                "After any subsequent action that would normally deactivate the mark\n" +
-                "\\(such as buffer modification), Transient Mark mode is turned off.\n" +
-                "\n" +
-                "If the value is (only . OLDVAL), that enables Transient Mark mode\n" +
-                "temporarily.  After any subsequent point motion command that is not\n" +
-                "shift-translated, or any other action that would normally deactivate\n" +
-                "the mark (such as buffer modification), the value of\n" +
-                "`transient-mark-mode' is set to OLDVAL.");
-        Assert.assertEquals(trueDoc, doc);
+                "all windows or just the selected window.";
+        Assert.assertTrue(doc instanceof LispString);
+        Assert.assertTrue(((LispString)doc).getData().contains(trueDoc));
     }
 
     @Test
@@ -275,7 +258,7 @@ public class BuiltinsSymbolTest {
         try {
             evaluateString("(documentation 'a)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof VoidFunctionException))
                 org.junit.Assert.fail(q.getLocalizedMessage());
         }
@@ -362,7 +345,7 @@ public class BuiltinsSymbolTest {
         try {
             evaluateString("q");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-variable q)", getCause(e).getMessage());
+            Assert.assertEquals("'(void-variable q)", TestSetup.getCause(e).getMessage());
         }
         
     }

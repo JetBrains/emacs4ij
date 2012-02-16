@@ -141,4 +141,16 @@ public abstract class BuiltinsSymbol {
             GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol));
         return value;
     }
+    
+    @Subroutine(value = "make-variable-buffer-local", isCmd = true, interactive = "")
+    public static LObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
+        if (!(environment instanceof GlobalEnvironment)) {
+            LObject var = environment.find(variable.getName());           
+            if (var == null)
+                environment.defineSymbol(variable);           
+        } else {
+            ((GlobalEnvironment) environment).defineBufferLocalVariable(variable);
+        }
+        return variable;
+    }
 }

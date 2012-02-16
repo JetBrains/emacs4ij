@@ -1,9 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -222,6 +219,12 @@ public class BufferManager {
     
     public void startRecording() {
         myRecordedBuffers.clear();
+    }
+    
+    public void defineBufferLocalVariable (LispSymbol symbol) {
+        for (LispBuffer buffer: myBuffers) {
+            buffer.defineLocalVariable(symbol, true);
+        }
     }
 
 }

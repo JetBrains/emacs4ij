@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.junit.*;
@@ -22,10 +23,7 @@ public class SpecialFormsTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before
@@ -37,12 +35,6 @@ public class SpecialFormsTest {
     private LObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -118,7 +110,7 @@ public class SpecialFormsTest {
         try {
             evaluateString("(cond (nil 10 15) 5)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof WrongTypeArgumentException))
                 Assert.fail(q.getLocalizedMessage());
         }
@@ -129,7 +121,7 @@ public class SpecialFormsTest {
         try {
             evaluateString("(cond 5)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof WrongTypeArgumentException))
                 Assert.fail(q.getLocalizedMessage());
         }
@@ -153,7 +145,7 @@ public class SpecialFormsTest {
         try {
             evaluateString("(if t)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof WrongNumberOfArgumentsException))
                 Assert.fail(q.getLocalizedMessage());
         }
@@ -164,7 +156,7 @@ public class SpecialFormsTest {
         try {
             evaluateString("(if nil)");
         } catch (Exception e) {
-            Throwable q = getCause(e);
+            Throwable q = TestSetup.getCause(e);
             if (!(q instanceof WrongNumberOfArgumentsException))
                 Assert.fail(q.getLocalizedMessage());
         }
@@ -552,11 +544,7 @@ default-directory
             return;
         }
         if (error instanceof RuntimeException) {
-            Throwable exc = (Throwable) error;
-            while (exc.getCause() != null) {
-                exc = exc.getCause();
-            }
-            Assert.assertEquals(expectedMessage, exc.getMessage());
+            Assert.assertEquals(expectedMessage, TestSetup.getCause((Throwable) error).getMessage());
             //return;
         }
     }

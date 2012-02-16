@@ -69,4 +69,12 @@ public class LispListTest {
         List<LObject> a = list.toLObjectList();
         Assert.assertEquals(3, a.size());
     }
+    
+    @Test
+    public void testAppend() {
+        LispList a = LispList.list(new LispSymbol("a"));
+        LispList b = LispList.list(new LispSymbol("b"));
+        a.append(b);
+        Assert.assertEquals(LispList.list(new LispSymbol("a"), new LispSymbol("b")), a);
+    }
 }

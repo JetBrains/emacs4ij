@@ -4,10 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,11 +17,14 @@ public class CustomEnvironmentTest {
 
     private CustomEnvironment e;
 
+    @BeforeClass
+    public static void runBeforeClass() throws Exception {
+        TestSetup.runBeforeClass();
+    }
+
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.INSTANCE.clearRecorded();
         e = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
@@ -55,6 +55,12 @@ public class CustomEnvironmentTest {
     public void testFindEmacsFinder() {
         LispSymbol finder = e.find(GlobalEnvironment.ourFinder.getName());
         Assert.assertEquals(GlobalEnvironment.ourFinder, finder.getName());
+    }
+    
+    @Test
+    public void testGetDef() {
+        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/edmacro.el", "edmacro-parse-keys");
+        Assert.assertNotNull(def);
     }
 
     /*

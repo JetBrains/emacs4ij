@@ -23,6 +23,7 @@ public abstract class LispSubroutine {
                                                     BuiltinPredicates.class,
                                                     BuiltinsCore.class,
                                                     BuiltinsFrame.class,
+                                                    BuiltinsKey.class,
                                                     BuiltinsList.class,
                                                     BuiltinsMarker.class,
                                                     BuiltinsSequence.class,

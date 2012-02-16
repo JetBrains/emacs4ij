@@ -42,6 +42,14 @@ public class LispSymbol extends LispAtom {
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
     }
+
+    public LispSymbol (LispSymbol symbol, LObject value) {
+        myName = symbol.myName;
+        myValue = value;
+        myFunction = symbol.myFunction;
+        isBufferLocal = symbol.isBufferLocal;
+        myProperties = symbol.myProperties;
+    }
     
     public static LispSymbol bool (boolean value) {
         if (value)

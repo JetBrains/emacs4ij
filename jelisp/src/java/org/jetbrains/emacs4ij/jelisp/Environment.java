@@ -109,11 +109,13 @@ public abstract class Environment {
     }
 
     public void defineSymbol (LispSymbol symbol) {
-        if (isRecording) {
-            if (symbol.getName().equals("current-load-list"))
-                System.out.print(1);
+        if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
         }
+//        if (symbol.isBufferLocal()) {
+//            getBufferCurrentForEditing().defineLocalVariable(symbol);
+//
+//        }
         mySymbols.put(symbol.getName(), symbol);
     }
 

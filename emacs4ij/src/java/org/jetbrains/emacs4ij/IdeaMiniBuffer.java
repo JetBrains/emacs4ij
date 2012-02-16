@@ -220,7 +220,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         cancelNoMatchMessageUpdate();
         write(myPrompt);
         myActivationsDepth--;
-        close();
+        kill();
     }
 
     @Override
