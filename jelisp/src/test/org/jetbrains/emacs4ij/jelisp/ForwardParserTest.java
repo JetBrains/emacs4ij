@@ -291,6 +291,15 @@ public class ForwardParserTest {
         LObject c = p.parseLine("?\\C-\\a");
         System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
+        c = p.parseLine("?\\C-\\C-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108865), c);
+        c = p.parseLine("?\\C-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(1), c);
+        c = p.parseLine("?\\C-A");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(1), c);
 
         c = p.parseLine("?\\M-a");
         System.out.println(((LispInteger)c).getData());
@@ -304,16 +313,7 @@ public class ForwardParserTest {
         c = p.parseLine("?\\C-\\M-a");
         System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(134217729), c);
-        c = p.parseLine("?\\C-\\C-a");
-        System.out.println(((LispInteger)c).getData());
-        Assert.assertEquals(new LispInteger(67108865), c);
 
-        c = p.parseLine("?\\C-a");
-        System.out.println(((LispInteger)c).getData());
-        Assert.assertEquals(new LispInteger(1), c);
-        c = p.parseLine("?\\C-A");
-        System.out.println(((LispInteger)c).getData());
-        Assert.assertEquals(new LispInteger(1), c);
     }
 
     @Test
