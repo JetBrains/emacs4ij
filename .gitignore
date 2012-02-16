@@ -3,6 +3,5 @@
 *.iws
 *.class
 *.jar
-*.lisp
 *.properties
 out/

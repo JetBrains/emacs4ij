@@ -196,9 +196,9 @@ public class ForwardParser extends Parser {
     }
 
     //todo: find appropriate chars
-    private int convert(char c) {
-        switch (c) {
-            case 'a':  //control-g, C-g  == Quit
+    private static int convert(char c) {
+        switch (Character.toLowerCase(c)) {
+            case 'a': case '7': //control-g, C-g  == Quit
                 return 7;
             case 'b': //backspace, <BS>, C-h
                 return '\b';
@@ -225,8 +225,8 @@ public class ForwardParser extends Parser {
         }
     }
     
-    private int ctrlConvert (char c) {
-        switch (c) {
+    private static int ctrlConvert (char c) {
+        switch (Character.toLowerCase(c)) {
             case 'g':
                 return convert('a');
             case 'h':
@@ -244,15 +244,11 @@ public class ForwardParser extends Parser {
             case '[':
                 return convert('e');
             default:
+                int a = Character.toUpperCase(c) - 64;
+                if (a > 0 && a < 128)
+                    return a;
                 return c;
         }
-    }
-    
-    private void validate (String charSequence) {
-        if (charSequence.length() != 3)
-            throw new InvalidReadSyntax("?");
-        if (charSequence.charAt(2) != '-' )
-            throw new ScanException("Invalid escape character syntax");
     }
 
     private static class Char {
@@ -261,12 +257,15 @@ public class ForwardParser extends Parser {
                 return Arrays.asList(values()).indexOf(m);
             }
         }
-        private char myModifiers[] = new char[] {'0','0','0','0','0','0'}; //MCSHsA
+        private char myModifiers[] = new char[] {'0', '0', '0', '0', '0', '0'}; //MCSHsA
         private int myKey = -1;
+        private int myCtrlCount = 0;
         public Char() {}
 
         public void setModifier(Modifier modifier) {
             myModifiers[Modifier.indexOf(modifier)] = '1';
+            if (modifier == Modifier.C)
+                myCtrlCount++;
         }
 
         public void setKey(int myKey) {
@@ -274,18 +273,25 @@ public class ForwardParser extends Parser {
         }
         
         public int toInteger() {
+            if (myCtrlCount != 0) {
+                int k = ctrlConvert((char)myKey);
+                if (myKey != k) {
+                    myModifiers[1] = myCtrlCount == 1 ? '0' : '1';
+                    myKey = k;
+                }
+            }
             String number = new String(myModifiers);
             String key = Integer.toBinaryString(myKey);
-            for (int i = 6; i != 27 - key.length(); ++i)
+            for (int i = 6; i != 27 - key.length() + 1; ++i)
                 number += '0';
             return Integer.valueOf(number.concat(key), 2);
         }
     }
     
-    private void setCharKey (Char c, @Nullable Character key) {
+    private void setCharKey (Char c, @Nullable Integer key) {
         if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))
             throw new InvalidReadSyntax("?");
-        int ch = key == null ? getCurrentChar() : key;
+        int ch = key == null ? Character.toUpperCase(getCurrentChar()) : key; //todo: not in ascii?
         c.setKey(ch);
         advanceTo(myCurrentIndex + 1);
     }
@@ -301,78 +307,68 @@ public class ForwardParser extends Parser {
             advance();            
             int spec = convert(getCurrentChar());
             if (spec != -1) {
-                setCharKey(c, (char)spec);
+                setCharKey(c, spec);
                 break;
             }
             
-            int next = hasNextChar() ? getNextChar() : '\n';
-            
-            if (next != '-' && getCurrentChar() != 's' && getCurrentChar() != '^')
-                throw new ScanException("Invalid escape character syntax");
-            
-            Char.Modifier m = Char.Modifier.valueOf(Character.toString(getCurrentChar())); 
+            int next = hasNextChar() ? getNextChar() : -1;
+
+            Char.Modifier m;
+            try {
+                m = Char.Modifier.valueOf(Character.toString(getCurrentChar()));
+                if (next != -1 && next != '-' && getCurrentChar() != 's')
+                    throw new ScanException("Invalid escape character syntax");
+            } catch (IllegalArgumentException e) {
+                m = null;
+            }
+
             if (m == null && getCurrentChar() == '^') {
                 m = Char.Modifier.C;
                 myCurrentIndex--;
             }
             if (m != null) {
                 if (m == Char.Modifier.s && next != '-') {
-                    setCharKey(c, ' ');
+                    setCharKey(c, (int)' ');
                     break;
                 }
                 c.setModifier(m);
                 advance();                
             } else if (getCurrentChar() == '^') {
-                
-            } else {
+                //skip                
+            } else if (getCurrentChar() <= '7' && getCurrentChar() >= '0') { //octal, up to 3 digits
+                int nextSeparatorIndex = getNextSeparatorIndex();
+                String octal = extractForm(nextSeparatorIndex);
+                if (octal.length() > 3)
+                    throw new InvalidReadSyntax("?");
+                try {
+                    int n = Integer.valueOf(octal, 8);
+                    advanceTo(nextSeparatorIndex-1);
+                    setCharKey(c, n);
+                    break;
+                } catch (NumberFormatException e) {
+                    throw new InvalidReadSyntax("?");
+                }
+            } else if (getCurrentChar() == 'x') {//hex
+                advance();
+                int nextSeparatorIndex = getNextSeparatorIndex();
+                String hex = extractForm(nextSeparatorIndex);
+                try {
+                    int n = Integer.valueOf(hex, 16);
+                    advanceTo(nextSeparatorIndex-1);
+                    setCharKey(c, n);
+                    break;
+                } catch (NumberFormatException e) {
+                    //todo: value = -1 when all symbols are ok but the string is too long
+                    throw new InvalidReadSyntax("?");
+                }
+            }
+            else {
                 setCharKey(c, null);
-                break;                
+                break;
             }
         }
         return new LispInteger(c.toInteger());
     }
-        
-        
-        /*if (character.charAt(0) == '\\') {
-            if (character.length() == 1) {
-                throw new ScanException("You must have forgotten the <space> between <?\\ > character and next code!");
-            }
-            switch (character.charAt(1)) {
-                case '^': //Ctrl + following
-                    answer = ctrlConvert(character.charAt(2));
-                    break;
-                case 'C':
-                    validate(character);
-                    answer = ctrlConvert(character.charAt(3));
-                    break;
-                case 'M':  //meta 2**27
-                    validate(character);
-                    throw new RuntimeException("I don't know " + character + " yet.");
-                    break;
-                case 'S': //shift 2**25
-                    validate(character);
-                    break;
-                case 'H': //hyper 2**24
-                    break;
-                case 's': //super 2**23
-                    if (character.charAt(2) == ' ') {
-                        answer = ' ';
-                        break;
-                    }
-                    validate(character);
-                    break;
-                case 'A': //alt 2**22
-                    validate(character);
-                    break;
-                default:
-                    answer = convert(character.charAt(1));
-            }
-        } else {
-            answer = character.charAt(0);
-        }
-        advanceTo(nextSeparatorIndex);
-        return new LispInteger(answer);
-    }                             */
 
     @Override
     public LObject parseLine (String lispCode) {

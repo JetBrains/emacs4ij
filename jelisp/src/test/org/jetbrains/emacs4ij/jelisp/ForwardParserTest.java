@@ -258,39 +258,129 @@ public class ForwardParserTest {
     @Test
     public void testParseCharacter() {
         LObject c = p.parseLine("?a");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue('a' == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(65), c);
+        c = p.parseLine("?A");
+        Assert.assertEquals(new LispInteger(65), c);
     }
 
+    @Test
+    public void testParseZ() {
+        LObject c = p.parseLine("?\\C-\\z");
+        Assert.assertEquals(new LispInteger(26), c);
+        c = p.parseLine("?\\C-z");
+        Assert.assertEquals(new LispInteger(26), c);
+    }
+    
     @Test
     public void testParseSpecialCharA() {
         // ?\a ⇒ 7                 ; control-g, C-g
         LObject c = p.parseLine("?\\a");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(7 == ((LispInteger)c).getData());
-
+        Assert.assertEquals(new LispInteger(7), c);
         c = p.parseLine("?\\C-g");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(7 == ((LispInteger)c).getData());
-
+        Assert.assertEquals(new LispInteger(7), c);
         c = p.parseLine("?\\^g");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(7 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(7), c);
+        c = p.parseLine("?\\A");
+        Assert.assertEquals(new LispInteger(7), c);
+        c = p.parseLine("?\\C-G");
+        Assert.assertEquals(new LispInteger(7), c);
+    }
+    
+    @Test
+    public  void testParseA() {
+        LObject c = p.parseLine("?\\C-\\a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108871), c);
+
+        c = p.parseLine("?\\M-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(134217825), c);
+        c = p.parseLine("?\\M-\\M-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(134217825), c);
+        c = p.parseLine("?\\M-\\C-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(134217729), c);
+        c = p.parseLine("?\\C-\\M-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(134217729), c);
+        c = p.parseLine("?\\C-\\C-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108865), c);
+
+        c = p.parseLine("?\\C-a");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(1), c);
+        c = p.parseLine("?\\C-A");
+        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(1), c);
+    }
+
+    @Test
+    public void testSpace() {
+        LObject c = p.parseLine("?\\ ");
+        Assert.assertEquals(new LispInteger(32), c);
+    }
+
+    @Test
+    public void testParseDoubleCtrl() {
+        LObject c = p.parseLine("?\\C-\\C-g");
+//        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108871), c);
+        c = p.parseLine("?\\^\\^g");
+//        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108871), c);
+        c = p.parseLine("?\\C-\\7");
+//        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108871), c);
+        c = p.parseLine("?\\C-\\a");
+//        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108871), c);
+        c = p.parseLine("?\\C-7");
+//        System.out.println(((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(67108919), c);
+    }
+
+    @Test
+    public void testParseNumbers() {
+        for (int i = 0; i < 8; ++i) {
+            LObject c = p.parseLine("?\\" + Integer.toString(i));
+            Assert.assertEquals(new LispInteger(i), c);
+        }
+        LObject c = p.parseLine("?\\8");
+        Assert.assertEquals(new LispInteger(56), c);
+        c = p.parseLine("?\\9");
+        Assert.assertEquals(new LispInteger(57), c);
+        c = p.parseLine("?\\10");
+        Assert.assertEquals(new LispInteger(8), c);
+        c = p.parseLine("?\\11");
+        Assert.assertEquals(new LispInteger(9), c);
+        c = p.parseLine("?\\012");
+        Assert.assertEquals(new LispInteger(10), c);
+        c = p.parseLine("?\\101");
+        Assert.assertEquals(new LispInteger(65), c);
+    }
+
+    @Test
+    public void testParseHex() {
+        LObject c = p.parseLine("?\\x41");
+        Assert.assertEquals(new LispInteger(65), c);
+        c = p.parseLine("?\\x1");
+        Assert.assertEquals(new LispInteger(1), c);
+        c = p.parseLine("?\\x8e0");
+        Assert.assertEquals(new LispInteger(2272), c);
     }
 
     @Test
     public void testParseSpecialCharB() {
         // ?\b ⇒ 8                 ; backspace, <BS>, C-h
         LObject c = p.parseLine("?\\b");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(8 == ((LispInteger)c).getData());
 
         c = p.parseLine("?\\C-h");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(8 == ((LispInteger)c).getData());
 
         c = p.parseLine("?\\^h");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(8 == ((LispInteger)c).getData());
     }
 
@@ -298,15 +388,12 @@ public class ForwardParserTest {
     public void testParseSpecialCharT() {
         //?\t ⇒ 9                 ; tab, <TAB>, C-i
         LObject c = p.parseLine("?\\t");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(9 == ((LispInteger)c).getData());
 
         c = p.parseLine("?\\C-i");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(9 == ((LispInteger)c).getData());
 
         c = p.parseLine("?\\^i");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(9 == ((LispInteger)c).getData());
     }
 
@@ -314,67 +401,43 @@ public class ForwardParserTest {
     public void testParseSpecialCharN() {
         //?\n ⇒ 10                ; newline, C-j
         LObject c = p.parseLine("?\\n");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(10 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\C-j");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(10 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\^j");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(10 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharV() {
         //?\v ⇒ 11                ; vertical tab, C-k
         LObject c = p.parseLine("?\\v");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(11 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\C-k");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(11 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\^k");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(11 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharF() {
         //?\f ⇒ 12                ; formfeed character, C-l
         LObject c = p.parseLine("?\\f");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(12 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\C-l");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(12 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\^l");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(12 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharR() {
         //?\r ⇒ 13                ; carriage return, <RET>, C-m
         LObject c = p.parseLine("?\\r");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(13 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\C-m");
-
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(13 == ((LispInteger)c).getData());
-
         c = p.parseLine("?\\^m");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(13 == ((LispInteger)c).getData());
     }
 
@@ -400,7 +463,6 @@ public class ForwardParserTest {
         Assert.assertTrue(32 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharSpace() {
         //?\s ⇒ 32                ; space character, <SPC>
@@ -417,12 +479,10 @@ public class ForwardParserTest {
         Assert.assertTrue(92 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharDel() {
         //?\d ⇒ 127               ; delete character, <DEL>
         LObject c = p.parseLine("?\\d");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(127 == ((LispInteger)c).getData());
     }
 
