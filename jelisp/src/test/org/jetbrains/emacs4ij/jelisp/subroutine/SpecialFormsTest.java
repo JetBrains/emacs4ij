@@ -611,4 +611,22 @@ default-directory
         Assert.assertEquals("\"4\"", r.toString());
     }
 
+
+    @Test
+    public void testNilChar() {
+        LObject r  = evaluateString("(setq b ?\\^( )");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testWrongChar() {
+        try {
+            evaluateString("(setq b ?^\\( )");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"?\")", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
 }

@@ -2,10 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
-import org.jetbrains.emacs4ij.jelisp.exception.UnknownCodeBlockException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -280,42 +277,105 @@ public class ForwardParserTest {
         Assert.assertEquals(new LispInteger(7), c);
         c = p.parseLine("?\\^g");
         Assert.assertEquals(new LispInteger(7), c);
-        c = p.parseLine("?\\A");
-        Assert.assertEquals(new LispInteger(7), c);
         c = p.parseLine("?\\C-G");
         Assert.assertEquals(new LispInteger(7), c);
     }
     
+    @Test (expected = ScanException.class)
+    public void testInvalidEscapeChar() {
+        p.parseLine("?\\A");
+    }
+    
     @Test
-    public  void testParseA() {
+    public  void testParseCtrlA() {
         LObject c = p.parseLine("?\\C-\\a");
-        System.out.println(((LispInteger)c).getData());
+//        System.out.println(((LispInteger) c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
         c = p.parseLine("?\\C-\\C-a");
-        System.out.println(((LispInteger)c).getData());
+//        System.out.println(((LispInteger) c).getData());
         Assert.assertEquals(new LispInteger(67108865), c);
         c = p.parseLine("?\\C-a");
-        System.out.println(((LispInteger)c).getData());
+//        System.out.println(((LispInteger) c).getData());
         Assert.assertEquals(new LispInteger(1), c);
         c = p.parseLine("?\\C-A");
-        System.out.println(((LispInteger)c).getData());
+//        System.out.println(((LispInteger) c).getData());
         Assert.assertEquals(new LispInteger(1), c);
-
-        c = p.parseLine("?\\M-a");
-        System.out.println(((LispInteger)c).getData());
-        Assert.assertEquals(new LispInteger(134217825), c);
-        c = p.parseLine("?\\M-\\M-a");
-        System.out.println(((LispInteger)c).getData());
-        Assert.assertEquals(new LispInteger(134217825), c);
         c = p.parseLine("?\\M-\\C-a");
-        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(134217729), c);
         c = p.parseLine("?\\C-\\M-a");
-        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(134217729), c);
-
     }
 
+    @Test
+    public  void testParseMetaA() {
+        LObject c = p.parseLine("?\\M-a");
+        Assert.assertEquals(new LispInteger(134217825), c);
+        c = p.parseLine("?\\M-\\M-a");
+        Assert.assertEquals(new LispInteger(134217825), c);
+        c = p.parseLine("?\\M-\\a");
+        Assert.assertEquals(new LispInteger(134217735), c);
+    }
+
+    @Test
+    public void testShiftA() {
+        LObject c = p.parseLine("?\\S-a");
+        Assert.assertEquals(new LispInteger(33554529), c);
+        c = p.parseLine("?\\S-\\a");
+        Assert.assertEquals(new LispInteger(33554439), c);
+        c = p.parseLine("?\\S-\\C-\\a");
+        Assert.assertEquals(new LispInteger(100663303), c);
+        c = p.parseLine("?\\S-\\C-a");
+        Assert.assertEquals(new LispInteger(33554433), c);
+    }
+
+    @Test
+    public void testHyperA() {
+        LObject c = p.parseLine("?\\H-a");
+        Assert.assertEquals(new LispInteger(16777313), c);
+        c = p.parseLine("?\\H-\\a");
+        Assert.assertEquals(new LispInteger(16777223), c);
+        c = p.parseLine("?\\H-\\C-\\a");
+        Assert.assertEquals(new LispInteger(83886087), c);
+        c = p.parseLine("?\\H-\\C-a");
+        Assert.assertEquals(new LispInteger(16777217), c);
+    }
+
+    @Test
+    public void testSuperA() {
+        LObject c = p.parseLine("?\\s-a");
+        Assert.assertEquals(new LispInteger(8388705), c);
+        c = p.parseLine("?\\s-\\a");
+        Assert.assertEquals(new LispInteger(8388615), c);
+        c = p.parseLine("?\\s-\\C-\\a");
+        Assert.assertEquals(new LispInteger(75497479), c);
+        c = p.parseLine("?\\s-\\C-a");
+        Assert.assertEquals(new LispInteger(8388609), c);
+    }
+
+    @Test
+    public void testAltA() {
+        LObject c = p.parseLine("?\\A-a");
+        Assert.assertEquals(new LispInteger(4194401), c);
+        c = p.parseLine("?\\A-\\a");
+        Assert.assertEquals(new LispInteger(4194311), c);
+        c = p.parseLine("?\\A-\\C-\\a");
+        Assert.assertEquals(new LispInteger(71303175), c);
+        c = p.parseLine("?\\A-\\C-a");
+        Assert.assertEquals(new LispInteger(4194305), c);
+    }
+
+    @Test
+    public void testAllModifiers() {
+        LObject c = p.parseLine("?\\M-\\C-\\H-\\S-\\s-\\A-a");
+        Assert.assertEquals(new LispInteger(197132289), c);
+        c = p.parseLine("?\\M-\\C-\\H-\\S-\\s-\\A-\\a");
+        Assert.assertEquals(new LispInteger(264241159), c);
+        c = p.parseLine("?\\M-\\C-\\H-\\S-\\s-\\A-z");
+        Assert.assertEquals(new LispInteger(197132314), c);
+        c = p.parseLine("?\\M-\\C-\\H-\\S-\\s-\\A-\\z");
+        Assert.assertEquals(new LispInteger(197132314), c);
+    }
+    
     @Test
     public void testSpace() {
         LObject c = p.parseLine("?\\ ");
@@ -323,21 +383,20 @@ public class ForwardParserTest {
     }
 
     @Test
-    public void testParseDoubleCtrl() {
+    public void testParseCtrl() {
         LObject c = p.parseLine("?\\C-\\C-g");
-//        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
         c = p.parseLine("?\\^\\^g");
-//        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
         c = p.parseLine("?\\C-\\7");
-//        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
         c = p.parseLine("?\\C-\\a");
-//        System.out.println(((LispInteger)c).getData());
         Assert.assertEquals(new LispInteger(67108871), c);
-        c = p.parseLine("?\\C-7");
-//        System.out.println(((LispInteger)c).getData());
+    }
+
+    @Test
+    public void testParseCtrlNumber() {
+        LObject c = p.parseLine("?\\C-7");
         Assert.assertEquals(new LispInteger(67108919), c);
     }
 
@@ -375,48 +434,46 @@ public class ForwardParserTest {
     public void testParseSpecialCharB() {
         // ?\b ⇒ 8                 ; backspace, <BS>, C-h
         LObject c = p.parseLine("?\\b");
-        Assert.assertTrue(8 == ((LispInteger)c).getData());
-
+        Assert.assertEquals(new LispInteger(8), c);
         c = p.parseLine("?\\C-h");
-        Assert.assertTrue(8 == ((LispInteger)c).getData());
-
+        Assert.assertEquals(new LispInteger(8), c);
         c = p.parseLine("?\\^h");
-        Assert.assertTrue(8 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(8), c);
     }
 
     @Test
     public void testParseSpecialCharT() {
         //?\t ⇒ 9                 ; tab, <TAB>, C-i
         LObject c = p.parseLine("?\\t");
-        Assert.assertTrue(9 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(9), c);
 
         c = p.parseLine("?\\C-i");
-        Assert.assertTrue(9 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(9), c);
 
         c = p.parseLine("?\\^i");
-        Assert.assertTrue(9 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(9), c);
     }
 
     @Test
     public void testParseSpecialCharN() {
         //?\n ⇒ 10                ; newline, C-j
         LObject c = p.parseLine("?\\n");
-        Assert.assertTrue(10 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(10), c);
         c = p.parseLine("?\\C-j");
-        Assert.assertTrue(10 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(10), c);
         c = p.parseLine("?\\^j");
-        Assert.assertTrue(10 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(10), c);
     }
 
     @Test
     public void testParseSpecialCharV() {
         //?\v ⇒ 11                ; vertical tab, C-k
         LObject c = p.parseLine("?\\v");
-        Assert.assertTrue(11 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(11), c);
         c = p.parseLine("?\\C-k");
-        Assert.assertTrue(11 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(11), c);
         c = p.parseLine("?\\^k");
-        Assert.assertTrue(11 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(11), c);
     }
 
     @Test
@@ -441,25 +498,19 @@ public class ForwardParserTest {
         Assert.assertTrue(13 == ((LispInteger)c).getData());
     }
 
-    @Ignore
     @Test
     public void testParseSpecialCharE() {
         //?\e ⇒ 27                ; escape character, <ESC>, C-[
         LObject c = p.parseLine("?\\e");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(27 == ((LispInteger)c).getData());
-
-        c = p.parseLine("?\\C-[");
-        //todo: must throw (scan-error "Containing expression ends prematurely" 2150 2150)
-        c = p.parseLine("?\\^[");
-        //todo: must throw (scan-error "Containing expression ends prematurely" 2149 2149)
+        Assert.assertEquals(new LispInteger(27), c);
+        c = p.parseLine("?\\C-\\[");
+        Assert.assertEquals(new LispInteger(27), c);
     }
 
     @Test
     public void testParseSpecialCharS() {
         //?\s ⇒ 32                ; space character, <SPC>
         LObject c = p.parseLine("?\\s");
-        Assert.assertTrue(c instanceof LispInteger);
         Assert.assertTrue(32 == ((LispInteger)c).getData());
     }
 
@@ -467,8 +518,9 @@ public class ForwardParserTest {
     public void testParseSpecialCharSpace() {
         //?\s ⇒ 32                ; space character, <SPC>
         LObject c = p.parseLine("? ");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(32 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(32), c);
+        c = p.parseLine("?\\ ");
+        Assert.assertEquals(new LispInteger(32), c);
     }
 
     @Test
@@ -486,6 +538,54 @@ public class ForwardParserTest {
         Assert.assertTrue(127 == ((LispInteger)c).getData());
     }
 
+    @Ignore
+    @Test
+    public void testParseSpecialCharWrong4() {
+        try {
+            LObject c = p.parseLine("?\\^\"");
+            System.out.println(c.toString());
+        } catch (Exception e)  {
+            Assert.assertEquals("\"Unbalanced parentheses\"", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test 
+    public void testParseSpecialCharFine() {
+        LObject c = p.parseLine("?\\^\\\"");
+        Assert.assertEquals(new LispInteger(67108898), c);
+    }
+
+    @Test
+    public void testParseBracketNil() {
+        LObject c = p.parseLine("?\\C-\\(");
+        Assert.assertEquals(new LispInteger(67108904), c);
+    }
+
+    @Test
+    public void testParseCharNil() {
+        LObject c = p.parseLine("?\\C-(");
+        Assert.assertEquals(LispSymbol.ourNil, c);
+    }
+
+    @Test
+    public void testParseCharDog() {
+        LObject c = p.parseLine("?@");
+        Assert.assertEquals(new LispInteger(64), c);
+        c = p.parseLine("?\\A-\\C-@");
+        Assert.assertEquals(new LispInteger(4194304), c);
+        c = p.parseLine("?\\A-\\^@");
+        Assert.assertEquals(new LispInteger(4194304), c);
+    }
+
+    //(?A . ?\A-\^@)
+    @Test
+    public void testParseCharCons() {
+        LObject c = p.parseLine("(?A . ?\\A-\\^@)");
+        Assert.assertEquals(LispList.cons(new LispInteger(65), new LispInteger(4194304)), c);
+    }
+    
     @Test
     public void testParseBackQuoteSimple() {
         LObject c = p.parseLine("`()");
@@ -572,19 +672,19 @@ public class ForwardParserTest {
         Assert.fail();
     }
 
-    @Test
-    public void testParseDot6() {
-        LObject r = p.parseLine("(.. 2)");
-        Assert.assertEquals(LispList.list(new LispSymbol("\\.\\."), new LispInteger(2)), r);
-    }
-
-    @Test
-    public void testParseDot7() {
-        LObject r = p.parseLine("(.)");
-        Assert.assertEquals(LispList.list(new LispSymbol("\\.")), r);
-        r = p.parseLine("( .)");
-        Assert.assertEquals(LispList.list(new LispSymbol("\\.")), r);
-    }
+//    @Test
+//    public void testParseDot6() {
+//        LObject r = p.parseLine("(.. 2)");
+//        Assert.assertEquals(LispList.list(new LispSymbol("\\.\\."), new LispInteger(2)), r);
+//    }
+//
+//    @Test
+//    public void testParseDot7() {
+//        LObject r = p.parseLine("(.)");
+//        Assert.assertEquals(LispList.list(new LispSymbol("\\.")), r);
+//        r = p.parseLine("( .)");
+//        Assert.assertEquals(LispList.list(new LispSymbol("\\.")), r);
+//    }
 
     @Test
     public void testParseDot8() {
@@ -597,83 +697,83 @@ public class ForwardParserTest {
         Assert.fail();
     }
 
-    @Test
-    public void testSymbol1() {
-        LObject symbol = p.parseLine("\\\\a");
-        Assert.assertEquals(new LispSymbol("\\\\a"), symbol);
-    }
-
-    @Test
-    public void testSymbol2() {
-        LObject symbol = p.parseLine("\\a");
-        Assert.assertEquals(new LispSymbol("a"), symbol);
-    }
-
-    @Test
-    public void testSymbol3() {
-        LObject symbol = p.parseLine("\\.a");
-        Assert.assertEquals(new LispSymbol("\\.a"), symbol);
-    }
-
-    @Test
-    public void testSymbol4() {
-        LObject symbol = p.parseLine("b\\\\a");
-        Assert.assertEquals(new LispSymbol("b\\\\a"), symbol);
-    }
-
-    @Test
-    public void testSymbol5() {
-        LObject symbol = p.parseLine("b\\a");
-        Assert.assertEquals(new LispSymbol("ba"), symbol);
-    }
-
-    @Test
-    public void testSymbol6() {
-        LObject symbol = p.parseLine("b\\.a");
-        Assert.assertEquals(new LispSymbol("b\\.a"), symbol);
-    }
-
-    @Test
-    public void testSymbol7() {
-        LObject symbol = p.parseLine("b.a");
-        Assert.assertEquals(new LispSymbol("b\\.a"), symbol);
-    }
-
-    @Test
-    public void testSymbol8() {
-        LObject symbol = p.parseLine(".a");
-        Assert.assertEquals(new LispSymbol("\\.a"), symbol);
-    }
-
-    @Test
-    public void testSymbol9() {
-        LObject symbol = p.parseLine("b\\\\");
-        Assert.assertEquals(new LispSymbol("b\\\\"), symbol);
-    }
-
-    @Test
-    public void testSymbol10() {
-        LObject symbol = p.parseLine("b\\");
-        Assert.assertEquals(new LispSymbol("b"), symbol);
-    }
-
-    @Test
-    public void testSymbol11() {
-        LObject symbol = p.parseLine("b\\.");
-        Assert.assertEquals(new LispSymbol("b\\."), symbol);
-    }
-
-    @Test
-    public void testSymbol12() {
-        LObject symbol = p.parseLine("b.");
-        Assert.assertEquals(new LispSymbol("b\\."), symbol);
-    }
-
-    @Test
-    public void testSymbol13() {
-        LObject symbol = p.parseLine("b.,?a");
-        Assert.assertEquals(new LispSymbol("b\\.\\,\\?a"), symbol);
-    }
+//    @Test
+//    public void testSymbol1() {
+//        LObject symbol = p.parseLine("\\\\a");
+//        Assert.assertEquals(new LispSymbol("\\\\a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol2() {
+//        LObject symbol = p.parseLine("\\a");
+//        Assert.assertEquals(new LispSymbol("a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol3() {
+//        LObject symbol = p.parseLine("\\.a");
+//        Assert.assertEquals(new LispSymbol("\\.a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol4() {
+//        LObject symbol = p.parseLine("b\\\\a");
+//        Assert.assertEquals(new LispSymbol("b\\\\a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol5() {
+//        LObject symbol = p.parseLine("b\\a");
+//        Assert.assertEquals(new LispSymbol("ba"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol6() {
+//        LObject symbol = p.parseLine("b\\.a");
+//        Assert.assertEquals(new LispSymbol("b\\.a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol7() {
+//        LObject symbol = p.parseLine("b.a");
+//        Assert.assertEquals(new LispSymbol("b\\.a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol8() {
+//        LObject symbol = p.parseLine(".a");
+//        Assert.assertEquals(new LispSymbol("\\.a"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol9() {
+//        LObject symbol = p.parseLine("b\\\\");
+//        Assert.assertEquals(new LispSymbol("b\\\\"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol10() {
+//        LObject symbol = p.parseLine("b\\");
+//        Assert.assertEquals(new LispSymbol("b"), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol11() {
+//        LObject symbol = p.parseLine("b\\.");
+//        Assert.assertEquals(new LispSymbol("b\\."), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol12() {
+//        LObject symbol = p.parseLine("b.");
+//        Assert.assertEquals(new LispSymbol("b\\."), symbol);
+//    }
+//
+//    @Test
+//    public void testSymbol13() {
+//        LObject symbol = p.parseLine("b.,?a");
+//        Assert.assertEquals(new LispSymbol("b\\.\\,\\?a"), symbol);
+//    }
 
     @Test
     public void testParseConsWithCommentsOk() {

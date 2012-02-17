@@ -126,8 +126,8 @@ public class LispList extends LispObject implements LispSequence {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + fun.getName());
             try {
-                if (fun.getName().equals("edmacro-parse-keys"))
-                    System.out.print(1);
+//                if (fun.getName().equals("edmacro-parse-keys"))
+//                    System.out.print(1);
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());

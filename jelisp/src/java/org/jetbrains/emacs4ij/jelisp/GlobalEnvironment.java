@@ -187,6 +187,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("executing-kbd-macro", LispSymbol.ourNil); //macros.c
         addVariable("load-file-name", LispSymbol.ourNil); //lread.c
         addVariable("overlay-arrow-variable-list", LispSymbol.ourNil);//xdisp.c
+        addVariable("case-fold-search", LispSymbol.ourT);
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -297,8 +298,8 @@ public class GlobalEnvironment extends Environment {
     }
 
     private static LispList getDefFromFile(File file, String name) {
-        if (file.getName().contains("edmacro.el"))
-            System.out.print(1);
+//        if (file.getName().contains("edmacro.el"))
+//            System.out.print(1);
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -337,8 +338,8 @@ public class GlobalEnvironment extends Environment {
         File[] src = sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                if (file.getName().endsWith("edmacro.el"))
-                    System.out.print(2);
+//                if (file.getName().endsWith("edmacro.el"))
+//                    System.out.print(2);
                 return (file.isDirectory() || file.getName().endsWith(".el"));
             }
         });
@@ -363,6 +364,8 @@ public class GlobalEnvironment extends Environment {
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
         LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
+        if (name.equals("edmacro-parse-keys"))
+            System.out.print(1);
         if (definition == null)
             return null;
         LObject evaluated = definition.evaluate(this);

@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -195,37 +196,40 @@ public class ForwardParser extends Parser {
         return Collections.min(nextSeparatorIndex);
     }
 
-    //todo: find appropriate chars
     private static int convert(char c) {
-        switch (Character.toLowerCase(c)) {
-            case 'a': case '7': //control-g, C-g  == Quit
+        char ch = (Character.toLowerCase(c) == 'a') ? c : Character.toLowerCase(c);
+        switch (ch) {
+            case 'a': case '7':  //control-g, C-g  == Quit
                 return 7;
-            case 'b': //backspace, <BS>, C-h
+            case 'b': case '\b'://backspace, <BS>, C-h
                 return '\b';
-            case 't': //tab, <TAB>, C-i
+            case 't': case '\t': //tab, <TAB>, C-i
                 return '\t';
-            case 'n': //newline, C-j
+            case 'n': case '\n': //newline, C-j
                 return '\n';
-            case 'v': //vertical tab, C-k
+            case 'v': case 11: //vertical tab, C-k
                 return 11;
-            case 'f': //formfeed character, C-l
+            case 'f': case '\f': //formfeed character, C-l
                 return '\f';
-            case 'r': //carriage return, <RET>, C-m
+            case 'r': case '\r': //carriage return, <RET>, C-m
                 return '\r';
-            case 'e': //escape character, <ESC>, C-[
+            case 'e': case 27: //escape character, <ESC>, C-[
                 return 27;
-            case 's': //space character, <SPC>
-                return ' ';
+//            case 's': //space character, <SPC>
+//                return ' ';
             case '\\': //backslash character, \
                 return '\\';
-            case 'd': //delete character, <DEL>
+            case 'd': case 127: //delete character, <DEL>
                 return 127;
             default:
                 return -1;
         }
     }
-    
-    private static int ctrlConvert (char c) {
+
+    private static List<Integer> mySpecialChars = Arrays.asList(7 ,8 , 9, 10, 11, 12, 13, 27, 92, 127);
+
+    private static int ctrlConvert (char c, boolean asIs) {
+
         switch (Character.toLowerCase(c)) {
             case 'g':
                 return convert('a');
@@ -244,10 +248,14 @@ public class ForwardParser extends Parser {
             case '[':
                 return convert('e');
             default:
+                if (c <= '9' && c >= '0')
+                    return c;
                 int a = Character.toUpperCase(c) - 64;
-                if (a > 0 && a < 128)
+                if (a >= 0 && a < 128)
                     return a;
-                return c;
+                if (asIs)
+                    return c;
+                return -1;
         }
     }
 
@@ -258,27 +266,35 @@ public class ForwardParser extends Parser {
             }
         }
         private char myModifiers[] = new char[] {'0', '0', '0', '0', '0', '0'}; //MCSHsA
+        private boolean hasModifiers = false;
         private int myKey = -1;
         private int myCtrlCount = 0;
+        private boolean isAsIs = false;
         public Char() {}
 
         public void setModifier(Modifier modifier) {
+            hasModifiers = true;
             myModifiers[Modifier.indexOf(modifier)] = '1';
             if (modifier == Modifier.C)
                 myCtrlCount++;
         }
 
-        public void setKey(int myKey) {
+        public void setKey(int myKey, boolean asIs) {
             this.myKey = myKey;
+            isAsIs = asIs;
         }
-        
-        public int toInteger() {
+
+        public Integer toInteger() {
             if (myCtrlCount != 0) {
-                int k = ctrlConvert((char)myKey);
+                int k = ctrlConvert((char)myKey, isAsIs);
+                if (k < 0)
+                    return null;
                 if (myKey != k) {
                     myModifiers[1] = myCtrlCount == 1 ? '0' : '1';
                     myKey = k;
                 }
+            } else if (!hasModifiers) {
+                myKey = Character.toUpperCase((char)myKey);
             }
             String number = new String(myModifiers);
             String key = Integer.toBinaryString(myKey);
@@ -287,16 +303,21 @@ public class ForwardParser extends Parser {
             return Integer.valueOf(number.concat(key), 2);
         }
     }
-    
-    private void setCharKey (Char c, @Nullable Integer key) {
-        if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))
+
+    private void setCharKey (Char c, @Nullable Integer key, boolean asIs) {
+        if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))// && getNextChar() != ']')
             throw new InvalidReadSyntax("?");
-        int ch = key == null ? Character.toUpperCase(getCurrentChar()) : key; //todo: not in ascii?
-        c.setKey(ch);
+        int ch = key == null ? Character.toLowerCase(getCurrentChar()) : key; //todo: not in ascii?
+        c.setKey(ch, asIs);
         advanceTo(myCurrentIndex + 1);
+
     }
 
-    private LispInteger parseCharacter () {
+    private void setCharKey (Char c, @Nullable Integer key) {
+        setCharKey(c, key, false);
+    }
+
+    private LObject parseCharacter () {
         Char c = new Char();
         while (true) {
             advance();
@@ -304,19 +325,19 @@ public class ForwardParser extends Parser {
                 setCharKey(c, null);
                 break;
             }
-            advance();            
+            advance();
             int spec = convert(getCurrentChar());
             if (spec != -1) {
-                setCharKey(c, spec);
+                setCharKey(c, spec, true);
                 break;
             }
-            
+
             int next = hasNextChar() ? getNextChar() : -1;
 
             Char.Modifier m;
             try {
                 m = Char.Modifier.valueOf(Character.toString(getCurrentChar()));
-                if (next != -1 && next != '-' && getCurrentChar() != 's')
+                if (next != '-' && getCurrentChar() != 's')
                     throw new ScanException("Invalid escape character syntax");
             } catch (IllegalArgumentException e) {
                 m = null;
@@ -332,7 +353,7 @@ public class ForwardParser extends Parser {
                     break;
                 }
                 c.setModifier(m);
-                advance();                
+                advance();
             } else if (getCurrentChar() == '^') {
                 //skip                
             } else if (getCurrentChar() <= '7' && getCurrentChar() >= '0') { //octal, up to 3 digits
@@ -363,11 +384,12 @@ public class ForwardParser extends Parser {
                 }
             }
             else {
-                setCharKey(c, null);
+                setCharKey(c, (int)Character.toLowerCase(getCurrentChar()), true);
                 break;
             }
         }
-        return new LispInteger(c.toInteger());
+        Integer n = c.toInteger();
+        return (n == null ? LispSymbol.ourNil : new LispInteger(n));
     }
 
     @Override

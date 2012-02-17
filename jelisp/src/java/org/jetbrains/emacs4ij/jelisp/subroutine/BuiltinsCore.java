@@ -380,10 +380,26 @@ public abstract class BuiltinsCore {
     public static LObject evaluate (Environment environment, LObject object) {
         return object.evaluate(environment);
     }
-    
+
     @Subroutine(value = "string-match")
-    public static LObject stringMatch (LObject regexp, LispString string, @Optional LObject start) {
-        return null;
+    public static LObject stringMatch (Environment environment, LispString regexp, LispString string, @Optional LispInteger start) {
+        LispSymbol s = environment.find("case-fold-search");
+        String source = string.getData();
+        String target = regexp.getData();
+        if (s != null && !s.getValue().equals(LispSymbol.ourNil)) {
+            source = source.toLowerCase();
+            target = target.toLowerCase();
+        }
+        int from = 0;
+        if (start != null) {
+            from = start.getData();
+            if (from < 0 || from >= string.length())
+                throw new ArgumentOutOfRange(string.toString(), start.toString());            
+        }
+        int r = source.indexOf(target, from);
+        if (r == -1)
+            return LispSymbol.ourNil;
+        return new LispInteger(r);
     }
     
     @Subroutine("message") 
@@ -452,5 +468,10 @@ public abstract class BuiltinsCore {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 < n2);
+    }
+    
+    @Subroutine(">=")
+    public static LispSymbol moreOrEqual (LObject num1, LObject num2) {
+        return LispSymbol.bool(!less(num1, num2).toBoolean());
     }
 }

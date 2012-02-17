@@ -133,6 +133,9 @@ public class BackwardParser extends Parser {
                 break;
             case ']':
                 start = '[';
+                break;
+            case '(': case '[':
+                throw new ScanException("Containing expression ends prematurely");
         }
         if (start != '0') {
             //advance();

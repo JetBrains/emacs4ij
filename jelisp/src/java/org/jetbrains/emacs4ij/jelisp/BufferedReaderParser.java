@@ -31,7 +31,7 @@ public class BufferedReaderParser implements Observer {
             lines = 0;
             return myForwardParser.parseLine(firstLine);
         } catch (LispException e) {
-            System.out.println(e.getMessage());
+            System.out.println("line " + lines + ": " + e.getMessage());
             return null;
         }
     }

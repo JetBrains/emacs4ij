@@ -667,7 +667,7 @@ public class BuiltinsCoreTest {
         LObject result = evaluateString("`(a list of ,(+ 2 3) elements)");
         Assert.assertEquals(expected, result);
     }
-    
+
     @Test
     public void testBackQuoteCommaDeep() {
         evaluateString("(defmacro t-becomes-nil (variable)\n" +
@@ -718,7 +718,7 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("(backquote-listify '((2 . (8 9))) '(0 . nil))");
         Assert.assertEquals(LispList.list(new LispSymbol("list"), LispList.list(new LispInteger(8), new LispInteger(9))), r);
     }
-    
+
     @Test
     public void testBackQuoteDog() {
         evaluateString("(setq some-list '(2 3))");
@@ -760,4 +760,37 @@ public class BuiltinsCoreTest {
         GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
         GlobalEnvironment.INSTANCE.loadFile("simple.el");
     }
+
+    @Test
+    public void testStringMatch() {
+        LObject r = evaluateString("(string-match \"a\" \"africa\")");
+        Assert.assertEquals(new LispInteger(0), r);
+        r = evaluateString("(string-match \"A\" \"africa\" 1)");
+        Assert.assertEquals(new LispInteger(5), r);
+        evaluateString("(setq case-fold-search nil)");
+        r = evaluateString("(string-match \"A\" \"africa\")");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testStringMatchOutOfRange() {
+        try {
+            evaluateString("(string-match \"a\" \"africa\" 10)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"africa\" 10)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testMoreOrEqual() {
+        LispSymbol more = BuiltinsCore.moreOrEqual(new LispInteger(5), new LispFloat(1.3));
+        Assert.assertEquals(LispSymbol.ourT, more);
+        more = BuiltinsCore.moreOrEqual(new LispInteger(5), new LispFloat(5));
+        Assert.assertEquals(LispSymbol.ourT, more);
+        more = BuiltinsCore.moreOrEqual(new LispInteger(3), new LispFloat(4));
+        Assert.assertEquals(LispSymbol.ourNil, more);
+    }
+
 }
