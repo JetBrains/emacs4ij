@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
+
 import java.util.List;
 
 /**
@@ -12,4 +14,5 @@ import java.util.List;
 public interface LispSequence {
     public int length();
     public List<LObject> toLObjectList();
+    public List<LObject> mapCar (Environment environment, LispSymbol method);
 }

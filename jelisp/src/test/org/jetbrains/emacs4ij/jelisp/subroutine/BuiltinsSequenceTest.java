@@ -65,4 +65,27 @@ public class BuiltinsSequenceTest {
         Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3),
                 new LispSymbol("+"), new LispInteger(2), new LispInteger(3)), r);
     }
+    
+    @Test
+    public void testMapCar() {
+        LObject r = evaluateString("(mapcar '+ \"hi\")");
+        Assert.assertEquals(LispList.list(new LispInteger(104), new LispInteger(105)), r);
+        r = evaluateString("(mapcar '+ nil)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(mapcar '+ '(1 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+        r = evaluateString("(mapcar '+ '[1 2])");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+    }
+
+    @Test
+    public void testMapCarListException() {
+        try {
+            evaluateString("(mapcar '+ '(1 . 2))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 }

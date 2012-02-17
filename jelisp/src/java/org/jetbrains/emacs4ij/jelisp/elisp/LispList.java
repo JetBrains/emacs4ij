@@ -160,6 +160,20 @@ public class LispList extends LispObject implements LispSequence {
         return list;
     }
 
+    @Override
+    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+        LObject list = this;
+        ArrayList<LObject> data = new ArrayList<>();
+        while (list instanceof LispList) {
+            data.add(BuiltinsCore.functionCall(environment, method, ((LispList) list).car()));
+            list = ((LispList) list).cdr();
+        }
+        if (list.equals(LispSymbol.ourNil)) {
+            return data;
+        }
+        throw new WrongTypeArgumentException("listp", list.toString());
+    }
+
     private boolean isNil (LObject object) {
         return (object instanceof LispSymbol && ((LispSymbol) object).getName().equals("nil"));
     }
@@ -321,5 +335,35 @@ public class LispList extends LispObject implements LispSequence {
         throw new LispException("Invalid list: " + toString());
     }
 
+    private LObject del (LObject element) {
+        if (myCar.equals(element)) {
+            return myCdr;
+        }
+        return this;        
+    }
+    
+    public LispList delq (LObject element) {
+        LispList list = this;
+        while (list.car().equals(element)) {
+            if (!(myCdr instanceof LispList) && !myCdr.equals(LispSymbol.ourNil))
+                throw new WrongTypeArgumentException("listp", toString()); 
+            if (myCdr.equals(LispSymbol.ourNil)) 
+                return LispList.list();
+            list = (LispList) myCdr;
+        }
+        LObject tmp = list;
+        while (tmp instanceof LispList) {
+            if (((LispList) tmp).car().equals(element)) {
+                tmp = ((LispList) tmp).cdr();
+                continue;
+            }
+            
+        }
+        if (!tmp.equals(LispSymbol.ourNil))
+            throw new WrongTypeArgumentException("listp", tmp.toString());
+        
+        //list = LispList.list(data);
+        return list;
+    }
 
 }

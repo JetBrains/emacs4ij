@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,15 @@ public class LispString extends LispAtom implements LispSequence {
         ArrayList<LObject> data = new ArrayList<>();
         for (int i = 0; i < myData.length(); ++i) {
             data.add(new LispInteger(myData.charAt(i)));
+        }
+        return data;
+    }
+
+    @Override
+    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+        ArrayList<LObject> data = new ArrayList<>();
+        for (LObject item: toLObjectList()) {
+            data.add(BuiltinsCore.functionCall(environment, method, item));
         }
         return data;
     }

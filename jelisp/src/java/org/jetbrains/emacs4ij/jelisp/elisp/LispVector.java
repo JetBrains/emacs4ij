@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.google.common.collect.Lists;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,5 +81,14 @@ public class LispVector extends LispObject implements LispSequence {
     @Override
     public List<LObject> toLObjectList() {
         return myData;
+    }
+
+    @Override
+    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+        ArrayList<LObject> data = new ArrayList<>();
+        for (LObject item: toLObjectList()) {
+            data.add(BuiltinsCore.functionCall(environment, method, item));
+        }
+        return data;
     }
 }

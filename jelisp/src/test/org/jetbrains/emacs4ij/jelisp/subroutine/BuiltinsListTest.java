@@ -286,5 +286,61 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
+    @Test
+    public void testDelq() {
+        evaluateString("(setq a '(1 2 3))");
+        LObject r = evaluateString("(delq 2 a)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(3)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(3)), r);
+        r = evaluateString("(delq 3 a)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+        r = evaluateString("(delq 4 '(1 2 4 3 4))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
     
+    @Test
+    public void testDelqFirst() {
+        evaluateString("(setq a '(1 2 3))");
+        LObject r = evaluateString("(setq b (delq 1 a))");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+        r = evaluateString("(delq 3 b)");
+        Assert.assertEquals(LispList.list(new LispInteger(2)), r);
+        r = evaluateString("b");
+        Assert.assertEquals(LispList.list(new LispInteger(2)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+    }
+
+    @Test
+    public void testDelqTheOnly() {
+        LObject r = evaluateString("(delq 1 '(1))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testDelqMultiple() {
+        LObject r = evaluateString("(delq 1 '(2 1 1 1))");
+        Assert.assertEquals(LispList.list(new LispInteger(2)), r);
+        evaluateString("(setq c '(1 1 1 1 1 1))");
+        r = evaluateString("(delq 1 c)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("c");
+        Assert.assertEquals("(1 1 1 1 1 1)", r.toString());
+    }
+
+    @Test
+    public void testDelqWrong() {
+        try {
+            evaluateString("(delq 1 '(2 . 1))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wta listp (2 . 1))", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 }

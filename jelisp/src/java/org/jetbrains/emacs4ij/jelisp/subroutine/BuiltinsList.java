@@ -15,6 +15,24 @@ import java.util.List;
 public abstract class BuiltinsList {
     private BuiltinsList() {}
 
+    private static boolean isCons (LObject object) {
+        return object instanceof LispList;
+    }
+
+    @Subroutine("consp")
+    public static LispSymbol consp (LObject object) {
+        return LispSymbol.bool(isCons(object));
+    }
+    
+    private static boolean isList (LObject object) {
+        return object instanceof LispList || object.equals(LispSymbol.ourNil);    
+    } 
+
+    @Subroutine("listp")
+    public static LispSymbol listp (LObject object) {
+        return LispSymbol.bool(isList(object));
+    }
+
     @Subroutine("car")
     public static LObject car (LObject arg) {
         if (arg.equals(LispSymbol.ourNil))
@@ -35,14 +53,14 @@ public abstract class BuiltinsList {
 
     @Subroutine("car-safe")
     public static LObject carSafe (LObject arg) {
-        if (arg instanceof LispList)
+        if (isCons(arg))
             return ((LispList)arg).car();
         return LispSymbol.ourNil;
     }
     
     @Subroutine("cdr-safe")
     public static LObject cdrSafe (LObject arg) {
-        if (arg instanceof LispList)
+        if (isCons(arg))
             return ((LispList) arg).cdr();
         return LispSymbol.ourNil;
     }
@@ -64,7 +82,7 @@ public abstract class BuiltinsList {
         LispList list = LispList.list(args);
         return list.isEmpty() ? LispSymbol.ourNil : list;
     }
-    
+
     @Subroutine("cons")
     public static LObject cons (LObject car, LObject cdr) {
         return LispList.cons(car, cdr);
@@ -106,7 +124,7 @@ public abstract class BuiltinsList {
     
     @Subroutine("assoc")
     public static LObject assoc (LObject key, LObject list) {
-        if (!BuiltinPredicates.listp(list).toBoolean())
+        if (!isList(list))
             throw new WrongTypeArgumentException("listp", list.toString());
         if (list.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
@@ -120,8 +138,17 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("setcdr")
-    public static LObject setCdr (LispList cell, LObject newCdr) {
-        cell.setCdr(newCdr);
+    public static LObject setCdr (LObject cell, LObject newCdr) {
+        if (!isCons(cell))
+            throw new WrongTypeArgumentException("consp", cell.toString());
+        ((LispList)cell).setCdr(newCdr);
         return newCdr;
+    }
+
+    @Subroutine("delq")
+    public static LObject delq (LObject element, LObject list) {
+        if (!isCons(list))
+            throw new WrongTypeArgumentException("listp", list.toString());
+        return ((LispList)list).delq(element);
     }
 }

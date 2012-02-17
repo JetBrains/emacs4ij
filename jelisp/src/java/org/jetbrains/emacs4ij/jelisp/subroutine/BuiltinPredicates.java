@@ -100,15 +100,9 @@ public abstract class BuiltinPredicates {
         return LispSymbol.ourNil;
     }
 
-    @Subroutine("listp")
-    public static LispSymbol listp (LObject object) {
-        return LispSymbol.bool (object instanceof LispList || object.equals(LispSymbol.ourNil));
-    }
 
-    @Subroutine("consp")
-    public static LispSymbol consp (LObject object) {
-        return LispSymbol.bool (object instanceof LispList);
-    }
+
+
 
     @Subroutine("framep")
     public static LispSymbol framep (LObject object) {
@@ -186,12 +180,6 @@ public abstract class BuiltinPredicates {
     @Subroutine("vectorp")
     public static LispSymbol vectorP (LObject object) {
         return LispSymbol.bool(object instanceof LispVector);
-    }
-
-    @Subroutine("sequencep")
-    public static LispSymbol sequenceP (LObject object) {
-        //Returns t if object is a list, vector, string, todo: bool-vector, or char-table, nil otherwise. 
-        return LispSymbol.bool(object instanceof LispSequence || object.equals(LispSymbol.ourNil));
     }
 
 

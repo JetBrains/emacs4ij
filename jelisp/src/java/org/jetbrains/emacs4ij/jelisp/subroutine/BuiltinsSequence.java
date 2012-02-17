@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -15,17 +16,23 @@ import java.util.ArrayList;
 public class BuiltinsSequence {
     private BuiltinsSequence() {}
 
+    private static boolean isSequence (LObject object) {
+        //Returns t if object is a list, vector, string, todo: bool-vector, or char-table, nil otherwise. 
+        return (object instanceof LispSequence || object.equals(LispSymbol.ourNil));    
+    }
+    
+    @Subroutine("sequencep")
+    public static LispSymbol sequenceP (LObject object) {
+        return LispSymbol.bool(isSequence(object));
+    }
+    
     @Subroutine("length")
     public static LispInteger length (LObject sequence) {
-        if (!BuiltinPredicates.sequenceP(sequence).toBoolean())
+        if (!isSequence(sequence))
             throw new WrongTypeArgumentException("sequencep", sequence.toString());
         if (sequence.equals(LispSymbol.ourNil))
             return new LispInteger(0);
         return new LispInteger(((LispSequence)sequence).length());
-    }
-
-    private static boolean isSequence (LObject object) {
-        return BuiltinPredicates.sequenceP(object).toBoolean();
     }
 
     @Subroutine(value = "append")
@@ -47,6 +54,15 @@ public class BuiltinsSequence {
             return result;
         }
         return args[args.length-1];
+    }
+    
+    @Subroutine("mapcar")
+    public static LObject mapCar (Environment environment, LispSymbol function, LObject sequence) {
+        //todo: char-table may not fit as sequence here
+        int length = length(sequence).getData();
+        if (length == 0)
+            return LispSymbol.ourNil;
+        return LispList.list(((LispSequence)sequence).mapCar(environment, function));
     }
 
 }
