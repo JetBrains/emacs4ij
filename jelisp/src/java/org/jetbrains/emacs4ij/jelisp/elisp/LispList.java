@@ -247,7 +247,7 @@ public class LispList extends LispObject implements LispSequence {
         try {
             if (equalityFunctionName.equals("eq")) {
                 for (; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-                    if (BuiltinsCore.eq(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                    if (BuiltinsCore.eqs(((LispList) cdr).car(), element)) {
                         return (LispList)cdr;
                     }
                 }
@@ -256,7 +256,7 @@ public class LispList extends LispObject implements LispSequence {
 
             if (equalityFunctionName.equals("equal")) {
                 for (; cdr != LispSymbol.ourNil; cdr = ((LispList)cdr).cdr()) {
-                    if (BuiltinsCore.equal(((LispList) cdr).car(), element) == LispSymbol.ourT) {
+                    if (BuiltinsCore.equals(((LispList) cdr).car(), element)) {
                         return (LispList)cdr;
                     }
                 }
@@ -341,28 +341,33 @@ public class LispList extends LispObject implements LispSequence {
         }
         return this;        
     }
-    
+
     public LispList delq (LObject element) {
+        if (isEmpty())
+            return this;
         LispList list = this;
-        while (list.car().equals(element)) {
-            if (!(myCdr instanceof LispList) && !myCdr.equals(LispSymbol.ourNil))
-                throw new WrongTypeArgumentException("listp", toString()); 
-            if (myCdr.equals(LispSymbol.ourNil)) 
-                return LispList.list();
-            list = (LispList) myCdr;
+        LObject tail = this;
+        LispList prev = LispList.list();
+        while (tail instanceof LispList) {
+            if (BuiltinsCore.eqs(element, ((LispList) tail).car())) {
+                if (prev.isEmpty()) {
+                    if (((LispList) tail).cdr().equals(LispSymbol.ourNil))
+                        list = LispList.list();
+                    else if (((LispList) tail).cdr() instanceof LispList)
+                        list = (LispList) ((LispList) tail).cdr();
+                    else 
+                        throw new WrongTypeArgumentException("listp", tail.toString());
+                }
+                else
+                    prev.setCdr(((LispList) tail).cdr());
+            } else
+                prev = (LispList) tail;
+            tail = ((LispList) tail).cdr();
         }
-        LObject tmp = list;
-        while (tmp instanceof LispList) {
-            if (((LispList) tmp).car().equals(element)) {
-                tmp = ((LispList) tmp).cdr();
-                continue;
-            }
-            
+        if (!tail.equals(LispSymbol.ourNil)) {
+            throw new WrongTypeArgumentException("listp", toString());
         }
-        if (!tmp.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("listp", tmp.toString());
         
-        //list = LispList.list(data);
         return list;
     }
 

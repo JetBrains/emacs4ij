@@ -294,9 +294,9 @@ public class BuiltinsListTest {
         r = evaluateString("a");
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(3)), r);
         r = evaluateString("(delq 3 a)");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+        Assert.assertEquals(LispList.list(new LispInteger(1)), r);
         r = evaluateString("a");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
+        Assert.assertEquals(LispList.list(new LispInteger(1)), r);
         r = evaluateString("(delq 4 '(1 2 4 3 4))");
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     }
@@ -338,7 +338,7 @@ public class BuiltinsListTest {
         try {
             evaluateString("(delq 1 '(2 . 1))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wta listp (2 . 1))", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp (2 . 1))", TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();

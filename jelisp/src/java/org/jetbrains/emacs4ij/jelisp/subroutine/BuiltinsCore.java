@@ -82,11 +82,13 @@ public abstract class BuiltinsCore {
         return value;
     }
 
+    public static boolean equals (LObject one, LObject two) {
+        return one.equals(two);
+    }
+    
     @Subroutine("equal")
     public static LispObject equal (LObject one, LObject two) {
-        if (one.equals(two))
-            return LispSymbol.ourT;
-        return LispSymbol.ourNil;
+        return LispSymbol.bool(equals(one, two));
     }
 
     /* eq returns t if object1 and object2 are integers with the same value.
@@ -96,20 +98,24 @@ public abstract class BuiltinsCore {
     same change in the contents of the other.
     * */
 
-    @Subroutine("eq")
-    public static LispObject eq (LObject one, LObject two) {
-        if (one == two) return LispSymbol.ourT;
-        if (one.getClass() != two.getClass()) return LispSymbol.ourNil;
+    public static boolean eqs (LObject one, LObject two) {
+        if (one == two) return true;
+        if (one.getClass() != two.getClass()) return false;
         if (one instanceof LispNumber) {
-            return (((LispNumber) one).getData()  == ((LispNumber) two).getData()) ? LispSymbol.ourT : LispSymbol.ourNil;
+            return (((LispNumber) one).getData()  == ((LispNumber) two).getData());
         }
         if (one instanceof LispSymbol) {
-            return ((LispSymbol) one).getName().equals(((LispSymbol) two).getName()) ? LispSymbol.ourT : LispSymbol.ourNil;
+            return ((LispSymbol) one).getName().equals(((LispSymbol) two).getName());
         }
         if ((one instanceof LispString) && (((LispString) one).getData().equals(""))) {
-            return ((LispString) two).getData().equals("") ? LispSymbol.ourT : LispSymbol.ourNil;
+            return ((LispString) two).getData().equals("");
         }
-        return LispSymbol.ourNil;
+        return false;
+    }
+    
+    @Subroutine("eq")
+    public static LispObject eq (LObject one, LObject two) {
+        return LispSymbol.bool(eqs(one, two));
     }
 
     @Subroutine("null")
