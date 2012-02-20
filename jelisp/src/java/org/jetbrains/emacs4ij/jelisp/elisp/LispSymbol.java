@@ -135,12 +135,13 @@ public class LispSymbol extends LispAtom {
     }
 
     @Override
-    public String toString() {
-        if (myFunction == null)
+    public String toString() {        
+        if (myFunction == null) {
             return myName;
-        /*if (isSubroutine())
-            return "#<subr " + myName + '>';   */
+//            return myName + " = " + (myValue == null ? "null" : myValue.toString());
+        }
         return myFunction.toString();
+//        return myName + " = " + myFunction.toString();
     }
 
     public boolean isSubroutine () {
@@ -249,6 +250,7 @@ public class LispSymbol extends LispAtom {
 
     public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
+        System.out.println(myName);
         LObject result;
         if (args == null)
             args = new ArrayList<>();
@@ -282,7 +284,6 @@ public class LispSymbol extends LispAtom {
     }
 
     private LObject evaluateCustomFunction (Environment environment, List<LObject> args) {
-        //CustomEnvironment environment = new CustomEnvironment(environment1);
         if (!environment.areArgumentsEvaluated()) {
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));

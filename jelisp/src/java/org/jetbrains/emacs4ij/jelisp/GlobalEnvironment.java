@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
@@ -163,10 +165,10 @@ public class GlobalEnvironment extends Environment {
             "defcustom", "defvar", "defsubst", "defconst", "defalias", "defgroup", "defface");
 
     private void defineDefForms () {
-        findAndRegisterEmacsForm("defcustom");
-        findAndRegisterEmacsForm("defsubst");
-        findAndRegisterEmacsForm("defgroup");
-        findAndRegisterEmacsForm("defface");
+        findAndRegisterEmacsForm("defcustom", "/lisp/custom.el");
+        findAndRegisterEmacsForm("defsubst", "/lisp/emacs-lisp/byte-run.el");
+        findAndRegisterEmacsForm("defgroup", "/lisp/custom.el");
+        findAndRegisterEmacsForm("defface", "/lisp/custom.el");
     }
 
     private void defineUserOptions() {
@@ -315,7 +317,8 @@ public class GlobalEnvironment extends Environment {
                 throw new RuntimeException("Error while reading " + file.getName());
             }
             if (line == null)
-                throw new RuntimeException("definition " + name + " not found in " + file.getName());
+                return null;
+                //throw new RuntimeException("definition " + name + " not found in " + file.getName());
             for (String defForm: myDefForms) {
                 if (line.contains('(' + defForm + ' ' + name + ' ')) {
                     loop = false;
@@ -334,38 +337,57 @@ public class GlobalEnvironment extends Environment {
         throw new RuntimeException("Parsed object is not a LispList!");
     }
 
-    public static LispList findEmacsDefinition(String name, File sourceDir) {
-        File[] src = sourceDir.listFiles(new FileFilter() {
+    private static LispList findEmacsDefinition(String name, File sourceDir) {
+        List<File> src = Arrays.asList(sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-//                if (file.getName().endsWith("edmacro.el"))
-//                    System.out.print(2);
                 return (file.isDirectory() || file.getName().endsWith(".el"));
+            }
+        }));
+
+        //subr.el has priority. This is done to avoid uploading wrong defs while we are not loading code in appropriate order
+        File subr = (File) CollectionUtils.find(src, new Predicate() {
+            @Override
+            public boolean evaluate(Object o) {
+                return (((File) o).getAbsolutePath().endsWith("lisp/subr.el"));
             }
         });
 
+        LispList def = null;
 
-        for (File file: src) {
-            if (file.isDirectory()) {
-                LispList searchResult = findEmacsDefinition(name, file);
-                if (searchResult != null)
-                    return searchResult;
-            }
-            if (!file.getName().endsWith(".el"))
-                continue;
-            try {
-                return getDefFromFile(file, name);
-            } catch (RuntimeException e) {
-                //skip
-            }
+        if (subr != null) {
+            def = getDefFromFile(subr, name);
         }
-        return null;
+
+        for (int i = 0, srcSize = src.size(); i < srcSize && def == null; i++) {
+            File file = src.get(i);
+            if (file.getName().endsWith("lisp/subr.el"))
+                continue;
+
+            if (file.isDirectory()) {
+                def = findEmacsDefinition(name, file);
+            } else
+                def = getDefFromFile(file, name);
+        }
+        return def;
+    }
+    
+    public LispSymbol findAndRegisterEmacsForm (String name, String file) {
+        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name);
+        if (definition == null)
+            return null;
+        LObject evaluated = definition.evaluate(this);
+        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
+            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
+        }
+        return find(name);
     }
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
-        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
-        if (name.equals("edmacro-parse-keys"))
+        if (name.equals("define-minor-mode"))
             System.out.print(1);
+        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
+
         if (definition == null)
             return null;
         LObject evaluated = definition.evaluate(this);

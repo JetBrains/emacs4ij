@@ -46,7 +46,7 @@ public class BackwardParser extends Parser {
     private String extractSymmetricForm(char formStart, char formEnd) {
         String form = "";
         int n = 1;
-        int end = getMyCurrentIndex();
+        int end = getMyCurrentIndex() + 1;
         while (true) {
             try {
                 advance();
@@ -57,7 +57,7 @@ public class BackwardParser extends Parser {
 
                 if (n == 0) {
                     int start = getMyCurrentIndex();
-                    form = myLispCode.substring(start, end+1) + form;
+                    form = myLispCode.substring(start, end) + form;
                     advanceTo(start - 1);
                     if (myCurrentIndex > -1) {
                         int k = getNextSeparatorIndex();
@@ -69,10 +69,11 @@ public class BackwardParser extends Parser {
             } catch (EndOfLineException e) {
                 if (countObservers() == 0)
                     throw new ScanException("Unbalanced parentheses");
+                form = myLispCode.substring(0, end) + form;
                 setChanged();
                 notifyObservers(new ScanException("Unbalanced parentheses"));
                 clearChanged();
-                end += myCurrentIndex + 1;
+                end = myCurrentIndex + 1;
             }
         }
     }
@@ -150,7 +151,7 @@ public class BackwardParser extends Parser {
 
     @Override
     public void append (String lispCode) {
-        myLispCode = lispCode + "\n" + myLispCode;
+        myLispCode = lispCode + "\n";
         myCurrentIndex = lispCode.length();
     }
 

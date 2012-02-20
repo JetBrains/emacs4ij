@@ -29,6 +29,8 @@ public class BufferedReaderParser implements Observer {
     public LObject parse (String firstLine) {
         try {
             lines = 0;
+//            if (firstLine.contains("defmacro when "))
+//                System.out.print(1);
             return myForwardParser.parseLine(firstLine);
         } catch (LispException e) {
             System.out.println("line " + lines + ": " + e.getMessage());

@@ -153,4 +153,10 @@ public abstract class BuiltinsSymbol {
         }
         return variable;
     }
+    
+    @Subroutine("make-symbol")
+    public static LObject makeSymbol (LispString name) {
+        return new LispSymbol(name.getData());
+
+    }
 }

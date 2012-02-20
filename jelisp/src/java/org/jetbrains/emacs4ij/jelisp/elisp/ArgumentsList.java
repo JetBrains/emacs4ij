@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by IntelliJ IDEA.
@@ -76,7 +77,17 @@ public class ArgumentsList {
         if (!myList.isEmpty())
             for (int i=0; i!=myList.size(); ++i) {
                 values[i] = myList.get(i).getValue();
+                if (values[i] == null) {
+                    System.out.println("    null");
+                    continue;
+                }
+                if (values[i].getClass().isArray()) {
+                    System.out.println("    " + Arrays.toString((LObject[])values[i]));//.toString();
+                    continue;
+                }
+                System.out.println("    " + values[i].toString());
             }
+        System.out.println("--------");
         return values;
     }
 

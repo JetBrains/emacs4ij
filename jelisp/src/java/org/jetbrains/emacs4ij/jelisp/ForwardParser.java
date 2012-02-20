@@ -159,6 +159,8 @@ public class ForwardParser extends Parser {
 
     @Override
     protected int getNextIndexOf (char what) {
+        if (myLispCode.length() == 0)
+            return 0;
         int i = (what == '"') ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
         return ((i == -1) ? myLispCode.length() : i);
     }
@@ -170,21 +172,25 @@ public class ForwardParser extends Parser {
 
     private LispString parseString() {
         int nextDoubleQuoteIndex;
+        String data = "";
         while (true) {
             nextDoubleQuoteIndex = getNextIndexOf('"');
+            if (myLispCode.length() != 0) {
+                data += extractForm(nextDoubleQuoteIndex);
+            }
             if (nextDoubleQuoteIndex == myLispCode.length()) {
                 if (countObservers() == 0)
                     throw new MissingClosingDoubleQuoteException();
                 setChanged();
                 notifyObservers(new MissingClosingDoubleQuoteException());
                 clearChanged();
+                data += '\n';
                 continue;
             }
             break;
         }
-        String string = extractForm(nextDoubleQuoteIndex);
         advanceTo(nextDoubleQuoteIndex + 1);
-        return new LispString(string);
+        return new LispString(data);
     }
 
     @Override
@@ -397,16 +403,21 @@ public class ForwardParser extends Parser {
         myCurrentIndex = 0;
         myLispCode = lispCode;
         //myLispCode = myLispCode.trim();
-        LObject lispObject = parseObject();
-        //if (lispObject == null) lispObject = LispSymbol.ourNil;
         try {
-            getMyCurrentIndex();
-        } catch (EndOfLineException ignored) {
-            return lispObject;
+        skipListSeparators();
+        } catch (EndOfLineException e) {
+            return null;
         }
-        if (getCurrentChar() == ';')
-            return lispObject;
-        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
+        LObject lispObject = parseObject();
+        return lispObject;
+//        try {
+//            getMyCurrentIndex();
+//        } catch (EndOfLineException ignored) {
+//            return lispObject;
+//        }
+//        if (getCurrentChar() == ';')
+//            return lispObject;
+//        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
     }
 
     @Override
@@ -456,7 +467,9 @@ public class ForwardParser extends Parser {
 
     @Override
     public void append (String lispCode) {
-        myLispCode += "\n" + lispCode;
+        myLispCode = lispCode;
+        myCurrentIndex = 0;
+       // myLispCode += "\n" + lispCode;
     }
 
 }

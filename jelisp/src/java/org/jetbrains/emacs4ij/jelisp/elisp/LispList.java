@@ -281,13 +281,14 @@ public class LispList extends LispObject implements LispSequence {
             return this;
         LObject prev = LispSymbol.ourNil;
         LObject tail = this;
-        while (tail != LispSymbol.ourNil) {
-            if (!(tail instanceof LispList))
-                throw new WrongTypeArgumentException("listp", toString());
+        while (tail instanceof LispList) {
             LObject next = ((LispList)tail).cdr();
             ((LispList) tail).setCdr(prev);
             prev = tail;
             tail = next;
+        }
+        if (!tail.equals(LispSymbol.ourNil)) {
+            throw new WrongTypeArgumentException("listp", toString());
         }
         return prev;
     }

@@ -167,6 +167,7 @@ public class Lambda extends LispObject implements FunctionCell {
             for (int k = j; k < myArgumentList.size(); ++k)
                 myArgumentList.get(k).setValue(inner, null);
         }
+        System.out.println("--------");
         return inner;
     }
 

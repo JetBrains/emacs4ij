@@ -390,8 +390,7 @@ public class BackwardParserTest {
     public void testParseSpecialCharSpace() {
         //?\s ⇒ 32                ; space character, <SPC>
         LObject c = p.parseLine("? ");
-        Assert.assertTrue(c instanceof LispInteger);
-        Assert.assertTrue(32 == ((LispInteger)c).getData());
+        Assert.assertEquals(new LispInteger(32), c);
     }
 
     @Test

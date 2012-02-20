@@ -144,6 +144,17 @@ public class BuiltinsListTest {
         LObject = evaluateString("(list (list))");
         Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), LObject);
     }
+
+    @Test
+    public void testListN() {
+        evaluateString("(setq a '(1 2))");
+        evaluateString("(setq b '(3 4))");
+        LObject list = evaluateString("(list a b)");
+        Assert.assertEquals(LispList.list(LispList.list(new LispInteger(1), new LispInteger(2)), LispList.list(new LispInteger(3), new LispInteger(4))), list);
+
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), evaluateString("b"));
+    }
     
     @Test
     public void testCons() {
