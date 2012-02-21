@@ -150,7 +150,9 @@ public class GlobalEnvironment extends Environment {
     //-------- loading ------------------
     private void addVariable(String name, @Nullable LObject value) {
         LispSymbol symbol = new LispSymbol(name, value);
-        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
+        String doc = myDocumentationExtractor.getVariableDoc(name);
+        if (doc != null)
+            symbol.setGlobalVariableDocumentation(new LispString(doc));
         mySymbols.put(name, symbol);
     }
 
@@ -190,6 +192,7 @@ public class GlobalEnvironment extends Environment {
         addVariable("load-file-name", LispSymbol.ourNil); //lread.c
         addVariable("overlay-arrow-variable-list", LispSymbol.ourNil);//xdisp.c
         addVariable("case-fold-search", LispSymbol.ourT);
+        addVariable("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -324,6 +327,11 @@ public class GlobalEnvironment extends Environment {
                     loop = false;
                     break;
                 }
+                if (line.contains('(' + defForm + " '" + name + ' ')) {
+                    System.out.println(line);
+                    loop = false;
+                    break;
+                }
             }
         } while (loop);
         BufferedReaderParser p = new BufferedReaderParser(reader);
@@ -377,24 +385,30 @@ public class GlobalEnvironment extends Environment {
         if (definition == null)
             return null;
         LObject evaluated = definition.evaluate(this);
-        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
+        if (!(evaluated instanceof LispSymbol))
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-        }
-        return find(name);
+        return (LispSymbol) evaluated;
+//        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
+//            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
+//        }
+//        return find(name);
     }
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
 //        if (name.equals("define-minor-mode"))
 //            System.out.print(1);
         LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
-
         if (definition == null)
             return null;
         LObject evaluated = definition.evaluate(this);
-        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
+        if (!(evaluated instanceof LispSymbol))
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-        }
-        return find(name);
+        return (LispSymbol) evaluated;
+
+//        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
+//            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
+//        }
+//        return find(name);
     }
 
     public LispSymbol findAndRegisterEmacsForm(LispSymbol name) {

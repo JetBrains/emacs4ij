@@ -158,7 +158,7 @@ public abstract class SpecialForms {
         LObject result = LispSymbol.ourT;
         for (LObject condition: conditions) {
             result = condition.evaluate(environment);
-            if (result == LispSymbol.ourNil)
+            if (result.equals(LispSymbol.ourNil))
                 return result;
         }
         return result;
@@ -418,6 +418,13 @@ public abstract class SpecialForms {
             } 
             throw e;
         }
+    }
+    
+    @Subroutine("catch")
+    public static void lispCatch (LObject tag, LObject... body) {
+        //todo: emacs man says nil cannot be tag, but signals no error though
+        //if (tag.equals(LispSymbol.ourNil))
+
     }
     
 }

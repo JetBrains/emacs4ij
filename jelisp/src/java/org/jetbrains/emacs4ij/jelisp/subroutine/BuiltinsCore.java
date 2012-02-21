@@ -506,4 +506,11 @@ public abstract class BuiltinsCore {
     public static LispSymbol moreOrEqual (LObject num1, LObject num2) {
         return LispSymbol.bool(!less(num1, num2).toBoolean());
     }
+    
+    @Subroutine("1-")
+    public static LispNumber minusOne (LObject num) {
+        LispNumber n = numberOrMarkerToNumber(num);
+        boolean isDouble = n.getData() instanceof Double;
+        return fromDouble(isDouble, n.getDoubleData() - 1);
+    }
 }

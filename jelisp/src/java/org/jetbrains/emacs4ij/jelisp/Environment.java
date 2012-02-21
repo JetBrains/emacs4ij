@@ -24,6 +24,7 @@ public abstract class Environment {
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
     protected static BufferManager ourBufferManager;
+    protected ArrayList<LObject> myCatches = new ArrayList<>();
 
     public boolean isMainOrGlobal() {
         return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);
@@ -33,6 +34,10 @@ public abstract class Environment {
         return myOuterEnv;
     }
 
+    public void setCatchPoint (LObject tag) {
+        myCatches.add(tag);
+    }
+    
     public boolean areArgumentsEvaluated() {
         return myArgumentsEvaluated;
     }

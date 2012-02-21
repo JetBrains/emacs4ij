@@ -1,11 +1,14 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -162,6 +165,38 @@ public abstract class BuiltinsSymbol {
     @Subroutine("make-symbol")
     public static LObject makeSymbol (LispString name) {
         return new LispSymbol(name.getData());
+    }
 
+    private static LispSymbol getSymbol (final String name, LispVector objectArray, final Environment environment) {
+        return (LispSymbol) CollectionUtils.find(objectArray.toLObjectList(), new Predicate() {
+            @Override
+            public boolean evaluate(Object o) {
+                if (!(o instanceof LispSymbol)) {
+                    LispList.list(new LispSymbol("error"), new LispString("Bad data in guts of obarray")).evaluate(environment);
+                }
+                return ((LispSymbol) o).getName().equals(name);
+            }
+        });
+    }
+
+    @Subroutine("intern")
+    public static LispSymbol intern (Environment environment, LispString name, @Optional LispVector objectArray) {
+        if (objectArray == null) {
+            //todo: shall I take GlobalEnv instead?
+            LispSymbol symbol = environment.find(name.getData());
+            if (symbol != null)
+                return symbol;
+            symbol = new LispSymbol(name.getData());
+            environment.defineSymbol(symbol);
+            return symbol;
+        }
+        if (objectArray.isEmpty())
+            throw new WrongTypeArgumentException("vectorp", objectArray.toString());
+        LispSymbol symbol = getSymbol(name.getData(), objectArray, environment);
+        if (symbol != null)
+            return symbol;
+        symbol = new LispSymbol(name.getData());
+        objectArray.setFirst(symbol); //todo: why overwrite?
+        return symbol;
     }
 }

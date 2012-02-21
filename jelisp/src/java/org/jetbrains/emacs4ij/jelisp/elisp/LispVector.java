@@ -96,4 +96,13 @@ public class LispVector extends LispObject implements LispSequence {
     public LObject copy() {
         return new LispVector(myData);
     }
+    
+    public boolean isEmpty() {
+        return myData.isEmpty();
+    }
+    
+    public void setFirst (LObject first) {
+        myData.set(0, first);
+    }
+
 }

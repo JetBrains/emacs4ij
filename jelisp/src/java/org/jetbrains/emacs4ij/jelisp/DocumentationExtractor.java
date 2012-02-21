@@ -78,7 +78,11 @@ public class DocumentationExtractor {
     }
 
     public String getVariableDoc (String name) {
-        return myVar.get(name).getDoc();
+        try {
+            return myVar.get(name).getDoc();
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     private List<String> getUndocumentedSubroutines()  {
@@ -90,7 +94,7 @@ public class DocumentationExtractor {
                 if (annotation == null)
                     continue;
                 String name = annotation.value();
-                
+
                 try {
                     if (getSubroutineDoc(name) == null)
                         names.add(name);
