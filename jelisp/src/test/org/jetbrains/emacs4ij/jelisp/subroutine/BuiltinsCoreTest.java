@@ -452,9 +452,52 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testApply() {
+    public void testApplyBuiltin() {
         LObject r = evaluateString("(apply '+ 1 2 '(3 4))");
         Assert.assertEquals(new LispInteger(10), r);
+    }
+
+    @Test
+    public void testApplyBuiltinWrongArg() {
+        try {
+            evaluateString("(apply '< 1 2)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testApplySpecForm() {
+        try {
+            evaluateString("(apply 'setq 'a '(5))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testApplyMacro() {
+        try {
+            evaluateString("(apply 'when 't '(message \"hi\"))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testApply() {
+        LObject b = evaluateString("(nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
+        Assert.assertEquals("((ch (aref --cl-vec-- --cl-idx--)))", b.toString());
+        LObject r = evaluateString("(apply 'nconc '((ch (aref --cl-vec-- --cl-idx--))))");
+        Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
+        r = evaluateString("(apply 'nconc (nreverse '((ch (#<subr aref> --cl-vec-- --cl-idx--)))))");
+        Assert.assertEquals("(ch (#<subr aref> --cl-vec-- --cl-idx--))", r.toString());
     }
 
     @Test
@@ -791,6 +834,47 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourT, more);
         more = BuiltinsCore.moreOrEqual(new LispInteger(3), new LispFloat(4));
         Assert.assertEquals(LispSymbol.ourNil, more);
+    }
+
+    @Test
+    public void testMinusInteger() throws LispException {
+        LObject lispObject = evaluateString("(- 2 1)");
+        Assert.assertEquals(new LispInteger(1), lispObject);
+    }
+
+    @Test
+    public void testMinusOne() throws LispException {
+        LObject lispObject = evaluateString("(- 1)");
+        Assert.assertEquals(new LispInteger(-1), lispObject);
+    }
+
+    @Test
+    public void testMinusZero() throws LispException {
+        LObject lispObject = evaluateString("(-)");
+        Assert.assertEquals(new LispInteger(0), lispObject);
+    }
+
+    @Test
+    public void testMinusFloat () {
+        LObject lispObject = evaluateString("(- 2 2.0)");
+        Assert.assertEquals(new LispFloat(0.0), lispObject);
+    }
+
+    @Test
+    public void testMinusSimple () {
+        LispNumber n = BuiltinsCore.minus(new LispInteger(5), new LispFloat(6.8), new LispInteger(1));
+        Assert.assertEquals(new LispFloat(-2.8), n);
+    }
+
+    @Test
+    public void testMinusMarker () {
+        try {
+            BuiltinsCore.minus(new LispMarker(), new LispMarker());
+        } catch (Exception e) {
+            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
     }
 
 }

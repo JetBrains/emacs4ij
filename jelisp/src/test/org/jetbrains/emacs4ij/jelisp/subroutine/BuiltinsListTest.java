@@ -53,7 +53,7 @@ public class BuiltinsListTest {
         LObject = evaluateString("(car p)");
         Assert.assertEquals(LispSymbol.ourNil, LObject);
     }
-    
+
     @Test
     public void testCarNil() {
         LObject res = evaluateString("(car nil)");
@@ -155,7 +155,7 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), evaluateString("b"));
     }
-    
+
     @Test
     public void testCons() {
         LObject cons = evaluateString("(cons (+ 4 5) \"hi\")");
@@ -206,7 +206,7 @@ public class BuiltinsListTest {
         Assert.assertEquals(LispList.list(new LispInteger(1)), evaluateString("x"));
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(2), new LispInteger(1)), reversed);
     }
-    
+
     @Test
     public void testNconcNil() {
         LObject r = evaluateString("(nconc)");
@@ -218,7 +218,9 @@ public class BuiltinsListTest {
         LObject r = evaluateString("(nconc 1)");
         Assert.assertEquals(new LispInteger(1), r);
         r = evaluateString("(nconc '(1))");
-        Assert.assertEquals(LispList.list(new LispInteger(1)), r);        
+        Assert.assertEquals(LispList.list(new LispInteger(1)), r);
+        r = evaluateString("(nconc nil '(1))");
+        Assert.assertEquals(LispList.list(new LispInteger(1)), r);
     }
 
     @Test
@@ -270,6 +272,12 @@ public class BuiltinsListTest {
         Assert.assertEquals(expectedB, evaluateString("b"));
         Assert.assertEquals(new LispString("q"), evaluateString("c"));
     }
+
+    @Test
+    public void testNconcWithNils() {
+        LObject r = evaluateString("(nconc '(1 2) nil '(3) nil)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
     
     @Test
     public void testNthListElement() {
@@ -281,7 +289,7 @@ public class BuiltinsListTest {
         r = evaluateString("(nth 5 a)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
-    
+
     @Test
     public void testAssoc() {
         LObject r = evaluateString("(assoc 1 '(1 2 3 4 (1 . \"alla\") 5))");
@@ -311,7 +319,7 @@ public class BuiltinsListTest {
         r = evaluateString("(delq 4 '(1 2 4 3 4))");
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     }
-    
+
     @Test
     public void testDelqFirst() {
         evaluateString("(setq a '(1 2 3))");
@@ -354,4 +362,47 @@ public class BuiltinsListTest {
         }
         Assert.fail();
     }
+
+    @Test
+    public void testNthCdrList() {
+        LObject r = evaluateString("(nthcdr 2 '(1 2 3))");
+        Assert.assertEquals (LispList.list(new LispInteger(3)), r);
+    }
+
+    @Test
+    public void testNthCdrCons() {
+        LObject r = evaluateString("(nthcdr 1 '(1 . 2))");
+        Assert.assertEquals (new LispInteger(2), r);
+    }
+
+    @Test
+    public void testNthCdrConsWrong() {
+        try {
+            evaluateString("(nthcdr 2 '(1 . 2))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testNthCdrZero() {
+        LObject r = evaluateString("(nthcdr 0 '(1 . 2))");
+        Assert.assertEquals (LispList.cons(new LispInteger(1), new LispInteger(2)), r);
+        r = evaluateString("(nthcdr 0 '(1 2 3))");
+        Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
+
+    @Test
+    public void testNthCdrNil() {
+        LObject r = evaluateString("(nthcdr 5 nil)");
+        Assert.assertEquals (LispSymbol.ourNil, r);
+        r = evaluateString("(nthcdr 4 '(1 2 3))");
+        Assert.assertEquals (LispSymbol.ourNil, r);
+        r = evaluateString("(nthcdr -1 '(1 2 3))");
+        Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
 }
+
+

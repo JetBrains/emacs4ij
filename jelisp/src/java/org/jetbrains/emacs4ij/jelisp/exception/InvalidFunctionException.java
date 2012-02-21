@@ -10,6 +10,6 @@ package org.jetbrains.emacs4ij.jelisp.exception;
 @Error("invalid-function")
 public class InvalidFunctionException extends LispException {
     public InvalidFunctionException(String functionName) {
-        super("Invalid function " + functionName);
+        super("'(invalid-function " + functionName + ')');
     }
 }

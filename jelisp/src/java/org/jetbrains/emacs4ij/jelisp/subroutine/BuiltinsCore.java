@@ -37,35 +37,60 @@ public abstract class BuiltinsCore {
         }
         return n;
     }
-    
+
+    private static LispNumber fromDouble (boolean isDouble, double d) {
+        return isDouble ? new LispFloat(d) : new LispInteger((int) d);
+    }
+
     @Subroutine("+")
     public static LispNumber plus (@Optional LObject... args) {
         double ans = 0.0;
         boolean isDouble = false;
         if (args != null) {
             for (LObject lispObject: args) {
-                LispNumber n = numberOrMarkerToNumber(lispObject);               
+                LispNumber n = numberOrMarkerToNumber(lispObject);
                 if (!isDouble && (n.getData() instanceof Double))
                     isDouble = true;
                 ans += n.getDoubleData();
             }
         }
-        return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
+        return fromDouble(isDouble, ans);
     }
-    
+
+    @Subroutine("-")
+    public static LispNumber minus (@Optional LObject num, @Optional LObject... rest) {
+        if (num == null)
+            return new LispInteger(0);
+        if (rest == null || rest.length == 0) {
+            LispNumber n = numberOrMarkerToNumber(num);
+            double ans = -n.getDoubleData();
+            return fromDouble(n.getData() instanceof Double, ans);
+        }
+        LispNumber n = numberOrMarkerToNumber(num);
+        double ans = n.getDoubleData();
+        boolean isDouble = n.getData() instanceof Double;
+        for (LObject lispObject: rest) {
+            LispNumber k = numberOrMarkerToNumber(lispObject);
+            if (!isDouble && (k.getData() instanceof Double))
+                isDouble = true;
+            ans -= k.getDoubleData();
+        }
+        return fromDouble(isDouble, ans);
+    }
+
     @Subroutine("*")
     public static LispNumber multiply (@Optional LObject... args) {
         double ans = 1;
         boolean isDouble = false;
         for (LObject lispObject: args) {
-            LispNumber n = numberOrMarkerToNumber(lispObject);            
+            LispNumber n = numberOrMarkerToNumber(lispObject);
             if (!isDouble && (n.getData() instanceof Double))
                 isDouble = true;
             ans *= n.getDoubleData();
         }
-        return isDouble ? LispNumber.newInstance(ans) : LispNumber.newInstance((int)ans);
+        return fromDouble(isDouble, ans);
     }
-    
+
     @Subroutine(">")
     public static LispSymbol more (LObject num1, LObject num2) {
         LispNumber n1 = numberOrMarkerToNumber(num1);
@@ -77,7 +102,6 @@ public abstract class BuiltinsCore {
     public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
         LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
         LispSymbol symbol = new LispSymbol(variable.getName(), value);
-        //variable.setValue(value);
         environment.setVariable(symbol);
         return value;
     }
@@ -85,7 +109,7 @@ public abstract class BuiltinsCore {
     public static boolean equals (LObject one, LObject two) {
         return one.equals(two);
     }
-    
+
     @Subroutine("equal")
     public static LispObject equal (LObject one, LObject two) {
         return LispSymbol.bool(equals(one, two));
@@ -112,7 +136,7 @@ public abstract class BuiltinsCore {
         }
         return false;
     }
-    
+
     @Subroutine("eq")
     public static LispObject eq (LObject one, LObject two) {
         return LispSymbol.bool(eqs(one, two));
@@ -157,7 +181,7 @@ public abstract class BuiltinsCore {
         msg += ": " + data.toString();
 //        GlobalEnvironment.showErrorMessage(msg);
         //todo: this method returns for test only
-      //  return new LispString(msg);
+        //  return new LispString(msg);
         System.out.println(msg);
         throw new LispException(msg);
     }
@@ -166,7 +190,7 @@ public abstract class BuiltinsCore {
         if (function.equals(LispSymbol.ourNil))
             return;
         if (!function.isFunction()) {
-            throw new InvalidFunctionException(function.toString());
+            throw new InvalidFunctionException(function.getName());
         }
         function.evaluateFunction(environment, new ArrayList<LObject>());
     }
@@ -221,8 +245,8 @@ public abstract class BuiltinsCore {
         environment.setVariable(symbol);
         return function;
     }
-    
-   /* private static LObject signalOrNot (LObject noError, String name, String data) {
+
+    /* private static LObject signalOrNot (LObject noError, String name, String data) {
         if (noError != null && !noError.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
 
@@ -231,7 +255,7 @@ public abstract class BuiltinsCore {
         errorSymbol.setProperty("error-message", new LispString(name));
         return signal(errorSymbol, new LispList(new LispSymbol(data)));    
     }*/
-    
+
     @Subroutine("indirect-function")
     public static LObject indirectFunction (LObject object, @Optional LObject noError) {
         if (!(object instanceof LispSymbol)) {
@@ -240,7 +264,7 @@ public abstract class BuiltinsCore {
         LispSymbol symbol = (LispSymbol) object;
         ArrayList<String> examined = new ArrayList<String>();
         examined.add(symbol.getName());
-        
+
         while (true) {
             if (!symbol.isFunction()) {
                 if (noError != null && !noError.equals(LispSymbol.ourNil))
@@ -264,7 +288,7 @@ public abstract class BuiltinsCore {
             return f;
         }
     }
-    
+
     @Subroutine("subr-arity")
     public static LObject subrArity (LObject object) {
         if (subrp(object).equals(LispSymbol.ourNil))
@@ -284,7 +308,7 @@ public abstract class BuiltinsCore {
                 return new LispInteger(((LispString) array).getData().charAt(index.getData()));
             }
             //todo: char-table, bool-vector
-            throw new WrongTypeArgumentException("arrayp", array.toString());            
+            throw new WrongTypeArgumentException("arrayp", array.toString());
         } catch (IndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(array.toString(), index.toString());
         }
@@ -292,8 +316,10 @@ public abstract class BuiltinsCore {
 
     @Subroutine(value = "apply")
     public static LObject apply (Environment environment, LObject function, LObject... args) {
-        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction())
-            throw new InvalidFunctionException(function.toString());
+        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
+                || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
+            throw new InvalidFunctionException((function instanceof LispSymbol ?
+                    ((LispSymbol) function).getName() : function.toString()));
 
         if (!(args[args.length-1] instanceof LispList) && args[args.length-1] != LispSymbol.ourNil)
             throw new WrongTypeArgumentException("listp", args[args.length-1].toString());
@@ -304,7 +330,7 @@ public abstract class BuiltinsCore {
             List<LObject> last = ((LispList)args[args.length-1]).toLObjectList();
             list.addAll(last);
         }
-
+        environment.setArgumentsEvaluated(true);
         return ((LispSymbol) function).evaluateFunction(environment, list);
     }
 
@@ -317,11 +343,11 @@ public abstract class BuiltinsCore {
         int index = 0;
         Character[] formatCharsArray = new Character[] {'s', 'S', 'd', 'o', 'x', 'X', 'e', 'f', 'g', 'c'};
         List<Character> formatChars = Arrays.asList(formatCharsArray);
-        
+
         while (k != -1) {
             k++;
             while (k < s.length() && s.charAt(k) < 'A' && s.charAt(k) != '%') { //skip flags,width,precision: %<flags><width><precision>character
-                k++;                    
+                k++;
             }
             if (k == s.length())
                 throw new LispException("Format string ends in middle of format specifier");
@@ -335,39 +361,39 @@ public abstract class BuiltinsCore {
                 result += objects[index].toString();
                 index++;
             }
-           /* switch (s.charAt(k)) {
-                case 's': //print a string argument.  Actually, prints any object, with `princ'.
-                    break;
-                case 'S': //print any object as an s-expression (using `prin1').
-                    break;
-                case '%':
-                    break;
+            /* switch (s.charAt(k)) {
+               case 's': //print a string argument.  Actually, prints any object, with `princ'.
+                   break;
+               case 'S': //print any object as an s-expression (using `prin1').
+                   break;
+               case '%':
+                   break;
 
-                //todo: The argument used for %d, %o, %x, %e, %f, %g or %c must be a number.
-                
-                case 'd': //print as number in decimal (%o octal, %x hex)
-                    break;
-                case 'o': //print as number in octal
-                    break;
-                case 'x': //print as number in hex
-                    break;
-                case 'X': //is like %x, but uses upper case.
-                    break;
-                case 'e': //print a number in exponential notation.
-                    break;
-                case 'f': //print a number in decimal-point notation.
-                    break;
-                case 'g': //print a number in exponential notation or decimal-point notation, whichever uses fewer characters.
-                    break;
-                case 'c': //print a number as a single character.
-                    break;
+               //todo: The argument used for %d, %o, %x, %e, %f, %g or %c must be a number.
+
+               case 'd': //print as number in decimal (%o octal, %x hex)
+                   break;
+               case 'o': //print as number in octal
+                   break;
+               case 'x': //print as number in hex
+                   break;
+               case 'X': //is like %x, but uses upper case.
+                   break;
+               case 'e': //print a number in exponential notation.
+                   break;
+               case 'f': //print a number in decimal-point notation.
+                   break;
+               case 'g': //print a number in exponential notation or decimal-point notation, whichever uses fewer characters.
+                   break;
+               case 'c': //print a number as a single character.
+                   break;
 
 
-                default:
-                    throw new LispException("Invalid format operation %" + s.charAt(k));
-            } */
+               default:
+                   throw new LispException("Invalid format operation %" + s.charAt(k));
+           } */
             k++;
-            int nextPercent = s.indexOf('%', k); 
+            int nextPercent = s.indexOf('%', k);
             result += s.substring(k, (nextPercent == -1 ? s.length() : nextPercent));
             k = nextPercent;
         }
@@ -400,29 +426,29 @@ public abstract class BuiltinsCore {
         if (start != null) {
             from = start.getData();
             if (from < 0 || from >= string.length())
-                throw new ArgumentOutOfRange(string.toString(), start.toString());            
+                throw new ArgumentOutOfRange(string.toString(), start.toString());
         }
         int r = source.indexOf(target, from);
         if (r == -1)
             return LispSymbol.ourNil;
         return new LispInteger(r);
     }
-    
-    @Subroutine("message") 
+
+    @Subroutine("message")
     public static LispString message (LispString formatString, @Optional LObject... args) {
         //todo: write in echo area
         LispString s = format(formatString, args);
         System.out.println(s.getData());
         return s;
     }
-    
-   /* private static boolean checkFunction (Environment environment, LObject object) {
-        CustomEnvironment inner = new CustomEnvironment(environment);
-        inner.setArgumentsEvaluated(true);
-        LispList list = LispList.list(new LispSymbol("functionp"), object);
-        LObject result = list.evaluate(inner);
-        return true;
-    } */
+
+    /* private static boolean checkFunction (Environment environment, LObject object) {
+       CustomEnvironment inner = new CustomEnvironment(environment);
+       inner.setArgumentsEvaluated(true);
+       LispList list = LispList.list(new LispSymbol("functionp"), object);
+       LObject result = list.evaluate(inner);
+       return true;
+   } */
 
     @Subroutine("defalias")
     public static LObject defineAlias (Environment environment, LispSymbol symbol, LObject functionDefinition, @Optional LObject docString) {
@@ -436,18 +462,18 @@ public abstract class BuiltinsCore {
         GlobalEnvironment.INSTANCE.defineSymbol(real);
         return functionDefinition;
     }
-    
+
     @Subroutine("provide")
     public static LispSymbol provide (LispSymbol feature, @Optional LObject subFeatures) {
         //todo: implement
         return feature;
     }
-    
+
     @Subroutine("atom")
     public static LispSymbol atom (LObject object) {
         return LispSymbol.bool(!(object instanceof LispList));
     }
-    
+
     @Subroutine("=")
     public static LispSymbol equalNumbersOrMarkers (LObject num1, LObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
@@ -475,7 +501,7 @@ public abstract class BuiltinsCore {
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 < n2);
     }
-    
+
     @Subroutine(">=")
     public static LispSymbol moreOrEqual (LObject num1, LObject num2) {
         return LispSymbol.bool(!less(num1, num2).toBoolean());

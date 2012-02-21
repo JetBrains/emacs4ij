@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import com.google.common.collect.Lists;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
@@ -26,8 +25,9 @@ public class LispVector extends LispObject implements LispSequence {
         myData = new ArrayList<LObject>(Arrays.asList(objects));
     }
     
-    public LispVector (List<LObject> list) {
-        myData = Lists.newArrayList(list);
+    public LispVector (ArrayList<LObject> list) {
+        myData = list; //rem: don't copy for LispSequence.copy to share data 
+        //myData = Lists.newArrayList(list);
     }
 
     @Override
@@ -90,5 +90,10 @@ public class LispVector extends LispObject implements LispSequence {
             data.add(BuiltinsCore.functionCall(environment, method, item));
         }
         return data;
+    }
+
+    @Override
+    public LObject copy() {
+        return new LispVector(myData);
     }
 }

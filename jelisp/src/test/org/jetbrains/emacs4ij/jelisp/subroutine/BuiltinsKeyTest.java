@@ -93,6 +93,17 @@ public class BuiltinsKeyTest {
     }
     
     @Test
+    public void testClLoopLet() {
+        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
+        evaluateString("(setq arg0 (nreverse loop-for-sets))");
+        evaluateString("(setq arg1 '(quote setq))");
+        evaluateString("(setq arg2 nil)");
+        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el");
+        LObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
+        Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
+    }
+    
+    @Test
     public void testEdmacroParseKeys() {
         LObject r = evaluateString("(edmacro-parse-keys \"C-x\" nil)");
         Assert.assertEquals(new LispString("^X"), r);

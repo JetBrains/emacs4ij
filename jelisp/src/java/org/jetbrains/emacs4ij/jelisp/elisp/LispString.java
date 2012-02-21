@@ -77,4 +77,9 @@ public class LispString extends LispAtom implements LispSequence {
         }
         return data;
     }
+
+    @Override
+    public LObject copy() {
+        return new LispString(myData);
+    }
 }

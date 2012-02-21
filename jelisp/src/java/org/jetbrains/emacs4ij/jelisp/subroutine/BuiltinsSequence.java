@@ -65,4 +65,14 @@ public class BuiltinsSequence {
         return LispList.list(((LispSequence)sequence).mapCar(environment, function));
     }
 
+    @Subroutine("copy-sequence")
+    public static LObject copySequence (LObject arg) {
+        if (LispSymbol.ourNil.equals(arg))
+            return arg;
+        //todo: char-table, bool-vector
+        if (!(arg instanceof LispSequence))
+            throw new WrongTypeArgumentException("sequencep", arg.toString());
+        return ((LispSequence)arg).copy();
+    }
+
 }

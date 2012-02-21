@@ -259,7 +259,6 @@ public class LispSymbol extends LispAtom {
             checkCallStack();
             return result;
         }
-
         if (isMacro()) {
             result = evaluateMacro(environment, args);
             checkCallStack();

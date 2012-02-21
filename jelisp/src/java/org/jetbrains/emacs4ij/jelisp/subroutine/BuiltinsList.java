@@ -103,7 +103,7 @@ public abstract class BuiltinsList {
             if (!(lists[i] instanceof LispList || lists[i].equals(LispSymbol.ourNil)))
                 throw new WrongTypeArgumentException("list", lists[i].toString());
 
-            if (lists[i] instanceof LispSymbol) //== nil
+            if (lists[i].equals(LispSymbol.ourNil))
                 lists[i] = lists[i+1];
             else
                 ((LispList)lists[i]).append(lists[i+1]);
@@ -151,4 +151,21 @@ public abstract class BuiltinsList {
             throw new WrongTypeArgumentException("listp", list.toString());
         return ((LispList)list).delq(element);
     }
+
+    @Subroutine("nthcdr")
+    public static LObject nthCdr (LispInteger n, LObject list) {
+        if (list.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        if (!(list instanceof LispList))
+            throw new WrongTypeArgumentException("listp", list.toString());
+        LObject result = list;
+        int i = 0;
+        for (; i < n.getData() && result instanceof LispList; ++i) {
+            result = ((LispList)result).cdr();
+        }
+        if (i < n.getData() && !LispSymbol.ourNil.equals(result))
+            throw new WrongTypeArgumentException("listp", result.toString());
+        return result;
+    }
+
 }

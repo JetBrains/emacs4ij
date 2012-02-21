@@ -401,12 +401,6 @@ public class GlobalEnvironment extends Environment {
         return findAndRegisterEmacsForm(name.getName());
     }
 
-    //TODO: for test only
-    public void findAndRegisterEmacsFunction (String file, String name) {
-        LispList function = getDefFromFile(file, name);
-        function.evaluate(this);
-    }
-
     public static void showMessage (String message) {
         myIde.showMessage(message);
     }

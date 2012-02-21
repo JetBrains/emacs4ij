@@ -36,6 +36,11 @@ public abstract class BuiltinsSymbol {
         return symbol.getValue();
     }
 
+    @Subroutine("symbol-name")
+    public static LObject symbolName (LispSymbol arg) {
+        return new LispString(arg.getName());
+    }
+
     @Subroutine("get")
     public static LObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
         LObject result = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
