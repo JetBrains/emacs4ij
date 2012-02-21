@@ -101,8 +101,9 @@ public class ForwardParser extends Parser {
                         }
                     }
                     LObject object = parseObject(isBackQuote);
-                    if (object != null)
+                    if (object != null) {
                         data.add(object);
+                    }
                 }
                 break;
             } catch (EndOfLineException e) {
@@ -146,27 +147,29 @@ public class ForwardParser extends Parser {
     private int getNextDoubleQuoteIndex (int from) {
         int i = myLispCode.indexOf('"', from);
         if (i == -1)
-            return i;
+            return myLispCode.length();
         if (i != 0)
             if (myLispCode.charAt(i-1) == '\\')
                 if (i + 1 != myLispCode.length()) {
                     i = getNextDoubleQuoteIndex(i + 1);
                 } else {
-                    return -1;
+                    return myLispCode.length();
                 }
         return i;
     }
 
     @Override
     protected int getNextIndexOf (char what) {
-        if (myLispCode.length() == 0)
-            return 0;
+        if (myCurrentIndex == myLispCode.length())
+            return myLispCode.length();
         int i = (what == '"') ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
         return ((i == -1) ? myLispCode.length() : i);
     }
 
     @Override
     protected String extractForm(int nextSeparatorIndex) {
+        if (myCurrentIndex < 0 || myCurrentIndex >= myLispCode.length())
+            return "";
         return myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex);
     }
 
@@ -174,10 +177,8 @@ public class ForwardParser extends Parser {
         int nextDoubleQuoteIndex;
         String data = "";
         while (true) {
-            nextDoubleQuoteIndex = getNextIndexOf('"');
-            if (myLispCode.length() != 0) {
-                data += extractForm(nextDoubleQuoteIndex);
-            }
+            nextDoubleQuoteIndex = getNextDoubleQuoteIndex(myCurrentIndex);
+            data += extractForm(nextDoubleQuoteIndex);
             if (nextDoubleQuoteIndex == myLispCode.length()) {
                 if (countObservers() == 0)
                     throw new MissingClosingDoubleQuoteException();
@@ -402,22 +403,20 @@ public class ForwardParser extends Parser {
     public LObject parseLine (String lispCode) {
         myCurrentIndex = 0;
         myLispCode = lispCode;
-        //myLispCode = myLispCode.trim();
         try {
-        skipListSeparators();
+            skipListSeparators();
         } catch (EndOfLineException e) {
             return null;
         }
         LObject lispObject = parseObject();
-        return lispObject;
-//        try {
-//            getMyCurrentIndex();
-//        } catch (EndOfLineException ignored) {
-//            return lispObject;
-//        }
-//        if (getCurrentChar() == ';')
-//            return lispObject;
-//        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
+        try {
+            getMyCurrentIndex();
+        } catch (EndOfLineException ignored) {
+            return lispObject;
+        }
+        if (getCurrentChar() == ';')
+            return lispObject;
+        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
     }
 
     @Override
@@ -469,7 +468,5 @@ public class ForwardParser extends Parser {
     public void append (String lispCode) {
         myLispCode = lispCode;
         myCurrentIndex = 0;
-       // myLispCode += "\n" + lispCode;
     }
-
 }

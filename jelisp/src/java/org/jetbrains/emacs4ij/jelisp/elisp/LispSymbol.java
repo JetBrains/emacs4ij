@@ -250,7 +250,7 @@ public class LispSymbol extends LispAtom {
 
     public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-        System.out.println(myName);
+//        System.out.println(myName);
         LObject result;
         if (args == null)
             args = new ArrayList<>();

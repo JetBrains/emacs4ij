@@ -83,14 +83,15 @@ public class LambdaArgument {
             if (!mySetVar.equals(LispSymbol.ourNil))
                 mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourNil);
             inner.defineSymbol(myVar);
-            //return;
-        } else {
-            myVar.setValue(value);
-            if (!mySetVar.equals(LispSymbol.ourNil))
-                mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourT);
-            inner.defineSymbol(myVar);
+            return;
         }
-        System.out.println("    " + myVar.toString());
+//        } else {
+        myVar.setValue(value);
+        if (!mySetVar.equals(LispSymbol.ourNil))
+            mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourT);
+        inner.defineSymbol(myVar);
+//        }
+//        System.out.println("    " + myVar.toString());
     }
 
     @Override

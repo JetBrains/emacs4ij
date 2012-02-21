@@ -101,8 +101,6 @@ public class Lambda extends LispObject implements FunctionCell {
     @Override
     public String toString() {
         String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
-       // if (myDocumentation != null)
-       //     s += " " + myDocumentation.toString();
         for (LObject bodyForm: myBody) {
             s += " " + bodyForm.toString();
         }
@@ -167,7 +165,7 @@ public class Lambda extends LispObject implements FunctionCell {
             for (int k = j; k < myArgumentList.size(); ++k)
                 myArgumentList.get(k).setValue(inner, null);
         }
-        System.out.println("--------");
+//        System.out.println("--------");
         return inner;
     }
 

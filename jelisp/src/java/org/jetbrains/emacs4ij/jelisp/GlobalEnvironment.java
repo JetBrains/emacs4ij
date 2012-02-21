@@ -384,8 +384,8 @@ public class GlobalEnvironment extends Environment {
     }
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
-        if (name.equals("define-minor-mode"))
-            System.out.print(1);
+//        if (name.equals("define-minor-mode"))
+//            System.out.print(1);
         LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
 
         if (definition == null)
