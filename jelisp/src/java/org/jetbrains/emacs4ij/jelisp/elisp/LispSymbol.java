@@ -22,8 +22,6 @@ public class LispSymbol extends LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
-//    public static final LispSymbol ourBufferLocalVariable = new LispSymbol("");
-//    public static final LispSymbol ourUserOption = new LispSymbol("");
 
     private String myName = null;
     private LObject myValue = null; //ourVoid;
@@ -97,32 +95,15 @@ public class LispSymbol extends LispAtom {
         this.myValue = myValue;
     }
 
-    /*public FunctionCell getFunctionCell() {
-        if (myFunction == null)
-            return null;
-        if (isCustom())
-            return new FunctionCell(toString(), FunctionCell.Type.CustomFunction);
-        if (isMacro())
-            return new FunctionCell(toString(), FunctionCell.Type.Macro);
-        if (isSubroutine()) {
-            if (isBuiltIn())
-                return new FunctionCell(toString(), FunctionCell.Type.BuiltIn);
-            return new FunctionCell(toString(), FunctionCell.Type.SpecialForm);
-        }
-        throw new RuntimeException("unknown function type: " + myName);
-    }*/
-
     private void castToLambda (Environment environment) {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction, environment);
-            //environment.updateSymbol(this);
         }
     }
 
     private void castToMacro (Environment environment) {
         if (isMacro() && !(myFunction instanceof Macro)) {
             myFunction = new Macro((LispList) myFunction, environment);
-            //environment.updateSymbol(this);
         }
     }
 
@@ -234,7 +215,6 @@ public class LispSymbol extends LispAtom {
                 System.err.println("void-var '" + myName + "'");
                 throw new VoidVariableException(myName);
             }
-            //System.out.println("uploaded " + myName);
         }
         return symbol.getValue();
     }
@@ -244,17 +224,15 @@ public class LispSymbol extends LispAtom {
         if (myName.equals("catch"))
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
-
         if (!q.equals(myName)) {
             throw new RuntimeException("bug in call stack");
         }
-        //if (q.equals("symbol-file"))
-        //    System.out.println("symbol-file FINISHED");
     }
 
     public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-//        System.out.println(myName);
+//        if (myName.equals("list*"))
+//            System.out.print(1);
         LObject result;
         if (args == null)
             args = new ArrayList<>();

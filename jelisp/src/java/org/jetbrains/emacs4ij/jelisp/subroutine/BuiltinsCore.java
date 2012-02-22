@@ -159,7 +159,7 @@ public abstract class BuiltinsCore {
 
     @Subroutine("null")
     public static LispObject lispNull (LObject lObject) {
-        return lObject.equals(LispSymbol.ourNil) ? LispSymbol.ourT : LispSymbol.ourNil;
+        return LispSymbol.bool(lObject.equals(LispSymbol.ourNil));
     }
 
     @Subroutine("not")
@@ -528,9 +528,21 @@ public abstract class BuiltinsCore {
         boolean isDouble = n.getData() instanceof Double;
         return fromDouble(isDouble, n.getDoubleData() - 1);
     }
+
+    @Subroutine("1+")
+    public static LispNumber plusOne (LObject num) {
+        LispNumber n = numberOrMarkerToNumber(num);
+        boolean isDouble = n.getData() instanceof Double;
+        return fromDouble(isDouble, n.getDoubleData() + 1);
+    }
     
     @Subroutine("throw")
     public static void lispThrow (LObject tag, LObject value) {
         throw new LispThrow(tag, value);
+    }
+    
+    @Subroutine("identity")
+    public static LObject identity (LObject arg) {
+        return arg;
     }
 }

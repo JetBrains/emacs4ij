@@ -135,14 +135,16 @@ public class BuiltinsListTest {
 
     @Test
     public void testList() {
-        LObject LObject = evaluateString("(list)");
-        Assert.assertEquals("no args", LispSymbol.ourNil, LObject);
-        LObject = evaluateString("(list 5 \"test\")");
-        Assert.assertEquals("2 args", LispList.list(new LispInteger(5), new LispString("test")), LObject);
-        LObject = evaluateString("(list nil)");
-        Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.ourNil), LObject);
-        LObject = evaluateString("(list (list))");
-        Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), LObject);
+        LObject r = evaluateString("(list)");
+        Assert.assertEquals("no args", LispSymbol.ourNil, r);
+        r = evaluateString("(list 5 \"test\")");
+        Assert.assertEquals("2 args", LispList.list(new LispInteger(5), new LispString("test")), r);
+        r = evaluateString("(list nil)");
+        Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.ourNil), r);
+        r = evaluateString("(list (list))");
+        Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), r);
+        r = evaluateString("(list 1 nil)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.ourNil), r);
     }
 
     @Test
@@ -160,6 +162,14 @@ public class BuiltinsListTest {
     public void testCons() {
         LObject cons = evaluateString("(cons (+ 4 5) \"hi\")");
         Assert.assertEquals(LispList.cons(new LispInteger(9), new LispString("hi")), cons);
+    }
+    
+    @Test
+    public void testToString() {
+        evaluateString("(setq a '(and (< (setq --cl-idx-- (1+ --cl-idx--)) (length --cl-vec--)) (progn (setq ch (aref --cl-vec-- --cl-idx--)) (setq --cl-flag-- (and (characterp ch) (let ((ch2 (logand ch (lognot 134217728)))) (and (>= ch2 0) (<= ch2 127))))))))");
+        LObject list = evaluateString("(setq b (list 'a '()))");
+        LObject r = evaluateString("(list '(1 2) b)");
+        System.out.println(r.toString());
     }
 
     @Test
@@ -295,8 +305,7 @@ public class BuiltinsListTest {
         LObject r = evaluateString("(assoc 1 '(1 2 3 4 (1 . \"alla\") 5))");
         Assert.assertEquals(LispList.cons(new LispInteger(1), new LispString("alla")), r);
         r = evaluateString("(assoc nil '(1 (nil . nil) 2))");
-        Assert.assertEquals(LispList.list(), r);
-        //Assert.assertEquals("(nil)", r.toString());
+        Assert.assertEquals(LispList.cons(LispSymbol.ourNil, LispSymbol.ourNil), r);
         r = evaluateString("(assoc 1 '((1 2 3) (nil . nil) 2))");
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
         r = evaluateString("(assoc nil '((() 2 3) (nil . nil) 2))");
@@ -403,6 +412,8 @@ public class BuiltinsListTest {
         r = evaluateString("(nthcdr -1 '(1 2 3))");
         Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     }
+
+
 }
 
 

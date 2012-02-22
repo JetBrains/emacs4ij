@@ -178,6 +178,16 @@ public class BuiltinsCoreTest {
         lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
+    
+    @Test
+    public void testNilEqual() {
+        LObject r = evaluateString("(equal nil (cons nil nil))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(equal nil '())");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(equal nil '(nil))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
 
     @Test
     public void testNull () {
@@ -877,5 +887,39 @@ public class BuiltinsCoreTest {
     @Test (expected = LispThrow.class)
     public void testThrowNoCatch() {
         evaluateString("(throw 'a nil)");
+    }
+
+    @Test
+    public void testListStarTwo() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq b '(2 3))");
+        LObject r = evaluateString("(list* a b)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
+
+    @Test
+    public void testListStarThreeNil() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq b '(2 3))");
+        LObject r = evaluateString("(list* a b nil)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), LispList.list(new LispInteger(2), new LispInteger(3))), r);
+    }
+
+    @Test
+    public void testListStarThreeObject() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq b '(2 3))");
+        LObject r = evaluateString("(list* a b 4)");
+        Assert.assertEquals(LispList.testList(new LispInteger(1),
+                LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
+    }
+
+    @Test
+    public void testListStarThreeList() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq b '(2 3))");
+        LObject r = evaluateString("(list* a b '(4))");
+        Assert.assertEquals(LispList.list(new LispInteger(1),
+                LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
     }
 }

@@ -337,10 +337,7 @@ public class GlobalEnvironment extends Environment {
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
-            //String first = ((LispSymbol)((LispList) parsed).car()).getName();
-            //if (myDefForms.contains(first))
             return (LispList) parsed;
-            //throw new RuntimeException("Parsed list is not a specified definition!");
         }
         throw new RuntimeException("Parsed object is not a LispList!");
     }
@@ -380,35 +377,30 @@ public class GlobalEnvironment extends Environment {
         return def;
     }
     
-    public LispSymbol findAndRegisterEmacsForm (String name, String file) {
-        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name);
+    private LispSymbol processDef (LispList definition, String name) {
         if (definition == null)
             return null;
+//        if (name.equals("cl-safe-expr-p"))
+//            System.out.print(1);
         LObject evaluated = definition.evaluate(this);
         if (!(evaluated instanceof LispSymbol))
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-        return (LispSymbol) evaluated;
-//        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
-//            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-//        }
-//        return find(name);
+        LispSymbol value = find(((LispSymbol) evaluated).getName());
+        if (value == null)
+            value = findAndRegisterEmacsForm((LispSymbol) evaluated);
+        return value;
+    }
+    
+    public LispSymbol findAndRegisterEmacsForm (String name, String file) {
+        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name);
+        return processDef(definition, name);
     }
 
     public LispSymbol findAndRegisterEmacsForm(String name) {
-//        if (name.equals("define-minor-mode"))
+//        if (name.equals("cl-safe-expr-p"))
 //            System.out.print(1);
         LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
-        if (definition == null)
-            return null;
-        LObject evaluated = definition.evaluate(this);
-        if (!(evaluated instanceof LispSymbol))
-            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-        return (LispSymbol) evaluated;
-
-//        if (!(evaluated instanceof LispSymbol) || !name.equals(((LispSymbol) evaluated).getName())) {
-//            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
-//        }
-//        return find(name);
+        return processDef(definition, name);
     }
 
     public LispSymbol findAndRegisterEmacsForm(LispSymbol name) {

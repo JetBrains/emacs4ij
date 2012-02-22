@@ -79,8 +79,7 @@ public abstract class BuiltinsList {
     public static LispObject list (@Optional LObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
-        LispList list = LispList.list(args);
-        return list.isEmpty() ? LispSymbol.ourNil : list;
+        return LispList.list(args);
     }
 
     @Subroutine("cons")
