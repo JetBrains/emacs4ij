@@ -24,7 +24,7 @@ public abstract class Environment {
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
     protected static BufferManager ourBufferManager;
-    protected ArrayList<LObject> myCatches = new ArrayList<>();
+//    protected ArrayList<LObject> myCatches = new ArrayList<>();
 
     public boolean isMainOrGlobal() {
         return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);
@@ -33,10 +33,43 @@ public abstract class Environment {
     private Environment getOuterEnv() {
         return myOuterEnv;
     }
-
-    public void setCatchPoint (LObject tag) {
-        myCatches.add(tag);
-    }
+//
+//    public void addCatchPoint (LObject tag) {
+//        myCatches.add(tag);
+//    }
+//
+//    public boolean containsCatch (final LObject tag) {
+//        LObject tag1 = (LObject)CollectionUtils.find(myCatches, new Predicate() {
+//            @Override
+//            public boolean evaluate(Object o) {
+//                return BuiltinsCore.eqs(tag, (LObject)o);
+//            }
+//        });
+//        return tag1 != null;
+//    }
+    
+//    public void processThrow (LObject tag, LObject value) {
+//        if (containsCatch(tag)) {
+//            //todo
+//            /*
+//            Executing throw exits all Lisp constructs up to the matching catch, including function calls.
+//            When binding constructs such as let or function calls are exited in this way, the bindings are unbound,
+//            just as they are when these constructs exit normally (see Local Variables).
+//            Likewise, throw restores the buffer and position saved by save-excursion (see Excursions),
+//            and the narrowing status saved by save-restriction and the window selection saved by save-window-excursion
+//            (see Window Configurations). It also runs any cleanups established with the unwind-protect special form
+//            when it exits that form (see Cleanups).
+//             */
+//
+//
+//            return;
+//        }
+//        if (myOuterEnv == null) {
+//            BuiltinsCore.error(this, "no-catch", tag, value);
+//            return;
+//        }
+//        myOuterEnv.processThrow(tag, value);
+//    }
     
     public boolean areArgumentsEvaluated() {
         return myArgumentsEvaluated;

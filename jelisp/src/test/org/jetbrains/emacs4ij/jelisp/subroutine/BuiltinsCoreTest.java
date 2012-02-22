@@ -6,10 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -876,5 +873,9 @@ public class BuiltinsCoreTest {
         }
         Assert.fail();
     }
-
+    
+    @Test (expected = LispThrow.class)
+    public void testThrowNoCatch() {
+        evaluateString("(throw 'a nil)");
+    }
 }

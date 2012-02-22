@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.lang.annotation.Annotation;
@@ -35,9 +34,9 @@ public class Primitive extends LispObject implements FunctionCell {
 
         countMinMaxNumArgs();
 
-        if (!annotation.key().equals(GlobalEnvironment.ourUnsetKeyString)) {
-
-        }
+//        if (!annotation.key().equals(GlobalEnvironment.ourUnsetKeyString)) {
+//
+//        }
     }
 
     @Override

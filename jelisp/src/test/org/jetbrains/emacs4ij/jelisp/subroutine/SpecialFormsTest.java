@@ -628,5 +628,30 @@ default-directory
         }
         Assert.fail();
     }
+    
+    @Test
+    public void testThrowCatch() {
+        LObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2) (throw 'a 5))");
+        Assert.assertEquals(new LispInteger(5), r);
+    }
+
+    @Test
+    public void testCatchNoThrow() {
+        LObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2))");
+        Assert.assertEquals(new LispInteger(3), r);
+    }
+
+    @Test
+    public void testCatchNoBody() {
+        LObject r = evaluateString("(catch 'a)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testCatchInnerThrow() {
+        evaluateString("(defun f () (throw 'a 1))");
+        LObject r = evaluateString("(catch 'a (message \"hi\") (f) (+ 1 2))");
+        Assert.assertEquals(new LispInteger(1), r);
+    }
 
 }

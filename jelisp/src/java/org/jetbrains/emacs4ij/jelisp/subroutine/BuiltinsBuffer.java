@@ -168,7 +168,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: bound to C-f, <right>
-    @Subroutine(value = "forward-char", isCmd = true, interactive = "", key = "\\C-f")
+    @Subroutine(value = "forward-char", isCmd = true, interactive = "")//, key = "\\C-f")
     public static LObject forwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);
@@ -180,7 +180,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: bound to C-b, <left>
-    @Subroutine(value = "backward-char", isCmd = true, interactive = "", key = "\\C-b")
+    @Subroutine(value = "backward-char", isCmd = true, interactive = "")//, key = "\\C-b")
     public static LObject backwardChar (Environment environment, @Optional LispInteger shift) {
         if (shift == null) {
             shift = new LispInteger(1);

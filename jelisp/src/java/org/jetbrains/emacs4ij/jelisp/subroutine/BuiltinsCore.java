@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -22,6 +23,20 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
+    public static void error (Environment environment, String message) {
+        error(environment, message, null);
+    }
+
+    public static void error (Environment environment, String message, @Nullable LObject... args) {
+        ArrayList<LObject> data = new ArrayList<>();
+        data.add(new LispSymbol("error"));
+        data.add(new LispString(message));
+        if (args != null) {
+            data.addAll(Arrays.asList(args));
+        }
+        LispList.list(data).evaluate(environment);
+    }
+    
     private static LispNumber numberOrMarkerToNumber (LObject lispObject) {
         if (BuiltinPredicates.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
@@ -512,5 +527,10 @@ public abstract class BuiltinsCore {
         LispNumber n = numberOrMarkerToNumber(num);
         boolean isDouble = n.getData() instanceof Double;
         return fromDouble(isDouble, n.getDoubleData() - 1);
+    }
+    
+    @Subroutine("throw")
+    public static void lispThrow (LObject tag, LObject value) {
+        throw new LispThrow(tag, value);
     }
 }

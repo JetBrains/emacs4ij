@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.Error;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -421,10 +422,22 @@ public abstract class SpecialForms {
     }
     
     @Subroutine("catch")
-    public static void lispCatch (LObject tag, LObject... body) {
+    public static LObject lispCatch (Environment environment, LObject tagObject, @Optional LObject... body) {
         //todo: emacs man says nil cannot be tag, but signals no error though
-        //if (tag.equals(LispSymbol.ourNil))
+        LObject tag = tagObject.evaluate(environment);
+        try {
+            LObject result = LispSymbol.ourNil;
+            for (LObject bodyForm: body) {
+                result = bodyForm.evaluate(environment);
+            }
+            return result;
+        } catch (LispThrow e) {
+            if (BuiltinsCore.eqs(tag, e.getTag())) {
 
+                return e.getValue();
+            }
+            throw e;
+        }
     }
     
 }

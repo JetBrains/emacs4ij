@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
@@ -175,6 +176,12 @@ public abstract class LispSubroutine {
         }
     }
 
+    private static Throwable getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e;
+        return getCause(e.getCause());
+    }
+
     public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
         for (Class c: getSubroutineContainers()) {
             Method[] methods = c.getMethods();
@@ -196,10 +203,15 @@ public abstract class LispSubroutine {
                     checkArguments(arguments, args);
                     try {
                         return (LObject) m.invoke(null, arguments.getValues());
-                    } catch (IllegalAccessException | InvocationTargetException e) {
+                    } catch (IllegalAccessException e) {
                         System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e.getCause());
-                    }
+                    } catch (InvocationTargetException e) {
+                        if (getCause(e) instanceof LispThrow) 
+                            throw (LispThrow)getCause(e);
+                        System.err.println(e.getCause().getMessage());
+                        throw new RuntimeException(e.getCause());
+                    } 
                 }
             }
         }

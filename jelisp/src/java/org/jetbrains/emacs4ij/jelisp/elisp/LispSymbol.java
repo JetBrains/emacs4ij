@@ -241,6 +241,10 @@ public class LispSymbol extends LispAtom {
 
     private void checkCallStack () {
         String q = GlobalEnvironment.ourCallStack.removeFirst();
+        if (myName.equals("catch"))
+            while (!q.equals(myName))
+                q = GlobalEnvironment.ourCallStack.removeFirst();
+
         if (!q.equals(myName)) {
             throw new RuntimeException("bug in call stack");
         }
