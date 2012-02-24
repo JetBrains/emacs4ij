@@ -19,7 +19,6 @@ public class LispListTest {
     @Test
     public void testCreateTrueList () {
         LispList list = LispList.list();
-        Assert.assertEquals(LispList.list(LispSymbol.ourNil), list);
         Assert.assertEquals(LispSymbol.ourNil, list);
     }
     

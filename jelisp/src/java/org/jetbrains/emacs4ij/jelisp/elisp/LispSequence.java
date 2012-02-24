@@ -16,4 +16,5 @@ public interface LispSequence {
     public List<LObject> toLObjectList();
     public List<LObject> mapCar (Environment environment, LispSymbol method);
     public LObject copy();
+    public String toCharString(); //for List, Vector and String only
 }

@@ -82,4 +82,31 @@ public class LispString extends LispAtom implements LispSequence {
     public LObject copy() {
         return new LispString(myData);
     }
+
+    @Override
+    public String toCharString() {
+        return myData;
+    }
+    
+    private boolean isDelimiter(int c) {
+        return c < 48 || (c > 57 && c < 65) || (c > 90 && c < 97) || c > 122;
+    }
+    
+    public LispString capitalize() {
+        boolean firstAfterDelimiter = true;
+        char[] s = myData.toCharArray();
+        for (int c = 0; c < s.length; ++c) {            
+            if (isDelimiter(s[c])) {
+                firstAfterDelimiter = true;
+                continue;
+            }
+            if (firstAfterDelimiter) {
+                s[c] = Character.toUpperCase(s[c]);
+                firstAfterDelimiter = false;
+                continue;
+            }            
+            s[c] = Character.toLowerCase(s[c]);
+        }        
+        return new LispString(new String(s));
+    }
 }

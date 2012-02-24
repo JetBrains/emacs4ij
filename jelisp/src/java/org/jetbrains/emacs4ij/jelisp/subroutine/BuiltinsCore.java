@@ -545,4 +545,25 @@ public abstract class BuiltinsCore {
     public static LObject identity (LObject arg) {
         return arg;
     }
+
+    @Subroutine("capitalize")
+    public static LObject capitalize (LObject object) {
+        if (object instanceof LispString) {
+            return ((LispString)object).capitalize();
+        }
+        if (object instanceof LispInteger) {
+            int data = ((LispInteger)object).getData();
+            if (data >= 'a' && data <= 'z') {
+                return new LispInteger(data - 'a' + 'A');    
+            }
+            return new LispInteger(data);
+        }
+        throw new WrongTypeArgumentException("char-or-string-p", object.toString());
+    }
+    
+    @Subroutine("match-data")
+    public static LObject matchData(@Optional LObject integers, LObject reuse, LObject reseat) {
+        //todo :)
+        return LispSymbol.ourNil;
+    }
 }

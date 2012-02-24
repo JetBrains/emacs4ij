@@ -158,4 +158,16 @@ public class BuiltinPredicatesTest {
         r = evaluateString("(sequencep 'a)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
+    
+    @Test
+    public void testCharacterP() {
+        LObject r = evaluateString("(characterp 5)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+        r = evaluateString("(characterp -1)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(characterp 4194304)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(characterp 4194303)");
+        Assert.assertEquals(LispSymbol.ourT, r);
+    }
 }

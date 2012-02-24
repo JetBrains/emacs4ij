@@ -112,5 +112,6 @@ public class BuiltinsKeyTest {
     @Test
     public void testKbdMacro() {
         LObject r = evaluateString("(kbd \"C-x\")");
+        Assert.assertEquals(new LispString("^X"), r);
     }
 }

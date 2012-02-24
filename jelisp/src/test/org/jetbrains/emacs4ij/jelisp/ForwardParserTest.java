@@ -255,7 +255,7 @@ public class ForwardParserTest {
     @Test
     public void testParseCharacter() {
         LObject c = p.parseLine("?a");
-        Assert.assertEquals(new LispInteger(65), c);
+        Assert.assertEquals(new LispInteger(97), c);
         c = p.parseLine("?A");
         Assert.assertEquals(new LispInteger(65), c);
     }
@@ -672,6 +672,12 @@ public class ForwardParserTest {
         Assert.fail();
     }
 
+    @Test
+    public void testCtrlC () {
+        LObject c = p.parseLine("?\\^c");
+        Assert.assertEquals(new LispInteger(3), c);
+    }
+    
 //    @Test
 //    public void testParseDot6() {
 //        LObject r = p.parseLine("(.. 2)");

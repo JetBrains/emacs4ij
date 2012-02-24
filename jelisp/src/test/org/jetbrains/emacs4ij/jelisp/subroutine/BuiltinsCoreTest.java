@@ -592,6 +592,15 @@ public class BuiltinsCoreTest {
         r = evaluateString("(documentation 'f)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
+    
+    @Test
+    public void testDefAliasExec() {
+        evaluateString("(defalias 'a 'identity)");
+        LObject r = evaluateString("(a 5)");
+        Assert.assertEquals(new LispInteger(5), r);
+        r = evaluateString("(symbol-function 'a)");
+        Assert.assertEquals(new LispSymbol("identity"), r);
+    }
 
     @Test
     public void testAtom() {
@@ -795,23 +804,6 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testDefineMinorMode() {
-        LObject r = evaluateString("(define-minor-mode m1 \"doc\")");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testSimple() {
-        LObject r = GlobalEnvironment.INSTANCE.find("defface");
-        Assert.assertNotNull(r);
-        r = GlobalEnvironment.INSTANCE.find("defgroup");
-        Assert.assertNotNull(r);
-
-        GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
-        GlobalEnvironment.INSTANCE.loadFile("simple.el");
-    }
-
-    @Test
     public void testStringMatch() {
         LObject r = evaluateString("(string-match \"a\" \"africa\")");
         Assert.assertEquals(new LispInteger(0), r);
@@ -921,5 +913,36 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("(list* a b '(4))");
         Assert.assertEquals(LispList.list(new LispInteger(1),
                 LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
+    }
+
+    @Test
+    public void testCapitalize() {
+        LObject r = evaluateString("?a");
+        Assert.assertEquals(new LispInteger(97), r);
+        r = evaluateString("(capitalize ?a)");
+        Assert.assertEquals(new LispInteger(65), r);
+        r = evaluateString("(capitalize 97)");
+        Assert.assertEquals(new LispInteger(65), r);
+        r = evaluateString("(capitalize 5)");
+        Assert.assertEquals(new LispInteger(5), r);
+        r = evaluateString("(capitalize \"EVERY day\")");
+        Assert.assertEquals(new LispString("Every Day"), r);
+    }
+
+    @Test
+    public void testDefineMinorMode() {
+        LObject r = evaluateString("(define-minor-mode m1 \"doc\")");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testSimple() {
+        LObject r = GlobalEnvironment.INSTANCE.find("defface");
+        Assert.assertNotNull(r);
+        r = GlobalEnvironment.INSTANCE.find("defgroup");
+        Assert.assertNotNull(r);
+
+        GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
+        GlobalEnvironment.INSTANCE.loadFile("simple.el");
     }
 }

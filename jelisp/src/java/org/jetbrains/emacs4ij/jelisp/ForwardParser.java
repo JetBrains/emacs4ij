@@ -236,7 +236,6 @@ public class ForwardParser extends Parser {
     private static List<Integer> mySpecialChars = Arrays.asList(7 ,8 , 9, 10, 11, 12, 13, 27, 92, 127);
 
     private static int ctrlConvert (char c, boolean asIs) {
-
         switch (Character.toLowerCase(c)) {
             case 'g':
                 return convert('a');
@@ -300,9 +299,10 @@ public class ForwardParser extends Parser {
                     myModifiers[1] = myCtrlCount == 1 ? '0' : '1';
                     myKey = k;
                 }
-            } else if (!hasModifiers) {
-                myKey = Character.toUpperCase((char)myKey);
             }
+//            } else if (!hasModifiers) {
+//                myKey = Character.toUpperCase((char)myKey);
+//            }
             String number = new String(myModifiers);
             String key = Integer.toBinaryString(myKey);
             for (int i = 6; i != 27 - key.length() + 1; ++i)
@@ -314,10 +314,10 @@ public class ForwardParser extends Parser {
     private void setCharKey (Char c, @Nullable Integer key, boolean asIs) {
         if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))// && getNextChar() != ']')
             throw new InvalidReadSyntax("?");
-        int ch = key == null ? Character.toLowerCase(getCurrentChar()) : key; //todo: not in ascii?
+//        int ch = key == null ? Character.toLowerCase(getCurrentChar()) : key; //todo: not in ascii?
+        int ch = key == null ? getCurrentChar() : key;
         c.setKey(ch, asIs);
         advanceTo(myCurrentIndex + 1);
-
     }
 
     private void setCharKey (Char c, @Nullable Integer key) {

@@ -16,9 +16,27 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinPredicates {
     private BuiltinPredicates() {}
 
+    public static boolean isCharacter(LObject object) {
+        if (!(object instanceof LispInteger))
+            return false;
+        int data = ((LispInteger) object).getData();
+        if (data < 0)  //less clear, but shorter would be to replace toBinary... with >= 4194304
+            return false;
+        String binary = Integer.toBinaryString(data);
+        return binary.length() <= 22;
+    }
+
+    public static boolean isString (LObject object) {
+        return object instanceof LispString;
+    }
+
+    public static boolean isCharOrString (LObject object) {
+        return isCharacter(object) || isString(object);
+    }
+
     @Subroutine("stringp")
     public static LispSymbol stringp (LObject arg) {
-        return LispSymbol.bool(arg instanceof LispString);
+        return LispSymbol.bool(isString(arg));
     }
 
     @Subroutine("symbolp")
@@ -100,10 +118,6 @@ public abstract class BuiltinPredicates {
         return LispSymbol.ourNil;
     }
 
-
-
-
-
     @Subroutine("framep")
     public static LispSymbol framep (LObject object) {
         if (object instanceof LispFrame) {
@@ -181,6 +195,14 @@ public abstract class BuiltinPredicates {
     public static LispSymbol vectorP (LObject object) {
         return LispSymbol.bool(object instanceof LispVector);
     }
+    
+    @Subroutine("characterp")
+    public static LispSymbol characterP (LObject object, @Optional LObject ignore) {
+        return LispSymbol.bool(isCharacter(object));
+    }
 
-
+    @Subroutine("char-or-string-p")
+    public static LispSymbol charOrStringP (LObject object) {
+        return LispSymbol.bool(isCharOrString(object));
+    }
 }

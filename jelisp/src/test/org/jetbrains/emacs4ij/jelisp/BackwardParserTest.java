@@ -254,7 +254,7 @@ public class BackwardParserTest {
     @Test
     public void testParseCharacter() {
         LObject c = p.parseLine("?a");
-        Assert.assertEquals(new LispInteger(65), c);
+        Assert.assertEquals(new LispInteger(97), c);
     }
 
     @Test

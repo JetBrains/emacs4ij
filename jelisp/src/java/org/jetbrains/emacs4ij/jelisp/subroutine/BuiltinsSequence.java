@@ -70,9 +70,32 @@ public class BuiltinsSequence {
         if (LispSymbol.ourNil.equals(arg))
             return arg;
         //todo: char-table, bool-vector
-        if (!(arg instanceof LispSequence))
+        if (!isSequence(arg))
             throw new WrongTypeArgumentException("sequencep", arg.toString());
         return ((LispSequence)arg).copy();
+    }
+    
+    private static boolean isStringListVectorNil (LObject object) {
+        return (object instanceof LispVector) || (object instanceof LispString) || (object instanceof LispList)
+         || (object.equals(LispSymbol.ourNil));
+    }
+    
+    @Subroutine("concat")
+    public static LispString concat (Environment environment, @Optional LObject... sequences) {
+        if (sequences == null || sequences.length == 0)
+            return new LispString("");
+        for (LObject s: sequences) {
+            if (!isStringListVectorNil(s))
+                throw new WrongTypeArgumentException("sequencep", s.toString()); 
+        }
+        String res = "";
+        for (LObject s: sequences) {
+            if (s.equals(LispSymbol.ourNil))
+                continue;
+            LispSequence sequence = (LispSequence) s;
+            res += sequence.toCharString();
+        }
+        return new LispString(res);
     }
 
 }

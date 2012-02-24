@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
@@ -96,7 +98,18 @@ public class LispVector extends LispObject implements LispSequence {
     public LObject copy() {
         return new LispVector(myData);
     }
-    
+
+    @Override
+    public String toCharString() {
+        String s = "";
+        for (LObject element: myData) {
+            if (!BuiltinPredicates.isCharacter(element))
+                throw new WrongTypeArgumentException("characterp", element.toString());
+            s += ((LispInteger)element).toCharacterString();
+        }
+        return s;
+    }
+
     public boolean isEmpty() {
         return myData.isEmpty();
     }

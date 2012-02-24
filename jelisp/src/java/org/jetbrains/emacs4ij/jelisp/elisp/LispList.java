@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
@@ -125,8 +126,7 @@ public class LispList extends LispObject implements LispSequence {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + fun.getName());
             try {
-//                if (fun.getName().equals("cl-block-wrapper"))
-//                    System.out.print(1);
+
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());
@@ -138,6 +138,8 @@ public class LispList extends LispObject implements LispSequence {
         }
         /*if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
             System.out.print(1);*/
+//        if (fun.getName().equals("cl-block-wrapper"))
+//            System.out.print(1);
         List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
     }
@@ -150,10 +152,10 @@ public class LispList extends LispObject implements LispSequence {
         LObject cell = this;
         do {
             LObject cdr = ((LispList)cell).cdr();
-            if (cdr == null || cdr instanceof LispList || cdr.equals(LispSymbol.ourNil) || ((LispList)cell).isTrueList())
+            if (cdr == null || cdr instanceof LispList || cdr.equals(LispSymbol.ourNil) || ((LispList)cell).isTrueList()) {
                 if (((LispList)cell).car() != null)
                     list.add(((LispList)cell).car());
-                else {
+            } else {
                     list.add(cell);
                     break;
                 }
@@ -180,6 +182,18 @@ public class LispList extends LispObject implements LispSequence {
     @Override
     public LObject copy() {
         return new LispList(toLObjectList());
+    }
+
+    @Override
+    public String toCharString() {
+        List<LObject> list = toLObjectList();
+        String s = "";
+        for (LObject element: list) {
+            if (!BuiltinPredicates.isCharacter(element))
+                throw new WrongTypeArgumentException("characterp", element.toString());
+            s += ((LispInteger)element).toCharacterString();
+        }
+        return s;
     }
 
     private boolean isNil (LObject object) {
@@ -220,11 +234,11 @@ public class LispList extends LispObject implements LispSequence {
     }
 
     public LObject car () {
-        return myCar;
+        return myCar == null ? LispSymbol.ourNil : myCar;
     }
 
     public LObject cdr () {
-        return myCdr;
+        return myCdr == null ? LispSymbol.ourNil : myCdr;
     }
 
     @Override

@@ -63,7 +63,7 @@ public class BuiltinsSequenceTest {
         
         r = evaluateString("(append '(+ 2 3) '(+ 2 3 nil))");
         Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3),
-                new LispSymbol("+"), new LispInteger(2), new LispInteger(3)), r);
+                new LispSymbol("+"), new LispInteger(2), new LispInteger(3), LispSymbol.ourNil), r);
     }
     
     @Test
@@ -88,4 +88,100 @@ public class BuiltinsSequenceTest {
         }
         Assert.fail();
     }
+    
+    @Test
+    public void testConcat() {
+        LObject r = evaluateString("(concat)");
+        Assert.assertEquals(new LispString(""), r);
+        r = evaluateString("(concat nil nil)");
+        Assert.assertEquals(new LispString(""), r);
+        r = evaluateString("(concat '() nil)");
+        Assert.assertEquals(new LispString(""), r);
+        r = evaluateString("(concat \"hello\")");
+        Assert.assertEquals(new LispString("hello"), r);
+        r = evaluateString("(concat '(1 2) '[3 4] \"hello\")");
+        Assert.assertEquals(new LispString("^A^B^C^Dhello"), r);
+        r = evaluateString("(concat '(0))");
+        Assert.assertEquals(new LispString("^@"), r);
+    }
+
+    @Test
+    public void testConcatSpecial() {
+        LObject r = evaluateString("(concat '(127))");
+        Assert.assertEquals(new LispString("^?"), r);
+        r = evaluateString("(concat '(160))");
+        Assert.assertEquals(new LispString("_"), r);
+    }
+
+    @Test
+    public void testConcatOctal() {
+        LObject r = evaluateString("(concat '(128))");
+        Assert.assertEquals(new LispString("\\200"), r);
+        r = evaluateString("(concat '(159))");
+        Assert.assertEquals(new LispString("\\237"), r);
+    }
+
+    @Test
+    public void testConcatLetters() {
+        LObject r = evaluateString("(concat '(97))");
+        Assert.assertEquals(new LispString("a"), r);
+        r = evaluateString("(concat '(32))");
+        Assert.assertEquals(new LispString(" "), r);
+        r = evaluateString("(concat '(31))");
+        Assert.assertEquals(new LispString("^_"), r);
+        r = evaluateString("(concat '(64))");
+        Assert.assertEquals(new LispString("@"), r);
+    }
+
+    @Test
+    public void testConcatWrongChar() {
+        try {
+            evaluateString("(concat '(\"hello\"))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument characterp \"hello\")", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testConcatWrongChar2() {
+        try {
+            evaluateString("(concat '(134217825))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument characterp 134217825)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testConcatWrongChar3() {
+        try {
+            evaluateString("(concat '(4194401))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument characterp 4194401)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testConcatWrongChar4() {
+        try {
+            evaluateString("(concat '(4194304))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument characterp 4194304)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testConcatLimit() {
+        LObject r = evaluateString("(concat '(4194303))");
+//        Assert.assertEquals(new LispString("ÿ"), r);
+    }
+
+
 }

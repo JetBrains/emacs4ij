@@ -53,7 +53,7 @@ public class Lambda extends LispObject implements FunctionCell {
             myBody = data.subList(2, data.size());
 
             for (LObject bodyForm: myBody) {
-                if (bodyForm instanceof LispList) {
+                if (bodyForm instanceof LispList && !((LispList)bodyForm).isEmpty()) {
                     if (((LispList)bodyForm).car().equals(new LispSymbol("interactive"))) {
                         myInteractive = (LispList) bodyForm;
                     }

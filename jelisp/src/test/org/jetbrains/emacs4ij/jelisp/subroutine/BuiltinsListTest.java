@@ -179,6 +179,12 @@ public class BuiltinsListTest {
     }
 
     @Test
+    public void testToStringCons() {
+        LObject a = evaluateString("(cons 1 2)");
+        Assert.assertEquals("(1 . 2)", a.toString());
+    }
+    
+    @Test
     public void testMixedList() {
         LObject a = evaluateString("(cons 1 (cons 2 3))");
         Assert.assertEquals("(1 2 . 3)", a.toString());

@@ -146,6 +146,10 @@ public class LispSymbol extends LispAtom {
         return (myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("macro"))
                 || (myFunction instanceof Macro));
     }
+    
+    public boolean isAlias() {
+        return myFunction instanceof LispSymbol && ((LispSymbol) myFunction).isFunction();
+    }
 
     public boolean isInteractive (Environment environment) {
         if (!isFunction())
@@ -231,8 +235,10 @@ public class LispSymbol extends LispAtom {
 
     public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-//        if (myName.equals("list*"))
-//            System.out.print(1);
+        if (myName.equals("cdadr"))
+            System.out.print(1);
+        if (myName.equals("concat"))
+            System.out.print(1);
         LObject result;
         if (args == null)
             args = new ArrayList<>();
@@ -243,6 +249,11 @@ public class LispSymbol extends LispAtom {
         }
         if (isMacro()) {
             result = evaluateMacro(environment, args);
+            checkCallStack();
+            return result;
+        }
+        if (isAlias()) {
+            result = ((LispSymbol)myFunction).evaluateFunction(environment, args);
             checkCallStack();
             return result;
         }
