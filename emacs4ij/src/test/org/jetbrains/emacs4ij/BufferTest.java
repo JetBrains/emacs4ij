@@ -27,38 +27,23 @@ import java.util.HashMap;
 public class BufferTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
     ForwardParser myForwardParser = new ForwardParser();
-    String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
-    HashMap<String, IdeaBuffer> myTests;
+    String myTestsPath;
+    HashMap<String, IdeaBuffer> myTests = new HashMap<>();
     String[]  myTestFiles;
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
+        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        myTestFiles = (new File (myTestsPath)).list();
-        myTests = new HashMap<String, IdeaBuffer>();
-
+        myTestFiles = (new File(myTestsPath)).list();
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
-        //GlobalEnvironment.INSTANCE.startRecording();
-
-        //GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-       // GlobalEnvironment.getInstance().clearRecorded();
-
-
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
             myTests.put(fileName, buffer);
-           // myEnvironment.defineBuffer(buffer);
         }
 
-//        LispFrame current  = new IdeaFrame(new IdeFrameImpl(null, null, null, null, null, null));
-
-   //     LispFrame current  = new IdeaFrame(WindowManager.getInstance().getIdeFrame(myFixture.getProject()));
-  /*      GlobalEnvironment.onFrameOpened(current);
-        GlobalEnvironment.setSelectedFrame(current);*/
     }
 
     private Throwable getCause (Throwable e) {

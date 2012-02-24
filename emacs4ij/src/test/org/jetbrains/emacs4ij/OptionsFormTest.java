@@ -21,7 +21,7 @@ import java.util.HashMap;
 public class OptionsFormTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
     ForwardParser myForwardParser = new ForwardParser();
-    String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
+    String myTestsPath;
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
 
@@ -33,8 +33,7 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
+        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<String, IdeaBuffer>();

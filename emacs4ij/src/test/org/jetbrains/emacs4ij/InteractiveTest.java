@@ -26,35 +26,25 @@ import org.junit.Test;
 public class InteractiveTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
     private CustomEnvironment myEnvironment;
-
-    String myTestsPath = "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
+    String myTestsPath;
     EditorTextField myMiniBufferEditor;
     String myFileName = "1.txt";
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
+        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
-        //GlobalEnvironment.getInstance().startRecording();
-       // GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        //GlobalEnvironment.getInstance().clearRecorded();
-
         myFixture.configureByFile(myTestsPath + myFileName);
-
         Editor editor = getEditor();
         myMiniBufferEditor = new EditorTextField();
         myMiniBufferEditor.addNotify();
         editor.setHeaderComponent(myMiniBufferEditor);
         IdeaBuffer buffer = new IdeaBuffer(myEnvironment, myFileName, myTestsPath, editor);
         myEnvironment.defineBuffer(buffer);
-
         myMiniBuffer = new IdeaMiniBuffer(0, myMiniBufferEditor.getEditor(), myEnvironment);
         myEnvironment.defineServiceBuffer(myMiniBuffer);
-
         myMiniBuffer.startRead();
     }
 
