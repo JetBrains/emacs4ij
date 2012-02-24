@@ -5,6 +5,8 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -111,16 +113,14 @@ public class LispString extends LispAtom implements LispSequence {
     }
     
     public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
-        String data = myData;
-        String regexp = regexpStr.getData();
-        if (isCaseFoldSearch) {
-            data = data.toLowerCase();
-            regexp = regexp.toLowerCase();
-        }
+        Pattern p = isCaseFoldSearch ?
+                Pattern.compile(regexpStr.getData(), Pattern.CASE_INSENSITIVE)
+                : Pattern.compile(regexpStr.getData());
+        Matcher m = p.matcher(myData);
+        if (m.find(from))
+            return m.start();
+        return -1;
 
-
-
-
-        return data.indexOf(regexp, from);
+//        return data.indexOf(regexp, from);
     }
 }
