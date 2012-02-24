@@ -109,4 +109,18 @@ public class LispString extends LispAtom implements LispSequence {
         }        
         return new LispString(new String(s));
     }
+    
+    public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
+        String data = myData;
+        String regexp = regexpStr.getData();
+        if (isCaseFoldSearch) {
+            data = data.toLowerCase();
+            regexp = regexp.toLowerCase();
+        }
+
+
+
+
+        return data.indexOf(regexp, from);
+    }
 }

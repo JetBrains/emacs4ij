@@ -804,7 +804,7 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testStringMatch() {
+    public void testStringMatchSimple() {
         LObject r = evaluateString("(string-match \"a\" \"africa\")");
         Assert.assertEquals(new LispInteger(0), r);
         r = evaluateString("(string-match \"A\" \"africa\" 1)");
@@ -823,6 +823,12 @@ public class BuiltinsCoreTest {
             return;
         }
         Assert.fail();
+    }
+
+    @Test
+    public void testStringMatch() {
+        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
+        Assert.assertEquals(new LispInteger(0), r);
     }
 
     @Test

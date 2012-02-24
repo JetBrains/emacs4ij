@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.annotations.Nullable;
+import com.sun.istack.internal.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -430,20 +430,14 @@ public abstract class BuiltinsCore {
 
     @Subroutine(value = "string-match")
     public static LObject stringMatch (Environment environment, LispString regexp, LispString string, @Optional LispInteger start) {
-        LispSymbol s = environment.find("case-fold-search");
-        String source = string.getData();
-        String target = regexp.getData();
-        if (s != null && !s.getValue().equals(LispSymbol.ourNil)) {
-            source = source.toLowerCase();
-            target = target.toLowerCase();
-        }
         int from = 0;
         if (start != null) {
             from = start.getData();
             if (from < 0 || from >= string.length())
                 throw new ArgumentOutOfRange(string.toString(), start.toString());
         }
-        int r = source.indexOf(target, from);
+        LispSymbol s = environment.find("case-fold-search");
+        int r = string.match(regexp, from, (s != null && !s.getValue().equals(LispSymbol.ourNil)));
         if (r == -1)
             return LispSymbol.ourNil;
         return new LispInteger(r);
