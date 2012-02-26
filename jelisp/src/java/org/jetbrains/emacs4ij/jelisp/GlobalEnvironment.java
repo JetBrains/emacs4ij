@@ -182,6 +182,7 @@ public class GlobalEnvironment extends Environment {
     public static enum SymbolType {VAR, FUN}    
     private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
     private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
+    private static HashMap<String, File> myUploadHistory = new HashMap<>();
 
     private void defineDefForms () {
         findAndRegisterEmacsForm("defcustom", "/lisp/custom.el", SymbolType.FUN); //macro
@@ -351,11 +352,23 @@ public class GlobalEnvironment extends Environment {
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
+            myUploadHistory.put(name, file);
             return (LispList) parsed;
         }
         throw new RuntimeException("Parsed object is not a LispList!");
     }
 
+    private static LispList getDefFromInvokersSrc(String name, SymbolType type) {
+        for (String invoker: ourCallStack) {
+            if (myUploadHistory.containsKey(invoker)) {
+                LispList def = getDefFromFile(myUploadHistory.get(invoker), name, type);
+                if (def != null)
+                    return def;
+            }
+        }
+        return null;
+    }
+    
     private static LispList findEmacsDefinition(String name, File sourceDir, SymbolType type) {
         List<File> src = Arrays.asList(sourceDir.listFiles(new FileFilter() {
             @Override
@@ -373,7 +386,6 @@ public class GlobalEnvironment extends Environment {
         });
 
         LispList def = null;
-
         if (subr != null) {
             def = getDefFromFile(subr, name, type);
         }
@@ -410,7 +422,9 @@ public class GlobalEnvironment extends Environment {
     }
 
     public LispSymbol findAndRegisterEmacsForm(String name, SymbolType type) {
-        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"), type);
+        LispList definition = getDefFromInvokersSrc(name, type);
+        if (definition == null)
+            definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"), type);
         return processDef(definition, name, type);
     }
 
