@@ -96,6 +96,7 @@ public class BuiltinsStringTest {
     public void testStringMatchSimple() {
         LObject r = evaluateString("(string-match \"a\" \"africa\")");
         Assert.assertEquals(new LispInteger(0), r);
+        evaluateString("(setq case-fold-search t)");
         r = evaluateString("(string-match \"A\" \"africa\" 1)");
         Assert.assertEquals(new LispInteger(5), r);
         evaluateString("(setq case-fold-search nil)");

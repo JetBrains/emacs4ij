@@ -300,8 +300,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testGoToChar_End () {
-        LObject lispObject = evaluateString("(goto-char 50)");
-        Assert.assertEquals(new LispInteger(50), lispObject);
+        LObject lispObject = evaluateString("(goto-char 200)");
+        Assert.assertEquals(new LispInteger(200), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
@@ -330,7 +330,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testForwardChar_End () {
-        LObject lispObject = evaluateString("(forward-char 50)");
+        LObject lispObject = evaluateString("(forward-char 200)");
         Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
@@ -369,7 +369,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testBackwardChar_Begin () {
-        LObject lispObject = evaluateString("(backward-char -50)");
+        LObject lispObject = evaluateString("(backward-char -500)");
         Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
