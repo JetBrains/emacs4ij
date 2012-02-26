@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
@@ -25,10 +26,7 @@ public class BuiltinsMarkerTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        GlobalEnvironment.initialize(null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        TestSetup.runBeforeClass();
     }
 
     @Before

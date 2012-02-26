@@ -209,8 +209,8 @@ public class LispSymbol extends LispAtom {
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || (!symbol.hasValue())) {
             System.out.println("VAR " + myName);
-            try { //it may be a macro
-                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName);
+            try {
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName, GlobalEnvironment.SymbolType.VAR);
             } catch (Exception e) {
                 //throw new VoidVariableException(myName);
                 throw e;
@@ -235,10 +235,6 @@ public class LispSymbol extends LispAtom {
 
     public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-        if (myName.equals("cdadr"))
-            System.out.print(1);
-        if (myName.equals("concat"))
-            System.out.print(1);
         LObject result;
         if (args == null)
             args = new ArrayList<>();

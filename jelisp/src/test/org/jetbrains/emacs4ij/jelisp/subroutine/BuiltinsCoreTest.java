@@ -39,59 +39,6 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testPlusInteger() throws LispException {
-        LObject lispObject = evaluateString("(+ 2 2)");
-        Assert.assertEquals(new LispInteger(4), lispObject);
-    }
-
-    @Test
-    public void testPlusFloat () {
-        LObject lispObject = evaluateString("(+ 2 2.0)");
-        Assert.assertEquals(new LispFloat(4), lispObject);
-    }
-
-    @Test
-    public void testPlusSimple () {
-        LispNumber n = BuiltinsCore.plus(new LispInteger(5), new LispFloat(6.6));
-        Assert.assertEquals(new LispFloat(11.6), n);
-    }
-
-    @Test
-    public void testPlusMarker () {
-        try {
-            BuiltinsCore.plus(new LispMarker(), new LispMarker());
-        } catch (Exception e) {
-            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testMore() {
-        LispSymbol more = BuiltinsCore.more(new LispInteger(5), new LispFloat(1.3));
-        Assert.assertEquals(LispSymbol.ourT, more);
-    }
-
-    @Test
-    public void testMultiplySimple () {
-        LispNumber n = BuiltinsCore.multiply(new LispInteger(5), new LispFloat(2.0));
-        Assert.assertEquals(new LispFloat(10), n);
-    }
-
-    @Test
-    public void testPlusEmpty () {
-        LObject lispObject = evaluateString("(+)");
-        Assert.assertEquals(new LispInteger(0), lispObject);
-    }
-
-    @Test
-    public void testMultiply() throws Exception {
-        LObject LObject = evaluateString("(* 2 2)");
-        Assert.assertEquals(new LispInteger(4), LObject);
-    }
-
-    @Test
     public void testSetVar() throws LispException {
         LObject value = evaluateString("(set 'var (+ 2 3))");
         Assert.assertEquals("set return value assertion", new LispInteger(5), value);
@@ -253,7 +200,6 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("r");
         Assert.assertEquals(new LispInteger(6), r);
     }
-
 
     @Test
     public void testMacroExpand_Complex () {
@@ -508,57 +454,6 @@ public class BuiltinsCoreTest {
     }
 
     @Test
-    public void testFormatEmpty() {
-        LObject s = evaluateString("(format \"\")");
-        Assert.assertEquals(new LispString(""), s);
-    }
-
-    @Test
-    public void testFormatNoNeedInArgs() {
-        LObject s = evaluateString("(format \"hello\" 1 2 3)");
-        Assert.assertEquals(new LispString("hello"), s);
-    }
-
-    @Test
-    public void testFormatNotEnoughArgs() {
-        try {
-            evaluateString("(format \"%d\")");
-        } catch (Exception e) {
-            Assert.assertEquals("Not enough arguments for format string", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testFormatUnexpectedEndOfFormatString() {
-        try {
-            evaluateString("(format \"%123456\" 1)");
-        } catch (Exception e) {
-            Assert.assertEquals("Format string ends in middle of format specifier", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testFormatInvalidFormatCharacter() {
-        try {
-            evaluateString("(format \"%123456q\" 1)");
-        } catch (Exception e) {
-            Assert.assertEquals("Invalid format operation %q", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testFormatSimple() {
-        LObject s = evaluateString("(format \"%1234d\" 1 2 3)");
-        Assert.assertEquals(new LispString("1"), s);
-    }
-
-    @Test
     public void testDefAliasVoidVar() {
         try {
             evaluateString("(defalias a nil)");
@@ -618,54 +513,6 @@ public class BuiltinsCoreTest {
         r = evaluateString("(atom '(5))");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(atom (cons 1 2))");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testNumOrMarkersEqual() {
-        LObject r = evaluateString("(= 1 2)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-        r = evaluateString("(= 1 1.0)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-    }
-
-    @Test
-    public void testNumOrMarkersNilMarker() {
-        try {
-            evaluateString("(= 1 (make-marker))");
-        } catch (Exception e) {
-            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testNumOrMarkersWrongArg() {
-        try {
-            evaluateString("(= 1 'a)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testNumOrMarkersNotEqual() {
-        LObject r = evaluateString("(/= 1 2)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(/= 1 1.0)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testNumOrMarkersLessOrEqual() {
-        LObject r = evaluateString("(<= 1 2)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(<= 1 1.0)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(<= 2 1.0)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
@@ -802,85 +649,6 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("`((,@some-list))");
         Assert.assertEquals("((2 3))", r.toString());
     }
-
-    @Test
-    public void testStringMatchSimple() {
-        LObject r = evaluateString("(string-match \"a\" \"africa\")");
-        Assert.assertEquals(new LispInteger(0), r);
-        r = evaluateString("(string-match \"A\" \"africa\" 1)");
-        Assert.assertEquals(new LispInteger(5), r);
-        evaluateString("(setq case-fold-search nil)");
-        r = evaluateString("(string-match \"A\" \"africa\")");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testStringMatchOutOfRange() {
-        try {
-            evaluateString("(string-match \"a\" \"africa\" 10)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"africa\" 10)", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testStringMatch() {
-        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
-        Assert.assertEquals(new LispInteger(0), r);
-    }
-
-    @Test
-    public void testMoreOrEqual() {
-        LispSymbol more = BuiltinsCore.moreOrEqual(new LispInteger(5), new LispFloat(1.3));
-        Assert.assertEquals(LispSymbol.ourT, more);
-        more = BuiltinsCore.moreOrEqual(new LispInteger(5), new LispFloat(5));
-        Assert.assertEquals(LispSymbol.ourT, more);
-        more = BuiltinsCore.moreOrEqual(new LispInteger(3), new LispFloat(4));
-        Assert.assertEquals(LispSymbol.ourNil, more);
-    }
-
-    @Test
-    public void testMinusInteger() throws LispException {
-        LObject lispObject = evaluateString("(- 2 1)");
-        Assert.assertEquals(new LispInteger(1), lispObject);
-    }
-
-    @Test
-    public void testMinusOne() throws LispException {
-        LObject lispObject = evaluateString("(- 1)");
-        Assert.assertEquals(new LispInteger(-1), lispObject);
-    }
-
-    @Test
-    public void testMinusZero() throws LispException {
-        LObject lispObject = evaluateString("(-)");
-        Assert.assertEquals(new LispInteger(0), lispObject);
-    }
-
-    @Test
-    public void testMinusFloat () {
-        LObject lispObject = evaluateString("(- 2 2.0)");
-        Assert.assertEquals(new LispFloat(0.0), lispObject);
-    }
-
-    @Test
-    public void testMinusSimple () {
-        LispNumber n = BuiltinsCore.minus(new LispInteger(5), new LispFloat(6.8), new LispInteger(1));
-        Assert.assertEquals(new LispFloat(-2.8), n);
-    }
-
-    @Test
-    public void testMinusMarker () {
-        try {
-            BuiltinsCore.minus(new LispMarker(), new LispMarker());
-        } catch (Exception e) {
-            Assert.assertEquals("'(error \"Marker does not point anywhere\")", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
     
     @Test (expected = LispThrow.class)
     public void testThrowNoCatch() {
@@ -919,20 +687,6 @@ public class BuiltinsCoreTest {
         LObject r = evaluateString("(list* a b '(4))");
         Assert.assertEquals(LispList.list(new LispInteger(1),
                 LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
-    }
-
-    @Test
-    public void testCapitalize() {
-        LObject r = evaluateString("?a");
-        Assert.assertEquals(new LispInteger(97), r);
-        r = evaluateString("(capitalize ?a)");
-        Assert.assertEquals(new LispInteger(65), r);
-        r = evaluateString("(capitalize 97)");
-        Assert.assertEquals(new LispInteger(65), r);
-        r = evaluateString("(capitalize 5)");
-        Assert.assertEquals(new LispInteger(5), r);
-        r = evaluateString("(capitalize \"EVERY day\")");
-        Assert.assertEquals(new LispString("Every Day"), r);
     }
 
     @Test

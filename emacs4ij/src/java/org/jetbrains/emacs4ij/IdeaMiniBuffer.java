@@ -71,6 +71,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         setReadCommandStatus();
         myPrompt = ourEvalPrompt;
         myAlarm = new Alarm();
+        myEnvironment.defineServiceBuffer(this);
        // write(myPrompt);
     }
 

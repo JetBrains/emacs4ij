@@ -25,25 +25,18 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
     HashMap<String, IdeaBuffer> myTests;
     String[]  myTestFiles;
 
-    /* @BeforeClass
-   public static void runBeforeClass() {
-       GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs 23.2a/emacs-23.2");
-       GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-   } */
-
     @Before
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
-        myTests = new HashMap<String, IdeaBuffer>();
+        myTests = new HashMap<>();
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
             myTests.put(fileName, buffer);
-            myEnvironment.defineBuffer(buffer);
         }
     }
 

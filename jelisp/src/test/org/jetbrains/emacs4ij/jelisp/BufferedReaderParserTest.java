@@ -53,7 +53,7 @@ public class BufferedReaderParserTest {
     @Test
     public void testParseFromFile() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        LispList when = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/subr.el", "when");
+        LispList when = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/subr.el", "when", GlobalEnvironment.SymbolType.FUN);
         ForwardParser p = new ForwardParser();
         String def = "(defmacro when (cond &rest body)\n" +
                 "  \"If COND yields non-nil, do BODY, else return nil.\n" +
@@ -70,7 +70,7 @@ public class BufferedReaderParserTest {
     @Test
     public void testParseDefineMinorMode() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        LObject dmm = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/emacs-lisp/easy-mmode.el", "define-minor-mode");
+        LObject dmm = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/emacs-lisp/easy-mmode.el", "define-minor-mode", GlobalEnvironment.SymbolType.FUN);
         Assert.assertNotNull(dmm);
     }
 }

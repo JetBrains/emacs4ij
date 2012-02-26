@@ -126,20 +126,14 @@ public class LispList extends LispObject implements LispSequence {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + fun.getName());
             try {
-
-                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun);
+                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
             } catch (RuntimeException e) {
                 System.err.println(e.getMessage());
                 throw new VoidFunctionException(fun.getName());
             }
             if (symbol == null || !symbol.isFunction())
                 throw new VoidFunctionException(fun.getName());
-            //System.out.println("uploaded " + fun.getName());
         }
-        /*if (symbol.getName().equals("append") || symbol.getName().equals("backquote-process"))
-            System.out.print(1);*/
-//        if (fun.getName().equals("cl-block-wrapper"))
-//            System.out.print(1);
         List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
         return symbol.evaluateFunction(environment, data);
     }

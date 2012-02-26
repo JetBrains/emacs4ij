@@ -25,10 +25,8 @@ public interface LispBuffer extends LObject {
     public int bufferEnd(double parameter);
     public String gotoChar(int position);
     public String forwardChar (int shift);
-  //  public boolean isAlive();
     public void kill();
-    ////public String getDefaultDirectory();
-    
+
     public LObject evaluateLastForm ();
 
     public void setBufferActive ();
@@ -40,8 +38,5 @@ public interface LispBuffer extends LObject {
     public void removeMarker (LispMarker marker);
     public boolean hasMarkersAt (int position);
 
-   // public Integer getMark();
-    //public void setMark (int position);
-    //public void pushMark (@Nullable Integer position, boolean activate);
-    //public void popMark ();
+    public LispMarker getMark();
 }

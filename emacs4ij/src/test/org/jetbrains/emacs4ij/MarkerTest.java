@@ -33,21 +33,15 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
-        myTests = new HashMap<String, IdeaBuffer>();
-
+        myTests = new HashMap<>();
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
-       // GlobalEnvironment.getInstance().startRecording();
-
-       // GlobalEnvironment.setProject(myFixture.getProject());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
        // GlobalEnvironment.getInstance().clearRecorded();
-
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
-            IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
-            myTests.put(fileName, buffer);
-            myEnvironment.defineBuffer(buffer);
+            myTests.put(fileName, new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor()));
         }
+        evaluateString("(switch-to-buffer \"3.txt\")");
     }
 
     private Throwable getCause (Throwable e) {
@@ -199,7 +193,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         r = evaluateString("(mark t)");
         Assert.assertEquals(new LispInteger(5), r);
     }
-
+    
     @Test
     public void testPopMark () {
         evaluateString("(push-mark 5 t t)");
@@ -234,6 +228,6 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         LObject r = evaluateString("(use-region-p)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
-        
+
 
 }

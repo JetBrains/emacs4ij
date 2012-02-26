@@ -107,6 +107,4 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
         LObject ret = myMiniBuffer.returnDefault (LispList.list());
         Assert.assertEquals(new LispSymbol(""), ret);
     }
-
-
 }

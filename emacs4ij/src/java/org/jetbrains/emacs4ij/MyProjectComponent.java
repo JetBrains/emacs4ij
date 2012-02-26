@@ -41,10 +41,8 @@ public class MyProjectComponent implements ProjectComponent {
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
-
-                IdeaBuffer newBuffer = new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
                 try {
-                    myEnvironment.defineBuffer(newBuffer);
+                    new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
                 } catch (DoubleBufferException e) {
                     System.err.println(e.getMessage());
                 }

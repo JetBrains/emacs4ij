@@ -32,7 +32,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     protected Environment myEnvironment;
     protected ArrayList<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
-    private boolean isAlive = true;
+    private LispMarker myMark = new LispMarker();
 
     private HashMap<String, LispSymbol> myLocalVariables = new HashMap<String, LispSymbol>();
 
@@ -44,13 +44,6 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         myEditor = editor;
         myEnvironment.defineBuffer(this);
         setLocalVariable("default-directory", new LispString(path));
-        //setLocalVariable("mark-active", LispSymbol.ourNil); == default value
-
-
-        //addLocalVar("is-alive", LispSymbol.ourT);
-       // addLocalVar("my-mark", new LispMarker());
-
-       // addLocalVar("mark-ring", LispList.list());
     }
     
     private void addLocalVar (String name, LObject value) {
@@ -301,10 +294,15 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         return false;
     }
 
-   /* @Override
-    public Integer getMark() {
+    @Override
+    public LispMarker getMark() {
         return myMark;
-    }   */
+    }
+
+    /* @Override
+ public Integer getMark() {
+     return myMark;
+ }   */
 
    /* @Override
     public void setMark(int position) {

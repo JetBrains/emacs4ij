@@ -98,7 +98,7 @@ public class BuiltinsKeyTest {
         evaluateString("(setq arg0 (nreverse loop-for-sets))");
         evaluateString("(setq arg1 '(quote setq))");
         evaluateString("(setq arg2 nil)");
-        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el");
+        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
         LObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
         Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
     }

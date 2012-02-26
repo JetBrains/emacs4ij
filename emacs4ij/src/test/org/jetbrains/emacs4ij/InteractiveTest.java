@@ -41,10 +41,8 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBufferEditor = new EditorTextField();
         myMiniBufferEditor.addNotify();
         editor.setHeaderComponent(myMiniBufferEditor);
-        IdeaBuffer buffer = new IdeaBuffer(myEnvironment, myFileName, myTestsPath, editor);
-        myEnvironment.defineBuffer(buffer);
+        new IdeaBuffer(myEnvironment, myFileName, myTestsPath, editor);
         myMiniBuffer = new IdeaMiniBuffer(0, myMiniBufferEditor.getEditor(), myEnvironment);
-        myEnvironment.defineServiceBuffer(myMiniBuffer);
         myMiniBuffer.startRead();
     }
 

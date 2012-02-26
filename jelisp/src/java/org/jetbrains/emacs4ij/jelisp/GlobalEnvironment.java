@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
@@ -148,7 +149,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     //-------- loading ------------------
-    private void addVariable(String name, @Nullable LObject value) {
+    private void addVariable(String name, @NotNull LObject value) {
         LispSymbol symbol = new LispSymbol(name, value);
         String doc = myDocumentationExtractor.getVariableDoc(name);
         if (doc != null)
@@ -156,42 +157,58 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put(name, symbol);
     }
 
-    private void addBufferLocalVariable(String name, @Nullable LObject value) {
+    private void addVariable(String name) {
+        LispSymbol symbol = new LispSymbol(name, LispSymbol.ourNil);
+        String doc = myDocumentationExtractor.getVariableDoc(name);
+        if (doc != null)
+            symbol.setGlobalVariableDocumentation(new LispString(doc));
+        mySymbols.put(name, symbol);
+    }
+
+    private void addBufferLocalVariable(String name, @NotNull LObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
         symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
         myBufferLocals.add(name);
         mySymbols.put(name, symbol);
     }
 
-    private static List<String> myDefForms = Arrays.asList("defun", "defmacro",
-            "defcustom", "defvar", "defsubst", "defconst", "defalias", "defgroup", "defface");
+    private void addBufferLocalVariable(String name) {
+        LispSymbol symbol = new LispSymbol(name, LispSymbol.ourNil, true);
+        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
+        myBufferLocals.add(name);
+        mySymbols.put(name, symbol);
+    }
+
+    public static enum SymbolType {VAR, FUN}    
+    private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
+    private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
 
     private void defineDefForms () {
-        findAndRegisterEmacsForm("defcustom", "/lisp/custom.el");
-        findAndRegisterEmacsForm("defsubst", "/lisp/emacs-lisp/byte-run.el");
-        findAndRegisterEmacsForm("defgroup", "/lisp/custom.el");
-        findAndRegisterEmacsForm("defface", "/lisp/custom.el");
+        findAndRegisterEmacsForm("defcustom", "/lisp/custom.el", SymbolType.FUN); //macro
+        findAndRegisterEmacsForm("defsubst", "/lisp/emacs-lisp/byte-run.el", SymbolType.FUN); //macro
+        findAndRegisterEmacsForm("defgroup", "/lisp/custom.el", SymbolType.FUN); //macro
+        findAndRegisterEmacsForm("defface", "/lisp/custom.el", SymbolType.FUN); //macro
     }
 
     private void defineUserOptions() {
-        addVariable("mark-even-if-inactive", LispSymbol.ourNil);   //callint.c
+        addVariable("mark-even-if-inactive");   //callint.c
         addVariable("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
     }
 
     private void defineBufferLocalVariables() {
-        addBufferLocalVariable("mark-active", LispSymbol.ourNil); //buffer.c
-        addBufferLocalVariable("default-directory", LispSymbol.ourNil);  //BUFER.C
+        addBufferLocalVariable("mark-active"); //buffer.c
+        addBufferLocalVariable("default-directory");  //BUFER.C
     }
 
     private void defineGlobalVariables() {
-        addVariable("load-history", LispSymbol.ourNil);   //lread.c
-        addVariable("deactivate-mark", LispSymbol.ourNil);  //keyboard.c
-        addVariable("purify-flag", LispSymbol.ourNil);   //alloc.c
-        addVariable("current-load-list", LispSymbol.ourNil);//lread.c
-        addVariable("executing-kbd-macro", LispSymbol.ourNil); //macros.c
-        addVariable("load-file-name", LispSymbol.ourNil); //lread.c
-        addVariable("overlay-arrow-variable-list", LispSymbol.ourNil);//xdisp.c
-        addVariable("case-fold-search", LispSymbol.ourT);
+        addVariable("load-history");   //lread.c
+        addVariable("deactivate-mark");  //keyboard.c
+        addVariable("purify-flag");   //alloc.c
+        addVariable("current-load-list");//lread.c
+        addVariable("executing-kbd-macro"); //macros.c
+        addVariable("load-file-name"); //lread.c
+        addVariable("overlay-arrow-variable-list");//xdisp.c
+        addVariable("case-fold-search");
         addVariable("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
     }
 
@@ -298,13 +315,21 @@ public class GlobalEnvironment extends Environment {
     }
 
     //TODO: its only for test
-    public static LispList getDefFromFile(String fileName, String functionName) {
-        return getDefFromFile(new File(fileName), functionName);
+    public static LispList getDefFromFile(String fileName, String functionName, SymbolType type) {
+        return getDefFromFile(new File(fileName), functionName, type);
     }
 
-    private static LispList getDefFromFile(File file, String name) {
-//        if (file.getName().contains("edmacro.el"))
-//            System.out.print(1);
+    private static boolean containsDef (String line, String name, List<String> defForms) {
+        for (String defForm: defForms) {
+            if (line.contains('(' + defForm + ' ' + name + ' ') 
+                    || line.contains('(' + defForm + " '" + name + ' ')) {
+                return true;
+            }
+        }    
+        return false;
+    }
+    
+    private static LispList getDefFromFile(File file, String name, SymbolType type) {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -312,8 +337,7 @@ public class GlobalEnvironment extends Environment {
             throw new RuntimeException("File not found: " + file.getName());
         }
         String line;
-        boolean loop = true;
-        do {
+        while (true) {
             try {
                 line = reader.readLine();
             } catch (IOException e) {
@@ -321,19 +345,9 @@ public class GlobalEnvironment extends Environment {
             }
             if (line == null)
                 return null;
-                //throw new RuntimeException("definition " + name + " not found in " + file.getName());
-            for (String defForm: myDefForms) {
-                if (line.contains('(' + defForm + ' ' + name + ' ')) {
-                    loop = false;
-                    break;
-                }
-                if (line.contains('(' + defForm + " '" + name + ' ')) {
-                    System.out.println(line);
-                    loop = false;
-                    break;
-                }
-            }
-        } while (loop);
+            if (containsDef(line, name, (type == SymbolType.FUN ? myDefFuns : myDefVars)))
+                break;
+        }
         BufferedReaderParser p = new BufferedReaderParser(reader);
         LObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
@@ -342,7 +356,7 @@ public class GlobalEnvironment extends Environment {
         throw new RuntimeException("Parsed object is not a LispList!");
     }
 
-    private static LispList findEmacsDefinition(String name, File sourceDir) {
+    private static LispList findEmacsDefinition(String name, File sourceDir, SymbolType type) {
         List<File> src = Arrays.asList(sourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
@@ -361,7 +375,7 @@ public class GlobalEnvironment extends Environment {
         LispList def = null;
 
         if (subr != null) {
-            def = getDefFromFile(subr, name);
+            def = getDefFromFile(subr, name, type);
         }
 
         for (int i = 0, srcSize = src.size(); i < srcSize && def == null; i++) {
@@ -370,41 +384,38 @@ public class GlobalEnvironment extends Environment {
                 continue;
 
             if (file.isDirectory()) {
-                def = findEmacsDefinition(name, file);
+                def = findEmacsDefinition(name, file, type);
             } else
-                def = getDefFromFile(file, name);
+                def = getDefFromFile(file, name, type);
         }
         return def;
     }
     
-    private LispSymbol processDef (LispList definition, String name) {
+    private LispSymbol processDef (LispList definition, String name, SymbolType type) {
         if (definition == null)
             return null;
-//        if (name.equals("cl-safe-expr-p"))
-//            System.out.print(1);
         LObject evaluated = definition.evaluate(this);
         if (!(evaluated instanceof LispSymbol))
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
         LispSymbol value = find(((LispSymbol) evaluated).getName());
-        if (value == null)
-            value = findAndRegisterEmacsForm((LispSymbol) evaluated);
+        if (value == null) {
+            value = findAndRegisterEmacsForm((LispSymbol) evaluated, type);
+        }
         return value;
     }
     
-    public LispSymbol findAndRegisterEmacsForm (String name, String file) {
-        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name);
-        return processDef(definition, name);
+    public LispSymbol findAndRegisterEmacsForm (String name, String file, SymbolType type) {
+        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name, type);
+        return processDef(definition, name, type);
     }
 
-    public LispSymbol findAndRegisterEmacsForm(String name) {
-//        if (name.equals("cl-safe-expr-p"))
-//            System.out.print(1);
-        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"));
-        return processDef(definition, name);
+    public LispSymbol findAndRegisterEmacsForm(String name, SymbolType type) {
+        LispList definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"), type);
+        return processDef(definition, name, type);
     }
 
-    public LispSymbol findAndRegisterEmacsForm(LispSymbol name) {
-        return findAndRegisterEmacsForm(name.getName());
+    public LispSymbol findAndRegisterEmacsForm(LispSymbol name, SymbolType type) {
+        return findAndRegisterEmacsForm(name.getName(), type);
     }
 
     public static void showMessage (String message) {

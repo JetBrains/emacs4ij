@@ -71,12 +71,9 @@ public class EnvironmentInitializer {
         if (windowManager.getAllFrames().length > 0)
             GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
-        //environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        IdeaMiniBuffer miniBuffer = new IdeaMiniBuffer(0, null, environment);
-        environment.defineServiceBuffer(miniBuffer);
+        new IdeaMiniBuffer(0, null, environment);
 //        String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
-//        IdeaBuffer scratchBuffer = new IdeaBuffer(environment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
-//        environment.defineServiceBuffer(scratchBuffer);
+//        new IdeaBuffer(environment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
 
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
@@ -89,8 +86,7 @@ public class EnvironmentInitializer {
                             ApplicationManager.getApplication().runReadAction(new Runnable() {
                                 @Override
                                 public void run() {
-                                    IdeaBuffer newBuffer = new IdeaBuffer(environment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
-                                    environment.defineBuffer(newBuffer);
+                                    new IdeaBuffer(environment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
                                     //System.out.print("open: ");
                                     //setHeaders(newBuffer);
                                     //environment.printBuffers();

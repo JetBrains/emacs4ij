@@ -46,7 +46,7 @@ public class CustomEnvironmentTest {
     public void testGetFunctionFromFile() {
         String lispObjectFileNameFile = GlobalEnvironment.getEmacsSource() + "/lisp/help-fns.el";
         String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = GlobalEnvironment.INSTANCE.getDefFromFile(lispObjectFileNameFile, lispFunctionName);
+        LispList functionFromFile = GlobalEnvironment.INSTANCE.getDefFromFile(lispObjectFileNameFile, lispFunctionName, GlobalEnvironment.SymbolType.FUN);
         Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList)functionFromFile.cdr()).car());
     }
 
@@ -59,7 +59,13 @@ public class CustomEnvironmentTest {
     
     @Test
     public void testGetDef() {
-        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/edmacro.el", "edmacro-parse-keys");
+        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/edmacro.el", "edmacro-parse-keys", GlobalEnvironment.SymbolType.FUN);
+        Assert.assertNotNull(def);
+    }
+    
+    @Test
+    public void testGetDef1() {
+        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/simple.el", "region-active-p", GlobalEnvironment.SymbolType.FUN);
         Assert.assertNotNull(def);
     }
 
