@@ -440,4 +440,10 @@ public abstract class SpecialForms {
         }
     }
     
+    @Subroutine("function")
+    public static LObject function (Environment environment, LObject arg) {
+        //todo: In byte compilation, `function' causes its argument to be compiled.=)
+        return quote(environment, arg);
+    }
+    
 }

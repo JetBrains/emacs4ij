@@ -136,4 +136,23 @@ public abstract class BuiltinArithmetic {
         boolean isDouble = n.getData() instanceof Double;
         return fromDouble(isDouble, n.getDoubleData() + 1);
     }
+    
+    @Subroutine("logand")
+    public static LispInteger logAnd (@Optional LObject... args) {
+        if (args == null)
+            return new LispInteger(-1);
+        int result = -1;
+        for (LObject arg: args) {
+            LispNumber num = numberOrMarkerToNumber(arg);
+            if (!(num instanceof LispInteger))
+                throw new WrongTypeArgumentException("integer-or-marker-p", num.toString());
+            result = result & ((LispInteger)num).getData();
+        }
+        return new LispInteger(result);
+    }
+    
+    @Subroutine("lognot")
+    public static LispInteger logNot (LispInteger object) {
+        return new LispInteger(~object.getData());
+    }
 }

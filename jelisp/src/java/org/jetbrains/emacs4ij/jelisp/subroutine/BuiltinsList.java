@@ -166,5 +166,14 @@ public abstract class BuiltinsList {
             throw new WrongTypeArgumentException("listp", result.toString());
         return result;
     }
+    
+    @Subroutine("assq")
+    public static LObject assq (LObject key, LObject list) {
+        if (!isList(list))
+            throw new WrongTypeArgumentException("listp", list.toString());
+        if (list.equals(LispSymbol.ourNil))
+            return LispSymbol.ourNil;
+        return ((LispList)list).assq(key);
+    }
 
 }

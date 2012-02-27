@@ -2,6 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -57,11 +59,19 @@ public class BuiltinsSequence {
     }
     
     @Subroutine("mapcar")
-    public static LObject mapCar (Environment environment, LispSymbol function, LObject sequence) {
+    public static LObject mapCar (Environment environment, LObject function, LObject sequence) {
         //todo: char-table may not fit as sequence here
         int length = length(sequence).getData();
         if (length == 0)
             return LispSymbol.ourNil;
+        if (function instanceof LispSymbol) {
+            if (!((LispSymbol) function).isFunction())
+                throw new VoidFunctionException(((LispSymbol) function).getName());
+        } else if (function instanceof LispList) {
+            if (!((LispList) function).car().equals(new LispSymbol("lambda")))
+                throw new VoidFunctionException(function.toString());
+        } else
+            throw new InvalidFunctionException(function.toString());
         return LispList.list(((LispSequence)sequence).mapCar(environment, function));
     }
 
@@ -96,6 +106,24 @@ public class BuiltinsSequence {
             res += sequence.toCharString();
         }
         return new LispString(res);
+    }
+    
+    @Subroutine("vconcat")
+    public static LispVector vConcat (Environment environment, @Optional LObject... sequences) {
+        if (sequences == null || sequences.length == 0)
+            return new LispVector();
+        for (LObject s: sequences) {
+            if (!isStringListVectorNil(s))
+                throw new WrongTypeArgumentException("sequencep", s.toString());
+        }
+        LispVector v = new LispVector();
+        for (LObject s : sequences) {
+            if (s.equals(LispSymbol.ourNil))
+                continue;
+            LispSequence sequence = (LispSequence) s;
+            v.add(sequence.toLObjectList());
+        }
+        return v;
     }
 
 }

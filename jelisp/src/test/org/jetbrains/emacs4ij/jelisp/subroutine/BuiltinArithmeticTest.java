@@ -190,4 +190,26 @@ public class BuiltinArithmeticTest {
         Assert.fail();
     }
     
+    @Test
+    public void testLogAnd() {
+        LObject r = evaluateString("(logand)");
+        Assert.assertEquals(new LispInteger(-1), r);
+        r = evaluateString("(logand 0)");
+        Assert.assertEquals(new LispInteger(0), r);
+        r = evaluateString("(logand 1)");
+        Assert.assertEquals(new LispInteger(1), r);
+        r = evaluateString("(logand 12 20)");
+        Assert.assertEquals(new LispInteger(4), r);
+    }
+
+    @Test
+    public void testLogNot() {
+        LObject r = evaluateString("(lognot 0)");
+        Assert.assertEquals(new LispInteger(-1), r);
+        r = evaluateString("(lognot 1)");
+        Assert.assertEquals(new LispInteger(-2), r);
+        r = evaluateString("(lognot -1)");
+        Assert.assertEquals(new LispInteger(0), r);
+    }
+    
 }

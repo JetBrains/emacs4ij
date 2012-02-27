@@ -115,27 +115,37 @@ public class LispList extends LispObject implements LispSequence {
             return LispSymbol.ourNil;
         //todo: if assotiated list?
 
-        LispSymbol fun;
-        try {
-            fun = (LispSymbol)car();
-        } catch (ClassCastException e) {
-            throw new InvalidFunctionException(car().toString());
-        }
-        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
-        if (symbol == null || !symbol.isFunction()) {
-            //while we are not loading all elisp code, perform search on request
-            System.out.println("FUN " + fun.getName());
-            try {
-                symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
-            } catch (RuntimeException e) {
-                System.err.println(e.getMessage());
-                throw new VoidFunctionException(fun.getName());
+        LObject function = car();
+        if (function instanceof LispSymbol) {
+            LispSymbol fun = (LispSymbol) function;
+            LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
+            if (symbol == null || !symbol.isFunction()) {
+                //while we are not loading all elisp code, perform search on request
+                System.out.println("FUN " + fun.getName());
+                try {
+                    symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
+                } catch (RuntimeException e) {
+                    System.err.println(e.getMessage());
+                    throw new VoidFunctionException(fun.getName());
+                }
+                if (symbol == null || !symbol.isFunction())
+                    throw new VoidFunctionException(fun.getName());
             }
-            if (symbol == null || !symbol.isFunction())
-                throw new VoidFunctionException(fun.getName());
+            List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
+            return symbol.evaluateFunction(environment, data);
+        } else if (function instanceof LispList) {
+            Lambda lambda = new Lambda((LispList) function, environment);
+            List<LObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
+            if (!environment.areArgumentsEvaluated()) {
+                for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+                    args.set(i, args.get(i).evaluate(environment));
+                }
+            } else {
+                environment.setArgumentsEvaluated(false);
+            }
+            return lambda.evaluate(environment, args);
         }
-        List<LObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLObjectList() : new ArrayList<LObject>();
-        return symbol.evaluateFunction(environment, data);
+        throw new InvalidFunctionException(function.toString());        
     }
 
     @Override
@@ -160,7 +170,7 @@ public class LispList extends LispObject implements LispSequence {
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+    public List<LObject> mapCar(Environment environment, LObject method) {
         LObject list = this;
         ArrayList<LObject> data = new ArrayList<>();
         while (list instanceof LispList) {
@@ -382,6 +392,16 @@ public class LispList extends LispObject implements LispSequence {
             throw new WrongTypeArgumentException("listp", toString());
         }
         return list;
+    }
+    
+    public LObject assq (LObject first) {
+        for (LObject item: toLObjectList()) {
+            if (item instanceof LispList) {
+                if (BuiltinsCore.eqs(first, ((LispList) item).car()))
+                    return item;
+            }
+        }
+        return LispSymbol.ourNil;
     }
 
 }

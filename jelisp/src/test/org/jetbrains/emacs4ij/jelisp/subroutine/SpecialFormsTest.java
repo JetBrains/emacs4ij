@@ -653,5 +653,14 @@ default-directory
         LObject r = evaluateString("(catch 'a (message \"hi\") (f) (+ 1 2))");
         Assert.assertEquals(new LispInteger(1), r);
     }
+    
+    @Test
+    public void testFunction() {
+        LObject f = evaluateString("(defun f() (message \"hi\"))");
+        LObject r = evaluateString("(function f)");
+        Assert.assertEquals(f, r);
+        r = evaluateString("(function (lambda () (+ 2 3)))");
+        Assert.assertEquals("(lambda nil (+ 2 3))", r.toString());
+    } 
 
 }

@@ -73,8 +73,7 @@ public abstract class Parser extends Observable {
 
     protected LispObject parseSymbol () {
         int nextSeparatorIndex = getNextSeparatorIndex();
-        String symbol = extractForm(nextSeparatorIndex);        
-        
+        String symbol = extractForm(nextSeparatorIndex);
         /*for (int i = 0; i < symbol.length(); ++i) {
             char c = symbol.charAt(i);
             if (c == '\\') {

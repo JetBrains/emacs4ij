@@ -70,6 +70,12 @@ public class LispVector extends LispObject implements LispSequence {
             return;
         myData.add(object);
     }
+    
+    public void add (List<LObject> objects) {
+        if (objects == null || objects.isEmpty())
+            return;
+        myData.addAll(objects);
+    }
 
     public LObject get (int index) throws IndexOutOfBoundsException {
         return myData.get(index);
@@ -86,7 +92,7 @@ public class LispVector extends LispObject implements LispSequence {
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+    public List<LObject> mapCar(Environment environment, LObject method) {
         ArrayList<LObject> data = new ArrayList<>();
         for (LObject item: toLObjectList()) {
             data.add(BuiltinsCore.functionCall(environment, method, item));

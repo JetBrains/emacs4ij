@@ -167,7 +167,7 @@ public class BuiltinsListTest {
     @Test
     public void testToString() {
         evaluateString("(setq a '(and (< (setq --cl-idx-- (1+ --cl-idx--)) (length --cl-vec--)) (progn (setq ch (aref --cl-vec-- --cl-idx--)) (setq --cl-flag-- (and (characterp ch) (let ((ch2 (logand ch (lognot 134217728)))) (and (>= ch2 0) (<= ch2 127))))))))");
-        LObject list = evaluateString("(setq b (list 'a '()))");
+        evaluateString("(setq b (list 'a '()))");
         LObject r = evaluateString("(list '(1 2) b)");
         System.out.println(r.toString());
     }
@@ -183,6 +183,13 @@ public class BuiltinsListTest {
         LObject a = evaluateString("(cons 1 2)");
         Assert.assertEquals("(1 . 2)", a.toString());
     }
+
+    @Test
+    public void testToStringComplex() {
+        LObject a = evaluateString("'(5 (2 . 1) (5 6) \"hi\")");
+        Assert.assertEquals("(5 (2 . 1) (5 6) \"hi\")", a.toString());
+    }
+
     
     @Test
     public void testMixedList() {
@@ -417,6 +424,15 @@ public class BuiltinsListTest {
         Assert.assertEquals (LispSymbol.ourNil, r);
         r = evaluateString("(nthcdr -1 '(1 2 3))");
         Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+    }
+    
+    @Test
+    public void testAssq() {
+        evaluateString("(setq foo '(1 (2 (3))))");
+        LObject r = evaluateString("(assq '(1 (2 (3))) '(5 nil \"str\" ((1 (2 (3))) 6) ((1 (2 (3))) . 3)))");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(assq 5 '(1 \"hi\" (5 . 3) (5 1)))");
+        Assert.assertEquals (LispList.cons(new LispInteger(5), new LispInteger(3)), r);
     }
 
 

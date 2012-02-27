@@ -14,7 +14,7 @@ import java.util.List;
 public interface LispSequence {
     public int length();
     public List<LObject> toLObjectList();
-    public List<LObject> mapCar (Environment environment, LispSymbol method);
+    public List<LObject> mapCar (Environment environment, LObject method);
     public LObject copy();
     public String toCharString(); //for List, Vector and String only
 }

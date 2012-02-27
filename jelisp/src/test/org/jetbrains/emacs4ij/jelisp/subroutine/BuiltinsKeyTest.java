@@ -102,13 +102,7 @@ public class BuiltinsKeyTest {
         LObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
         Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
     }
-    
-    @Test
-    public void testEdmacroParseKeys() {
-        LObject r = evaluateString("(edmacro-parse-keys \"C-x\" nil)");
-        Assert.assertEquals(new LispString("^X"), r);
-    }
-    
+
     @Test
     public void testKbdMacro() {
         LObject r = evaluateString("(kbd \"C-x\")");

@@ -73,7 +73,7 @@ public class LispString extends LispAtom implements LispSequence {
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LispSymbol method) {
+    public List<LObject> mapCar(Environment environment, LObject method) {
         ArrayList<LObject> data = new ArrayList<>();
         for (LObject item: toLObjectList()) {
             data.add(BuiltinsCore.functionCall(environment, method, item));

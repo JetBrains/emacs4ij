@@ -45,7 +45,11 @@ public abstract class BuiltinsString {
                     throw new LispException("Not enough arguments for format string");
                 if (!(formatChars.contains(s.charAt(k))))
                     throw new LispException("Invalid format operation %" + s.charAt(k));
-                result += objects[index].toString();
+                
+                result += objects[index] instanceof LispString ?
+                        ((LispString)objects[index]).getData()
+                        : objects[index].toString();
+
                 index++;
             }
             /* switch (s.charAt(k)) {

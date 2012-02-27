@@ -205,4 +205,9 @@ public abstract class BuiltinPredicates {
     public static LispSymbol charOrStringP (LObject object) {
         return LispSymbol.bool(isCharOrString(object));
     }
+    
+    @Subroutine("numberp")
+    public static LispSymbol numberP (LObject object) {
+        return LispSymbol.bool(object instanceof LispNumber);
+    }
 }

@@ -99,8 +99,12 @@ public class BuiltinsCoreTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(eq [(1 2) 3] [(1 2) 3])");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
 
-        //todo: (eq (make-symbol "foo") 'foo) ⇒ nil
+    @Test
+    public void testEqSymbol() {
+        LObject lispObject = evaluateString("(eq (make-symbol \"foo\") 'foo)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
     @Test
@@ -155,6 +159,18 @@ public class BuiltinsCoreTest {
     @Test
     public void testFuncall () {
         LObject result = evaluateString("(funcall '+ 1 2)");
+        Assert.assertEquals(new LispInteger(3), result);
+    }
+    
+    @Test
+    public void testEvalLambda() {
+        LObject result = evaluateString("((lambda (a) (+ 1 a)) 2)");
+        Assert.assertEquals(new LispInteger(3), result);
+    }
+
+    @Test
+    public void testFuncallLambda () {
+        LObject result = evaluateString("(funcall '(lambda (a) (+ 1 a)) 2)");
         Assert.assertEquals(new LispInteger(3), result);
     }
 

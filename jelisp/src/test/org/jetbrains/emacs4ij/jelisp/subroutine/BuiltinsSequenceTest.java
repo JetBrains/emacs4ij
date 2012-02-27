@@ -90,6 +90,12 @@ public class BuiltinsSequenceTest {
     }
     
     @Test
+    public void testMapCarLambda() {
+        LObject r = evaluateString("(mapcar '(lambda (a) (+ 1 a)) '(1 2 3))");
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3), new LispInteger(4)), r);
+    }
+    
+    @Test
     public void testConcat() {
         LObject r = evaluateString("(concat)");
         Assert.assertEquals(new LispString(""), r);
@@ -181,6 +187,14 @@ public class BuiltinsSequenceTest {
     public void testConcatLimit() {
         LObject r = evaluateString("(concat '(4194303))");
 //        Assert.assertEquals(new LispString("ÿ"), r);
+    }
+    
+    @Test
+    public void testVConcat() {
+        LObject r = evaluateString("(vconcat '(1 2) '[3 4] \"hello\")");
+        Assert.assertEquals("[1 2 3 4 104 101 108 108 111]", r.toString());
+        r = evaluateString("(vconcat '(1.6 \"hi\") nil '[3 4] \"hello\")");
+        Assert.assertEquals("[1.6 \"hi\" 3 4 104 101 108 108 111]", r.toString());
     }
 
 
