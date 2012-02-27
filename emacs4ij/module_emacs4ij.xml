@@ -86,12 +86,6 @@
             </fileset>
         </copy>
 
-        <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/general">
-            <fileset dir="${module.emacs4ij.basedir}/general">
-                <type type="file"/>
-            </fileset>
-        </copy>
-
     </target>
 
     <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests">

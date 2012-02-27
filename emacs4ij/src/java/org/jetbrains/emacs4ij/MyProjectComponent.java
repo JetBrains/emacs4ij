@@ -46,9 +46,8 @@ public class MyProjectComponent implements ProjectComponent {
                 } catch (DoubleBufferException e) {
                     System.err.println(e.getMessage());
                 }
-                System.out.print("open: ");
-                //setHeaders(newBuffer);
-                myEnvironment.printBuffers();
+//                System.out.print("open: ");
+//                myEnvironment.printBuffers();
             }
 
             @Override
@@ -60,8 +59,8 @@ public class MyProjectComponent implements ProjectComponent {
                     myEnvironment.killBuffer(virtualFile.getName());
                 else myEnvironment.setSelectionManagedBySubroutine(false);
 
-                System.out.print("close: ");
-                myEnvironment.printBuffers();
+//                System.out.print("close: ");
+//                myEnvironment.printBuffers();
             }
 
             @Override
@@ -78,9 +77,8 @@ public class MyProjectComponent implements ProjectComponent {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
                         myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     else myEnvironment.setSelectionManagedBySubroutine(false);
-                    //setHeaders((IdeaBuffer)myEnvironment.getBufferCurrentForEditing());
-                    System.out.print("select: ");
-                    myEnvironment.printBuffers();
+//                    System.out.print("select: ");
+//                    myEnvironment.printBuffers();
                 } catch (EnvironmentException e) {
                     //ignore
                 }
