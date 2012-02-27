@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
@@ -113,12 +114,35 @@ public class LispString extends LispAtom implements LispSequence {
     }
     
     public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
+        String regexp = regexpStr.getData();
+        Pattern p1 = Pattern.compile("(\\\\)+\\(");
+        Matcher m = p1.matcher(regexp);
+        String s = m.replaceAll("(");
+        p1 = Pattern.compile("(\\\\)+\\)");
+        m = p1.matcher(s);
+        s = m.replaceAll(")");
+
         Pattern p = isCaseFoldSearch ?
-                Pattern.compile(regexpStr.getData(), Pattern.CASE_INSENSITIVE)
-                : Pattern.compile(regexpStr.getData());
-        Matcher m = p.matcher(myData);
-        if (m.find(from))
+                Pattern.compile(s, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+                : Pattern.compile(s, Pattern.MULTILINE);
+
+        m = p.matcher(myData);
+        if (m.find(from)) {
+            GlobalEnvironment.INSTANCE.registerSearchResult(this, m);
             return m.start();
+        }
+
+
+//        String[] data = myData.split("\\n");
+//        int before = 0;
+//        for (String s1: data) {
+//            m = p.matcher(s1);
+//            if (m.find(from)) {
+//                GlobalEnvironment.INSTANCE.registerSearchResult(this, m);
+//                return m.start() + before;
+//            }
+//            before += s1.length();
+//        }
         return -1;
 
 //        return data.indexOf(regexp, from);

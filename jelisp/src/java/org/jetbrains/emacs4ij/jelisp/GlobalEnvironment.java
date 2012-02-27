@@ -13,6 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
 
 /**
  * Created by IntelliJ IDEA.
@@ -45,11 +46,27 @@ public class GlobalEnvironment extends Environment {
     private static DocumentationExtractor myDocumentationExtractor;
     private ArrayList<String> myBufferLocals = new ArrayList<>();
 
-    //for debug
+    //for debug & extract definition on th fly
     public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
 
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
+
+    private class SearchItem {
+        private LObject mySource; //may be a LispString or LispBuffer
+        private Matcher myResult;
+
+        public SearchItem (LispString string, Matcher matcher) {
+            mySource = string;
+            myResult = matcher;
+        }
+
+        public Matcher getResult() {
+            return myResult;
+        }
+    }
+
+    private LinkedList<SearchItem> mySearchHistory = new LinkedList<>();
 
     public static String getEmacsHome() {
         return ourEmacsHome;
@@ -68,9 +85,9 @@ public class GlobalEnvironment extends Environment {
         ourEmacsSource = emacsSource;
         isEmacsSourceOk = false;
     }
-    
-    public enum PropertyType {HOME, SRC} 
-    
+
+    public enum PropertyType {HOME, SRC}
+
     public static boolean isEmacsPropertyOk (PropertyType type) {
         switch (type) {
             case HOME:
@@ -179,7 +196,7 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put(name, symbol);
     }
 
-    public static enum SymbolType {VAR, FUN}    
+    public static enum SymbolType {VAR, FUN}
     private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
     private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
     private static HashMap<String, File> myUploadHistory = new HashMap<>();
@@ -322,14 +339,14 @@ public class GlobalEnvironment extends Environment {
 
     private static boolean containsDef (String line, String name, List<String> defForms) {
         for (String defForm: defForms) {
-            if (line.contains('(' + defForm + ' ' + name + ' ') 
+            if (line.contains('(' + defForm + ' ' + name + ' ')
                     || line.contains('(' + defForm + " '" + name + ' ')) {
                 return true;
             }
-        }    
+        }
         return false;
     }
-    
+
     private static LispList getDefFromFile(File file, String name, SymbolType type) {
         BufferedReader reader;
         try {
@@ -368,7 +385,7 @@ public class GlobalEnvironment extends Environment {
         }
         return null;
     }
-    
+
     private static LispList findEmacsDefinition(String name, File sourceDir, SymbolType type) {
         List<File> src = Arrays.asList(sourceDir.listFiles(new FileFilter() {
             @Override
@@ -402,7 +419,7 @@ public class GlobalEnvironment extends Environment {
         }
         return def;
     }
-    
+
     private LispSymbol processDef (LispList definition, String name, SymbolType type) {
         if (definition == null)
             return null;
@@ -415,7 +432,7 @@ public class GlobalEnvironment extends Environment {
         }
         return value;
     }
-    
+
     public LispSymbol findAndRegisterEmacsForm (String name, String file, SymbolType type) {
         LispList definition = getDefFromFile(new File(ourEmacsSource + file), name, type);
         return processDef(definition, name, type);
@@ -448,7 +465,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     //============================= buffer processing =====================================
-    
+
     @Override
     public void defineServiceBuffer (LispBuffer buffer) {
         ourBufferManager.defineServiceBuffer(buffer);
@@ -702,4 +719,30 @@ return ((LispString)f).getData();
             return new ArrayList<>();
         return INSTANCE.myFrames;
     }
+
+    //==============
+
+
+    @Override
+    public void clearRecorded() {
+        super.clearRecorded();
+        mySearchHistory.clear();
+        ourCallStack.clear();
+    }
+
+    public void registerSearchResult (LispString src, Matcher result) {
+        mySearchHistory.add(new SearchItem(src, result));
+    }
+
+    public Matcher getLastSearchResult() {
+        try {
+//            SearchItem item = mySearchHistory.getLast();
+            return mySearchHistory.getLast().getResult();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
+    }
+
+
+
 }

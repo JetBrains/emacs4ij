@@ -125,14 +125,14 @@ public class BuiltinsStringTest {
 
     @Test
     public void testStringMatchTickAfterNewLine() {
-        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kva\\\\nM-x\")");
+        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kva\nM-x\")");
         Assert.assertEquals(new LispInteger(4), r);
     }
 
     @Test
     public void testStringMatchCharAlternative() {
-        LObject r = evaluateString("(string-match \"[abc]\" \"d\\\\^alla\")");
-        Assert.assertEquals(new LispInteger(4), r);
+        LObject r = evaluateString("(string-match \"[abc]\" \"d\\^alla\")");
+        Assert.assertEquals(new LispInteger(3), r);
     }
 
     @Test
@@ -191,5 +191,138 @@ public class BuiltinsStringTest {
         Assert.assertEquals(new LispInteger(5), r);
         r = evaluateString("(capitalize \"EVERY day\")");
         Assert.assertEquals(new LispString("Every Day"), r);
+    }
+    
+    @Test
+    public void testMatchBeginningNil() {
+        LObject r = evaluateString("(match-beginning 0)");    
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+    
+    @Test
+    public void testMatchBeginningOutOfRange() {
+        try {
+            evaluateString("(match-beginning -10)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range -10 0)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testMatchBeginningZero() {
+        evaluateString("(string-match \"quick\" \"The quick fox jumped quickly.\")");
+        LObject r = evaluateString("(match-beginning 0)");
+        Assert.assertEquals(new LispInteger(4), r);
+        r = evaluateString("(match-beginning 1)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testMatchBeginningTwo() {
+        evaluateString("(string-match \"one\" \"Test string one.\")");
+        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        LObject r = evaluateString("(match-beginning 0)");
+        Assert.assertEquals(new LispInteger(4), r);
+        r = evaluateString("(match-beginning 1)");
+        Assert.assertEquals(new LispInteger(4), r);
+        r = evaluateString("(match-beginning 2)");
+        Assert.assertEquals(new LispInteger(6), r);
+        r = evaluateString("(match-beginning 3)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testMatchEnd() {
+        evaluateString("(string-match \"one\" \"Test string one.\")");
+        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        LObject r = evaluateString("(match-end 0)");
+        Assert.assertEquals(new LispInteger(9), r);
+        r = evaluateString("(match-end 1)");
+        Assert.assertEquals(new LispInteger(6), r);
+        r = evaluateString("(match-end 2)");
+        Assert.assertEquals(new LispInteger(9), r);
+        r = evaluateString("(match-end 3)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testMatchStringOutOfRange() {
+        try {
+            evaluateString("(match-string -1)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range -1 0)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubstringOutOfRange1() {
+        try {
+            evaluateString("(substring \"hello\" -6 5)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"hello\" -1 5)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubstringOutOfRange2() {
+        try {
+            evaluateString("(substring \"hello\" 1 7)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"hello\" 1 7)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubstringOutOfRange3() {
+        try {
+            evaluateString("(substring \"hello\" 0 -6)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"hello\" 0 -1)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubstringOutOfRange4() {
+        try {
+            evaluateString("(substring \"hello\" 3 2)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"hello\" 3 2)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testSubstring() {
+        LObject r = evaluateString("(substring \"hello\" 3 3)");
+        Assert.assertEquals(new LispString(""), r);
+        r = evaluateString("(substring \"hello\" -1)");
+        Assert.assertEquals(new LispString("o"), r);
+        r = evaluateString("(substring \"hello\" 0 4)");
+        Assert.assertEquals(new LispString("hell"), r);
+    }
+    
+    @Test
+    public void testMatchString() {
+        LObject r = evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        Assert.assertEquals(new LispInteger(4), r);
+        r = evaluateString("(match-string 0 \"The quick fox jumped quickly.\")");
+        Assert.assertEquals(new LispString("quick"), r);
+        r = evaluateString("(match-string 1 \"The quick fox jumped quickly.\")");
+        Assert.assertEquals(new LispString("qu"), r);
+        r = evaluateString("(match-string 2 \"The quick fox jumped quickly.\")");
+        Assert.assertEquals(new LispString("ick"), r);
+        r = evaluateString("(match-string 3 \"The quick fox jumped quickly.\")");
+        Assert.assertEquals(LispSymbol.ourNil, r);
     }
 }

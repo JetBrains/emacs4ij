@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -8,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 
 /**
  * Created by IntelliJ IDEA.
@@ -122,4 +124,56 @@ public abstract class BuiltinsString {
         }
         throw new WrongTypeArgumentException("char-or-string-p", object.toString());
     }
+    
+    @Subroutine("match-beginning")
+    public static LObject matchBeginning (LispInteger subExp) {
+        int index = subExp.getData();
+        if (index < 0)
+            throw new ArgumentOutOfRange(subExp, 0);
+        Matcher m = GlobalEnvironment.INSTANCE.getLastSearchResult();
+        if (m == null)
+            return LispSymbol.ourNil;
+        if (index == 0)
+            return new LispInteger(m.start());
+        if (index > m.groupCount())
+            return LispSymbol.ourNil;
+        return new LispInteger(m.start(index));
+    }
+
+    @Subroutine("match-end")
+    public static LObject matchEnd (LispInteger subExp) {
+        int index = subExp.getData();
+        if (index < 0)
+            throw new ArgumentOutOfRange(subExp, 0);
+        Matcher m = GlobalEnvironment.INSTANCE.getLastSearchResult();
+        if (m == null)
+            return LispSymbol.ourNil;
+        if (index == 0)
+            return new LispInteger(m.end());
+        if (index > m.groupCount())
+            return LispSymbol.ourNil;
+        return new LispInteger(m.end(index));
+    }
+
+    private static int processBound (LispInteger bound, int length) {
+        return bound.getData() < 0 ? length + bound.getData() : bound.getData();
+    }    
+    
+    @Subroutine("substring")
+    public static LObject substring (LispString string, LispInteger from, @Optional LObject to) {
+        int end = string.length();
+        if (to != null && !LispSymbol.ourNil.equals(to)) {
+            if (!(to instanceof LispInteger))
+                throw new WrongTypeArgumentException("integerp", to.toString());
+            end = processBound((LispInteger) to, string.length());
+        }
+        int start = processBound(from, string.length());
+        try {
+            return new LispString(string.getData().substring(start, end));
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(string, start, end);
+        }
+    }
+    
+
 }

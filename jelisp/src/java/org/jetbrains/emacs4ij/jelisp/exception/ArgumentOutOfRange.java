@@ -10,7 +10,17 @@ package org.jetbrains.emacs4ij.jelisp.exception;
 
 @Error("args-out-of-range")
 public class ArgumentOutOfRange extends LispException {
-    public ArgumentOutOfRange (String argument, String value) {
-        super("'(args-out-of-range " + argument + ' ' + value + ')');
+    private static String fromArray (Object... arguments) {
+        if (arguments.length < 1)
+            throw new RuntimeException("You must specify arguments for args-out-of-range error!");
+        StringBuilder builder = new StringBuilder(arguments[0].toString());
+        for (int i = 1, argumentsLength = arguments.length; i < argumentsLength; i++) {
+            builder.append(' ').append(arguments[i].toString());
+        }
+        return builder.toString();
+    }
+
+    public ArgumentOutOfRange (Object... arguments) {
+        super("'(args-out-of-range " + fromArray(arguments) + ')');
     }
 }
