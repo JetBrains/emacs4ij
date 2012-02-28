@@ -93,14 +93,6 @@ public class OptionsForm extends JFrame {
         return (!wasHome.equals(homeTextField.getText()) || !wasSrc.equals(srcTextField.getText()));
     }
 
-    @Override
-    public void dispose() {
-        if (!EnvironmentInitializer.isGlobalInitialized()) {
-            //todo: notify user
-        }
-        super.dispose();
-    }
-
     public OptionsForm(Project project) {
         setTitle("Emacs4ij Settings");
         setContentPane(panel1);

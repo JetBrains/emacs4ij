@@ -105,6 +105,11 @@ public abstract class BuiltinsKey {
         }
         throw new WrongTypeArgumentException("arrayp", key.toString());
     }
+    
+    @Subroutine("define-key")
+    public static LObject defineKey(LispList keymap, LObject key, LObject function) {
+        return LispSymbol.ourNil;
+    }
 
     
 }

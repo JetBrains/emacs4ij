@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -122,6 +123,12 @@ public class LispVector extends LispObject implements LispSequence {
     
     public void setFirst (LObject first) {
         myData.set(0, first);
+    }
+    
+    public static LispVector make (int length, LObject value) {
+        ArrayList<LObject> list = new ArrayList<>(length);
+        Collections.fill(list, value);
+        return new LispVector(list);
     }
 
 }

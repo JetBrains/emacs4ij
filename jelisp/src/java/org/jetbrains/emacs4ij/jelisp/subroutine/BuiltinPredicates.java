@@ -210,4 +210,13 @@ public abstract class BuiltinPredicates {
     public static LispSymbol numberP (LObject object) {
         return LispSymbol.bool(object instanceof LispNumber);
     }
+    
+    public static boolean isWholeNumber(LObject object) {
+        return (object instanceof LispInteger) && (((LispInteger) object).getData() > -1);
+    }
+    
+    @Subroutine("wholenump")
+    public static LispSymbol wholeNumP (LObject object) {
+        return LispSymbol.bool(isWholeNumber(object));
+    }
 }
