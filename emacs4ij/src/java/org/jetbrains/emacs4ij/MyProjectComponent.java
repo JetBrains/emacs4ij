@@ -1,8 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
-import com.intellij.notification.NotificationType;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -10,7 +7,12 @@ import com.intellij.openapi.fileEditor.FileEditorManagerListener;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.ui.awt.RelativePoint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -18,6 +20,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 /**
  * Created by IntelliJ IDEA.
@@ -48,7 +51,7 @@ public class MyProjectComponent implements ProjectComponent {
                 if (myEnvironment == null)
                     return;
                 try {
-                    new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath()+'/', fileEditorManager.getSelectedTextEditor());
+                    new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
                 } catch (DoubleBufferException e) {
                     System.err.println(e.getMessage());
                 }
@@ -99,20 +102,32 @@ public class MyProjectComponent implements ProjectComponent {
                     myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
                     EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
                 } else {
-
-                    Notification n = new Notification(myDisplayGroupId,
-                            "Emacs4ij",
-                            "Error occurred while initializing Emacs4ij environment. You can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.",
-                            NotificationType.ERROR,
-                            new NotificationListener() {
+                    final String htmlText = "Error occurred while initializing Emacs4ij environment.\nYou can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.";
+                    JBPopupFactory.getInstance()
+                            .createHtmlTextBalloonBuilder(htmlText, MessageType.WARNING, new HyperlinkListener() {
                                 @Override
-                                public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-                                    new OpenSettings().actionPerformed(myProject);
-                                    notification.expire();
+                                public void hyperlinkUpdate(HyperlinkEvent e) {
+                                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+                                        new OpenSettings().actionPerformed(myProject);
                                 }
-                            });
+                            })
+//                            .setHideOnAction(true)
+//                            .setFadeoutTime(7500)
+                            .createBalloon()
+                            .show(RelativePoint.getNorthEastOf(WindowManager.getInstance().getIdeFrame(myProject).getComponent()), Balloon.Position.atRight);
 
-                    n.notify(myProject);
+
+//                    new Notification(myDisplayGroupId,
+//                            "Emacs4ij",
+//                            "Error occurred while initializing Emacs4ij environment. You can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.",
+//                            NotificationType.WARNING,
+//                            new NotificationListener() {
+//                                @Override
+//                                public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+//                                    new OpenSettings().actionPerformed(myProject);
+//                                    notification.expire();
+//                                }
+//                            }).notify(myProject);
                 }
                 indicator.setFraction(1.0);
             }

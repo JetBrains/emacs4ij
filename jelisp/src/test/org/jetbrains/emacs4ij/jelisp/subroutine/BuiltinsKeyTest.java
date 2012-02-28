@@ -108,4 +108,18 @@ public class BuiltinsKeyTest {
         LObject r = evaluateString("(kbd \"C-x\")");
         Assert.assertEquals(new LispString("^X"), r);
     }
+    
+    @Test
+    public void testGlobalSetKey() {
+        LObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");
+        Assert.assertEquals(new LispSymbol("forward-char"), r);
+    }
+    
+    @Test
+    public void testGlobalMap() {
+        LObject r = evaluateString("global-map");
+        System.out.println(r.toString());
+        r = evaluateString("ctl-x-map");
+        System.out.println(r.toString());
+    }
 }
