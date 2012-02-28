@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.project.Project;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,7 +15,12 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 public class OpenSettings extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-        OptionsForm optionsForm = new OptionsForm(PlatformDataKeys.PROJECT.getData(e.getDataContext()));
+        actionPerformed(PlatformDataKeys.PROJECT.getData(e.getDataContext()));
+    }
+    
+    public void actionPerformed(Project p) {
+        OptionsForm optionsForm = new OptionsForm(p);
+        optionsForm.setLocationRelativeTo(null);//(WindowManager.getInstance().getIdeFrame(p).getComponent());
         optionsForm.setVisible(true);
         optionsForm.pack();
     }

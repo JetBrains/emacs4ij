@@ -83,7 +83,28 @@ public abstract class BuiltinsKey {
         element.resetTail(parent);
         return parent;
     }
+    
+    @Subroutine("define-prefix-command")
+    public static LispSymbol definePrefixCommand (LispSymbol command, @Optional LObject mapVar, @Optional LObject name) {
+        //todo: =)
+        return command;
+    }
+    
+    @Subroutine("current-active-maps")
+    public static LObject currentActiveMaps (@Optional LObject olp, LObject position) {
+        return null;
+    }
 
+    @Subroutine("key-binding")
+    public static LObject keyBinding (LObject key, @Optional LObject acceptDefault, LObject noReMap, LObject position) {
+        if (key instanceof LispString) {
+            return null;    
+        }
+        if (key instanceof LispVector) {
+            return null;
+        }
+        throw new WrongTypeArgumentException("arrayp", key.toString());
+    }
 
     
 }

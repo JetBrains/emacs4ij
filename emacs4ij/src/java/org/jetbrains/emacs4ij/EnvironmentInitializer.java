@@ -42,7 +42,7 @@ public class EnvironmentInitializer {
                 isGlobalInitialized = true;
             } catch (LispException e) {
                 //skip
-                System.out.println(e.getMessage());
+//                System.out.println(e.getMessage());
             }
         }
         return isGlobalInitialized;

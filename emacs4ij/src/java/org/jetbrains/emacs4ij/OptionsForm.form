@@ -52,6 +52,8 @@
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
+          <editable value="true"/>
+          <enabled value="false"/>
           <toolTipText value="The directory where Emacs was installed. In Windows it is usually C:\ProgramFiles and in Linux - /usr/share"/>
         </properties>
       </component>
@@ -72,6 +74,7 @@
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
+          <enabled value="false"/>
           <toolTipText value="To enable Emacs4ij plugin you need to download Emacs sources from http://www.gnu.org/software/emacs/ . Here you should specify the location of the downloaded extracted sources."/>
         </properties>
       </component>

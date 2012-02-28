@@ -17,7 +17,11 @@ import java.awt.event.KeyEvent;
  * To change this template use File | Settings | File Templates.
  */
 public class OpenMiniBuffer extends AnAction {
+    public void update(AnActionEvent event) {
+        event.getPresentation().setEnabled(EnvironmentInitializer.isGlobalInitialized());
+    }
 
+    @Override
     public void actionPerformed(AnActionEvent e) {
         CustomEnvironment environment;
         try {

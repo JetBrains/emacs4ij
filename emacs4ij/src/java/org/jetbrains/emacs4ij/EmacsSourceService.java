@@ -21,17 +21,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
         roamingType = RoamingType.DISABLED
     )
 public class EmacsSourceService extends EmacsService implements PersistentStateComponent<EmacsSourceService>  {
-    /*public boolean checkSetEmacsSource  () {
-        if (GlobalEnvironment.ourEmacsSource.equals(""))
-            GlobalEnvironment.ourEmacsSource = checkSetEmacsParameter("source");
-        return !GlobalEnvironment.ourEmacsSource.equals("");
-    }
-
-    public boolean resetEmacsSource () {
-        GlobalEnvironment.ourEmacsSource = reset("source");
-        return !GlobalEnvironment.ourEmacsSource.equals("");
-    }     */
-
     @Override
     public EmacsSourceService getState() {
         return this;

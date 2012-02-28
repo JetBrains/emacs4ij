@@ -22,18 +22,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
     )
 
 public class EmacsHomeService extends EmacsService implements PersistentStateComponent<EmacsHomeService> {
-
-   /* public boolean checkSetEmacsHome () {
-        if (GlobalEnvironment.getEmacsHome().equals(""))
-            GlobalEnvironment.setEmacsHome(checkSetEmacsParameter("home"));
-        return !GlobalEnvironment.getEmacsHome().equals("");
-    }
-
-    public boolean resetEmacsHome () {
-        GlobalEnvironment.setEmacsHome(reset("home"));
-        return !GlobalEnvironment.getEmacsHome().equals("");
-    }       */
-
     @Override
     public EmacsHomeService getState() {
         return this;

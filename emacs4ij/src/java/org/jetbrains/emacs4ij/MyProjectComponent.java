@@ -1,5 +1,8 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -14,6 +17,8 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
+import javax.swing.event.HyperlinkEvent;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -24,6 +29,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 public class MyProjectComponent implements ProjectComponent {
     private CustomEnvironment myEnvironment = null;
     private Project myProject;
+    private final String myDisplayGroupId = "Emacs4ij";
 
     public MyProjectComponent(Project project) {
         myProject = project;
@@ -92,6 +98,21 @@ public class MyProjectComponent implements ProjectComponent {
                 if (EnvironmentInitializer.silentInitGlobal()) {
                     myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
                     EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
+                } else {
+
+                    Notification n = new Notification(myDisplayGroupId,
+                            "Emacs4ij",
+                            "Error occurred while initializing Emacs4ij environment. You can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.",
+                            NotificationType.ERROR,
+                            new NotificationListener() {
+                                @Override
+                                public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+                                    new OpenSettings().actionPerformed(myProject);
+                                    notification.expire();
+                                }
+                            });
+
+                    n.notify(myProject);
                 }
                 indicator.setFraction(1.0);
             }

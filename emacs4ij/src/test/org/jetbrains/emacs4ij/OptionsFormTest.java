@@ -52,7 +52,7 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testForm() {
-        OptionsForm optionsForm = new OptionsForm(null);// (PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class));
+        OptionsForm optionsForm = new OptionsForm(null);
         optionsForm.setVisible(true);
         optionsForm.pack();
     }

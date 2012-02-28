@@ -86,20 +86,33 @@ public class GlobalEnvironment extends Environment {
         isEmacsSourceOk = false;
     }
 
-    public enum PropertyType {HOME, SRC}
+    public enum PropertyType {HOME, SOURCE}
 
     public static boolean isEmacsPropertyOk (PropertyType type) {
         switch (type) {
             case HOME:
                 return isEmacsHomeOk;
-            case SRC:
+            case SOURCE:
                 return isEmacsSourceOk;
             default:
                 return false;
         }
     }
+    
+    public static boolean testProperty (PropertyType type, String value) {
+        switch (type) {
+            case HOME:
+                setEmacsHome(value);
+                return testEmacsHome();
+            case SOURCE:
+                setEmacsSource(value);
+                return testEmacsSource();
+            default:
+                return false;
+        }        
+    }
 
-    public boolean testEmacsHome() {
+    public static boolean testEmacsHome() {
         if (isEmacsHomeOk)
             return true;
         String docDir = ourEmacsHome + "/etc/";
@@ -116,7 +129,7 @@ public class GlobalEnvironment extends Environment {
         return isEmacsHomeOk;
     }
 
-    public boolean testEmacsSource() {
+    public static boolean testEmacsSource() {
         if (!isEmacsSourceOk) {
             File file = new File(ourEmacsSource + "/lisp/simple.el");
             isEmacsSourceOk = file.exists();
@@ -132,7 +145,7 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
 
-        if (!INSTANCE.testEmacsSource()) {
+        if (!testEmacsSource()) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs source directory is invalid!");
         }
@@ -141,7 +154,7 @@ public class GlobalEnvironment extends Environment {
         if (myDocumentationExtractor.scanAll() > 4)
             throw new EnvironmentException("Unexpected number of undocumented forms!");
 
-        if (!INSTANCE.testEmacsHome()) {
+        if (!testEmacsHome()) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs home directory is invalid!");
         }

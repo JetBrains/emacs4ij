@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.Ide;
 
 /**
@@ -14,13 +16,32 @@ public class IdeProvider implements Ide {
     public IdeProvider () {}
 
     @Override
-    public void showErrorMessage(String message) {
-       // Messages.showDialog(message, "Elisp error", new String[] {"ok"}, 0, Messages.getErrorIcon());
-        Messages.showErrorDialog(message, "Elisp error");
+    public void showErrorMessage(final String message) {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        Messages.showErrorDialog(message, "Emacs4ij Error");
+                    }
+                });
+            }
+        });
     }
 
     @Override
-    public void showMessage(String message) {
-        Messages.showInfoMessage(message, "Elisp message");
+    public void showMessage(final String message) {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        Messages.showInfoMessage(message, "Emacs4ij Message");
+                    }
+                });
+            }
+        });
     }
 }
