@@ -410,6 +410,7 @@ public class ForwardParser extends Parser {
         }
         LObject lispObject = parseObject();
         try {
+            skipListSeparators();
             getMyCurrentIndex();
         } catch (EndOfLineException ignored) {
             return lispObject;

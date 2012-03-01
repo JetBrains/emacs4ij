@@ -1,7 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
@@ -18,7 +21,7 @@ import java.util.regex.Pattern;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString extends LispAtom implements LispSequence {
+public class LispString extends LispAtom implements LispSequence, LispArray {
     private String myData;
 
     public LispString (String data) {
@@ -146,5 +149,19 @@ public class LispString extends LispAtom implements LispSequence {
         return -1;
 
 //        return data.indexOf(regexp, from);
+    }
+
+    @Override
+    public void setItem(int position, LObject value) {
+        if (!BuiltinPredicates.isCharacter(value))
+            throw new WrongTypeArgumentException("characterp", value.toString());
+        myData = myData.substring(0, position) + ((LispInteger)value).toCharacterString() + myData.substring(position + 1);
+    }
+
+    @Override
+    public LObject getItem(int position) {
+        char c = myData.charAt(position);
+        String s = "?" + c;
+        return new ForwardParser().parseLine(s);
     }
 }

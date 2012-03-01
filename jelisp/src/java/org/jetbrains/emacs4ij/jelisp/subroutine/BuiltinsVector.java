@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 5:16 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsVector {
+public abstract class BuiltinsVector {
     private BuiltinsVector() {}
 
     @Subroutine("make-vector")

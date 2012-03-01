@@ -1,13 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -17,25 +12,7 @@ import org.junit.Test;
  * Time: 5:52 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsBufferTest {
-    private CustomEnvironment environment;
-
-    @BeforeClass
-    public static void runBeforeClass() {
-        TestSetup.runBeforeClass();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        GlobalEnvironment.INSTANCE.clearRecorded();
-        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-    }
-
-  /*  private List<LObject> p(LObject... objects) {
-        return Arrays.asList(objects);
-    }            */
-
-
+public class BuiltinsBufferTest extends BaseSubroutineTest {
     @Test (expected = NoOpenedBufferException.class)
     public void testCurrentBuffer () {
         BuiltinsBuffer.getCurrentBuffer(environment);

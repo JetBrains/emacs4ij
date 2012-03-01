@@ -17,7 +17,7 @@ import java.util.List;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVector extends LispObject implements LispSequence {
+public class LispVector extends LispObject implements LispSequence, LispArray {
     private ArrayList<LObject> myData = null;
 
     public LispVector() {
@@ -131,4 +131,13 @@ public class LispVector extends LispObject implements LispSequence {
         return new LispVector(list);
     }
 
+    @Override
+    public void setItem(int position, LObject value) {
+        myData.set(position, value);
+    }
+
+    @Override
+    public LObject getItem(int position) {
+        return myData.get(position);
+    }
 }

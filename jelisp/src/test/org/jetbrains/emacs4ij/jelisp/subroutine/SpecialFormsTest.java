@@ -1,12 +1,14 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.junit.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,25 +20,7 @@ import java.util.List;
  * Time: 3:20 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SpecialFormsTest {
-    private CustomEnvironment environment;
-
-    @BeforeClass
-    public static void runBeforeClass() {
-        TestSetup.runBeforeClass();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        GlobalEnvironment.INSTANCE.clearRecorded();
-        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-    }
-
-    private LObject evaluateString (String lispCode) throws LispException {
-        ForwardParser forwardParser = new ForwardParser();
-        return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
+public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testQuote() throws Exception {
         LObject LObject = evaluateString("'5");

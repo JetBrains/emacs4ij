@@ -13,16 +13,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 /**
- * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 8/2/11
- * Time: 5:14 PM
- * To change this template use File | Settings | File Templates.
- */
+* Created by IntelliJ IDEA.
+* User: Ekaterina.Polishchuk
+* Date: 8/2/11
+* Time: 5:14 PM
+* To change this template use File | Settings | File Templates.
+*/
 public abstract class LispSubroutine {
     private static Class[] myBuiltIns = new Class[] {BuiltinArithmetic.class,
-                                                    BuiltinsBuffer.class,
                                                     BuiltinPredicates.class,
+                                                    BuiltinsBuffer.class,
+                                                    BuiltinsCharTable.class,
                                                     BuiltinsCore.class,
                                                     BuiltinsFrame.class,
                                                     BuiltinsKey.class,
@@ -30,7 +31,8 @@ public abstract class LispSubroutine {
                                                     BuiltinsMarker.class,
                                                     BuiltinsSequence.class,
                                                     BuiltinsString.class,
-                                                    BuiltinsSymbol.class};
+                                                    BuiltinsSymbol.class,
+                                                    BuiltinsVector.class};
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 
     private LispSubroutine() {}
@@ -209,11 +211,11 @@ public abstract class LispSubroutine {
                         System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e.getCause());
                     } catch (InvocationTargetException e) {
-                        if (getCause(e) instanceof LispThrow) 
+                        if (getCause(e) instanceof LispThrow)
                             throw (LispThrow)getCause(e);
                         System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e.getCause());
-                    } 
+                    }
                 }
             }
         }

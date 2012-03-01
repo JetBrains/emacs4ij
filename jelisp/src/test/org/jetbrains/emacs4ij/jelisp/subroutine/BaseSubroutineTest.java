@@ -1,0 +1,39 @@
+package org.jetbrains.emacs4ij.jelisp.subroutine;
+
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
+import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.junit.Before;
+import org.junit.BeforeClass;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: kate
+ * Date: 3/1/12
+ * Time: 11:19 AM
+ * To change this template use File | Settings | File Templates.
+ */
+public abstract class BaseSubroutineTest {
+    protected CustomEnvironment environment;
+
+    @BeforeClass
+    public static void runBeforeClass() {
+        TestSetup.runBeforeClass();
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        GlobalEnvironment.INSTANCE.clearRecorded();
+        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
+    }
+
+    protected LObject evaluateString (String lispCode) throws LispException {
+        ForwardParser forwardParser = new ForwardParser();
+        LObject object = forwardParser.parseLine(lispCode);
+        return object.evaluate(environment);
+    }
+
+}

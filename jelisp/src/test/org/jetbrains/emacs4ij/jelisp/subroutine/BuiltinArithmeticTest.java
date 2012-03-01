@@ -1,14 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -18,26 +13,7 @@ import org.junit.Test;
  * Time: 18:22
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinArithmeticTest {
-    private CustomEnvironment environment;
-
-    @BeforeClass
-    public static void runBeforeClass() {
-        TestSetup.runBeforeClass();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        GlobalEnvironment.INSTANCE.clearRecorded();
-        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-    }
-
-    private LObject evaluateString (String lispCode) throws LispException {
-        ForwardParser forwardParser = new ForwardParser();
-        LObject object = forwardParser.parseLine(lispCode);
-        return object.evaluate(environment);
-    }
-
+public class BuiltinArithmeticTest extends BaseSubroutineTest {
     @Test
     public void testPlusInteger() throws LispException {
         LObject lispObject = evaluateString("(+ 2 2)");

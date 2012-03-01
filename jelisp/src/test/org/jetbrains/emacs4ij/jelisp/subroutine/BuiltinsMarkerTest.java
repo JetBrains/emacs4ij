@@ -1,17 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -21,25 +14,7 @@ import org.junit.Test;
  * Time: 5:08 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsMarkerTest {
-    private CustomEnvironment environment;
-
-    @BeforeClass
-    public static void runBeforeClass() {
-        TestSetup.runBeforeClass();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        GlobalEnvironment.INSTANCE.clearRecorded();
-        environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-    }
-
-    private LObject evaluateString (String lispCode) throws LispException {
-        ForwardParser forwardParser = new ForwardParser();
-        return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
+public class BuiltinsMarkerTest extends BaseSubroutineTest {
     @Test
     public void testMarkerInsertionType() throws Exception {
         LispMarker marker = new LispMarker(10, null);

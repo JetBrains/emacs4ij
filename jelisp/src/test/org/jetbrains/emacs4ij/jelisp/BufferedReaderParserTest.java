@@ -19,8 +19,6 @@ import java.io.StringReader;
  * To change this template use File | Settings | File Templates.
  */
 public class BufferedReaderParserTest {
-
-
     @Test
     public void testParseSplitString() throws IOException {
         StringReader r = new StringReader ("\"one\ntwo\"");

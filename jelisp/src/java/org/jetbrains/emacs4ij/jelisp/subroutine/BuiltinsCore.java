@@ -239,16 +239,23 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("aref")
-    public static LObject aRef (LObject array, LispInteger index) {
+    public static LObject aRef (LispArray array, LispInteger index) {
         try {
-            if (array instanceof LispVector) {
-                return ((LispVector) array).get(index.getData());
-            }
-            if (array instanceof LispString) {
-                return new LispInteger(((LispString) array).getData().charAt(index.getData()));
-            }
-            //todo: char-table, bool-vector
-            throw new WrongTypeArgumentException("arrayp", array.toString());
+            return array.getItem(index.getData());
+            //todo: bool-vector
+//            throw new WrongTypeArgumentException("arrayp", array.toString());
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(array.toString(), index.toString());
+        }
+    }
+
+    @Subroutine("aset")
+    public static LObject aSet (LispArray array, LispInteger index, LObject value) {
+        try {
+            array.setItem(index.getData(), value);
+            return value;
+            //todo: bool-vector
+//            throw new WrongTypeArgumentException("arrayp", array.toString());
         } catch (IndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(array.toString(), index.toString());
         }

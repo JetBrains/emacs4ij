@@ -14,7 +14,9 @@ import java.util.ArrayList;
  * Time: 7:14 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsFrame {
+public abstract class BuiltinsFrame {
+    private BuiltinsFrame() {}
+
     @Subroutine("selected-frame")
     public static LObject selectedFrame () {
         return GlobalEnvironment.INSTANCE.getSelectedFrame() == null ?

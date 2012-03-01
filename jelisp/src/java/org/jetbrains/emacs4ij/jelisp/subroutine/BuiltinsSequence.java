@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * Time: 5:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsSequence {
+public abstract class BuiltinsSequence {
     private BuiltinsSequence() {}
 
     private static boolean isSequence (LObject object) {
