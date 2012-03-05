@@ -25,6 +25,10 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     private String myData;
 
     public LispString (String data) {
+        if (data == null) {
+            myData = "";
+            return;
+        }
         myData = data.replaceAll("\\\\\"", "\"");
     }
 

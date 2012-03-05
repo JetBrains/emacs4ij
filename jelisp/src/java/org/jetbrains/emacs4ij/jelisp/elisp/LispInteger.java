@@ -40,15 +40,15 @@ public class LispInteger extends LispNumber<Integer> {
     public String toCharacterString () {        
         if (!BuiltinPredicates.isCharacter(this))
             throw new WrongTypeArgumentException("characterp", toString());
-//        if (myData < 32) {
+        if (myData < 32) {
 //            String s = Integer.toBinaryString(myData);//(Character.toUpperCase(myData + 64));
 //            while (s.length() != 6) {
 //                s = '0' + s;
 //            }
 //            s = '1' + s;
 //            return Integer.valueOf(s, 2).toString();
-////            return "^" + (char)Character.toUpperCase(myData + 64);
-//        }
+            return "^" + (char)Character.toUpperCase(myData + 64);
+        }
         if (myData > 127 && myData < 160) {
             return '\\' + Integer.toOctalString(myData);
         }

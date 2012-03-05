@@ -268,7 +268,7 @@ public class DocumentationExtractor {
 //        for (String s: str) {
 //            System.out.println(s);
 //        }
-        //System.out.println("Undocumented: " + str.size());
+        System.out.println("Undocumented: " + str.size());
         return str.size();
     }
 }

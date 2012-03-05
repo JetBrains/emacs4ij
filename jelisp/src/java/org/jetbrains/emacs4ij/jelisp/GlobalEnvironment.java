@@ -98,7 +98,7 @@ public class GlobalEnvironment extends Environment {
                 return false;
         }
     }
-    
+
     public static boolean testProperty (PropertyType type, String value) {
         switch (type) {
             case HOME:
@@ -109,7 +109,7 @@ public class GlobalEnvironment extends Environment {
                 return testEmacsSource();
             default:
                 return false;
-        }        
+        }
     }
 
     public static boolean testEmacsHome() {
@@ -151,8 +151,8 @@ public class GlobalEnvironment extends Environment {
         }
 
         myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
-        if (myDocumentationExtractor.scanAll() > 4)
-            throw new EnvironmentException("Unexpected number of undocumented forms!");
+//        if (myDocumentationExtractor.scanAll() > 4)
+//            throw new EnvironmentException("Unexpected number of undocumented forms!");
 
         if (!testEmacsHome()) {
             INSTANCE.mySymbols.clear();
@@ -168,6 +168,9 @@ public class GlobalEnvironment extends Environment {
         //note: it's important to load backquote before defsubst
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
+
+        KeyMapUtil.defineKeyMaps(INSTANCE);
+
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
 
@@ -468,6 +471,17 @@ public class GlobalEnvironment extends Environment {
 
     public static void showErrorMessage (String message) {
         myIde.showErrorMessage(message);
+    }
+
+    @Override
+    public void defineSymbol (LispSymbol symbol) {
+        String doc = myDocumentationExtractor.getVariableDoc(symbol.getName());
+        if (doc != null)
+            symbol.setGlobalVariableDocumentation(new LispString(doc));
+        else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
+            myRecordedSymbols.add(symbol.getName());
+        }
+        mySymbols.put(symbol.getName(), symbol);
     }
 
     public LObject getBufferLocalSymbolValue (LispSymbol symbol) {

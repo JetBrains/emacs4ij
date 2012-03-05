@@ -54,8 +54,8 @@ public abstract class BuiltinsKey {
 
     //todo
     @Subroutine("make-keymap")
-    public static LispList makeKeymap (@Optional LispString prompt) {
-        if (prompt != null) {
+    public static LispList makeKeymap (@Optional LObject prompt) {
+        if (prompt != null && !prompt.equals(LispSymbol.ourNil)) {
             throw new RuntimeException("not implemented");
         }
         return null;

@@ -167,15 +167,79 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     }
     
     @Test
-    public void testSetRange() {
+    public void testSetRangeCons() {
         evaluateString("(defvar ct (make-char-table 'p))");
         LObject a = evaluateString("(set-char-table-range  ct '(1 . 3) 16)");
         Assert.assertEquals(new LispInteger(16), a);
         a = evaluateString("ct");
-//        System.out.println(evaluateString("ct"));
-        String expected = "#^[nil nil p \n" +
-                "#^^[3 0 nil 16 16 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 \n" +
-                "#^^[3 0 nil 16 16 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil]";
+        String expected = "#^[nil nil p "
+        +"#^^[3 0 nil 16 16 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 "
+        +"#^^[3 0 nil 16 16 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil]";
         Assert.assertEquals(expected, a.toString());
     }
+
+    @Test
+    public void testSetRangeAsciiChar() {
+        evaluateString("(defvar ct (make-char-table 'p))");
+        LObject a = evaluateString("(set-char-table-range  ct ?a 16)");
+        Assert.assertEquals(new LispInteger(16), a);
+        a = evaluateString("ct");
+        String expected = "#^[nil nil p "
+        +"#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 "
+        +"#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil 16 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil]";
+        Assert.assertEquals(expected, a.toString());
+    }
+
+    @Test
+    public void testSetRangeT() {
+        evaluateString("(defvar ct (make-char-table 'p))");
+        LObject a = evaluateString("(set-char-table-range ct t 16)");
+        Assert.assertEquals(new LispInteger(16), a);
+        a = evaluateString("ct");
+        String expected = "#^[nil nil p 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]";
+        Assert.assertEquals(expected, a.toString());
+    }
+
+    @Test
+    public void testSetRangeTThenChar() {
+        evaluateString("(defvar ct (make-char-table 'p))");
+        evaluateString("(set-char-table-range ct t 16)");
+        LObject a = evaluateString("(set-char-table-range ct ?a 5)");
+        Assert.assertEquals(new LispInteger(5), a);
+        a = evaluateString("ct");
+        String expected = "#^[nil nil p "
+                + "#^^[3 0 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 5 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16] #^^[1 0 #^^[2 0 "
+                + "#^^[3 0 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 5 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16] 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16] 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16] 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]";
+        Assert.assertEquals(expected, a.toString());
+    }
+
+    @Test
+    public void testRangeCons() {
+        evaluateString("(defvar ct (make-char-table 'p))");
+        evaluateString("(set-char-table-range ct ?a 5)");
+        LObject a = evaluateString("(char-table-range ct '(97 . 123))");
+        Assert.assertEquals(new LispInteger(5), a);
+    }
+
+    @Test
+    public void testRangeChar() {
+        evaluateString("(defvar ct (make-char-table 'p))");
+        evaluateString("(set-char-table-range ct t 16)");
+        evaluateString("(set-char-table-range ct ?a 5)");
+        LObject a = evaluateString("(char-table-range ct ?a)");
+        Assert.assertEquals(new LispInteger(5), a);
+    }
+
+    @Test
+    public void testRangeWrong() {
+        try {
+            evaluateString("(defvar ct (make-char-table 'p))");
+            evaluateString("(char-table-range ct t)");
+        } catch (Exception e) {
+            Assert.assertTrue(TestSetup.getCause(e).getMessage().contains("Invalid RANGE argument to `char-table-range'"));
+            return;
+        }
+        Assert.fail();
+    }
+
 }

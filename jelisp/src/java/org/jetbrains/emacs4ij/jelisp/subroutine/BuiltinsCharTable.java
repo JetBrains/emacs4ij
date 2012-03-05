@@ -64,21 +64,19 @@ public abstract class BuiltinsCharTable {
             throw new WrongTypeArgumentException("characterp", object.toString());
         return (LispInteger)object;
     }
-    
+
     @Subroutine("char-table-range")
     public static LObject charTableRange (Environment environment, LispCharTable table, LObject range) {
         if (range.equals(LispSymbol.ourNil)) {
             return table.getDefault();
-        } else if (range.equals(LispSymbol.ourT)) {
-            //todo: return all values
         } else if (range instanceof LispInteger) { //i.e. char
-            //todo: return char's value
+            return table.charTableRef(((LispInteger) range).getData());
         } else if (range instanceof LispList) {
             LispInteger from = checkChar(((LispList) range).car());
             LispInteger to   = checkChar(((LispList) range).cdr());
-            //todo: return range (inclusive from & to) with value
+            return table.refAndRange(from.getData(), from.getData(), to.getData());
         } else {
-            BuiltinsCore.error(environment, "Invalid RANGE argument to `set-char-table-range'");
+            BuiltinsCore.error(environment, "Invalid RANGE argument to `char-table-range'");
         }
         return null;
     }
@@ -88,9 +86,11 @@ public abstract class BuiltinsCharTable {
         if (range.equals(LispSymbol.ourNil)) {
             table.setDefault(value);
         } else if (range.equals(LispSymbol.ourT)) {
-            //todo: affect all values            
+            table.setAscii(value);
+            for (int i = 0; i < CharTableUtil.charTableSize(0); i++)
+                table.setItem(i, value);
         } else if (range instanceof LispInteger) { //i.e. char
-            //todo: set char's value
+            table.setRange(((LispInteger) range).getData(), ((LispInteger) range).getData(), value);
         } else if (range instanceof LispList) {
             LispInteger from = checkChar(((LispList) range).car());
             LispInteger to = checkChar(((LispList) range).cdr());
@@ -100,6 +100,14 @@ public abstract class BuiltinsCharTable {
         }
         return value;
     }
+
+    //obsolete function in elisp
+    @Subroutine("set-char-table-default)")
+    public static LObject setCharTableDefault (LObject table, LObject ch, LObject value) {
+        return LispSymbol.ourNil;
+    }
+
+
 }
 
 

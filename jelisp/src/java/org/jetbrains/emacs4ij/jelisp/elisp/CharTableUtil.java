@@ -11,16 +11,25 @@ public abstract class CharTableUtil {
     // these magic numbers are hardcoded in chartab.c, line 31
     public static final int[] CHARTABLE_SIZE_BIT = {6, 4, 5, 7};
     
-    public static final int MIN_CHARTABLE_SIZE = 65; //?
+//    public static final int MIN_CHARTABLE_SIZE = 65; //?
+
+    public static final int MAX_CHAR = 0x3FFFFF;
 
     public static final int MAX_N_EXTRA_SLOTS = 10;
 
+    /* Number of characters (in bits) each element of Nth level char-table covers.  */
     public static int[] CHARTABLE_BITS = {CHARTABLE_SIZE_BIT[1] + CHARTABLE_SIZE_BIT[2] + CHARTABLE_SIZE_BIT[3],
                                           CHARTABLE_SIZE_BIT[2] + CHARTABLE_SIZE_BIT[3],
                                           CHARTABLE_SIZE_BIT[3],
                                           0};
 
-    public static int charTableChar (int i) {
+    /* Number of elements in Nth level char-table.  */
+    public static int charTableSize(int i) {
+        return 1 << CHARTABLE_SIZE_BIT[i];
+    }
+
+    /* Number of characters each element of Nth level char-table covers.  */
+    public static int charTableChars(int i) {
         return 1 << CHARTABLE_BITS[i];
     }
 

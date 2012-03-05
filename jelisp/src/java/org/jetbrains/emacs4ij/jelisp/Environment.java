@@ -118,6 +118,7 @@ public abstract class Environment {
 //            getBufferCurrentForEditing().defineLocalVariable(symbol);
 //
 //        }
+
         mySymbols.put(symbol.getName(), symbol);
     }
 
