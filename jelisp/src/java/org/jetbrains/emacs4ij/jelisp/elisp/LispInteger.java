@@ -55,4 +55,11 @@ public class LispInteger extends LispNumber<Integer> {
         return Character.toString((char)(int)myData);
     }
 
+    public void setData (int value) {
+        myData = value;
+    }
+
+    public int keyToChar () {
+        return myData & ((1 << CharUtil.CHARACTERBITS) - 1);
+    }
 }

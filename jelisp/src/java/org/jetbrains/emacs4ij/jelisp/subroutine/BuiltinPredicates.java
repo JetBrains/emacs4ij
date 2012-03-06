@@ -17,13 +17,10 @@ public abstract class BuiltinPredicates {
     private BuiltinPredicates() {}
 
     public static boolean isCharacter(LObject object) {
-        if (!(object instanceof LispInteger))
+        if (!isWholeNumber(object))
             return false;
-        int data = ((LispInteger) object).getData();
-        if (data < 0)  //less clear, but shorter would be to replace toBinary... with >= 4194304
-            return false;
-        String binary = Integer.toBinaryString(data);
-        return binary.length() <= 22;
+        Integer data = ((LispInteger) object).getData();
+        return data <= CharUtil.MAX_CHAR;
     }
 
     public static boolean isString (LObject object) {
@@ -219,4 +216,9 @@ public abstract class BuiltinPredicates {
     public static LispSymbol wholeNumP (LObject object) {
         return LispSymbol.bool(isWholeNumber(object));
     }
+    
+    public static LObject eventHead (LObject event) {
+        return event instanceof LispList ? ((LispList) event).car() : event;
+    }
+
 }

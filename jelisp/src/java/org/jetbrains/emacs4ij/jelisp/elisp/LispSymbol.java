@@ -3,7 +3,10 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.KeyBoardUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -349,4 +352,25 @@ public class LispSymbol extends LispAtom {
     public boolean isKeyword () {
         return myName.startsWith(":");
     }
+
+    public LispList parseModifiers () {
+        LObject elements = getProperty("event-symbol-element-mask");
+        if (elements instanceof LispList)
+            return (LispList) elements;
+        else {
+            LispInteger end = new LispInteger(0);
+            int modifiers = BuiltinsKey.parseModifiersUncached(this, end);
+            LObject unmodified = BuiltinsSymbol.intern(new LispString(myName.substring(end.getData())), LispSymbol.ourNil);
+            if ((modifiers & ~LispNumber.INTMASK) != 0) {
+//              todo  kill (getpid (), SIGABRT); =)
+                return null;
+            }
+            elements = LispList.list(unmodified, new LispInteger(modifiers));
+            setProperty("event-symbol-element-mask", elements);
+            setProperty("event-symbol-elements", LispList.cons(unmodified, KeyBoardUtil.lispyModifierList(modifiers)));
+            return (LispList) elements;
+        }
+        
+    }
+    
 }

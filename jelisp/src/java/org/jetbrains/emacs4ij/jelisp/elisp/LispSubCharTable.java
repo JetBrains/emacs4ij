@@ -20,7 +20,7 @@ public class LispSubCharTable extends LispObject implements LispArray {
     public LispSubCharTable(int depth, int minChar, LObject init) {
         myDepth = depth;
         myMinChar = (char)minChar;
-        myContent = new LObject[getMinVectorSizeToFit() - 1 + CharTableUtil.charTableSize(depth) - 2];
+        myContent = new LObject[getMinVectorSizeToFit() - 1 + CharUtil.charTableSize(depth) - 2];
         Arrays.fill(myContent, init);
     }
 
@@ -35,13 +35,13 @@ public class LispSubCharTable extends LispObject implements LispArray {
     }
 
     public void set (int c, LObject value) {
-        int i = CharTableUtil.index(c, myDepth, myMinChar);
+        int i = CharUtil.index(c, myDepth, myMinChar);
         if (myDepth == 3)
             myContent[i] = value;
         else {
             if (!(myContent[i] instanceof LispSubCharTable)) {
                 myContent[i] = new LispSubCharTable (myDepth + 1,
-                        myMinChar + i * CharTableUtil.charTableChars(myDepth), myContent[i]);
+                        myMinChar + i * CharUtil.charTableChars(myDepth), myContent[i]);
             }
             ((LispSubCharTable)myContent[i]).set(c, value);
         }
@@ -67,7 +67,7 @@ public class LispSubCharTable extends LispObject implements LispArray {
     }
 
     public static LObject setRange (LObject table, int depth, int minChar, int from, int to, LObject value) {
-        int maxChar = minChar + CharTableUtil.charTableChars(depth) - 1;
+        int maxChar = minChar + CharUtil.charTableChars(depth) - 1;
         if (depth == 3 || (from <= minChar && to >= maxChar)) {
             return value;
         }
@@ -78,10 +78,10 @@ public class LispSubCharTable extends LispObject implements LispArray {
             from = minChar;
         if (to > maxChar)
             to = maxChar;
-        int i = CharTableUtil.index(from, depth, minChar);
-        int j = CharTableUtil.index(to, depth, minChar);
-        minChar += CharTableUtil.charTableChars(depth) * i;
-        for (; i <= j; i++, minChar += CharTableUtil.charTableChars(depth)) {
+        int i = CharUtil.index(from, depth, minChar);
+        int j = CharUtil.index(to, depth, minChar);
+        minChar += CharUtil.charTableChars(depth) * i;
+        for (; i <= j; i++, minChar += CharUtil.charTableChars(depth)) {
             LispSubCharTable subTable = (LispSubCharTable) table;
             subTable.setItem(i, setRange (subTable.getItem(i), depth, minChar, from, to, value));
         }
@@ -89,23 +89,23 @@ public class LispSubCharTable extends LispObject implements LispArray {
     }
     
     public LObject ref (int c) {
-        LObject value = myContent[CharTableUtil.index(c, myDepth, myMinChar)];
+        LObject value = myContent[CharUtil.index(c, myDepth, myMinChar)];
         if (value instanceof LispSubCharTable)
             value = ((LispSubCharTable) value).ref(c);
         return value;
     }
 
     public LObject refAndRange (int c, int from, int to, LObject init) {
-        int max_char = myMinChar + CharTableUtil.charTableChars(myDepth - 1) - 1;
-        int index = CharTableUtil.index(c, myDepth, myMinChar);
+        int max_char = myMinChar + CharUtil.charTableChars(myDepth - 1) - 1;
+        int index = CharUtil.index(c, myDepth, myMinChar);
         LObject value = myContent[index];
         if (value instanceof LispSubCharTable)
             value = ((LispSubCharTable) value).refAndRange(c, from, to, init);
         else if (value.equals(LispSymbol.ourNil))
             value = init;
         int idx = index;
-        while (idx > 0 && from < myMinChar + idx * CharTableUtil.charTableChars(myDepth)) {
-            c = myMinChar + idx * CharTableUtil.charTableChars(myDepth) - 1;
+        while (idx > 0 && from < myMinChar + idx * CharUtil.charTableChars(myDepth)) {
+            c = myMinChar + idx * CharUtil.charTableChars(myDepth) - 1;
             idx--;
             LObject this_val = myContent[idx];
             if (this_val instanceof LispSubCharTable)
@@ -117,7 +117,7 @@ public class LispSubCharTable extends LispObject implements LispArray {
                 break;
             }
         }
-        while ((c = myMinChar + (index + 1) * CharTableUtil.charTableChars(myDepth)) <= max_char && to >= c) {
+        while ((c = myMinChar + (index + 1) * CharUtil.charTableChars(myDepth)) <= max_char && to >= c) {
             index++;
             LObject this_val = myContent[index];
             if (this_val instanceof LispSubCharTable)

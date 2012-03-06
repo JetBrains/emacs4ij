@@ -114,11 +114,6 @@ public abstract class Environment {
         if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
         }
-//        if (symbol.isBufferLocal()) {
-//            getBufferCurrentForEditing().defineLocalVariable(symbol);
-//
-//        }
-
         mySymbols.put(symbol.getName(), symbol);
     }
 

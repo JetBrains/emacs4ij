@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -167,5 +168,17 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
         char c = myData.charAt(position);
         String s = "?" + c;
         return new ForwardParser().parseLine(s);
+    }
+    
+    public int lengthInBytes() {
+        try {
+            return myData.getBytes("UTF-8").length;
+        } catch (UnsupportedEncodingException e) {
+            return myData.length();
+        }
+    }
+    
+    public char charAt (int position) {
+        return myData.charAt(position);
     }
 }

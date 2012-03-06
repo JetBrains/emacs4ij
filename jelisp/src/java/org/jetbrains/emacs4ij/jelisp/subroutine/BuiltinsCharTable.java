@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -82,12 +83,12 @@ public abstract class BuiltinsCharTable {
     }
     
     @Subroutine("set-char-table-range")
-    public static LObject setCharTableRange (Environment environment, LispCharTable table, LObject range, LObject value) {
+    public static LObject setCharTableRange (LispCharTable table, LObject range, LObject value) {
         if (range.equals(LispSymbol.ourNil)) {
             table.setDefault(value);
         } else if (range.equals(LispSymbol.ourT)) {
             table.setAscii(value);
-            for (int i = 0; i < CharTableUtil.charTableSize(0); i++)
+            for (int i = 0; i < CharUtil.charTableSize(0); i++)
                 table.setItem(i, value);
         } else if (range instanceof LispInteger) { //i.e. char
             table.setRange(((LispInteger) range).getData(), ((LispInteger) range).getData(), value);
@@ -96,7 +97,7 @@ public abstract class BuiltinsCharTable {
             LispInteger to = checkChar(((LispList) range).cdr());
             table.setRange(from.getData(), to.getData(), value);
         } else {
-            BuiltinsCore.error(environment, "Invalid RANGE argument to `set-char-table-range'");
+            BuiltinsCore.error(GlobalEnvironment.INSTANCE, "Invalid RANGE argument to `set-char-table-range'");
         }
         return value;
     }

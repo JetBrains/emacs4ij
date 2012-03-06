@@ -340,4 +340,14 @@ public abstract class BuiltinsCore {
         //todo :)
         return LispSymbol.ourNil;
     }
+
+    public static LObject assqNoQuit (LObject key, LObject list) {
+        while (list instanceof LispList &&
+                (!(((LispList) list).car() instanceof LispList)
+                  || !eqs (((LispList)((LispList) list).car()).car(), key)))
+            list = ((LispList) list).cdr();
+        return BuiltinsList.carSafe(list);
+    }
+    
+    
 }

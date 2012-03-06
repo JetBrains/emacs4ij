@@ -21,8 +21,8 @@ public class LispCharTable extends LispObject implements LispArray {
     private LispObject myParent;
     private LispSymbol mySubtype;
     private LObject myAscii = null;
-    private LObject[] myContent = new LObject[(1 << CharTableUtil.CHARTABLE_SIZE_BIT[0])];
-    private LObject[] myExtras = new LObject[CharTableUtil.MAX_N_EXTRA_SLOTS];
+    private LObject[] myContent = new LObject[(1 << CharUtil.CHARTABLE_SIZE_BIT[0])];
+    private LObject[] myExtras = new LObject[CharUtil.MAX_N_EXTRA_SLOTS];
     private int myNExtras = 0;
 
     @Override
@@ -36,7 +36,7 @@ public class LispCharTable extends LispObject implements LispArray {
             if (!BuiltinPredicates.isWholeNumber(n))
                 throw new WrongTypeArgumentException("wholenump", n.toString());
             myNExtras = ((LispInteger)n).getData();
-            if (myNExtras > CharTableUtil.MAX_N_EXTRA_SLOTS)
+            if (myNExtras > CharUtil.MAX_N_EXTRA_SLOTS)
                 throw new ArgumentOutOfRange(n, LispSymbol.ourNil);
         }        
         myParent = LispSymbol.ourNil;
@@ -137,9 +137,9 @@ public class LispCharTable extends LispObject implements LispArray {
             ((LispSubCharTable) myAscii).setItem(c, value);
             return;
         }
-        int i = CharTableUtil.index(c, 0, 0);
+        int i = CharUtil.index(c, 0, 0);
         if (!(myContent[i] instanceof LispSubCharTable)) {
-            myContent[i] = new LispSubCharTable(1, i * CharTableUtil.charTableChars(0), myContent[i]);
+            myContent[i] = new LispSubCharTable(1, i * CharUtil.charTableChars(0), myContent[i]);
         }
         ((LispSubCharTable)myContent[i]).set(c, value);
         if (isAsciiChar(c))
@@ -151,9 +151,9 @@ public class LispCharTable extends LispObject implements LispArray {
             set(from, value);
             return;
         }
-        for (int i = CharTableUtil.index(from, 0, 0), minChar = i * CharTableUtil.charTableChars(0);
+        for (int i = CharUtil.index(from, 0, 0), minChar = i * CharUtil.charTableChars(0);
              minChar <= to;
-             i++, minChar += CharTableUtil.charTableChars(0))
+             i++, minChar += CharUtil.charTableChars(0))
         {
             myContent[i] = LispSubCharTable.setRange(myContent[i], 0, minChar, from, to, value);
         }
@@ -185,7 +185,7 @@ public class LispCharTable extends LispObject implements LispArray {
             if (value instanceof LispSubCharTable)
                 value = ((LispSubCharTable) value).getItem(c);
         } else {
-            value = myContent[CharTableUtil.index(c, 0, 0)];
+            value = myContent[CharUtil.index(c, 0, 0)];
             if (value instanceof LispSubCharTable)
                 value = ((LispSubCharTable) value).ref(c);
         }
@@ -229,21 +229,21 @@ public class LispCharTable extends LispObject implements LispArray {
     }
 
     public LObject refAndRange (int c, int from, int to) {
-        int index = CharTableUtil.index (c, 0, 0);
+        int index = CharUtil.index(c, 0, 0);
         int idx;
         LObject val = myContent[index];
         if (from < 0)
             from = 0;
         if (to < 0)
-            to = CharTableUtil.MAX_CHAR;
+            to = CharUtil.MAX_CHAR;
         if (val instanceof LispSubCharTable)
             val = ((LispSubCharTable) val).refAndRange(c, from, to, myDefault);
         else if (val.equals(LispSymbol.ourNil))
             val = myDefault;
 
         idx = index;
-        while (from < idx * CharTableUtil.charTableChars(0)) {
-            c = idx * CharTableUtil.charTableChars(0) - 1;
+        while (from < idx * CharUtil.charTableChars(0)) {
+            c = idx * CharUtil.charTableChars(0) - 1;
             idx--;
             LObject this_val = myContent[idx];
             if (this_val instanceof LispSubCharTable)
@@ -255,9 +255,9 @@ public class LispCharTable extends LispObject implements LispArray {
                 break;
             }
         }
-        while (to >= (index + 1) * CharTableUtil.charTableChars(0)) {
+        while (to >= (index + 1) * CharUtil.charTableChars(0)) {
             index++;
-            c = index * CharTableUtil.charTableChars(0);
+            c = index * CharUtil.charTableChars(0);
             LObject this_val = myContent[index];
             if (this_val instanceof LispSubCharTable)
                 this_val = ((LispSubCharTable) val).refAndRange(c, from, to, myDefault);

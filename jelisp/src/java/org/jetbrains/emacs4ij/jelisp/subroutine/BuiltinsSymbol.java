@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.KeyBoardUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
@@ -167,12 +168,12 @@ public abstract class BuiltinsSymbol {
         return new LispSymbol(name.getData());
     }
 
-    private static LispSymbol getSymbol (final String name, LispVector objectArray, final Environment environment) {
+    private static LispSymbol getSymbol (final String name, LispVector objectArray) {
         return (LispSymbol) CollectionUtils.find(objectArray.toLObjectList(), new Predicate() {
             @Override
             public boolean evaluate(Object o) {
                 if (!(o instanceof LispSymbol)) {
-                    BuiltinsCore.error(environment, "Bad data in guts of obarray");
+                    BuiltinsCore.error(GlobalEnvironment.INSTANCE, "Bad data in guts of obarray");
                 }
                 return ((LispSymbol) o).getName().equals(name);
             }
@@ -180,23 +181,29 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("intern")
-    public static LispSymbol intern (Environment environment, LispString name, @Optional LispVector objectArray) {
-        if (objectArray == null) {
-            //todo: shall I take GlobalEnv instead?
-            LispSymbol symbol = environment.find(name.getData());
+    public static LispSymbol intern (LispString name, @Optional LObject objectArray) {
+        if (objectArray == null || objectArray.equals(LispSymbol.ourNil)) {
+            LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getData());
             if (symbol != null)
                 return symbol;
             symbol = new LispSymbol(name.getData());
-            environment.defineSymbol(symbol);
+            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
             return symbol;
         }
-        if (objectArray.isEmpty())
+        if (!(objectArray instanceof LispVector) || ((LispVector) objectArray).isEmpty())
             throw new WrongTypeArgumentException("vectorp", objectArray.toString());
-        LispSymbol symbol = getSymbol(name.getData(), objectArray, environment);
+
+        LispSymbol symbol = getSymbol(name.getData(), (LispVector) objectArray);
         if (symbol != null)
             return symbol;
         symbol = new LispSymbol(name.getData());
-        objectArray.setFirst(symbol); //todo: why overwrite?
+        ((LispVector) objectArray).setFirst(symbol); //todo: why overwrite?
         return symbol;
+    }
+
+    @Subroutine("internal-event-symbol-parse-modifiers")
+    public static LObject internalEventSymbolParseModifiers (LispSymbol symbol) {
+        KeyBoardUtil.parseModifiers(symbol);
+        return symbol.getProperty("event-symbol-elements");
     }
 }

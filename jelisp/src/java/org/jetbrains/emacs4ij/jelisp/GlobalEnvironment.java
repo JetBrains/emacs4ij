@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
@@ -169,7 +170,7 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
 
-        KeyMapUtil.defineKeyMaps(INSTANCE);
+        BuiltinsKey.defineKeyMaps(INSTANCE);
 
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
@@ -182,22 +183,27 @@ public class GlobalEnvironment extends Environment {
     }
 
     //-------- loading ------------------
-    private void addVariable(String name, @NotNull LObject value) {
+    public LispSymbol defineSymbol (String name, @NotNull LObject value) {
         LispSymbol symbol = new LispSymbol(name, value);
-        String doc = myDocumentationExtractor.getVariableDoc(name);
-        if (doc != null)
-            symbol.setGlobalVariableDocumentation(new LispString(doc));
-        mySymbols.put(name, symbol);
+        defineSymbol(symbol);
+        return symbol;
     }
 
-    private void addVariable(String name) {
-        LispSymbol symbol = new LispSymbol(name, LispSymbol.ourNil);
-        String doc = myDocumentationExtractor.getVariableDoc(name);
+    public void defineSymbol (String name) {
+        defineSymbol(new LispSymbol(name, LispSymbol.ourNil));
+    }
+    
+    @Override
+    public void defineSymbol (LispSymbol symbol) {
+        String doc = myDocumentationExtractor.getVariableDoc(symbol.getName());
         if (doc != null)
             symbol.setGlobalVariableDocumentation(new LispString(doc));
-        mySymbols.put(name, symbol);
+        else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
+            myRecordedSymbols.add(symbol.getName());
+        }
+        mySymbols.put(symbol.getName(), symbol);
     }
-
+   
     private void addBufferLocalVariable(String name, @NotNull LObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
         symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
@@ -225,8 +231,8 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineUserOptions() {
-        addVariable("mark-even-if-inactive");   //callint.c
-        addVariable("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
+        defineSymbol("mark-even-if-inactive");   //callint.c
+        defineSymbol("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
     }
 
     private void defineBufferLocalVariables() {
@@ -235,15 +241,15 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineGlobalVariables() {
-        addVariable("load-history");   //lread.c
-        addVariable("deactivate-mark");  //keyboard.c
-        addVariable("purify-flag");   //alloc.c
-        addVariable("current-load-list");//lread.c
-        addVariable("executing-kbd-macro"); //macros.c
-        addVariable("load-file-name"); //lread.c
-        addVariable("overlay-arrow-variable-list");//xdisp.c
-        addVariable("case-fold-search");
-        addVariable("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
+        defineSymbol("load-history");   //lread.c
+        defineSymbol("deactivate-mark");  //keyboard.c
+        defineSymbol("purify-flag");   //alloc.c
+        defineSymbol("current-load-list");//lread.c
+        defineSymbol("executing-kbd-macro"); //macros.c
+        defineSymbol("load-file-name"); //lread.c
+        defineSymbol("overlay-arrow-variable-list");//xdisp.c
+        defineSymbol("case-fold-search");
+        defineSymbol("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -282,7 +288,7 @@ public class GlobalEnvironment extends Environment {
         String docDir = ourEmacsHome + "/etc/";
         File file = new File (docDir);
         if (file.exists() && file.isDirectory()) {
-            addVariable("doc-directory", new LispString(docDir));     //callproc.c
+            defineSymbol("doc-directory", new LispString(docDir));     //callproc.c
             String[] docs = file.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
@@ -291,7 +297,7 @@ public class GlobalEnvironment extends Environment {
             });
             if (docs != null && docs.length == 1) {
                 //"DOC-23.2.1"
-                addVariable("internal-doc-file-name", new LispString(docs[0]));  //doc.c
+                defineSymbol("internal-doc-file-name", new LispString(docs[0]));  //doc.c
             }
         }
     }
@@ -471,17 +477,6 @@ public class GlobalEnvironment extends Environment {
 
     public static void showErrorMessage (String message) {
         myIde.showErrorMessage(message);
-    }
-
-    @Override
-    public void defineSymbol (LispSymbol symbol) {
-        String doc = myDocumentationExtractor.getVariableDoc(symbol.getName());
-        if (doc != null)
-            symbol.setGlobalVariableDocumentation(new LispString(doc));
-        else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
-            myRecordedSymbols.add(symbol.getName());
-        }
-        mySymbols.put(symbol.getName(), symbol);
     }
 
     public LObject getBufferLocalSymbolValue (LispSymbol symbol) {
