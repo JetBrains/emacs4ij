@@ -1,9 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.Pair;
-
-import java.io.UnsupportedEncodingException;
-
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -48,76 +44,6 @@ public abstract class CharUtil {
 
     public static int index (int c, int depth, int minChar) {
         return ((char)c - (char)minChar) >> CHARTABLE_BITS[depth];
-    }
-
-    public static enum Modifiers {
-        UP	(1),
-        DOWN (2),
-        DRAG (4),
-        CLICK  (8),
-        DOUBLE (16),
-        TRIPLE (32),
-        ALT   (CHAR_ALT),
-        SUPER (CHAR_SUPER),
-        HYPER (CHAR_HYPER),
-        SHIFT (CHAR_SHIFT),
-        CTRL  (CHAR_CTL),
-        META  (CHAR_META);
-
-        private final int myValue;
-        Modifiers(int v) {
-            myValue = v;
-        }
-        public int value () {
-            return myValue;
-        }
-        
-        public static Pair check (String s) {
-            switch (s.charAt(0)) {
-                case 'A':
-                    return new Pair(1, ALT.value());
-                case 'C':
-                    return new Pair(1, CTRL.value());
-                case 'H':
-                    return new Pair(1, HYPER.value());
-                case 'M':
-                    return new Pair(1, META.value());
-                case 'S':
-                    return new Pair(1, SHIFT.value());
-                case 's':
-                    return new Pair(1, SUPER.value());
-                case 'd':
-                    Pair p = checkFit(s, DRAG);
-                    if (p != null)
-                        return p;
-                    p = checkFit(s, DOWN);
-                    if (p != null)
-                        return p;
-                    p = checkFit(s, DOUBLE);
-                    if (p != null)
-                        return p;
-                    break;
-                case 't':
-                    p = checkFit(s, TRIPLE);
-                    if (p != null)
-                        return p;
-                    break;
-            }
-            return null;
-        }
-        
-        private static Pair checkFit(String s, Modifiers m) {
-            int bytes;
-            try {
-                bytes = s.getBytes("UTF-8").length;
-            } catch (UnsupportedEncodingException e) {
-                bytes = s.length();
-            }
-            String hypothesis = String.valueOf(m).toLowerCase();
-            if (hypothesis.length() + 1 <= bytes && !s.startsWith(hypothesis))
-                return new Pair(hypothesis.length(), m.value());
-            return null;
-        }
     }
 
     public static int Ctl(int c) { 
