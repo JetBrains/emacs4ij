@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +20,7 @@ public abstract class BuiltinsSequence {
     private BuiltinsSequence() {}
 
     private static boolean isSequence (LObject object) {
-        //Returns t if object is a list, vector, string, todo: bool-vector, or char-table, nil otherwise. 
+        //Returns t if object is a list, vector, string, char-table, todo: bool-vector, nil otherwise.
         return (object instanceof LispSequence || object.equals(LispSymbol.ourNil));    
     }
     
@@ -44,7 +45,7 @@ public abstract class BuiltinsSequence {
         ArrayList<LObject> list = new ArrayList<>();
         for (int i = 0; i < args.length - 1; ++i) {
             LObject sequence = args[i];
-            if (!isSequence(sequence))
+            if (!isStringListVectorNil(sequence))
                 throw new WrongTypeArgumentException("sequencep", sequence.toString());
             if (sequence.equals(LispSymbol.ourNil))
                 continue;
@@ -59,12 +60,14 @@ public abstract class BuiltinsSequence {
     }
     
     @Subroutine("mapcar")
-    public static LObject mapCar (Environment environment, LObject function, LObject sequence) {
-        //todo: char-table may not fit as sequence here
+    public static LispList mapCar (Environment environment, LObject function, LObject sequence) {
         int length = length(sequence).getData();
+        if (sequence instanceof LispCharTable)
+            throw new WrongTypeArgumentException("listp", sequence.toString());
         if (length == 0)
-            return LispSymbol.ourNil;
+            return LispList.list();
         if (function instanceof LispSymbol) {
+            function = environment.find(((LispSymbol) function).getName());
             if (!((LispSymbol) function).isFunction())
                 throw new VoidFunctionException(((LispSymbol) function).getName());
         } else if (function instanceof LispList) {
@@ -79,7 +82,7 @@ public abstract class BuiltinsSequence {
     public static LObject copySequence (LObject arg) {
         if (LispSymbol.ourNil.equals(arg))
             return arg;
-        //todo: char-table, bool-vector
+        //todo: bool-vector
         if (!isSequence(arg))
             throw new WrongTypeArgumentException("sequencep", arg.toString());
         return ((LispSequence)arg).copy();
@@ -124,6 +127,21 @@ public abstract class BuiltinsSequence {
             v.add(sequence.toLObjectList());
         }
         return v;
+    }
+
+    @Subroutine("mapconcat")
+    public static LispString mapConcat (Environment environment, LObject function, LObject sequence, LObject separator) {
+        List<LObject> mapped = mapCar(environment, function, sequence).toLObjectList();
+        if (mapped.isEmpty())
+            return new LispString("");
+        ArrayList<LObject> toConcat = new ArrayList<>();
+        toConcat.add(mapped.get(0));
+        for (int i = 1, mappedSize = mapped.size(); i < mappedSize; i++) {
+            LObject object = mapped.get(i);
+            toConcat.add(separator);
+            toConcat.add(object);
+        }
+        return concat(environment, toConcat.toArray(new LObject[toConcat.size()]));
     }
 
 }

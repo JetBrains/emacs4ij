@@ -712,4 +712,18 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
         GlobalEnvironment.INSTANCE.loadFile("simple.el");
     }
+
+    @Test
+    public void testSubstringVector() {
+        evaluateString("(defvar a '[1 2 3 4 5])");
+        evaluateString("(defvar b (substring a 2 4))");
+        LObject r = evaluateString("b");
+        Assert.assertEquals(new LispVector(new LispInteger(3), new LispInteger(4)), r);
+        evaluateString("(aset b 0 5)");
+        r = evaluateString("b");
+        Assert.assertEquals(new LispVector(new LispInteger(5), new LispInteger(4)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
+                new LispInteger(4), new LispInteger(5)), r);
+    }
 }

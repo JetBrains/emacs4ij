@@ -43,7 +43,9 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testMakeKeymap() throws Exception {
-    //todo
+        LObject r = evaluateString("(make-keymap 5)");
+        String expected = "(keymap #^[nil nil keymap nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] 5)";
+        Assert.assertEquals(expected, r.toString());
     }
 
     @Test
@@ -65,6 +67,8 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
         r = evaluateString("(keymap-parent k)");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+        r = evaluateString("k");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), r);
     }
     
     @Test
@@ -82,6 +86,22 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     public void testKbdMacro() {
         LObject r = evaluateString("(kbd \"C-x\")");
         Assert.assertEquals(new LispString("^X"), r);
+    }
+
+    @Test
+    public void testCurrentGlobalKeyMap() {
+        System.out.println(evaluateString("(current-global-map)").toString());
+    }
+    
+    @Test
+    public void test1() {
+        evaluateString("(event-convert-list)");
+    }
+    
+    @Test
+    public void testKeyDescription() {
+        LObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
+        Assert.assertEquals(new LispString("C-f C-g C-a C-b C-c"), r);
     }
     
     @Test

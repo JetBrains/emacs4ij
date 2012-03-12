@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.CharUtil;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 
 import java.io.UnsupportedEncodingException;
 
@@ -25,19 +26,8 @@ public final class KeyBoardModifier {
     public static final KeyBoardModifier CTRL  = new KeyBoardModifier(CharUtil.CHAR_CTL);
     public static final KeyBoardModifier META  = new KeyBoardModifier(CharUtil.CHAR_META);
 
-    if (KeyBoardModifier.ALT.andNotZero(modifiers))   { new_mods += "A-"; }
-    if (KeyBoardModifier.CTRL.andNotZero(modifiers))  { new_mods += "C-"; }
-    if (KeyBoardModifier.HYPER.andNotZero(modifiers)) { new_mods += "H-"; }{ *p++ = 'H'; *p++ = '-'; }
-    if (KeyBoardModifier.META.andNotZero(modifiers))  { new_mods += "C-"; }{ *p++ = 'M'; *p++ = '-'; }
-    if (KeyBoardModifier.SHIFT.andNotZero(modifiers)) { new_mods += "C-"; }{ *p++ = 'S'; *p++ = '-'; }
-    if (KeyBoardModifier.SUPER.andNotZero(modifiers)) { new_mods += "C-"; }{ *p++ = 's'; *p++ = '-'; }
-    if (KeyBoardModifier.DOUBLE.andNotZero(modifiers))  { strcpy (p, "double-");  p += 7; }
-    if (KeyBoardModifier.TRIPLE.andNotZero(modifiers))  { strcpy (p, "triple-");  p += 7; }
-    if (KeyBoardModifier.DOWN.andNotZero(modifiers))  { strcpy (p, "down-");  p += 5; }
-    if (KeyBoardModifier.DRAG.andNotZero(modifiers))  { strcpy (p, "drag-");  p += 5; }
-        
     public final int value;
-    private final int order;
+//    private final int order;
 
     private KeyBoardModifier (int v) {
         value = v;
@@ -94,25 +84,90 @@ public final class KeyBoardModifier {
         return (m & value) != 0;
     } 
     
-    public String apply (int modifiers) {
+    public static String apply (int modifiers) {
         if (UP.andNotZero(modifiers))
             return null;
         String s = "";
 
-        if (KeyBoardModifier.ALT.andNotZero(modifiers))   { new_mods += "A-"; }
-        if (KeyBoardModifier.CTRL.andNotZero(modifiers))  { new_mods += "C-"; }
-        if (KeyBoardModifier.HYPER.andNotZero(modifiers)) { new_mods += "H-"; }{ *p++ = 'H'; *p++ = '-'; }
-        if (KeyBoardModifier.META.andNotZero(modifiers))  { new_mods += "C-"; }{ *p++ = 'M'; *p++ = '-'; }
-        if (KeyBoardModifier.SHIFT.andNotZero(modifiers)) { new_mods += "C-"; }{ *p++ = 'S'; *p++ = '-'; }
-        if (KeyBoardModifier.SUPER.andNotZero(modifiers)) { new_mods += "C-"; }{ *p++ = 's'; *p++ = '-'; }
-        if (KeyBoardModifier.DOUBLE.andNotZero(modifiers))  { strcpy (p, "double-");  p += 7; }
-        if (KeyBoardModifier.TRIPLE.andNotZero(modifiers))  { strcpy (p, "triple-");  p += 7; }
-        if (KeyBoardModifier.DOWN.andNotZero(modifiers))  { strcpy (p, "down-");  p += 5; }
-        if (KeyBoardModifier.DRAG.andNotZero(modifiers))  { strcpy (p, "drag-");  p += 5; }
+        if (ALT.andNotZero(modifiers))   { s += "A-"; }
+        if (CTRL.andNotZero(modifiers))  { s += "C-"; }
+        if (HYPER.andNotZero(modifiers)) { s += "H-"; }
+        if (META.andNotZero(modifiers))  { s += "M-"; }
+        if (SHIFT.andNotZero(modifiers)) { s += "S-"; }
+        if (SUPER.andNotZero(modifiers)) { s += "s-"; }
+        if (DOUBLE.andNotZero(modifiers))  { s += "double-";}
+        if (TRIPLE.andNotZero(modifiers))  { s += "triple-";}
+        if (DOWN.andNotZero(modifiers))  { s += "down-";}
+        if (DRAG.andNotZero(modifiers))  {s += "drag-";}
         /* The click modifier is denoted by the absence of other modifiers.  */
+        return s;
+    }
 
+    public static String test (int modifiers) {
+        String s = "";
+        if (ALT.andNotZero(modifiers))   { s += "\\A-"; }
+        if (CTRL.andNotZero(modifiers))  { s += "\\C-"; }
+        if (HYPER.andNotZero(modifiers)) { s += "\\H-"; }
+        if (META.andNotZero(modifiers))  { s += "\\M-"; }
+        if (SHIFT.andNotZero(modifiers)) { s += "\\S-"; }
+        if (SUPER.andNotZero(modifiers)) { s += "\\s-"; }
+        return s;
+    }
+    
+    private static boolean checkSingle (String data) {
+        return data.length() == 1;
+    }
+    
+    private static boolean checkMulti (String data, String hypothesis) {
+        return data.equals(hypothesis);
+    }
 
-
+    public static int parseSolitary (LispSymbol symbol) {
+        String name = symbol.getName();
+        switch (name.charAt(0)) {
+            case 'A':
+                if (checkSingle(name)) return ALT.value;
+                break;
+            case 'a':
+                if (checkMulti(name, "alt")) return ALT.value;
+                break;
+            case 'C':
+                if (checkSingle(name)) return CTRL.value;
+                break;
+            case 'c':
+                if (checkMulti(name, "ctrl")) return CTRL.value;
+                if (checkMulti(name, "control")) return CTRL.value;
+                break;
+            case 'H':
+                if (checkSingle(name)) return HYPER.value;
+                break;
+            case 'h':
+                if (checkMulti(name, "hyper")) return HYPER.value;
+                break;
+            case 'M':
+                if (checkSingle(name)) return META.value;
+                break;
+            case 'm':
+                if (checkMulti(name, "meta")) return META.value;
+                break;
+            case 'S':
+                if (checkSingle(name)) return SHIFT.value;
+                break;
+            case 's':
+                if (checkMulti(name, "shift")) return SHIFT.value;
+                if (checkMulti(name, "super")) return SUPER.value;
+                if (checkSingle(name)) return SUPER.value;
+                break;
+            case 'd':
+                if (checkMulti(name, "drag")) return DRAG.value;
+                if (checkMulti(name, "down")) return DOWN.value;
+                if (checkMulti(name, "double")) return DOUBLE.value;
+                break;
+            case 't':
+                if (checkMulti(name, "triple")) return TRIPLE.value;
+                break;
+        }
+        return 0;
     }
     
 }

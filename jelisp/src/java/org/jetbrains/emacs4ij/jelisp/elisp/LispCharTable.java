@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.rits.cloning.Cloner;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
@@ -8,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +18,7 @@ import java.util.Arrays;
  * Time: 3:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispCharTable extends LispObject implements LispArray {
+public class LispCharTable extends LispObject implements LispArray, LispSequence, Cloneable {
     private LObject myDefault;
     private LispObject myParent;
     private LispSymbol mySubtype;
@@ -127,13 +129,9 @@ public class LispCharTable extends LispObject implements LispArray {
     public LObject getItem(int position) {
         return myContent[position];
     }
-
-    private boolean isAsciiChar (int c) {
-        return (char)c < 0x80;
-    }
     
     private void set (int c, LObject value) {
-        if (isAsciiChar(c) && myAscii instanceof LispSubCharTable) {
+        if (CharUtil.isAsciiChar(c) && myAscii instanceof LispSubCharTable) {
             ((LispSubCharTable) myAscii).setItem(c, value);
             return;
         }
@@ -142,7 +140,7 @@ public class LispCharTable extends LispObject implements LispArray {
             myContent[i] = new LispSubCharTable(1, i * CharUtil.charTableChars(0), myContent[i]);
         }
         ((LispSubCharTable)myContent[i]).set(c, value);
-        if (isAsciiChar(c))
+        if (CharUtil.isAsciiChar(c))
             myAscii = charTableAscii();
     }
     
@@ -157,7 +155,7 @@ public class LispCharTable extends LispObject implements LispArray {
         {
             myContent[i] = LispSubCharTable.setRange(myContent[i], 0, minChar, from, to, value);
         }
-        if (isAsciiChar(from))
+        if (CharUtil.isAsciiChar(from))
             myAscii = charTableAscii();
     }
 
@@ -180,7 +178,7 @@ public class LispCharTable extends LispObject implements LispArray {
 
     private LObject ref(int c) {
         LObject value;
-        if (isAsciiChar(c)) {
+        if (CharUtil.isAsciiChar(c)) {
             value = myAscii;
             if (value instanceof LispSubCharTable)
                 value = ((LispSubCharTable) value).getItem(c);
@@ -225,7 +223,7 @@ public class LispCharTable extends LispObject implements LispArray {
 
 
     public LObject charTableRef (int index) {
-        return isAsciiChar(index) ? refAscii(index) : ref(index);
+        return CharUtil.isAsciiChar(index) ? refAscii(index) : ref(index);
     }
 
     public LObject refAndRange (int c, int from, int to) {
@@ -271,5 +269,30 @@ public class LispCharTable extends LispObject implements LispArray {
         return val;
     }
 
-    
+
+    @Override
+    public int length() {
+        return CharUtil.MAX_CHAR;
+    }
+
+    @Override
+    public List<LObject> toLObjectList() {
+        return null;
+    }
+
+    @Override
+    public List<LObject> mapCar(Environment environment, LObject method) {
+        return null;
+    }
+
+    @Override
+    public LObject copy() {
+        Cloner c = new Cloner();
+        return c.deepClone(this);
+    }
+
+    @Override
+    public String toCharString() {
+        return null;
+    }
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -21,4 +22,10 @@ public abstract class BuiltinsVector {
             throw new WrongTypeArgumentException("wholenump", length.toString());
         return LispVector.make(((LispInteger)length).getData(), value);
     }
+
+    @Subroutine ("vector")
+    public static LispVector vector(@Optional LObject... args) {
+        return new LispVector(args);
+    }
+
 }

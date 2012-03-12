@@ -122,18 +122,18 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("assoc")
-    public static LObject assoc (LObject key, LObject list) {
+    public static LispList assoc (LObject key, LObject list) {
         if (!isList(list))
             throw new WrongTypeArgumentException("listp", list.toString());
         if (list.equals(LispSymbol.ourNil))
-            return LispSymbol.ourNil;
+            return LispList.list();
         for (LObject element : ((LispList)list).toLObjectList()) {
             if (element instanceof LispList) {
                 if (key.equals(((LispList) element).car()))
-                    return element;
+                    return (LispList) element;
             }
         }
-        return LispSymbol.ourNil;
+        return LispList.list();
     }
     
     @Subroutine("setcdr")

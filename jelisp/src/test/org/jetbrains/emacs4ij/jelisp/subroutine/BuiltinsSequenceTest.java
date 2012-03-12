@@ -64,6 +64,17 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         }
         Assert.fail();
     }
+
+    @Test
+    public void testMapCarFunctionException() {
+        try {
+            evaluateString("(mapcar 'quote '(1 . 2))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-function quote)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
     
     @Test
     public void testMapCarLambda() {
@@ -173,5 +184,23 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         Assert.assertEquals("[1.6 \"hi\" 3 4 104 101 108 108 111]", r.toString());
     }
 
+    @Test
+    public void testMapConCatWrong() {
+        try {
+            evaluateString("(mapconcat '1+ '[9 8 7] \" \")");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument sequencep 10)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 
+    @Test
+    public void testMapConCat() {
+        LObject r = evaluateString("(mapconcat 'identity '[\"9\" \"8\" \"7\"] \" \")");
+        Assert.assertEquals(new LispString("9 8 7"), r);
+        r = evaluateString("(mapconcat 'identity '(nil nil) \" \")");
+        Assert.assertEquals(new LispString(" "), r);
+    }
+    
 }

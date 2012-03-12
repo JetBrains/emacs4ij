@@ -159,25 +159,7 @@ public abstract class BuiltinsString {
         return new LispInteger(m.end(index));
     }
 
-    private static int processBound (LispInteger bound, int length) {
-        return bound.getData() < 0 ? length + bound.getData() : bound.getData();
-    }    
-    
-    @Subroutine("substring")
-    public static LObject substring (LispString string, LispInteger from, @Optional LObject to) {
-        int end = string.length();
-        if (to != null && !LispSymbol.ourNil.equals(to)) {
-            if (!(to instanceof LispInteger))
-                throw new WrongTypeArgumentException("integerp", to.toString());
-            end = processBound((LispInteger) to, string.length());
-        }
-        int start = processBound(from, string.length());
-        try {
-            return new LispString(string.getData().substring(start, end));
-        } catch (IndexOutOfBoundsException e) {
-            throw new ArgumentOutOfRange(string, start, end);
-        }
-    }
+
     
 
 }

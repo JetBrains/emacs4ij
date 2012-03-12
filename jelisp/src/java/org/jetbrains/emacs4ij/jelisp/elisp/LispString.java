@@ -181,4 +181,9 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     public char charAt (int position) {
         return myData.charAt(position);
     }
+    
+    public boolean isMultibyte () {
+        //todo
+        return false;
+    }
 }

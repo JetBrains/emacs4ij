@@ -171,6 +171,9 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.defineDefForms();
 
         BuiltinsKey.defineKeyMaps(INSTANCE);
+        BuiltinsKey.keys_of_keymap();
+        KeyBoardUtil.defineKbdSymbols(INSTANCE);
+        KeyBoardUtil.keys_of_keyboard();
 
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
@@ -237,12 +240,13 @@ public class GlobalEnvironment extends Environment {
 
     private void defineBufferLocalVariables() {
         addBufferLocalVariable("mark-active"); //buffer.c
-        addBufferLocalVariable("default-directory");  //BUFER.C
+        addBufferLocalVariable("default-directory");  //BUFFER.C
+        addBufferLocalVariable("enable-multibyte-characters");
     }
 
     private void defineGlobalVariables() {
         defineSymbol("load-history");   //lread.c
-        defineSymbol("deactivate-mark");  //keyboard.c
+//        defineSymbol("deactivate-mark");  //keyboard.c    => moved to KeyBoardUtil
         defineSymbol("purify-flag");   //alloc.c
         defineSymbol("current-load-list");//lread.c
         defineSymbol("executing-kbd-macro"); //macros.c
@@ -250,6 +254,8 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("overlay-arrow-variable-list");//xdisp.c
         defineSymbol("case-fold-search");
         defineSymbol("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
+        
+
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

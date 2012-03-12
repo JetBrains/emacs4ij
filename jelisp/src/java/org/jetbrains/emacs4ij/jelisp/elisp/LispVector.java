@@ -140,4 +140,8 @@ public class LispVector extends LispObject implements LispSequence, LispArray {
     public LObject getItem(int position) {
         return myData.get(position);
     }
+    
+    public LispVector subString (int from, int to) {
+        return new LispVector(myData.subList(from, to).toArray(new LObject[to - from]));
+    }
 }

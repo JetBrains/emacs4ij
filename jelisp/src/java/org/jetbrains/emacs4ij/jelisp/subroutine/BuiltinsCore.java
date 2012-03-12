@@ -349,5 +349,34 @@ public abstract class BuiltinsCore {
         return BuiltinsList.carSafe(list);
     }
     
+    private static LispInteger getInt (LObject object) {
+        if (!(object instanceof LispInteger))
+            throw new WrongTypeArgumentException("integerp", object.toString());
+        return (LispInteger) object;
+    }
+
+    private static int processBound (LispInteger bound, int length) {
+        return bound.getData() < 0 ? length + bound.getData() : bound.getData();
+    }
+
+    @Subroutine("substring")
+    public static LObject substring (LObject string, LispInteger from, @Optional LObject to) {
+        if (!(string instanceof LispString) && !(string instanceof LispVector))
+            throw new WrongTypeArgumentException("vector-or-string-p", string.toString());
+        int length = ((LispSequence)string).length();        
+        int start = processBound(from, length);        
+        int end = to.equals(LispSymbol.ourNil)
+                ? ((LispSequence)string).length()
+                : processBound(getInt(to), length);
+        try {
+            if (string instanceof LispString)
+                return new LispString(((LispString)string).getData().substring(start, end));
+            return ((LispVector)string).subString(start, end);
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(string, start, end);
+        }
+    }
+
+
     
 }
