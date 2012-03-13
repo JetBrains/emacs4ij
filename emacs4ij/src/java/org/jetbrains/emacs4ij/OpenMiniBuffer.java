@@ -42,14 +42,6 @@ public class OpenMiniBuffer extends AnAction {
         EditorTextField input = new EditorTextField();
         editor.setHeaderComponent(input);
 
-//        try {
-//            String name = ((EditorImpl)editor).getVirtualFile().getName();
-//            LispBuffer parent = environment.findBufferSafe(name);
-//            parent.setEditor(editor);
-//        } catch (NullPointerException exc) {
-//            throw new RuntimeException("Open Minibuffer over buffer with no file bound!");
-//        }
-
         miniBuffer.setEditor(input.getEditor());
 
         ExecuteCommand command = new ExecuteCommand();

@@ -191,7 +191,7 @@ public abstract class BuiltinsSymbol {
             return symbol;
         }
         if (!(objectArray instanceof LispVector) || ((LispVector) objectArray).isEmpty())
-            throw new WrongTypeArgumentException("vectorp", objectArray.toString());
+            throw new WrongTypeArgumentException("vectorp", objectArray);
 
         LispSymbol symbol = getSymbol(name.getData(), (LispVector) objectArray);
         if (symbol != null)

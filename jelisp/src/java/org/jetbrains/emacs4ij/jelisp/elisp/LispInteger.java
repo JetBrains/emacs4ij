@@ -39,7 +39,7 @@ public class LispInteger extends LispNumber<Integer> {
     
     public String toCharacterString () {        
         if (!BuiltinPredicates.isCharacter(this))
-            throw new WrongTypeArgumentException("characterp", toString());
+            throw new WrongTypeArgumentException("characterp", this);
         if (myData < 32) {
 //            String s = Integer.toBinaryString(myData);//(Character.toUpperCase(myData + 64));
 //            while (s.length() != 6) {

@@ -180,7 +180,7 @@ public class LispList extends LispObject implements LispSequence {
         if (list.equals(LispSymbol.ourNil)) {
             return data;
         }
-        throw new WrongTypeArgumentException("listp", list.toString());
+        throw new WrongTypeArgumentException("listp", list);
     }
 
     @Override
@@ -194,7 +194,7 @@ public class LispList extends LispObject implements LispSequence {
         String s = "";
         for (LObject element: list) {
             if (!BuiltinPredicates.isCharacter(element))
-                throw new WrongTypeArgumentException("characterp", element.toString());
+                throw new WrongTypeArgumentException("characterp", element);
             s += ((LispInteger)element).toCharacterString();
         }
         return s;
@@ -287,7 +287,7 @@ public class LispList extends LispObject implements LispSequence {
             }
             throw new RuntimeException("Wrong usage!");
         } catch (ClassCastException e) {
-            throw new WrongTypeArgumentException("listp", cdr.toString());
+            throw new WrongTypeArgumentException("listp", cdr);
         }
     }
 
@@ -311,7 +311,7 @@ public class LispList extends LispObject implements LispSequence {
             tail = next;
         }
         if (!tail.equals(LispSymbol.ourNil)) {
-            throw new WrongTypeArgumentException("listp", toString());
+            throw new WrongTypeArgumentException("listp", this);
         }
         return prev;
     }
@@ -327,7 +327,7 @@ public class LispList extends LispObject implements LispSequence {
                 if (!(object instanceof LispList))
                     isTrueList = false;
             } else
-                throw new WrongTypeArgumentException("listp", myCdr.toString());
+                throw new WrongTypeArgumentException("listp", myCdr);
         }
     }
 
@@ -380,7 +380,7 @@ public class LispList extends LispObject implements LispSequence {
                     else if (((LispList) tail).cdr() instanceof LispList)
                         list = (LispList) ((LispList) tail).cdr();
                     else
-                        throw new WrongTypeArgumentException("listp", tail.toString());
+                        throw new WrongTypeArgumentException("listp", tail);
                 }
                 else
                     prev.setCdr(((LispList) tail).cdr());
@@ -389,7 +389,7 @@ public class LispList extends LispObject implements LispSequence {
             tail = ((LispList) tail).cdr();
         }
         if (!tail.equals(LispSymbol.ourNil)) {
-            throw new WrongTypeArgumentException("listp", toString());
+            throw new WrongTypeArgumentException("listp", this);
         }
         return list;
     }

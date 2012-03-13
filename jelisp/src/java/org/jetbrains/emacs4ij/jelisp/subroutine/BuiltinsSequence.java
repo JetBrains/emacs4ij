@@ -32,7 +32,7 @@ public abstract class BuiltinsSequence {
     @Subroutine("length")
     public static LispInteger length (LObject sequence) {
         if (!isSequence(sequence))
-            throw new WrongTypeArgumentException("sequencep", sequence.toString());
+            throw new WrongTypeArgumentException("sequencep", sequence);
         if (sequence.equals(LispSymbol.ourNil))
             return new LispInteger(0);
         return new LispInteger(((LispSequence)sequence).length());
@@ -46,7 +46,7 @@ public abstract class BuiltinsSequence {
         for (int i = 0; i < args.length - 1; ++i) {
             LObject sequence = args[i];
             if (!isStringListVectorNil(sequence))
-                throw new WrongTypeArgumentException("sequencep", sequence.toString());
+                throw new WrongTypeArgumentException("sequencep", sequence);
             if (sequence.equals(LispSymbol.ourNil))
                 continue;
             list.addAll(((LispSequence)sequence).toLObjectList());
@@ -63,7 +63,7 @@ public abstract class BuiltinsSequence {
     public static LispList mapCar (Environment environment, LObject function, LObject sequence) {
         int length = length(sequence).getData();
         if (sequence instanceof LispCharTable)
-            throw new WrongTypeArgumentException("listp", sequence.toString());
+            throw new WrongTypeArgumentException("listp", sequence);
         if (length == 0)
             return LispList.list();
         if (function instanceof LispSymbol) {
@@ -84,7 +84,7 @@ public abstract class BuiltinsSequence {
             return arg;
         //todo: bool-vector
         if (!isSequence(arg))
-            throw new WrongTypeArgumentException("sequencep", arg.toString());
+            throw new WrongTypeArgumentException("sequencep", arg);
         return ((LispSequence)arg).copy();
     }
     
@@ -99,7 +99,7 @@ public abstract class BuiltinsSequence {
             return new LispString("");
         for (LObject s: sequences) {
             if (!isStringListVectorNil(s))
-                throw new WrongTypeArgumentException("sequencep", s.toString()); 
+                throw new WrongTypeArgumentException("sequencep", s);
         }
         String res = "";
         for (LObject s: sequences) {
@@ -117,7 +117,7 @@ public abstract class BuiltinsSequence {
             return new LispVector();
         for (LObject s: sequences) {
             if (!isStringListVectorNil(s))
-                throw new WrongTypeArgumentException("sequencep", s.toString());
+                throw new WrongTypeArgumentException("sequencep", s);
         }
         LispVector v = new LispVector();
         for (LObject s : sequences) {

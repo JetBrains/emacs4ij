@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -61,11 +62,10 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("commandp")
-    public static LispSymbol commandp (Environment environment, LObject function, @Optional LObject forCallInteractively) {
+    public static LispSymbol commandp (Environment environment, LObject function, @Nullable @Optional LObject forCallInteractively) {
         if (function instanceof LispSymbol) {
             if (!((LispSymbol) function).isFunction())
                 return LispSymbol.ourNil;
-
             if (((LispSymbol) function).isInteractive(environment))
                 return LispSymbol.ourT;
             else
@@ -145,7 +145,7 @@ public abstract class BuiltinPredicates {
     public static LispSymbol frameVisibleP (LObject object) {
         LispSymbol frameLiveP = frameLiveP(object);
         if (frameLiveP.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("frame-live-p", object.toString());
+            throw new WrongTypeArgumentException("frame-live-p", object);
         if (((LispFrame) object).isIconified())
             return new LispSymbol("icon");
         if (((LispFrame) object).isVisible())

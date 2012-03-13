@@ -32,7 +32,7 @@ public abstract class BuiltinsFrame {
         if (frame == null)
             return LispSymbol.ourNil;
         if (!(frame instanceof LispFrame))
-            throw new WrongTypeArgumentException("framep", frame.toString());
+            throw new WrongTypeArgumentException("framep", frame);
         return ((LispFrame) frame).getParameter(parameter.getName());
     }
 
@@ -73,7 +73,7 @@ public abstract class BuiltinsFrame {
         }
         LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("frame-live-p", frame.toString());
+            throw new WrongTypeArgumentException("frame-live-p", frame);
 
         ((LispFrame)frame).setVisible(true);
         return frame;
@@ -86,7 +86,7 @@ public abstract class BuiltinsFrame {
         }
         LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("frame-live-p", frame.toString());
+            throw new WrongTypeArgumentException("frame-live-p", frame);
 
         if (force == null || force.equals(LispSymbol.ourNil)) {
             //check that exists one more visible frame than that we want to hide
@@ -109,7 +109,7 @@ public abstract class BuiltinsFrame {
         }
         LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("frame-live-p", frame.toString());
+            throw new WrongTypeArgumentException("frame-live-p", frame);
 
         ((LispFrame)frame).setIconified(true);
 

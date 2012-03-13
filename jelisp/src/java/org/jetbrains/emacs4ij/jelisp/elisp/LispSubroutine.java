@@ -103,14 +103,14 @@ public abstract class LispSubroutine {
             if (((Class)rawType).isInstance(args.get(argsCounter))) {
                 Type actualTypeArguments = ((ParameterizedType) (Type)args.get(argsCounter).getClass()).getActualTypeArguments()[0];
                 if (!expectedTypeArguments.equals(actualTypeArguments)) {
-                    throw new WrongTypeArgumentException(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter).toString());
+                    throw new WrongTypeArgumentException(((Class) rawType).getSimpleName()+"<"+((Class)expectedTypeArguments).getSimpleName()+">", args.get(argsCounter));
                 }
                 arguments.setValue(i, args.get(argsCounter));
                 return argsCounter + 1;
             } else {
                 if (arguments.isOptional(i))
                     return -1;
-                throw new WrongTypeArgumentException(expectedType.toString(), args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(expectedType.toString(), args.get(argsCounter));
             }
         } catch (IndexOutOfBoundsException e) {
             if (arguments.isOptional(i))
@@ -128,7 +128,7 @@ public abstract class LispSubroutine {
         ArrayList array = new ArrayList();
         while (argsCounter != args.size()) {
             if (!componentType.isInstance(args.get(argsCounter)))
-                throw new WrongTypeArgumentException(componentType.toString(), args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(componentType.toString(), args.get(argsCounter));
             array.add(args.get(argsCounter));
             ++argsCounter;
         }
@@ -150,7 +150,7 @@ public abstract class LispSubroutine {
                 if (arguments.isOptional(i))
                     return -1;
 
-                throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter)==null ? "NULL!" : args.get(argsCounter).toString());
+                throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter));
             }
             arguments.setValue(i, args.get(argsCounter));
             return argsCounter + 1;

@@ -19,7 +19,7 @@ public abstract class BuiltinsVector {
     @Subroutine("make-vector")
     public static LispVector makeVector(LObject length, LObject value) {
         if (!BuiltinPredicates.isWholeNumber(length))
-            throw new WrongTypeArgumentException("wholenump", length.toString());
+            throw new WrongTypeArgumentException("wholenump", length);
         return LispVector.make(((LispInteger)length).getData(), value);
     }
 

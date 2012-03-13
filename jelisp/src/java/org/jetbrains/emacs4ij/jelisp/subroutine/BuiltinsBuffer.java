@@ -24,7 +24,7 @@ public abstract class BuiltinsBuffer {
         }
         if (bufferOrName instanceof LispBuffer)
             return (LispBuffer) bufferOrName;
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName.getClass().getSimpleName());
+        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
     }
 
     @Subroutine(value = "current-buffer")
@@ -37,7 +37,7 @@ public abstract class BuiltinsBuffer {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
-            throw new WrongTypeArgumentException("bufferp", buffer.getClass().getSimpleName());
+            throw new WrongTypeArgumentException("bufferp", buffer);
         return new LispInteger(((LispBuffer)buffer).getSize());
     }
 
@@ -46,7 +46,7 @@ public abstract class BuiltinsBuffer {
         if (buffer == null || buffer.equals(LispSymbol.ourNil))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
-            throw new WrongTypeArgumentException("bufferp", buffer.getClass().getSimpleName());
+            throw new WrongTypeArgumentException("bufferp", buffer);
         return new LispString(((LispBuffer)buffer).getName());
     }
 
@@ -61,7 +61,7 @@ public abstract class BuiltinsBuffer {
         if (bufferOrName instanceof LispBuffer) {
             return bufferOrName;
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName.getClass().getSimpleName());
+        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
     }
 
     @Subroutine("get-buffer-create")
@@ -74,7 +74,7 @@ public abstract class BuiltinsBuffer {
                 return buffer;
             return environment.createBuffer(((LispString) bufferOrName).getData());
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName.getClass().getSimpleName());
+        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
     }
 
     // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
@@ -135,7 +135,7 @@ public abstract class BuiltinsBuffer {
             }
             return bufferOrName;
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName.getClass().toString());
+        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
     }
 
     @Subroutine("point")
@@ -217,7 +217,7 @@ public abstract class BuiltinsBuffer {
         } else if (bufferOrName instanceof LispBuffer) {
             buffer = (LispBuffer) bufferOrName;
         } else {
-            throw new WrongTypeArgumentException("stringp", bufferOrName.toString());
+            throw new WrongTypeArgumentException("stringp", bufferOrName);
         }
 
         if (environment.getBufferCurrentForEditing().equals(buffer)) {

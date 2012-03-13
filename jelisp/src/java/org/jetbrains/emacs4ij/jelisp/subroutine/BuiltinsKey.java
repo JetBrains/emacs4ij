@@ -1,7 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.*;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -17,18 +19,12 @@ public abstract class BuiltinsKey {
     public static LObject globalMap;
     private static LObject currentGlobalMap;
     /* Hash table used to cache a reverse-map to speed up calls to where-is.  */
-    private static LObject where_is_cache;
+//    private static LObject where_is_cache;
     /* Which keymaps are reverse-stored in the cache.  */
-    private static LObject where_is_cache_keymaps;
+//    private static LObject where_is_cache_keymaps;
     private static LispList exclude_keys;
 
     private static LispSymbol myKeyMapSymbol = new LispSymbol("keymap");
-
-    /* A list of all commands given new bindings since a certain time
-when nil was stored here.
-This is used to speed up recomputation of menu key equivalents
-when Emacs starts up.   t means don't record anything here.  */
-    private static LObject define_key_rebound_commands;
 
     private static boolean isListKeymap (LObject object) {
         return (object instanceof LispList && ((LispList) object).car().equals(myKeyMapSymbol));
@@ -46,12 +42,12 @@ when Emacs starts up.   t means don't record anything here.  */
         if (object instanceof LispSymbol && isListKeymap(((LispSymbol) object).getFunction())) {
             return (LispList) ((LispSymbol) object).getFunction();
         }
-        throw new WrongTypeArgumentException("keymapp", object.toString());
+        return null;
     }
 
     private static void check (LObject object) {
         if (!isKeymap(object))
-            throw new WrongTypeArgumentException("keymapp", object.toString());
+            throw new WrongTypeArgumentException("keymapp", object);
     }
 
     @Subroutine("keymapp")
@@ -60,10 +56,10 @@ when Emacs starts up.   t means don't record anything here.  */
     }
 
     @Subroutine("make-sparse-keymap")
-    public static LispList makeSparseKeymap (@Optional LObject prompt) {
+    public static LispList makeSparseKeymap (@Nullable @Optional LObject prompt) {
         if (prompt != null && !prompt.equals(LispSymbol.ourNil)) {
             //todo prompt is String
-            throw new RuntimeException("not implemented");
+            throw new NotImplementedException();
         }
         return LispList.list(myKeyMapSymbol);
     }
@@ -79,22 +75,25 @@ when Emacs starts up.   t means don't record anything here.  */
                 LispList.cons(new LispCharTable(myKeyMapSymbol, LispSymbol.ourNil), tail));
     }
 
-    //todo
     @Subroutine("copy-keymap")
     public static LispList copyKeymap (LObject object) {
         check(object);
-        return null;
+        throw new NotImplementedException();
     }
 
     @Subroutine("keymap-parent")
     public static LObject keymapParent (LObject object) {
         LispList element = getKeymap(object);
+        if (element == null)
+            throw new WrongTypeArgumentException("keymapp", object);
         return element.tail();
     }
 
     @Subroutine("set-keymap-parent")
     public static LObject setKeymapParent (LObject object, LObject parent) {
         LispList element = getKeymap(object);
+        if (element == null)
+            throw new WrongTypeArgumentException("keymapp", object);
         check(parent);
         //todo: If keymap has submaps (bindings for prefix keys), they too receive new parent keymaps
         // that reflect what parent specifies for those prefix keys.
@@ -104,8 +103,8 @@ when Emacs starts up.   t means don't record anything here.  */
 
     @Subroutine("define-prefix-command")
     public static LispSymbol definePrefixCommand (LispSymbol command, @Optional LObject mapVar, @Optional LObject name) {
-        //todo: =)
-        return command;
+        throw new NotImplementedException();
+//        return command;
     }
 
     @Subroutine("current-active-maps")
@@ -121,18 +120,19 @@ when Emacs starts up.   t means don't record anything here.  */
         if (key instanceof LispVector) {
             return null;
         }
-        throw new WrongTypeArgumentException("arrayp", key.toString());
+        throw new WrongTypeArgumentException("arrayp", key);
     }
 
     @Subroutine("define-key")
     public static LObject defineKey(Environment environment, LispList keymap, LObject key, LObject function) {
         check(keymap);
-        //todo CHECK_VECTOR_OR_STRING (key);
+        if (!(key instanceof LispString) && !(key instanceof LispVector))
+            throw new WrongTypeArgumentException("arrayp", key);
         int length = ((LispSequence)key).length();
         if (length == 0)
             return LispSymbol.ourNil;
-        if (function instanceof LispSymbol && !BuiltinsCore.eqs(define_key_rebound_commands, LispSymbol.ourT))
-            define_key_rebound_commands = LispList.cons(function, define_key_rebound_commands);
+//        if (function instanceof LispSymbol && !BuiltinsCore.eqs(define_key_rebound_commands, LispSymbol.ourT))
+//            define_key_rebound_commands = LispList.cons(function, define_key_rebound_commands);
         int meta_bit = (key instanceof LispVector || (key instanceof LispString && ((LispString) key).isMultibyte())
                 ? KeyBoardModifier.META.value : 0x80);
 
@@ -161,7 +161,7 @@ when Emacs starts up.   t means don't record anything here.  */
                     c = eventConvertList(c);
                 else if (BuiltinPredicates.isCharacter(((LispList) c).car())) {
                     if (!BuiltinPredicates.isCharacter(((LispList) c).cdr()))
-                        throw new WrongTypeArgumentException("characterp", ((LispList) c).cdr().toString());
+                        throw new WrongTypeArgumentException("characterp", ((LispList) c).cdr());
                 }
             }
 
@@ -195,7 +195,7 @@ when Emacs starts up.   t means don't record anything here.  */
                 cmd = define_as_prefix (keymap, c);
 
             keymap = getKeymap(cmd);
-            if (!(keymap instanceof LispList))
+            if (keymap == null)
                 BuiltinsCore.error(environment, String.format("Key sequence %s starts with non-prefix key %s",
                         keyDescription(environment, key, LispSymbol.ourNil).getData(),
                         keyDescription(environment, BuiltinsCore.substring(key, new LispInteger(0),
@@ -316,9 +316,11 @@ Return the keymap.  */
 
 //        command_remapping_vector = Fmake_vector (make_number (2), Qremap);
 //        staticpro (&command_remapping_vector);
-//
-        where_is_cache_keymaps = LispSymbol.ourT;
-        where_is_cache = LispSymbol.ourNil;
+////
+//        where_is_cache_keymaps = LispSymbol.ourT;
+//        where_is_cache = LispSymbol.ourNil;
+
+
 //        staticpro (&where_is_cache);
 //        staticpro (&where_is_cache_keymaps);
 //
@@ -375,13 +377,13 @@ Return the keymap.  */
     }
 
     private static LObject store_in_keymap (LObject keymap, LObject idx, LObject def) {
-        where_is_cache = LispSymbol.ourNil;
-        where_is_cache_keymaps = LispSymbol.ourT;
+//        where_is_cache = LispSymbol.ourNil;
+//        where_is_cache_keymaps = LispSymbol.ourT;
         if (!isListKeymap(keymap))
             BuiltinsCore.error(GlobalEnvironment.INSTANCE, "attempt to define a key in a non-keymap");
         if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
             if (!BuiltinPredicates.isCharacter(((LispList) idx).cdr()))
-                throw new WrongTypeArgumentException("characterp", ((LispList) idx).cdr().toString());
+                throw new WrongTypeArgumentException("characterp", ((LispList) idx).cdr());
         } else
             idx = BuiltinPredicates.eventHead(idx);
 
@@ -461,7 +463,7 @@ Return the keymap.  */
 
     public static int parseModifiersUncached(LObject symbol, LispInteger lispModifierEnd) {
         if (!(symbol instanceof LispSymbol))
-            throw new WrongTypeArgumentException("symbolp", symbol.toString());
+            throw new WrongTypeArgumentException("symbolp", symbol);
         LispString name = new LispString(((LispSymbol) symbol).getName());
 
         int modifiers = 0;
@@ -566,7 +568,7 @@ Return the keymap.  */
             c = KeyBoardUtil.reorderModifiers(c);
             String keyString = new_mods + assoc.cdr().toString();
             if (!(c instanceof LispSymbol))
-                throw new WrongTypeArgumentException("silly_event_symbol_error: symbolp ", c.toString());
+                throw new WrongTypeArgumentException("silly_event_symbol_error: symbolp ", c);
             BuiltinsCore.error (GlobalEnvironment.INSTANCE, String.format(((modifiers & ~KeyBoardModifier.META.value) != 0
                     ? "To bind the key %s, use [?%s], not [%s]"
                     : "To bind the key %s, use \"%s\", not [%s]"),
@@ -617,7 +619,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
         LObject t_binding = LispSymbol.ourNil;
         if (map instanceof LispList)
             for (LObject tail = ((LispList) map).cdr();
-                 tail instanceof LispList || ((tail = getKeymap (tail)) instanceof LispList);
+                 tail instanceof LispList || ((tail = getKeymap (tail)) != null);
                  tail = ((LispList)tail).cdr())
             {
                 LObject binding = ((LispList)tail).car();
@@ -644,7 +646,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
             are not included in a char-table.
             All character codes without modifiers are included.  */
                     if (BuiltinPredicates.isWholeNumber(idx) && (((LispInteger)idx).getData() & CharUtil.CHAR_MODIFIER_MASK) == 0) {
-                        val = ((LispVector) binding).getItem(((LispInteger) idx).getData());
+                        val = ((LispCharTable) binding).getItem(((LispInteger) idx).getData());
                         /* `nil' has a special meaning for char-tables, so
                      we use something else to record an explicitly
                      unbound entry.  */
@@ -676,16 +678,16 @@ make sure that SUBMAP inherits that definition as its own parent.  */
         /* SUBMAP is a cons that we found as a key binding. Discard the other things found in a menu key binding.  */
         submap = getKeymap(getKeyElement(submap));
         /* If it isn't a keymap now, there's no work to do.  */
-        if (!(submap instanceof LispList))
+        if (submap == null)
             return;
 
         LObject map_parent = keymapParent(map);
         LObject parent_entry = !map_parent.equals(LispSymbol.ourNil)
                 ? getKeymap(accessKeyMap(map_parent, event, 0, 0))
-                : LispSymbol.ourNil;
+                : null;
 
         /* If MAP's parent has something other than a keymap, our own submap shadows it completely.  */
-        if (!(parent_entry instanceof LispList))
+        if (parent_entry == null)
             return;
 
         if (! BuiltinsCore.eqs (parent_entry, submap)) {
@@ -766,7 +768,7 @@ make sure that SUBMAP inherits that definition as its own parent.  */
             /* If the contents are (KEYMAP . ELEMENT), go indirect.  */
             else {
                 LObject map1 = getKeymap(((LispList) object).car());//, 0, autoload);
-                return (!(map1 instanceof LispList) ? object /* Invalid keymap */
+                return (map1 == null ? object /* Invalid keymap */
                         : accessKeyMap(map1, ((LispList) object).cdr(), 0, 0));
             }
         }

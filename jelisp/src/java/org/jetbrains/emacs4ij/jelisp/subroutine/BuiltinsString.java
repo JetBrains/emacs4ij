@@ -126,7 +126,7 @@ public abstract class BuiltinsString {
             }
             return new LispInteger(data);
         }
-        throw new WrongTypeArgumentException("char-or-string-p", object.toString());
+        throw new WrongTypeArgumentException("char-or-string-p", object);
     }
     
     @Subroutine("match-beginning")

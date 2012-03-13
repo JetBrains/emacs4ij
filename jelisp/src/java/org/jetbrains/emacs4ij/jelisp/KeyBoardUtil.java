@@ -62,7 +62,7 @@ public abstract class KeyBoardUtil {
         if (base instanceof LispInteger)
             return new LispInteger(((LispInteger) base).getData() | modifiers);
         if (!(base instanceof LispSymbol))
-            throw new WrongTypeArgumentException("symbolp", base.toString());
+            throw new WrongTypeArgumentException("symbolp", base);
 
         LObject cache = ((LispSymbol) base).getProperty("modifier-cache");
         LispInteger index = new LispInteger(modifiers & ~KeyBoardModifier.CLICK.value);

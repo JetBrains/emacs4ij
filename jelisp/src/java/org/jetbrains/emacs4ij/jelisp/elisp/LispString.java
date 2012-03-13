@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -159,15 +158,16 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     @Override
     public void setItem(int position, LObject value) {
         if (!BuiltinPredicates.isCharacter(value))
-            throw new WrongTypeArgumentException("characterp", value.toString());
+            throw new WrongTypeArgumentException("characterp", value);
         myData = myData.substring(0, position) + ((LispInteger)value).toCharacterString() + myData.substring(position + 1);
     }
 
     @Override
     public LObject getItem(int position) {
         char c = myData.charAt(position);
-        String s = "?" + c;
-        return new ForwardParser().parseLine(s);
+        return new LispInteger(c);
+//        String s = "?" + c;
+//        return new ForwardParser().parseLine(s);
     }
     
     public int lengthInBytes() {

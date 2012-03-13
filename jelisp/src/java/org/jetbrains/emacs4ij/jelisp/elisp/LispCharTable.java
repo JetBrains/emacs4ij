@@ -36,7 +36,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         LObject n = purpose.getProperty("char-table-extra-slots");
         if (!n.equals(LispSymbol.ourNil)) {
             if (!BuiltinPredicates.isWholeNumber(n))
-                throw new WrongTypeArgumentException("wholenump", n.toString());
+                throw new WrongTypeArgumentException("wholenump", n);
             myNExtras = ((LispInteger)n).getData();
             if (myNExtras > CharUtil.MAX_N_EXTRA_SLOTS)
                 throw new ArgumentOutOfRange(n, LispSymbol.ourNil);
@@ -127,7 +127,11 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
 
     @Override
     public LObject getItem(int position) {
-        return myContent[position];
+        try {
+            return myContent[position];
+        } catch (IndexOutOfBoundsException e) {
+            return LispSymbol.ourNil;
+        }
     }
     
     private void set (int c, LObject value) {
@@ -208,19 +212,6 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         } while (value.equals(LispSymbol.ourNil) && !table.getParent().equals(LispSymbol.ourNil));
         return value;
     }
-
-//    #define CHAR_TABLE_REF_ASCII(CT, IDX)					  \
-//            (! NILP (XCHAR_TABLE (CT)->ascii)					  \
-//            ? (! SUB_CHAR_TABLE_P (XCHAR_TABLE (CT)->ascii)			  \
-//            ? XCHAR_TABLE (CT)->ascii						  \
-//            : ! NILP (XSUB_CHAR_TABLE (XCHAR_TABLE (CT)->ascii)->contents[IDX]) \
-//            ? XSUB_CHAR_TABLE (XCHAR_TABLE (CT)->ascii)->contents[IDX]	  \
-//            : char_table_ref ((CT), (IDX)))					  \
-//            :  char_table_ref ((CT), (IDX)))
-//
-//            #endif	/* not __GNUC__ */
-
-
 
     public LObject charTableRef (int index) {
         return CharUtil.isAsciiChar(index) ? refAscii(index) : ref(index);

@@ -30,7 +30,7 @@ public class LispSymbol extends LispAtom {
     private LObject myValue = null; //ourVoid;
     private LObject myFunction = null;
     private boolean isBufferLocal = false;
-    private HashMap<LispSymbol, LObject> myProperties = new HashMap<LispSymbol, LObject>();
+    private HashMap<LispSymbol, LObject> myProperties = new HashMap<>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
@@ -122,10 +122,8 @@ public class LispSymbol extends LispAtom {
     public String toString() {        
         if (myFunction == null) {
             return myName;
-//            return myName + " = " + (myValue == null ? "null" : myValue.toString());
         }
         return myFunction.toString();
-//        return myName + " = " + myFunction.toString();
     }
 
     public boolean isSubroutine () {
@@ -215,7 +213,7 @@ public class LispSymbol extends LispAtom {
             try {
                 symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName, GlobalEnvironment.SymbolType.VAR);
             } catch (Exception e) {
-                //throw new VoidVariableException(myName);
+                //todo throw new VoidVariableException(myName);
                 throw e;
             }
             if (symbol == null || (!symbol.hasValue())) {

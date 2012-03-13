@@ -39,7 +39,7 @@ public abstract class BuiltinsList {
             return LispSymbol.ourNil;
         if (arg instanceof LispList)
             return ((LispList) arg).car();
-        throw new WrongTypeArgumentException("listp", arg.toString());
+        throw new WrongTypeArgumentException("listp", arg);
     }
 
     @Subroutine("cdr")
@@ -48,7 +48,7 @@ public abstract class BuiltinsList {
             return LispSymbol.ourNil;
         if (arg instanceof LispList)
             return ((LispList) arg).cdr();
-        throw new WrongTypeArgumentException("listp", arg.toString());
+        throw new WrongTypeArgumentException("listp", arg);
     }
 
     @Subroutine("car-safe")
@@ -100,7 +100,7 @@ public abstract class BuiltinsList {
             return lists[0];
         for (int i = lists.length - 2; i > -1; --i) {
             if (!(lists[i] instanceof LispList || lists[i].equals(LispSymbol.ourNil)))
-                throw new WrongTypeArgumentException("list", lists[i].toString());
+                throw new WrongTypeArgumentException("list", lists[i]);
 
             if (lists[i].equals(LispSymbol.ourNil))
                 lists[i] = lists[i+1];
@@ -124,7 +124,7 @@ public abstract class BuiltinsList {
     @Subroutine("assoc")
     public static LispList assoc (LObject key, LObject list) {
         if (!isList(list))
-            throw new WrongTypeArgumentException("listp", list.toString());
+            throw new WrongTypeArgumentException("listp", list);
         if (list.equals(LispSymbol.ourNil))
             return LispList.list();
         for (LObject element : ((LispList)list).toLObjectList()) {
@@ -139,7 +139,7 @@ public abstract class BuiltinsList {
     @Subroutine("setcdr")
     public static LObject setCdr (LObject cell, LObject newCdr) {
         if (!isCons(cell))
-            throw new WrongTypeArgumentException("consp", cell.toString());
+            throw new WrongTypeArgumentException("consp", cell);
         ((LispList)cell).setCdr(newCdr);
         return newCdr;
     }
@@ -147,7 +147,7 @@ public abstract class BuiltinsList {
     @Subroutine("delq")
     public static LObject delq (LObject element, LObject list) {
         if (!isCons(list))
-            throw new WrongTypeArgumentException("listp", list.toString());
+            throw new WrongTypeArgumentException("listp", list);
         return ((LispList)list).delq(element);
     }
 
@@ -156,21 +156,21 @@ public abstract class BuiltinsList {
         if (list.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         if (!(list instanceof LispList))
-            throw new WrongTypeArgumentException("listp", list.toString());
+            throw new WrongTypeArgumentException("listp", list);
         LObject result = list;
         int i = 0;
         for (; i < n.getData() && result instanceof LispList; ++i) {
             result = ((LispList)result).cdr();
         }
         if (i < n.getData() && !LispSymbol.ourNil.equals(result))
-            throw new WrongTypeArgumentException("listp", result.toString());
+            throw new WrongTypeArgumentException("listp", result);
         return result;
     }
     
     @Subroutine("assq")
     public static LObject assq (LObject key, LObject list) {
         if (!isList(list))
-            throw new WrongTypeArgumentException("listp", list.toString());
+            throw new WrongTypeArgumentException("listp", list);
         if (list.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         return ((LispList)list).assq(key);

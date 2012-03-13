@@ -65,7 +65,7 @@ public abstract class BuiltinsMarker {
     @Subroutine("set-marker")
     public static LispMarker setMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
         if (BuiltinPredicates.integerOrMarkerP(position).equals(LispSymbol.ourNil) && !position.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("integer-or-marker-p", position.toString());
+            throw new WrongTypeArgumentException("integer-or-marker-p", position);
         if (buffer == null)
             buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
         marker.setBuffer(buffer);

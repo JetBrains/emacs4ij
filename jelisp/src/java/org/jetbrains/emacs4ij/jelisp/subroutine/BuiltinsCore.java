@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -24,18 +23,20 @@ public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
     public static void error (Environment environment, String message) {
-        error(environment, message, null);
+        error(environment, message, new LObject[0]);
     }
 
-    public static void error (Environment environment, String message, @Nullable LObject... args) {
+    public static void error (Environment environment, String message, LObject... args) {
         ArrayList<LObject> data = new ArrayList<>();
         data.add(new LispSymbol("error"));
         data.add(new LispString(message));
-        if (args != null) {
+        if (args.length > 0) {
             data.addAll(Arrays.asList(args));
         }
         LispList.list(data).evaluate(environment);
     }
+
+
 
 
     @Subroutine("set")
@@ -149,7 +150,7 @@ public abstract class BuiltinsCore {
             if (hook.getValue() instanceof LispList) {
                 for (LObject function: ((LispList) hook.getValue()).toLObjectList()) {
                     if (!(function instanceof LispSymbol))
-                        throw new WrongTypeArgumentException("symbolp", function.toString());
+                        throw new WrongTypeArgumentException("symbolp", function);
 
                     LispSymbol tFunction = environment.find(((LispSymbol)function).getName());
                     runFunction(environment, tFunction);
@@ -268,7 +269,7 @@ public abstract class BuiltinsCore {
                     ((LispSymbol) function).getName() : function.toString()));
 
         if (!(args[args.length-1] instanceof LispList) && args[args.length-1] != LispSymbol.ourNil)
-            throw new WrongTypeArgumentException("listp", args[args.length-1].toString());
+            throw new WrongTypeArgumentException("listp", args[args.length-1]);
         ArrayList<LObject> list = new ArrayList<>();
         list.addAll(Arrays.asList(args).subList(0, args.length - 1));
 
@@ -351,7 +352,7 @@ public abstract class BuiltinsCore {
     
     private static LispInteger getInt (LObject object) {
         if (!(object instanceof LispInteger))
-            throw new WrongTypeArgumentException("integerp", object.toString());
+            throw new WrongTypeArgumentException("integerp", object);
         return (LispInteger) object;
     }
 
@@ -362,7 +363,7 @@ public abstract class BuiltinsCore {
     @Subroutine("substring")
     public static LObject substring (LObject string, LispInteger from, @Optional LObject to) {
         if (!(string instanceof LispString) && !(string instanceof LispVector))
-            throw new WrongTypeArgumentException("vector-or-string-p", string.toString());
+            throw new WrongTypeArgumentException("vector-or-string-p", string);
         int length = ((LispSequence)string).length();        
         int start = processBound(from, length);        
         int end = to.equals(LispSymbol.ourNil)

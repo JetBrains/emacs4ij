@@ -111,7 +111,7 @@ public class LispVector extends LispObject implements LispSequence, LispArray {
         String s = "";
         for (LObject element: myData) {
             if (!BuiltinPredicates.isCharacter(element))
-                throw new WrongTypeArgumentException("characterp", element.toString());
+                throw new WrongTypeArgumentException("characterp", element);
             s += ((LispInteger)element).toCharacterString();
         }
         return s;
