@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -696,12 +697,14 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
                 LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
     }
 
+    @Ignore
     @Test
     public void testDefineMinorMode() {
         LObject r = evaluateString("(define-minor-mode m1 \"doc\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
+    @Ignore
     @Test
     public void testSimple() {
         LObject r = GlobalEnvironment.INSTANCE.find("defface");

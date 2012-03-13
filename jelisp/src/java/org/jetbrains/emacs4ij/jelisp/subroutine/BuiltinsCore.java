@@ -366,7 +366,7 @@ public abstract class BuiltinsCore {
             throw new WrongTypeArgumentException("vector-or-string-p", string);
         int length = ((LispSequence)string).length();        
         int start = processBound(from, length);        
-        int end = to.equals(LispSymbol.ourNil)
+        int end = to == null || to.equals(LispSymbol.ourNil)
                 ? ((LispSequence)string).length()
                 : processBound(getInt(to), length);
         try {

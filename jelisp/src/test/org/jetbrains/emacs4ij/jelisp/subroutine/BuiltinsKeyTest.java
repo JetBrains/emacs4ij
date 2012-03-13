@@ -103,7 +103,27 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         LObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
         Assert.assertEquals(new LispString("C-f C-g C-a C-b C-c"), r);
     }
-    
+
+
+    @Test
+    public void testDefineKey() {
+        evaluateString("(defvar km (make-sparse-keymap))");
+        LObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
+        Assert.assertEquals(new LispSymbol("forward-char"), r);
+        LObject keyMap = evaluateString("km");
+        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+    }
+
+    @Test
+    public void testDefineKeyTwo() {
+        evaluateString("(defvar km (make-sparse-keymap))");
+        evaluateString("(define-key km \"\\C-d\" 'forward-char)");
+        LObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
+        Assert.assertEquals(new LispSymbol("forward-char"), r);
+        LObject keyMap = evaluateString("km");
+        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+    }
+
     @Test
     public void testGlobalSetKey() {
         LObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");

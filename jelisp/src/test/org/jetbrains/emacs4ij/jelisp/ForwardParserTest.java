@@ -48,7 +48,7 @@ public class ForwardParserTest {
     @Test
     public void testList () throws LispException {
         LObject lispObject = p.parseLine("(5)");
-        Assert.assertEquals(LispList.list(Arrays.<LObject>asList(new LispInteger(5))), lispObject);
+        Assert.assertEquals(LispList.list(new LispInteger(5)), lispObject);
     }
     @Test
     public void testComplexList () throws LispException {

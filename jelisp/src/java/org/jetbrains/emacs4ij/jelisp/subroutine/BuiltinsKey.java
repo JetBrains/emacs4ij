@@ -455,9 +455,20 @@ Return the keymap.  */
 //                CHECK_IMPURE (insertion_point);
 
                 insertion_point.setCdr(LispList.cons(tmp, insertion_point.cdr()));
+                return def;
             }
 //                QUIT;
         }
+        LObject tmp;
+        if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
+            tmp = BuiltinsCharTable.makeCharTable(myKeyMapSymbol, LispSymbol.ourNil);
+            BuiltinsCharTable.setCharTableRange((LispCharTable) tmp, idx, def.equals(LispSymbol.ourNil) ? LispSymbol.ourT : def);
+        }
+        else
+            tmp = LispList.cons(idx, def);
+//                CHECK_IMPURE (insertion_point);
+
+        insertion_point.setCdr(LispList.cons(tmp, insertion_point.cdr()));
         return def;
     }
 

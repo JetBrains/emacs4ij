@@ -89,15 +89,12 @@ public class ForwardParser extends Parser {
                                     throw new InvalidReadSyntax(")");
                                 cdr = parseObject(isBackQuote);
                             }
-                            //while (cdr != null) {
                             data.set(data.size()-1, LispList.cons(car, cdr));
                             wasCons = true;
                             skipListSeparators();
                             if (getCurrentChar() != ')')
                                 throw new InvalidReadSyntax(". in wrong context");
                             break;
-                            // } else
-                            //     throw new RuntimeException("Cons cdr is null!");
                         }
                     }
                     LObject object = parseObject(isBackQuote);
@@ -115,9 +112,11 @@ public class ForwardParser extends Parser {
             }
         }
         advanceTo(getMyCurrentIndex() + 1);
-        if (makeList && (!(data.size() == 1 && wasCons)))
+        if (makeList && (!(data.size() == 1 && wasCons))) {
+            if (wasCons)
+                return LispList.listAsIs(data);
             return LispList.list(data);
-
+        }
         return data.get(0);
     }
 
@@ -457,9 +456,9 @@ public class ForwardParser extends Parser {
                 }
         }
         LispObject lispObject = parseNumber();
-        if (lispObject == LispSymbol.ourNil) {
+        if (lispObject == null) {
             lispObject = parseSymbol();
-            if (lispObject == LispSymbol.ourNil)
+            if (lispObject == null)
                 throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex, getNextIndexOf('\n')));
         }
         return lispObject;

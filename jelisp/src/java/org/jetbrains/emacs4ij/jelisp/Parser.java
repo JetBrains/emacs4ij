@@ -41,7 +41,7 @@ public abstract class Parser extends Observable {
         return myLispCode.charAt(getMyCurrentIndex());
     } 
 
-    protected LispObject parseNumber () {
+    protected LispNumber parseNumber () {
         int nextSeparatorIndex = getNextSeparatorIndex();
         String numberCandidate = extractForm(nextSeparatorIndex);
         try {
@@ -66,7 +66,7 @@ public abstract class Parser extends Observable {
                     advanceTo(nextSeparatorIndex);
                     return lispFloat;
                 }
-                return LispSymbol.ourNil;
+                return null;
             }
         }
     }
@@ -74,23 +74,6 @@ public abstract class Parser extends Observable {
     protected LispObject parseSymbol () {
         int nextSeparatorIndex = getNextSeparatorIndex();
         String symbol = extractForm(nextSeparatorIndex);
-        /*for (int i = 0; i < symbol.length(); ++i) {
-            char c = symbol.charAt(i);
-            if (c == '\\') {
-                if (i < symbol.length() - 1 &&
-                        (mySpecialChars.contains(symbol.charAt(i+1)) || symbol.charAt(i+1) == '\\')) {
-                    i++;
-                    continue;
-                }
-                symbol = symbol.substring(0, i) + symbol.substring(i+1);
-                i--;
-                continue;
-            }
-            if (mySpecialChars.contains(symbol.charAt(i))) {
-                symbol = symbol.substring(0, i) + '\\' + symbol.substring(i);
-                i++;
-            }
-        }*/
         advanceTo(nextSeparatorIndex);
         if (symbol.equals(""))
             return null;

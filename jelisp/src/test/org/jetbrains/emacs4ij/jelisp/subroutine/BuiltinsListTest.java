@@ -151,6 +151,12 @@ public class BuiltinsListTest extends BaseSubroutineTest {
     }
 
     @Test
+    public void testToStringNilsSimple() {
+        LObject cons = evaluateString("(cons nil nil)");
+        Assert.assertEquals("(nil)", cons.toString());
+    }
+
+    @Test
     public void testToStringNils() {
         LObject cons = evaluateString("(cons (cons nil nil) nil)");
         Assert.assertEquals("((nil))", cons.toString());

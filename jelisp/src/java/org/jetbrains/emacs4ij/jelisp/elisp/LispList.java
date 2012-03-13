@@ -40,22 +40,21 @@ public class LispList extends LispObject implements LispSequence {
         return new LispList(new ArrayList<LObject>(Arrays.asList(objects)), true);
     }
 
+    public static LispList listAsIs(List<LObject> data) {
+        return new LispList(data, true);
+    }
+
     public static LispList cons (LObject car, LObject cdr) {
         return new LispList(car, cdr);
     }
 
     private LispList (List<LObject> data, boolean test) {
         if (data == null || data.size() == 0) {
-//            isTrueList = true;
-//            myCar = LispSymbol.ourNil;
-//            myCdr = LispSymbol.ourNil;
             return;
         }
-
         if (data.get(0) == null) {
             throw new RuntimeException("Null element in LispList!");
         }
-
         myCar = data.get(0);
         if (data.size() == 2) {
             isTrueList = false;
@@ -67,7 +66,6 @@ public class LispList extends LispObject implements LispSequence {
             myCdr = null;
             return;
         }
-
         isTrueList = true;
         myCdr = new LispList(data.subList(1, data.size()), true);
     }
@@ -75,15 +73,11 @@ public class LispList extends LispObject implements LispSequence {
     private LispList (List<LObject> data) {
         isTrueList = true;
         if (data == null || data.size() == 0) {
-//            myCar = LispSymbol.ourNil;
-//            myCdr = LispSymbol.ourNil;
             return;
         }
-
         if (data.get(0) == null) {
             throw new RuntimeException("Null element in LispList!");
         }
-
         myCar = data.get(0);
         if (data.size() == 1) {
             myCdr = LispSymbol.ourNil;
@@ -213,8 +207,8 @@ public class LispList extends LispObject implements LispSequence {
         List<LObject> objectList = toLObjectList();
         if (objectList.isEmpty())
             return "nil";
-        if (objectList.size() == 1 && objectList.get(0).equals(LispSymbol.ourNil))
-            return "nil";
+//        if (objectList.size() == 1 && objectList.get(0).equals(LispSymbol.ourNil))
+//            return "nil";
         String list = drawBrackets ? "(" : "";
         if (isTrueList) {
             for (int i = 0; i != objectList.size(); ++i) {
