@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.NotNull;
@@ -141,20 +142,15 @@ public class GlobalEnvironment extends Environment {
     public static void initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         myIde = ide;
-
         if (INSTANCE.myCurrentFrame != null) {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
-
         if (!testEmacsSource()) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs source directory is invalid!");
         }
-
         myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
-//        if (myDocumentationExtractor.scanAll() > 4)
-//            throw new EnvironmentException("Unexpected number of undocumented forms!");
-
+        myDocumentationExtractor.scanAll();
         if (!testEmacsHome()) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs home directory is invalid!");
@@ -195,11 +191,11 @@ public class GlobalEnvironment extends Environment {
     public void defineSymbol (String name) {
         defineSymbol(new LispSymbol(name, LispSymbol.ourNil));
     }
-    
+
     @Override
     public void defineSymbol (LispSymbol symbol) {
         String doc = myDocumentationExtractor.getVariableDoc(symbol.getName());
-        if (doc != null)
+        if (!StringUtil.isEmptyOrSpaces(doc))
             symbol.setGlobalVariableDocumentation(new LispString(doc));
         else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
@@ -254,8 +250,6 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("overlay-arrow-variable-list");//xdisp.c
         defineSymbol("case-fold-search");
         defineSymbol("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
-        
-
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

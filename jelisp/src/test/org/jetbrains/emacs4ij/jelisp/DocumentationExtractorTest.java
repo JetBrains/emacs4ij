@@ -18,7 +18,6 @@ public class DocumentationExtractorTest {
     public void testScanAll() throws Exception {
         String ourEmacsSource = "/home/kate/Downloads/emacs-23.4";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        // it is not = alias null
         Assert.assertEquals(4, d.scanAll());
     }
 

@@ -102,7 +102,7 @@ public abstract class BuiltinsCharTable {
     }
 
     //obsolete function in elisp
-    @Subroutine("set-char-table-default)")
+    @Subroutine("set-char-table-default")
     public static LObject setCharTableDefault (LObject table, LObject ch, LObject value) {
         return LispSymbol.ourNil;
     }

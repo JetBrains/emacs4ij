@@ -16,8 +16,8 @@ import java.util.List;
  * Date: 12/5/11
  * Time: 9:35 AM
  *
- * this class is a helper for doc extraction. It affects classes in this package.
- * for each subroutine, initially defined in C source, we extract doc string and copy it to our @Subroutine annotation field 'doc'.
+ * this class is a helper for doc extraction. 
+ * for each subroutine and variable, initially defined in C source, the doc string is extracted
  *
  */
 public class DocumentationExtractor {
@@ -53,22 +53,10 @@ public class DocumentationExtractor {
     private String mySourcePath;
     private HashMap<String, Subr> mySubr = new HashMap<>();
     private HashMap<String, Variable> myVar = new HashMap<>();
-    //    private ArrayList<Subr> mySubroutines = new ArrayList<>();
-//    private ArrayList<Variable> myVariables = new ArrayList<>();
     public enum VarType {LISP, LISP_NOPRO, BOOL, INT, KBOARD, PER_BUFFER}
 
     public DocumentationExtractor (String srcPath) {
         mySourcePath = srcPath;
-        /*for (Class c: LispSubroutine.getSubroutineContainers()) {
-            Method[] methods = c.getMethods();
-            for (Method m: methods) {
-                Subroutine annotation = m.getAnnotation(Subroutine.class);
-                if (annotation == null)
-                    continue;
-                String name = annotation.value();
-                mySubr.put(name, new Subr(name));
-            }
-        }*/
     }
 
     public String getSubroutineDoc (String name) {
@@ -78,11 +66,9 @@ public class DocumentationExtractor {
     }
 
     public String getVariableDoc (String name) {
-        try {
+        if (myVar.containsKey(name))
             return myVar.get(name).getDoc();
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return null;
     }
 
     private List<String> getUndocumentedSubroutines()  {
@@ -151,40 +137,6 @@ public class DocumentationExtractor {
         return null;
     }
 
-//    private boolean isComment = false;
-//    private int objectStart = 0;
-//    private ObjectToDocument lineContainsAnyDefinition (String line) {
-//        if (isComment) {
-//            if (line.contains("*/")) {
-//                isComment = false;
-//                objectStart = line.indexOf("*/") + 2;
-//                line = line.substring(objectStart);
-//            } else
-//                return null;
-//        }
-//        if (line.contains("/*")) {
-//            int k = line.indexOf("DEF");
-//            if (k > line.indexOf("/*") || k == -1) {
-//                isComment = true;
-//                return null;
-//            }
-//            ObjectToDocument object = lineContainsAnySubroutineDefinition(line);
-//            if (object != null)
-//                return object;
-//            return lineContainsAnyVariableDefinition(line);
-//            //}
-//            //isComment = true;
-//            //return null;
-//        }
-//        if (line.contains("DEF")) {
-//            ObjectToDocument object = lineContainsAnySubroutineDefinition(line);
-//            if (object != null)
-//                return object;
-//            return lineContainsAnyVariableDefinition(line);
-//        }
-//        return null;
-//    }
-
     private String readLine (BufferedReader reader, String fileName) {
         try {
             return reader.readLine();
@@ -200,24 +152,18 @@ public class DocumentationExtractor {
         } catch (FileNotFoundException e) {
             throw new DocumentationExtractorException(e.getMessage());
         }
-//        isComment = false;
+
         String line = readLine(reader, file.getName());
         ObjectToDocument object;
         final String myDocStartFlag = "doc: /*";
         final String myDocEndFlag = "*/";
         while (line != null) {
-//            if (line.contains("DEFUN (\"eval\","))
-//                System.out.print(1);
-//            objectStart = 0;
             if ((object = lineContainsAnyDefinition(line)) != null) {
-//                isComment = false;
-//                line = line.substring(objectStart);
                 while (!line.contains(myDocStartFlag)) {
                     line = readLine(reader, file.getName());
                     if (line == null)
                         throw new RuntimeException("Object definition found, but no documentation! File = " + file.getName() + ", object = " + object.getName());
                 }
-
                 if (line.contains(myDocEndFlag)) {
                     int start = line.indexOf(myDocStartFlag) + myDocStartFlag.length();
                     int end = line.indexOf(myDocEndFlag);
@@ -236,8 +182,7 @@ public class DocumentationExtractor {
                         }
                         doc += '\n' + line;
                     }
-                }
-                //if (getUndocumentedSubroutines().isEmpty()) break;
+                }                
             }
             line = readLine(reader, file.getName());
         }
@@ -256,18 +201,12 @@ public class DocumentationExtractor {
                 return (s.endsWith(".c") && !s.startsWith("."));
             }
         });
-
         if (cSrc!=null && cSrc.length != 0)
-            for (File file: cSrc) {
-                //if (getUndocumentedSubroutines().isEmpty()) break;
+            for (File file: cSrc) {                
                 scanFile(file);
             }
 
         List<String> str = getUndocumentedSubroutines();
-//        Collections.sort(str);
-//        for (String s: str) {
-//            System.out.println(s);
-//        }
         System.out.println("Undocumented: " + str.size());
         return str.size();
     }

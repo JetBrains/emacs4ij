@@ -72,7 +72,7 @@ public abstract class CharUtil {
     public static int makeCtrlChar (int c) {
         int upper = c & ~0177;  /* Save the upper bits here.  */
         if (! isAsciiChar (c))
-            return c |= KeyBoardModifier.CTRL.value;
+            return KeyBoardModifier.CTRL.bitwiseOr(c);
 
         c &= 0177;
         /* Everything in the columns containing the upper-case letters denotes a control character.  */
@@ -81,15 +81,15 @@ public abstract class CharUtil {
             c &= ~0140;
             /* Set the shift modifier for a control char made from a shifted letter.  But only for letters!  */
             if (oc >= 'A' && oc <= 'Z')
-                c |= KeyBoardModifier.SHIFT.value;
+                c = KeyBoardModifier.SHIFT.bitwiseOr(c);
         } else /* The lower-case letters denote control characters too.  */
             if (c >= 'a' && c <= 'z')
                 c &= ~0140;
         else /* Include the bits for control and shift only if the basic ASCII code can't indicate them.  */
             if (c >= ' ')
-                c |= KeyBoardModifier.CTRL.value;
+                c = KeyBoardModifier.CTRL.bitwiseOr(c);
         /* Replace the high bits.  */
-        c |= (upper & ~KeyBoardModifier.CTRL.value);
+        c |= KeyBoardModifier.CTRL.bitwiseAndNot(upper);
         return c;
     }
 
@@ -99,9 +99,9 @@ public abstract class CharUtil {
     
     public static String pushKeyDescription (int c, boolean forceMultiByte) {
         /* Clear all the meaningless bits above the meta bit.  */
-        c &= KeyBoardModifier.META.value | ~ - KeyBoardModifier.META.value;
-        int c2 = c & ~(KeyBoardModifier.ALT.value | KeyBoardModifier.CTRL.value | KeyBoardModifier.HYPER.value
-                | KeyBoardModifier.META.value | KeyBoardModifier.SHIFT.value | KeyBoardModifier.SUPER.value);
+        c &= KeyBoardModifier.metaValue() | ~ -KeyBoardModifier.metaValue();
+        int c2 = c & ~KeyBoardModifier.bitwiseOr(KeyBoardModifier.ALT, KeyBoardModifier.CTRL, KeyBoardModifier.HYPER,
+                KeyBoardModifier.META, KeyBoardModifier.SHIFT, KeyBoardModifier.SUPER);
         
         if (!BuiltinPredicates.isCharacter(new LispInteger(c2))) {
             return "[" + (char)c + ']';
@@ -109,27 +109,27 @@ public abstract class CharUtil {
         String p = "";
         if (KeyBoardModifier.ALT.andNotZero(c)) {
             p += "A-";
-            c -= KeyBoardModifier.ALT.value;
+            c = KeyBoardModifier.ALT.minus(c);
         }
         if (KeyBoardModifier.CTRL.andNotZero(c) || (c2 < ' ' && c2 != 27 && c2 != '\t' && c2 != Ctl ('M'))) {
             p += "C-";
-            c &= ~KeyBoardModifier.CTRL.value;
+            c = KeyBoardModifier.CTRL.bitwiseAndNot(c);
         }
         if (KeyBoardModifier.HYPER.andNotZero(c)) {
             p += "H-";
-            c -= KeyBoardModifier.HYPER.value;
+            c = KeyBoardModifier.HYPER.minus(c);
         }
         if (KeyBoardModifier.META.andNotZero(c)) {
             p += "M-";
-            c -= KeyBoardModifier.META.value;
+            c = KeyBoardModifier.META.minus(c);
         }
         if (KeyBoardModifier.SHIFT.andNotZero(c)) {
             p += "S-";
-            c -= KeyBoardModifier.SHIFT.value;
+            c = KeyBoardModifier.SHIFT.minus(c);
         }
         if (KeyBoardModifier.SUPER.andNotZero(c)) {
             p += "s-";
-            c -= KeyBoardModifier.SUPER.value;
+            c = KeyBoardModifier.SUPER.minus(c);
         }
 
         boolean areMultibyteCharactersDisabled = true;          
