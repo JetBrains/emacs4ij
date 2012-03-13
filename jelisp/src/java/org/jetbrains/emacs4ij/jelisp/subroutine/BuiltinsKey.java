@@ -18,10 +18,6 @@ public abstract class BuiltinsKey {
 
     public static LObject globalMap;
     private static LObject currentGlobalMap;
-    /* Hash table used to cache a reverse-map to speed up calls to where-is.  */
-//    private static LObject where_is_cache;
-    /* Which keymaps are reverse-stored in the cache.  */
-//    private static LObject where_is_cache_keymaps;
     private static LispList exclude_keys;
 
     private static LispSymbol myKeyMapSymbol = new LispSymbol("keymap");
@@ -131,10 +127,8 @@ public abstract class BuiltinsKey {
         int length = ((LispSequence)key).length();
         if (length == 0)
             return LispSymbol.ourNil;
-//        if (function instanceof LispSymbol && !BuiltinsCore.eqs(define_key_rebound_commands, LispSymbol.ourT))
-//            define_key_rebound_commands = LispList.cons(function, define_key_rebound_commands);
         int meta_bit = (key instanceof LispVector || (key instanceof LispString && ((LispString) key).isMultibyte())
-                ? KeyBoardModifier.META.value : 0x80);
+                ? KeyBoardModifier.metaValue() : 0x80);
 
         if (function instanceof LispVector
                 && !((LispVector) function).isEmpty()
@@ -204,10 +198,6 @@ public abstract class BuiltinsKey {
         }
     }
 
-
-/* Make KEYMAP define event C as a keymap (i.e., as a prefix).
-Assume that currently it does not define C at all.
-Return the keymap.  */
     private static LObject define_as_prefix (LObject keymap, LObject c) {
         LObject cmd = makeSparseKeymap(null);
         cmd = BuiltinsList.nConcatenate(cmd, accessKeyMap (keymap, c, 0, 0));
@@ -220,7 +210,7 @@ Return the keymap.  */
         String first = (prefix == null || prefix.equals(LispSymbol.ourNil))
                 ? ""
                 : BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), prefix, new LispString(" ")).getData();
-        String second = BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), keys, new LispString(" ")).getData(); 
+        String second = BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), keys, new LispString(" ")).getData();
         return new LispString(first + " " + second);
     }
 
@@ -240,15 +230,8 @@ Return the keymap.  */
 //        Qkeymap_canonicalize = new LispString("keymap-canonicalize");
 //        staticpro (&Qkeymap_canonicalize);
 
-        /* Now we are ready to set up this property, so we can
-    create char tables.  */
         myKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
         g.defineSymbol(myKeyMapSymbol);
-
-
-        /* Initialize the keymaps standardly used.
-  Each one is the value of a Lisp variable, and is also
-  pointed to by a C variable */
 
         globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(g, new LispSymbol("global-map"), globalMap);
@@ -377,8 +360,6 @@ Return the keymap.  */
     }
 
     private static LObject store_in_keymap (LObject keymap, LObject idx, LObject def) {
-//        where_is_cache = LispSymbol.ourNil;
-//        where_is_cache_keymaps = LispSymbol.ourT;
         if (!isListKeymap(keymap))
             BuiltinsCore.error(GlobalEnvironment.INSTANCE, "attempt to define a key in a non-keymap");
         if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
@@ -497,17 +478,17 @@ Return the keymap.  */
             i = thisModEnd + 1;
         }
 
-        if (0 == (modifiers & (KeyBoardModifier.DOWN.value | KeyBoardModifier.DRAG.value
-                | KeyBoardModifier.DOUBLE.value | KeyBoardModifier.TRIPLE.value))
+        if (0 == (modifiers & KeyBoardModifier.bitwiseOr(KeyBoardModifier.DOWN, KeyBoardModifier.DRAG,
+                              KeyBoardModifier.DOUBLE, KeyBoardModifier.TRIPLE))
                 && i + 7 == name.lengthInBytes()
                 && name.getData().substring(i).startsWith("mouse-")
                 && ('0' <= name.charAt(i + 6) && name.charAt(i + 6) <= '9'))
-            modifiers |= KeyBoardModifier.CLICK.value;
+            modifiers = KeyBoardModifier.CLICK.bitwiseOr(modifiers);
 
-        if (0 == (modifiers & (KeyBoardModifier.DOUBLE.value | KeyBoardModifier.TRIPLE.value))
+        if (0 == (modifiers & KeyBoardModifier.bitwiseOr(KeyBoardModifier.DOUBLE, KeyBoardModifier.TRIPLE))
                 && i + 6 < name.lengthInBytes()
                 && name.getData().substring(i).startsWith("wheel-"))
-            modifiers |= KeyBoardModifier.CLICK.value;
+            modifiers = KeyBoardModifier.CLICK.bitwiseOr(modifiers);
 
         lispModifierEnd.setData(i);
         return modifiers;
@@ -547,16 +528,16 @@ Return the keymap.  */
 
         if (base instanceof LispInteger) {
             /* Turn (shift a) into A.  */
-            if ((modifiers & KeyBoardModifier.SHIFT.value) != 0
+            if (KeyBoardModifier.SHIFT.bitwiseAndNotZero(modifiers)
                     && (((LispInteger) base).getData() >= 'a' && ((LispInteger) base).getData() <= 'z'))
             {
                 ((LispInteger) base).setData(((LispInteger) base).getData() - ('a' - 'A'));
-                modifiers &= ~KeyBoardModifier.SHIFT.value;
+                modifiers = KeyBoardModifier.SHIFT.bitwiseAndNot(modifiers);
             }
 
             /* Turn (control a) into C-a.  */
-            if ((modifiers & KeyBoardModifier.CTRL.value) != 0)
-                return new LispInteger((modifiers & ~KeyBoardModifier.CTRL.value)
+            if (KeyBoardModifier.CTRL.bitwiseAndNotZero(modifiers))
+                return new LispInteger(KeyBoardModifier.CTRL.bitwiseAndNot(modifiers)
                         | CharUtil.makeCtrlChar(((LispInteger) base).getData()));
             else
                 return new LispInteger(modifiers | ((LispInteger) base).getData());
@@ -574,15 +555,16 @@ Return the keymap.  */
         int modifiers = ((LispInteger)((LispList)parsed.cdr()).car()).getData();
         LispSymbol base = (LispSymbol) parsed.car();
         LispList assoc = BuiltinsList.assoc(new LispString(base.getName()), exclude_keys);
-        if (!assoc.equals(LispSymbol.ourNil)) {
+        if (!assoc.isEmpty()) {
             String new_mods = KeyBoardModifier.test(modifiers);
             c = KeyBoardUtil.reorderModifiers(c);
             String keyString = new_mods + assoc.cdr().toString();
             if (!(c instanceof LispSymbol))
                 throw new WrongTypeArgumentException("silly_event_symbol_error: symbolp ", c);
-            BuiltinsCore.error (GlobalEnvironment.INSTANCE, String.format(((modifiers & ~KeyBoardModifier.META.value) != 0
-                    ? "To bind the key %s, use [?%s], not [%s]"
-                    : "To bind the key %s, use \"%s\", not [%s]"),
+            BuiltinsCore.error (GlobalEnvironment.INSTANCE,
+                    String.format((KeyBoardModifier.META.bitwiseAndNotNotZero(modifiers)
+                            ? "To bind the key %s, use [?%s], not [%s]"
+                            : "To bind the key %s, use \"%s\", not [%s]"),
                     ((LispSymbol) c).getName(), keyString,
                     ((LispSymbol) c).getName()));
         }
@@ -601,7 +583,7 @@ Return the keymap.  */
             ((LispInteger) idx).setData(((LispInteger) idx).getData() & (CharUtil.CHAR_META | (CharUtil.CHAR_META - 1)));
 
         /* Handle the special meta -> esc mapping. */
-        if (idx instanceof LispInteger && (((LispInteger) idx).getData() & KeyBoardModifier.META.value) != 0) {
+        if (idx instanceof LispInteger && KeyBoardModifier.META.bitwiseAndNotZero((LispInteger) idx)) {
             /* See if there is a meta-map.  If there's none, there is
 no binding for IDX, unless a default binding exists in MAP.  */
             /* A strange value in which Meta is set would cause
@@ -613,7 +595,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
             LObject meta_map = accessKeyMap(map, meta_prefix_char, t_ok, noinherit);
             if (meta_map instanceof LispList) {
                 map = meta_map;
-                ((LispInteger) idx).setData(((LispInteger) idx).getData() & ~KeyBoardModifier.META.value);
+                ((LispInteger) idx).setData(KeyBoardModifier.META.bitwiseAndNot((LispInteger) idx));
             }
             else if (t_ok != 0)
                 /* Set IDX to t, so that we only find a default binding.  */
@@ -682,9 +664,6 @@ no binding for IDX, unless a default binding exists in MAP.  */
         return getKeyElement(t_binding);
     }
 
-    /* EVENT is defined in MAP as a prefix, and SUBMAP is its definition.
-if EVENT is also a prefix in MAP's parent,
-make sure that SUBMAP inherits that definition as its own parent.  */
     private static void fix_submap_inheritance (LObject map, LObject event, LObject submap) {
         /* SUBMAP is a cons that we found as a key binding. Discard the other things found in a menu key binding.  */
         submap = getKeymap(getKeyElement(submap));
@@ -787,11 +766,9 @@ make sure that SUBMAP inherits that definition as its own parent.  */
 
     @Subroutine("single-key-description")
     public static LObject singleKeyDescription (LObject key, @Optional LObject no_angles) {
-//     todo   if (key instanceof LispList && lucid_event_type_list_p (key))
-//            key = Fevent_convert_list (key);
-
+        if (key instanceof LispList && lucid_event_type_list_p (key))
+            key = eventConvertList(key);
         key = BuiltinPredicates.eventHead(key);
-
         if (key instanceof LispInteger) {		/* Normal character */
             String p = CharUtil.pushKeyDescription (((LispInteger) key).getData(), true);
             return new LispString(p); //make_specified_string (tem, -1, p - tem, 1);

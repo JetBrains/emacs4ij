@@ -36,9 +36,6 @@ public abstract class BuiltinsCore {
         LispList.list(data).evaluate(environment);
     }
 
-
-
-
     @Subroutine("set")
     public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
         LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
@@ -116,13 +113,11 @@ public abstract class BuiltinsCore {
 
     @Subroutine("signal")
     public static LObject signal (LispSymbol errorSymbol, LispList data) {
-        LObject errorMessage = errorSymbol.getProperty("error-message");
-        String msg = '[' + ((errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error") + "] ";
-        msg += '(' + errorSymbol.getName() + ' ' + data.toString() + ')';
-//        GlobalEnvironment.showErrorMessage(msg);
-        //todo: this method returns for test only
-        //  return new LispString(msg);
-        System.out.println(msg);
+//        LObject errorMessage = errorSymbol.getProperty("error-message");
+        String msg = "";// '[' + ((errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error") + "] ";
+        msg += '(' + errorSymbol.getName() + ' ';
+        msg += (data.length() == 1 ? data.car().toString() : data.toString()) + ')';
+//        System.out.println(msg);
         throw new LispException(msg);
     }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.CharUtil;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 
 import java.io.UnsupportedEncodingException;
@@ -26,8 +27,7 @@ public final class KeyBoardModifier {
     public static final KeyBoardModifier CTRL  = new KeyBoardModifier(CharUtil.CHAR_CTL);
     public static final KeyBoardModifier META  = new KeyBoardModifier(CharUtil.CHAR_META);
 
-    public final int value;
-//    private final int order;
+    protected final int value;
 
     private KeyBoardModifier (int v) {
         value = v;
@@ -168,6 +168,54 @@ public final class KeyBoardModifier {
                 break;
         }
         return 0;
+    }
+    
+    public int bitwiseAnd (LispInteger n) {
+        return bitwiseAnd(n.getData());
+    }
+
+    public int bitwiseAnd (int n) {
+        return n & value;
+    }
+    
+    public int bitwiseAndNot (LispInteger n) {
+        return bitwiseAndNot(n.getData());
+    }
+
+    public int bitwiseAndNot (int n) {
+        return n & ~value;
+    }
+    
+    public boolean bitwiseAndNotZero (LispInteger n) {
+        return bitwiseAnd(n) != 0;
+    }
+
+    public boolean bitwiseAndNotZero (int n) {
+        return bitwiseAnd(n) != 0;
+    }
+
+    public boolean bitwiseAndNotNotZero (int n) {
+        return bitwiseAndNot(n) != 0;
+    }
+
+    public static int bitwiseOr (KeyBoardModifier... modifiers) {
+        int result = 0;
+        for (KeyBoardModifier modifier: modifiers) {
+            result |= modifier.value;
+        }
+        return result;
+    }
+    
+    public int bitwiseOr (int n) {
+        return n | value;
+    }
+    
+    public int minus (int n) {
+        return n - value;
+    }
+    
+    public static int metaValue() {
+        return META.value;
     }
     
 }

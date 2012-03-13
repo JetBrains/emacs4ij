@@ -2,10 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.junit.Test;
 
 /**
@@ -94,8 +92,30 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     }
     
     @Test
-    public void test1() {
-        evaluateString("(event-convert-list)");
+    public void testEventConvertListNil() {
+        LObject r = evaluateString("(event-convert-list \"C-x\")");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(event-convert-list 5)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testEventConvertList() {
+        LObject r = evaluateString("(event-convert-list '(C ?s))");
+        Assert.assertEquals(new LispInteger(19), r);
+        r = evaluateString("(event-convert-list '(C M S alt ?s))");
+        Assert.assertEquals(new LispInteger(171966483), r);
+    }
+
+    @Test
+    public void testEventConvertListWrong() {
+        try {
+            evaluateString("(event-convert-list '(C ?s ?D ?g))");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Two bases given in one event\")", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
     }
     
     @Test
@@ -103,7 +123,6 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         LObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
         Assert.assertEquals(new LispString("C-f C-g C-a C-b C-c"), r);
     }
-
 
     @Test
     public void testDefineKey() {
@@ -122,6 +141,17 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LObject keyMap = evaluateString("km");
         Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+    }
+
+    @Test
+    public void testDefineKeyInKeyMap() {
+        evaluateString("(defvar km (make-keymap))");
+        evaluateString("(define-key km \"C-d\" 'forward-char)");
+        LObject km = evaluateString("km");
+        String expected = "(keymap #^[nil nil keymap " +
+                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 " +
+                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])";
+        Assert.assertEquals(expected, km.toString());
     }
 
     @Test

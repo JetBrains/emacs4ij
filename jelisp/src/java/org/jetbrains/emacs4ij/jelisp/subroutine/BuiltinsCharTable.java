@@ -88,8 +88,7 @@ public abstract class BuiltinsCharTable {
             table.setDefault(value);
         } else if (range.equals(LispSymbol.ourT)) {
             table.setAscii(value);
-            for (int i = 0; i < CharUtil.charTableSize(0); i++)
-                table.setItem(i, value);
+            table.setContent(value);
         } else if (range instanceof LispInteger) { //i.e. char
             table.setRange(((LispInteger) range).getData(), ((LispInteger) range).getData(), value);
         } else if (range instanceof LispList) {

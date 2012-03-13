@@ -62,13 +62,4 @@ public class LispInteger extends LispNumber<Integer> {
     public int keyToChar () {
         return myData & ((1 << CharUtil.CHARACTERBITS) - 1);
     }
-
-//
-//    public int XUINT() {
-//        return myData >> (GCTYPEBITS - 1);
-//    }
-//
-//    public int XINT() {
-//        return myData >> GCTYPEBITS;
-//    }
 }

@@ -121,11 +121,6 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
     }
 
     @Override
-    public void setItem(int position, LObject value) {
-        myContent[position] = value;
-    }
-
-    @Override
     public LObject getItem(int position) {
         try {
             return myContent[position];
@@ -133,8 +128,15 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
             return LispSymbol.ourNil;
         }
     }
+
+    public void setContent (LObject value) {
+        for (int i = 0; i < myContent.length; ++i) {
+            myContent[i] = value;
+        }
+    }
     
-    private void set (int c, LObject value) {
+    @Override
+    public void setItem(int c, LObject value) {
         if (CharUtil.isAsciiChar(c) && myAscii instanceof LispSubCharTable) {
             ((LispSubCharTable) myAscii).setItem(c, value);
             return;
@@ -150,7 +152,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
     
     public void setRange (int from, int to, LObject value) {
         if (from == to) {
-            set(from, value);
+            setItem(from, value);
             return;
         }
         for (int i = CharUtil.index(from, 0, 0), minChar = i * CharUtil.charTableChars(0);
