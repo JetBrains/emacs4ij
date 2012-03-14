@@ -16,14 +16,11 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 public class ExecuteCommand extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-
-        //PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).initEnvironment();
         CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-
         try {
             environment.getMiniBuffer().onReadInput();
         } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
+            Messages.showErrorDialog(exc.getMessage(), "Evaluation Result");
         }
     }
 }

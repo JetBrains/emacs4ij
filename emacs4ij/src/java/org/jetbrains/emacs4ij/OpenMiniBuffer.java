@@ -24,8 +24,9 @@ public class OpenMiniBuffer extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         CustomEnvironment environment;
+        MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class);
         try {
-            environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+            environment = projectComponent.getEnvironment();
         } catch (NullPointerException exc) {
             return;
         }
@@ -43,6 +44,7 @@ public class OpenMiniBuffer extends AnAction {
         editor.setHeaderComponent(input);
 
         miniBuffer.setEditor(input.getEditor());
+        projectComponent.setMiniBufferOpened(true);
 
         ExecuteCommand command = new ExecuteCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);

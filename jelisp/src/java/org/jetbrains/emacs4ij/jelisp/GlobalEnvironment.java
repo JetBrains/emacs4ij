@@ -101,18 +101,18 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    public static boolean testProperty (PropertyType type, String value) {
-        switch (type) {
-            case HOME:
-                setEmacsHome(value);
-                return testEmacsHome();
-            case SOURCE:
-                setEmacsSource(value);
-                return testEmacsSource();
-            default:
-                return false;
-        }
-    }
+//    public static boolean testProperty (PropertyType type, String value) {
+//        switch (type) {
+//            case HOME:
+//                setEmacsHome(value);
+//                return testEmacsHome();
+//            case SOURCE:
+//                setEmacsSource(value);
+//                return testEmacsSource();
+//            default:
+//                return false;
+//        }
+//    }
 
     public static boolean testEmacsHome() {
         if (isEmacsHomeOk)
@@ -131,6 +131,29 @@ public class GlobalEnvironment extends Environment {
         return isEmacsHomeOk;
     }
 
+    public static boolean testProperty (PropertyType type, String value) {
+        switch (type) {
+            case HOME:
+                boolean isOk = false;
+                String docDir = value + "/etc/";
+                File file = new File (docDir);
+                if (file.exists() && file.isDirectory()) {
+                    String[] docs = file.list(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return s.startsWith("DOC-");
+                        }
+                    });
+                    isOk =  docs != null && docs.length == 1;
+                }
+                return isOk;
+            case SOURCE:
+                return new File(value + "/lisp/simple.el").exists();
+            default:
+                return false;
+        }
+    }
+    
     public static boolean testEmacsSource() {
         if (!isEmacsSourceOk) {
             File file = new File(ourEmacsSource + "/lisp/simple.el");

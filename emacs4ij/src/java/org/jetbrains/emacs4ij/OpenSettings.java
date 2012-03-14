@@ -13,15 +13,23 @@ import com.intellij.openapi.project.Project;
  * To change this template use File | Settings | File Templates.
  */
 public class OpenSettings extends AnAction {
+    private OptionsForm myOptionsForm = null;
+
     @Override
     public void actionPerformed(AnActionEvent e) {
         actionPerformed(PlatformDataKeys.PROJECT.getData(e.getDataContext()));
     }
-    
+
     public void actionPerformed(Project p) {
-        OptionsForm optionsForm = new OptionsForm(p);
-        optionsForm.setLocationRelativeTo(null);//(WindowManager.getInstance().getIdeFrame(p).getComponent());
-        optionsForm.setVisible(true);
-        optionsForm.pack();
+        if (myOptionsForm == null) {
+            myOptionsForm = new OptionsForm(p);
+            myOptionsForm.setLocationRelativeTo(null);
+            myOptionsForm.setVisible(true);
+            myOptionsForm.pack();
+        } else {
+            myOptionsForm.refreshText();
+            myOptionsForm.setVisible(true);
+            myOptionsForm.requestFocus();
+        }
     }
 }

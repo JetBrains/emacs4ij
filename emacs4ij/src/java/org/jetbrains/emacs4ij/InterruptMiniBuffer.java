@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 
 /**
@@ -16,17 +15,20 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
  */
 public class InterruptMiniBuffer extends AnAction {
     @Override
-    public void actionPerformed(AnActionEvent e) {
-        Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
-
+    public void actionPerformed(AnActionEvent event) {
+        Editor editor = PlatformDataKeys.EDITOR.getData(event.getDataContext());
         if (editor == null)
             return;
-
-        CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
-        IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-        miniBuffer.hide();
-        //environment.updateServiceBuffer(miniBuffer);
-
-        Messages.showInfoMessage("Quit " + miniBuffer.getName(), "MiniBuffer");
+        try {
+            MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(event.getDataContext()).getComponent(MyProjectComponent.class);
+            CustomEnvironment environment = projectComponent.getEnvironment();
+            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
+            miniBuffer.hide();
+            //todo: reduce minibuffer recursion depth
+            projectComponent.setMiniBufferOpened(false);
+//            Messages.showInfoMessage("Quit " + miniBuffer.getName(), "MiniBuffer");
+        } catch (NullPointerException e) {
+            //skip
+        }
     }
 }

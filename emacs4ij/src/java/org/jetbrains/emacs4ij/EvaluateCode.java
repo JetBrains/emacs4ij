@@ -18,6 +18,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
  * To change this template use File | Settings | File Templates.
  */
 public class EvaluateCode extends AnAction {
+    public void update(AnActionEvent event) {
+        event.getPresentation().setEnabled(EnvironmentInitializer.isGlobalInitialized());
+    }
 
     public void actionPerformed(AnActionEvent e) {
         CustomEnvironment environment;
@@ -28,26 +31,15 @@ public class EvaluateCode extends AnAction {
         }
         if (environment == null)
             return;
-
         Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
         if (editor == null)
             return;
-
-        //String parameterValue = editor.getDocument().getText();
         try {
             LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
             LObject result = buffer.evaluateLastForm();
-
-//             ForwardParser forwardParser = new ForwardParser();
-//            String displayedBufferName = IdeaBuffer.getDisplayedBufferName();
-//
-//            LObject result = forwardParser.parseLine(parameterValue).evaluate(environment);
-            Messages.showInfoMessage(result.toString(), "Evaluation result");
-
-           // environment.findBufferSafe(displayedBufferName).closeHeader();
-
+            Messages.showInfoMessage(result.toString(), "Evaluation Result");
         } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Evaluation result");
+            Messages.showErrorDialog(exc.getMessage(), "Evaluation Result");
         }
     }
 }

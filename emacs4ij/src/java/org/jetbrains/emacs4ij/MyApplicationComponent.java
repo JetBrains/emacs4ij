@@ -33,7 +33,6 @@ public class MyApplicationComponent implements ApplicationComponent {
             @Override
             public void windowIconified(WindowEvent e) {
                 super.windowIconified(e);
-                //GlobalEnvironment.setFrameVisible(new IdeaFrame((IdeFrame) e.getWindow()), false);
                 if (EnvironmentInitializer.isGlobalInitialized())
                     GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
             }
@@ -48,8 +47,6 @@ public class MyApplicationComponent implements ApplicationComponent {
     }
 
     public void initComponent() {
-        //   GlobalEnvironment.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
-
         WindowManager.getInstance().addListener(new WindowManagerListener() {
             @Override
             public void frameCreated(IdeFrame ideFrame) {
@@ -59,7 +56,6 @@ public class MyApplicationComponent implements ApplicationComponent {
                 ((IdeFrameImpl)ideFrame).addWindowListener(myWindowAdapter);
                 IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) ideFrame);
                 GlobalEnvironment.INSTANCE.onFrameOpened(ideaFrame);
-                //GlobalEnvironment.setSelectedFrame(ideaFrame);
             }
 
             @Override

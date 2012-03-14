@@ -32,7 +32,7 @@ import javax.swing.event.HyperlinkListener;
 public class MyProjectComponent implements ProjectComponent {
     private CustomEnvironment myEnvironment = null;
     private Project myProject;
-    private final String myDisplayGroupId = "Emacs4ij";
+    private boolean isMiniBufferOpened = false;
 
     public MyProjectComponent(Project project) {
         myProject = project;
@@ -55,21 +55,15 @@ public class MyProjectComponent implements ProjectComponent {
                 } catch (DoubleBufferException e) {
                     System.err.println(e.getMessage());
                 }
-//                System.out.print("open: ");
-//                myEnvironment.printBuffers();
             }
 
             @Override
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
-
                 if (!(myEnvironment.isSelectionManagedBySubroutine()))
                     myEnvironment.killBuffer(virtualFile.getName());
                 else myEnvironment.setSelectionManagedBySubroutine(false);
-
-//                System.out.print("close: ");
-//                myEnvironment.printBuffers();
             }
 
             @Override
@@ -86,8 +80,6 @@ public class MyProjectComponent implements ProjectComponent {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
                         myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     else myEnvironment.setSelectionManagedBySubroutine(false);
-//                    System.out.print("select: ");
-//                    myEnvironment.printBuffers();
                 } catch (EnvironmentException e) {
                     //ignore
                 }
@@ -111,23 +103,9 @@ public class MyProjectComponent implements ProjectComponent {
                                         new OpenSettings().actionPerformed(myProject);
                                 }
                             })
-//                            .setHideOnAction(true)
-//                            .setFadeoutTime(7500)
                             .createBalloon()
-                            .show(RelativePoint.getNorthEastOf(WindowManager.getInstance().getIdeFrame(myProject).getComponent()), Balloon.Position.atRight);
-
-
-//                    new Notification(myDisplayGroupId,
-//                            "Emacs4ij",
-//                            "Error occurred while initializing Emacs4ij environment. You can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.",
-//                            NotificationType.WARNING,
-//                            new NotificationListener() {
-//                                @Override
-//                                public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-//                                    new OpenSettings().actionPerformed(myProject);
-//                                    notification.expire();
-//                                }
-//                            }).notify(myProject);
+                            .show(RelativePoint.getNorthEastOf(WindowManager.getInstance().getIdeFrame(myProject).getComponent()),
+                                    Balloon.Position.atRight);
                 }
                 indicator.setFraction(1.0);
             }
@@ -153,5 +131,13 @@ public class MyProjectComponent implements ProjectComponent {
 
     public void projectClosed() {
         // called when project is being closed
+    }
+
+    public boolean isMiniBufferOpened() {
+        return isMiniBufferOpened;
+    }
+
+    public void setMiniBufferOpened(boolean miniBufferOpened) {
+        isMiniBufferOpened = miniBufferOpened;
     }
 }
