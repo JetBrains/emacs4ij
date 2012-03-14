@@ -27,22 +27,13 @@ import java.util.regex.Matcher;
 public class GlobalEnvironment extends Environment {
     private ArrayList<LispFrame> myFrames = new ArrayList<>();
     private LispFrame myCurrentFrame = null;
-
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
-
     public static final String ourMiniBufferName = " *Minibuf-0*";
-    //public static final String ourScratchBufferName = "*scratch*";
     public static final String ourUnsetInteractiveString = "0";
-    public static final String ourUnsetKeyString = "";
-
     public static GlobalEnvironment INSTANCE = null;
-
     public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
-    private static final String ourFinderPath = "/lisp/help-fns.el";
-
     private static Ide myIde = null;
-
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
     private static DocumentationExtractor myDocumentationExtractor;
@@ -101,36 +92,21 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-//    public static boolean testProperty (PropertyType type, String value) {
-//        switch (type) {
-//            case HOME:
-//                setEmacsHome(value);
-//                return testEmacsHome();
-//            case SOURCE:
-//                setEmacsSource(value);
-//                return testEmacsSource();
-//            default:
-//                return false;
-//        }
-//    }
-
-    public static boolean testEmacsHome() {
-        if (isEmacsHomeOk)
+    private static boolean testProperty (PropertyType type) {
+        if (isEmacsPropertyOk(type))
             return true;
-        String docDir = ourEmacsHome + "/etc/";
-        File file = new File (docDir);
-        if (file.exists() && file.isDirectory()) {
-            String[] docs = file.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return s.startsWith("DOC-");
-                }
-            });
-            isEmacsHomeOk =  docs != null && docs.length == 1;
+        switch (type) {
+            case HOME:
+                isEmacsHomeOk = testProperty(type, ourEmacsHome);
+                return isEmacsHomeOk;
+            case SOURCE:
+                isEmacsSourceOk = testProperty(type, ourEmacsSource);
+                return isEmacsSourceOk;
+            default:
+                return false;
         }
-        return isEmacsHomeOk;
     }
-
+    
     public static boolean testProperty (PropertyType type, String value) {
         switch (type) {
             case HOME:
@@ -154,27 +130,19 @@ public class GlobalEnvironment extends Environment {
         }
     }
     
-    public static boolean testEmacsSource() {
-        if (!isEmacsSourceOk) {
-            File file = new File(ourEmacsSource + "/lisp/simple.el");
-            isEmacsSourceOk = file.exists();
-        }
-        return isEmacsSourceOk;
-    }
-
     public static void initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         myIde = ide;
         if (INSTANCE.myCurrentFrame != null) {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
         }
-        if (!testEmacsSource()) {
+        if (!testProperty(PropertyType.SOURCE)) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs source directory is invalid!");
         }
         myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
         myDocumentationExtractor.scanAll();
-        if (!testEmacsHome()) {
+        if (!testProperty(PropertyType.HOME)) {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs home directory is invalid!");
         }
@@ -224,13 +192,6 @@ public class GlobalEnvironment extends Environment {
             myRecordedSymbols.add(symbol.getName());
         }
         mySymbols.put(symbol.getName(), symbol);
-    }
-   
-    private void addBufferLocalVariable(String name, @NotNull LObject value) {
-        LispSymbol symbol = new LispSymbol(name, value, true);
-        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
-        myBufferLocals.add(name);
-        mySymbols.put(name, symbol);
     }
 
     private void addBufferLocalVariable(String name) {
@@ -363,12 +324,6 @@ public class GlobalEnvironment extends Environment {
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
             try {
-//                if (parsed instanceof LispList) {
-//                    System.out.println("PARSED LIST " + ((LispList)parsed).car().toString() + ' ' + ((LispList)((LispList)parsed).cdr()).car().toString());
-//                }
-//                if (parsed instanceof LispSymbol) {
-//                    System.out.println("PARSED SYMBOL " + ((LispSymbol)parsed).getName());
-//                }
                 parsed.evaluate(this);
             } catch (LispException e) {
                 System.err.println(fullName + ", line " + index + ": " + e.getMessage());
@@ -438,7 +393,6 @@ public class GlobalEnvironment extends Environment {
                 return (file.isDirectory() || file.getName().endsWith(".el"));
             }
         }));
-
         //subr.el has priority. This is done to avoid uploading wrong defs while we are not loading code in appropriate order
         File subr = (File) CollectionUtils.find(src, new Predicate() {
             @Override
@@ -446,17 +400,14 @@ public class GlobalEnvironment extends Environment {
                 return (((File) o).getAbsolutePath().endsWith("lisp/subr.el"));
             }
         });
-
         LispList def = null;
         if (subr != null) {
             def = getDefFromFile(subr, name, type);
         }
-
         for (int i = 0, srcSize = src.size(); i < srcSize && def == null; i++) {
             File file = src.get(i);
             if (file.getName().endsWith("lisp/subr.el"))
                 continue;
-
             if (file.isDirectory()) {
                 def = findEmacsDefinition(name, file, type);
             } else
@@ -492,10 +443,6 @@ public class GlobalEnvironment extends Environment {
 
     public LispSymbol findAndRegisterEmacsForm(LispSymbol name, SymbolType type) {
         return findAndRegisterEmacsForm(name.getName(), type);
-    }
-
-    public static void showMessage (String message) {
-        myIde.showMessage(message);
     }
 
     public static void showErrorMessage (String message) {
@@ -565,40 +512,9 @@ public class GlobalEnvironment extends Environment {
         killBuffer(findBufferSafe(bufferName));
     }
 
-    /* public ArrayList<LispBuffer> getBuffersWithNameNotBeginningWithSpace () {
-        CustomEnvironment main = getMainEnvironment();
-        ArrayList<LispBuffer> noSpace = new ArrayList<LispBuffer>();
-        for (LispBuffer buffer: main.myBuffers) {
-            if (buffer.getName().charAt(0) != ' ')
-                noSpace.add(buffer);
-        }
-        return noSpace;
-    }
-
-    public LispBuffer getFirstNotServiceBuffer () {
-        CustomEnvironment main = getMainEnvironment();
-        ArrayList<LispBuffer> myBuffers1 = main.myBuffers;
-        for (int i = myBuffers1.size() - 1; i != -1; --i) {
-            LispBuffer buffer = myBuffers1.get(i);
-            char start = buffer.getName().charAt(0);
-            if (start != ' ' && start != '*')
-                return buffer;
-        }
-        throw new NoOpenedBufferException();
-    }
-
-    public LispBuffer getFirstBufferWithNameNotBeginningWithSpace () {
-        CustomEnvironment main = getMainEnvironment();
-        for (LispBuffer buffer: main.myBuffers) {
-            if (buffer.getName().charAt(0) != ' ')
-                return buffer;
-        }
-        throw new NoBufferException("Buffer with name not beginning with space");
-    }*/
-
     public ArrayList<String> getCommandList (String begin) {
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
-        ArrayList<String> commandList = new ArrayList<String>();
+        ArrayList<String> commandList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
             if (BuiltinPredicates.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
@@ -608,13 +524,12 @@ public class GlobalEnvironment extends Environment {
                     commandList.add(symbol.getName());
             }
         }
-        //Collections.sort(commandList);
         return commandList;
     }
 
     public ArrayList<String> getFunctionList (String begin) {
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
-        ArrayList<String> functionList = new ArrayList<String>();
+        ArrayList<String> functionList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
             if (BuiltinPredicates.fboundp(this, symbol).equals(LispSymbol.ourT)) {
@@ -624,12 +539,11 @@ public class GlobalEnvironment extends Environment {
                     functionList.add(symbol.getName());
             }
         }
-        //Collections.sort(functionList);
         return functionList;
     }
 
     public ArrayList<String> getBufferNamesList (String begin) {
-        ArrayList<String> bufferNamesList = new ArrayList<String>();
+        ArrayList<String> bufferNamesList = new ArrayList<>();
         for (String bufferName: ourBufferManager.getBuffersNames()) {
             if (bufferName.length() >= begin.length()) {
                 if (bufferName.substring(0, begin.length()).equals(begin)) {
@@ -639,52 +553,6 @@ public class GlobalEnvironment extends Environment {
         }
         return bufferNamesList;
     }
-
-
-
-    //TODO: it is public only for test
-    /* public static String findEmacsFunctionFileName(LispSymbol functionName) {
-if (ourEmacsPath.equals("")) {
-    throw new RuntimeException("Emacs path is not set!");
-}
-
-LispSymbol finder = INSTANCE.find(ourFinder.getName());
-if (finder == null) {
-    if (functionName.getName().equals(ourFinder.getName()))
-        return ourEmacsPath + ourFinderPath;
-    throw new RuntimeException("I don't know where to find function " + functionName);
-}
-if (functionName.getName().equals("symbol-file"))
-    return ourEmacsPath + "/lisp/subr.el";
-
-INSTANCE.setArgumentsEvaluated(true);
-
-
-try {
-        LObject symbolFunction = BuiltinsSymbol.symbolFunction(INSTANCE, functionName);
-        LObject f = finder.evaluateFunction(INSTANCE, new LispList(functionName, symbolFunction).getData());
-    } catch (VoidFunctionException e) {
-        LObject f = null;
-    }
-
-LObject f = finder.evaluateFunction(INSTANCE, new LispList(functionName, new LispSymbol("variable")).getData());
-if (f == null || f == LispSymbol.ourNil) {
-    try {
-        LObject symbolFunction = BuiltinsSymbol.symbolFunction(INSTANCE, functionName);
-        f = finder.evaluateFunction(INSTANCE, new LispList(functionName, symbolFunction).getData());
-    } catch (VoidFunctionException e) {
-        f = null;
-    }
-    if (f == null || f == LispSymbol.ourNil) {
-        f = finder.evaluateFunction(INSTANCE, new LispList(functionName, new LispSymbol("face")).getData());
-    }
-}
-if (f == null || f == LispSymbol.ourNil) {
-    throw new RuntimeException("I don't know where to find function " + functionName);
-}
-return ((LispString)f).getData();
-
-}        */
 
     //------------------------------------------- FRAMES ------------------------------------------------------
 
@@ -781,13 +649,9 @@ return ((LispString)f).getData();
 
     public Matcher getLastSearchResult() {
         try {
-//            SearchItem item = mySearchHistory.getLast();
             return mySearchHistory.getLast().getResult();
         } catch (NoSuchElementException e) {
             return null;
         }
     }
-
-
-
 }

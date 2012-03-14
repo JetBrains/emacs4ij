@@ -10,16 +10,16 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispFrame extends LObject {
-    public LObject getParameter (String parameter);
-    public void setVisible (boolean visible);
-    public boolean isVisible ();
-    public void setIconified (boolean iconified);
-    public boolean isIconified ();
+    LObject getParameter (String parameter);
+    void setVisible (boolean visible);
+    boolean isVisible ();
+    void setIconified (boolean iconified);
+    boolean isIconified ();
 
-    public boolean areIdeFramesEqual (LispFrame frame);
+    boolean areIdeFramesEqual (LispFrame frame);
 
-    public void openWindow (LispBuffer buffer);
-    public LispWindow containsBuffer (LispBuffer buffer);
-    public void closeWindow (LispBuffer buffer);
-    public List<LispBuffer> getBufferList();
+    void openWindow (LispBuffer buffer);
+    LispWindow containsBuffer (LispBuffer buffer);
+    void closeWindow (LispBuffer buffer);
+    List<LispBuffer> getBufferList();
 }

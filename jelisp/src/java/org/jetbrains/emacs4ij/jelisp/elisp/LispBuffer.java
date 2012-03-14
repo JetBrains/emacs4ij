@@ -10,33 +10,24 @@ import com.intellij.openapi.editor.Editor;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LObject {
-    public void showMessage (String message);
-
-    public LObject getLocalVariableValue (String name);
-    public LispSymbol getLocalVariable (String name);
-    public void defineLocalVariable (LispSymbol variable);
-    public void defineLocalVariable (LispSymbol variable, boolean noValue);
-
-    public String getName();
-    public int getSize();
-    public int point();
-    public int pointMin();
-    public int pointMax();
-    public int bufferEnd(double parameter);
-    public String gotoChar(int position);
-    public String forwardChar (int shift);
-    public void kill();
-
-    public LObject evaluateLastForm ();
-
-    public void setBufferActive ();
-    public Editor getEditor();
-    public void setEditor (Editor editor);
-    public void closeHeader();
-
-    public void addMarker (LispMarker marker);
-    public void removeMarker (LispMarker marker);
-    public boolean hasMarkersAt (int position);
-
-    public LispMarker getMark();
+    LObject getLocalVariableValue (String name);
+    LispSymbol getLocalVariable (String name);
+    void defineLocalVariable (LispSymbol variable, boolean noValue);
+    String getName();
+    int getSize();
+    int point();
+    int pointMin();
+    int pointMax();
+    String gotoChar(int position);
+    String forwardChar (int shift);
+    void kill();
+    LObject evaluateLastForm ();
+    void setBufferActive ();
+    Editor getEditor();
+    void setEditor (Editor editor);
+    void closeHeader();
+    void addMarker (LispMarker marker);
+    void removeMarker (LispMarker marker);
+    boolean hasMarkersAt (int position);
+    LispMarker getMark();
 }

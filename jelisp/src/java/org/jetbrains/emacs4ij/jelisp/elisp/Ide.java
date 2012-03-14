@@ -8,6 +8,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface Ide {
-    public void showErrorMessage (String message);
-    public void showMessage (String message);
+    void showErrorMessage (String message);
 }

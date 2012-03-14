@@ -46,25 +46,19 @@ public class OptionsForm extends JFrame {
         label.setForeground(Color.red);
     }
 
-    private boolean setServiceParameter(GlobalEnvironment.PropertyType type, JLabel label, EmacsService service, JTextField textField) {
+    private boolean setServiceParameter(GlobalEnvironment.PropertyType type, JLabel label, JTextField textField) {
         String name = String.valueOf(type).toLowerCase();
         JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
         fileChooser.setDialogTitle("Select Emacs " + name + " directory");
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             String dir = fileChooser.getSelectedFile().getAbsolutePath();
-
-//            service.setEmacsParameter(dir);
             textField.setText(dir);
-
             if (GlobalEnvironment.testProperty(type, dir)) {
                 infoLabel.setText("Emacs " + name + " directory successfully set");
                 label.setForeground(Color.black);
                 return true;
             } else {
-//                Messages.showErrorDialog(this,
-//                        "You might have mistaken when set Emacs " + name + " directory.\nTry again.",
-//                        "Emacs Environment Settings");
                 onWrongProperty(label, type);
                 return false;
             }
@@ -87,7 +81,6 @@ public class OptionsForm extends JFrame {
     }
 
     private void tryEnableApply() {
-//        applyButton.setEnabled(isHomeValid && isSourceValid);
         applyButton.setEnabled(changed());
     }
 
@@ -124,7 +117,7 @@ public class OptionsForm extends JFrame {
         browseHomeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                isHomeValid = setServiceParameter(GlobalEnvironment.PropertyType.HOME, homeLabel, emacsHomeService, homeTextField);
+                isHomeValid = setServiceParameter(GlobalEnvironment.PropertyType.HOME, homeLabel, homeTextField);
                 tryEnableApply();
                 focus();
             }
@@ -132,7 +125,7 @@ public class OptionsForm extends JFrame {
         browseSrcButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                isSourceValid = setServiceParameter(GlobalEnvironment.PropertyType.SOURCE, srcLabel, emacsSourceService, srcTextField);
+                isSourceValid = setServiceParameter(GlobalEnvironment.PropertyType.SOURCE, srcLabel, srcTextField);
                 tryEnableApply();
                 focus();
             }
@@ -141,21 +134,6 @@ public class OptionsForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 close();
-//                if (!changed())
-//                    close();
-//                else {
-//                    if (applyButton.isEnabled()) {
-//                        int exitCode = Messages.showOkCancelDialog(myProject, "You have changed settings. Are you sure you don't want to apply them?\nPress Cancel to return.", "Emacs4ij", Messages.getQuestionIcon());
-//                        if (exitCode == 0)
-//                            close();
-//                        else focus();
-//                    } else {
-//                        //todo: balloon instead?
-//                        EnvironmentInitializer.reset();
-//                        Messages.showInfoMessage(myProject, "The plugin is disabled now", "Emacs4ij");
-//                        close();
-//                    }
-//                }
             }
         });
         applyButton.addActionListener(new ActionListener() {
@@ -195,6 +173,4 @@ public class OptionsForm extends JFrame {
         toFront();
         requestFocus();
     }
-
-
 }

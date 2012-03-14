@@ -12,9 +12,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispSequence {
-    public int length();
-    public List<LObject> toLObjectList();
-    public List<LObject> mapCar (Environment environment, LObject method);
-    public LObject copy();
-    public String toCharString(); //for List, Vector and String only
+    int length();
+    List<LObject> toLObjectList();
+    List<LObject> mapCar (Environment environment, LObject method);
+    LObject copy();
+    String toCharString(); //for List, Vector and String only
 }

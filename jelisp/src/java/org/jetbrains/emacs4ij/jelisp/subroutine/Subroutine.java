@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * To change this template use File | Settings | File Templates.
  */
 
-@Target({ElementType.METHOD})
+@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subroutine {
     String value();

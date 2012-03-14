@@ -8,6 +8,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispArray {
-    public void setItem (int position, LObject value);
-    public LObject getItem (int position);
+    void setItem (int position, LObject value);
+    LObject getItem (int position);
 }

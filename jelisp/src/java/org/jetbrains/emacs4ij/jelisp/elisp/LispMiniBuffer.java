@@ -8,12 +8,12 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispMiniBuffer extends LispBuffer {
-    public void startRead();
-    public void readParameter(SpecialFormInteractive interactive);
-    public void addCharListener();
-    public int getActivationsDepth();
+    void startRead();
+    void readParameter(SpecialFormInteractive interactive);
+    void addCharListener();
+    int getActivationsDepth();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
-    public LObject onReadInput();
-    public LObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
+    LObject onReadInput();
+    LObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
 }

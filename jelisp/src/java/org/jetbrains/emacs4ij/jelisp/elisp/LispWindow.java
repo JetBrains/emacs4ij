@@ -8,6 +8,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispWindow extends LObject {
-    public boolean containsBuffer (LispBuffer buffer);
-    public LispBuffer getBuffer();
+    boolean containsBuffer (LispBuffer buffer);
+    LispBuffer getBuffer();
 }

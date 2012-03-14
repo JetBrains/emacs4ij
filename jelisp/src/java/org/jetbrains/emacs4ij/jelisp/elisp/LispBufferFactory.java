@@ -8,5 +8,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBufferFactory {
-    public LispBuffer createBuffer (String bufferName);
+    LispBuffer createBuffer (String bufferName);
 }
