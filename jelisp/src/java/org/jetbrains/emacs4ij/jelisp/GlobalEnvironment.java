@@ -167,6 +167,7 @@ public class GlobalEnvironment extends Environment {
 
         ourBufferManager = new BufferManager(bufferFactory);
         //findAndRegisterEmacsFunction(ourFinder);
+
     }
 
     private GlobalEnvironment () {

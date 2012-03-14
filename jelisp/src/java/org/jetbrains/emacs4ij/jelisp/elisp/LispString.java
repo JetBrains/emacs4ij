@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString implements LispAtom, LispSequence, LispArray {
+public class LispString implements LispAtom, LispSequence, LispArray, LispStringOrVector {
     private String myData;
 
     public LispString (String data) {
@@ -128,31 +128,15 @@ public class LispString implements LispAtom, LispSequence, LispArray {
         p1 = Pattern.compile("(\\\\)+\\)");
         m = p1.matcher(s);
         s = m.replaceAll(")");
-
         Pattern p = isCaseFoldSearch ?
                 Pattern.compile(s, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
                 : Pattern.compile(s, Pattern.MULTILINE);
-
         m = p.matcher(myData);
         if (m.find(from)) {
             GlobalEnvironment.INSTANCE.registerSearchResult(this, m);
             return m.start();
         }
-
-
-//        String[] data = myData.split("\\n");
-//        int before = 0;
-//        for (String s1: data) {
-//            m = p.matcher(s1);
-//            if (m.find(from)) {
-//                GlobalEnvironment.INSTANCE.registerSearchResult(this, m);
-//                return m.start() + before;
-//            }
-//            before += s1.length();
-//        }
         return -1;
-
-//        return data.indexOf(regexp, from);
     }
 
     @Override
@@ -166,8 +150,6 @@ public class LispString implements LispAtom, LispSequence, LispArray {
     public LispObject getItem(int position) {
         char c = myData.charAt(position);
         return new LispInteger(c);
-//        String s = "?" + c;
-//        return new ForwardParser().parseLine(s);
     }
     
     public int lengthInBytes() {

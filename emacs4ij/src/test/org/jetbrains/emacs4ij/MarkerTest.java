@@ -1,5 +1,8 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.keymap.Keymap;
+import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.impl.KeymapImpl;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
@@ -36,7 +39,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         myTests = new HashMap<>();
         GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-       // GlobalEnvironment.getInstance().clearRecorded();
+        // GlobalEnvironment.getInstance().clearRecorded();
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             myTests.put(fileName, new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor()));
@@ -74,7 +77,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         LispObject m = evaluateString("(setq m1 (make-marker))");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
     }
-    
+
     @Test
     public void testMarkerMoving() {
         evaluateString("(setq m1 (make-marker))");
@@ -90,7 +93,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         m = evaluateString("(set-marker m1 nil)");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
     }
-    
+
     @Test
     public void testMarkerEquality() {
         evaluateString("(setq m1 (make-marker))");
@@ -102,7 +105,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         m2 = evaluateString("(equal m1 m2)");
         Assert.assertEquals(LispSymbol.ourT, m2);
     }
-    
+
     @Test
     public void testGetMarkerPos () {
         evaluateString("(setq m (point-marker))");
@@ -112,14 +115,14 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         p = evaluateString("(marker-position m)");
         Assert.assertEquals(LispSymbol.ourNil, p);
     }
-    
+
     @Test
     public void testGetMarkerBuffer() {
         evaluateString("(setq m (point-marker))");
         LispObject b = evaluateString("(marker-buffer m)");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), b);
     }
-    
+
     @Test
     public void testBufferHasMarkersAt() {
         evaluateString("(setq m (point-marker))");
@@ -174,7 +177,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         m = evaluateString("(mark-marker)");
         Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
     }
-    
+
     @Test
     public void testPushMark () {
         LispObject r = evaluateString("(push-mark)");
@@ -193,7 +196,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         r = evaluateString("(mark t)");
         Assert.assertEquals(new LispInteger(5), r);
     }
-    
+
     @Test
     public void testPopMark () {
         evaluateString("(push-mark 5 t t)");
@@ -229,5 +232,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
-
+    @Test
+    public void testIdeaKeymap() {
+        KeymapImpl km = (KeymapImpl) KeymapManager.getInstance().getActiveKeymap();
+        Keymap keymap = km.deriveKeymap();
+        System.out.print(1);
+    }
 }

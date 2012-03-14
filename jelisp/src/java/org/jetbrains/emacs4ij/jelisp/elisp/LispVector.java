@@ -17,7 +17,7 @@ import java.util.List;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVector implements LispObject, LispSequence, LispArray {
+public class LispVector implements LispObject, LispSequence, LispArray, LispStringOrVector {
     private List<LispObject> myData = null;
 
     public LispVector() {

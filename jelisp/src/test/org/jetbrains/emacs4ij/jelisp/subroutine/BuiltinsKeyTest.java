@@ -84,6 +84,13 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     public void testKbdMacro() {
         LispObject r = evaluateString("(kbd \"C-x\")");
         Assert.assertEquals(new LispString("^X"), r);
+        r = evaluateString("(kbd \"\\C-x\")");
+        Assert.assertEquals(new LispString("^X"), r);
+        r = evaluateString("(kbd \"\\C-x\\t\")");
+        Assert.assertEquals(new LispString("^X"), r);
+        r = evaluateString("(kbd \"^x\")");
+        Assert.assertEquals(new LispString("^X"), r);
+        Assert.assertEquals(1, ((LispSequence)r).length());
     }
 
     @Test
@@ -155,6 +162,17 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     }
 
     @Test
+    public void testDefineKeyWrong() {
+        try {
+            evaluateString("(define-key (current-global-map) \"C-a\" 'backward-char)");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
     public void testGlobalSetKey() {
         LispObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
@@ -167,4 +185,5 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         r = evaluateString("ctl-x-map");
         System.out.println(r.toString());
     }
+    
 }

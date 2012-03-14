@@ -369,6 +369,8 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testArefStringOk () {
         LispObject val = evaluateString("(aref \"hi\" 0)");
         Assert.assertEquals(new LispInteger(104), val);
+        val = evaluateString("(aref \"\\C\" 0)");
+        Assert.assertEquals(new LispInteger(1), val);
     }
 
     @Test

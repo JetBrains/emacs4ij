@@ -36,7 +36,7 @@
 
         <action id="org.jetbrains.emacs4ij.EvaluateCode" class="org.jetbrains.emacs4ij.EvaluateCode"
                 text="Evaluate elisp code">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="E"/>
         </action>
 
         <action id="org.jetbrains.emacs4ij.ExecuteCommand" class="org.jetbrains.emacs4ij.ExecuteCommand"/>

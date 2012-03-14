@@ -120,10 +120,10 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("define-key")
-    public static LispObject defineKey(Environment environment, LispList keymap, LispObject key, LispObject function) {
+    public static LispObject defineKey(Environment environment, LispList keymap, LispStringOrVector key, LispObject function) {
         check(keymap);
-        if (!(key instanceof LispString) && !(key instanceof LispVector))
-            throw new WrongTypeArgumentException("arrayp", key);
+//        if (!(key instanceof LispString) && !(key instanceof LispVector))
+//            throw new WrongTypeArgumentException("arrayp", key);
         int length = ((LispSequence)key).length();
         if (length == 0)
             return LispSymbol.ourNil;

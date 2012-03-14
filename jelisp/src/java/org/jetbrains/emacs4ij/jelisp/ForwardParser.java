@@ -7,7 +7,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +18,6 @@ import java.util.List;
  */
 
 public class ForwardParser extends Parser {
-
     @Override
     protected void advance() {
         if (myCurrentIndex == myLispCode.length())
@@ -195,7 +193,7 @@ public class ForwardParser extends Parser {
 
     @Override
     protected int getNextSeparatorIndex() {
-        ArrayList<Integer> nextSeparatorIndex = new ArrayList<Integer>();
+        ArrayList<Integer> nextSeparatorIndex = new ArrayList<>();
         for (char separator : mySeparators) {
             nextSeparatorIndex.add(getNextIndexOf(separator));
         }
@@ -232,7 +230,7 @@ public class ForwardParser extends Parser {
         }
     }
 
-    private static List<Integer> mySpecialChars = Arrays.asList(7 ,8 , 9, 10, 11, 12, 13, 27, 92, 127);
+//    private static List<Integer> mySpecialChars = Arrays.asList(7 , 8, 9, 10, 11, 12, 13, 27, 92, 127);
 
     private static int ctrlConvert (char c, boolean asIs) {
         switch (Character.toLowerCase(c)) {
@@ -271,14 +269,14 @@ public class ForwardParser extends Parser {
             }
         }
         private char myModifiers[] = new char[] {'0', '0', '0', '0', '0', '0'}; //MCSHsA
-        private boolean hasModifiers = false;
+//        private boolean hasModifiers = false;
         private int myKey = -1;
         private int myCtrlCount = 0;
         private boolean isAsIs = false;
         public Char() {}
 
         public void setModifier(Modifier modifier) {
-            hasModifiers = true;
+//            hasModifiers = true;
             myModifiers[Modifier.indexOf(modifier)] = '1';
             if (modifier == Modifier.C)
                 myCtrlCount++;
