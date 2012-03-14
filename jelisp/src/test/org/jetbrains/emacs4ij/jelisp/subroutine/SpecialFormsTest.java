@@ -23,63 +23,63 @@ import java.util.List;
 public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testQuote() throws Exception {
-        LObject LObject = evaluateString("'5");
-        junit.framework.Assert.assertEquals(new LispInteger(5), LObject);
+        LispObject LispObject = evaluateString("'5");
+        junit.framework.Assert.assertEquals(new LispInteger(5), LispObject);
     }
 
     @Test
     public void testQuotedQuotedList () {
-        LObject LObject = evaluateString("'(quote 5)");
-        junit.framework.Assert.assertEquals(LispList.list(new LispSymbol("quote"), new LispInteger(5)), LObject);
+        LispObject LispObject = evaluateString("'(quote 5)");
+        junit.framework.Assert.assertEquals(LispList.list(new LispSymbol("quote"), new LispInteger(5)), LispObject);
     }
 
     @Test
     public void testQuotedFunctionArg() {
-        LObject kit = evaluateString("(defun kit (a) (car-safe a))");
+        LispObject kit = evaluateString("(defun kit (a) (car-safe a))");
         junit.framework.Assert.assertEquals("kit ", new LispSymbol("kit"), kit);
-        LObject LObject = evaluateString("(kit 'test)");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(kit 'test)");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
     public void testLetEmpty() {
-        LObject LObject = evaluateString("(let ())");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(let ())");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
     public void testLetEmptyVar() {
-        LObject LObject = evaluateString("(let () 5)");
-        junit.framework.Assert.assertEquals(new LispInteger(5), LObject);
+        LispObject LispObject = evaluateString("(let () 5)");
+        junit.framework.Assert.assertEquals(new LispInteger(5), LispObject);
     }
 
     @Test
     public void testLetNilVar() {
-        LObject LObject = evaluateString("(let (a) a)");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(let (a) a)");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
     public void testLetEmptyBody() {
-        LObject LObject = evaluateString("(let ((a 5)) )");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(let ((a 5)) )");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
     public void testLetAtomVar() {
-        LObject LObject = evaluateString("(let ((a 5)) a)");
-        junit.framework.Assert.assertEquals(new LispInteger(5), LObject);
+        LispObject LispObject = evaluateString("(let ((a 5)) a)");
+        junit.framework.Assert.assertEquals(new LispInteger(5), LispObject);
     }
 
     @Test
     public void testLetStar() {
-        LObject LObject = evaluateString("(let* ((a 5) (b (+ 2 a))) (+ a b))");
-        junit.framework.Assert.assertEquals(new LispInteger(12), LObject);
+        LispObject LispObject = evaluateString("(let* ((a 5) (b (+ 2 a))) (+ a b))");
+        junit.framework.Assert.assertEquals(new LispInteger(12), LispObject);
     }
 
     @Test
     public void testCond() {
-        LObject cond = evaluateString("(cond)");
+        LispObject cond = evaluateString("(cond)");
         junit.framework.Assert.assertEquals(LispSymbol.ourNil, cond);
         cond = evaluateString("(cond (5))");
         junit.framework.Assert.assertEquals(new LispInteger(5), cond);
@@ -113,15 +113,15 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     
     @Test
     public void testCondResult() {
-        LObject r = evaluateString("(cond (t (message \"a\") nil) (t (message \"b\")))");
+        LispObject r = evaluateString("(cond (t (message \"a\") nil) (t (message \"b\")))");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
     @Test
     public void testWhile() {
         evaluateString("(set 'my-list '(1 2 3))");
-        LObject LObject = evaluateString("(while my-list (car my-list) (set 'my-list (cdr my-list)))");
-        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(while my-list (car my-list) (set 'my-list (cdr my-list)))");
+        junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
@@ -148,43 +148,43 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testIfTrue () {
-        LObject LObject = evaluateString("(if 5 'true 'false)");
-        junit.framework.Assert.assertEquals(new LispSymbol("true"), LObject);
+        LispObject LispObject = evaluateString("(if 5 'true 'false)");
+        junit.framework.Assert.assertEquals(new LispSymbol("true"), LispObject);
     }
 
     @Test
     public void testIfFalse () {
-        LObject LObject = evaluateString("(if () 'true 'one 'two 'false)");
-        junit.framework.Assert.assertEquals(new LispSymbol("false"), LObject);
+        LispObject LispObject = evaluateString("(if () 'true 'one 'two 'false)");
+        junit.framework.Assert.assertEquals(new LispSymbol("false"), LispObject);
     }
 
     @Test
     public void testAndEmpty() {
-        LObject and = evaluateString("(and)");
+        LispObject and = evaluateString("(and)");
         junit.framework.Assert.assertEquals(LispSymbol.ourT, and);
     }
 
     @Test
     public void testAndNil() {
-        LObject and = evaluateString("(and 1 2 3 nil)");
+        LispObject and = evaluateString("(and 1 2 3 nil)");
         junit.framework.Assert.assertEquals(LispSymbol.ourNil, and);
     }
 
     @Test
     public void testAndVal() {
-        LObject and = evaluateString("(and 1 2 3 4 5)");
+        LispObject and = evaluateString("(and 1 2 3 4 5)");
         junit.framework.Assert.assertEquals(new LispInteger(5), and);
     }
 
     @Test
     public void testOrEmpty() {
-        LObject or = evaluateString("(or)");
+        LispObject or = evaluateString("(or)");
         junit.framework.Assert.assertEquals(LispSymbol.ourNil, or);
     }
 
     @Test
     public void testOrMulti() {
-        LObject or = evaluateString("(or nil nil nil 5)");
+        LispObject or = evaluateString("(or nil nil nil 5)");
         junit.framework.Assert.assertEquals(new LispInteger(5), or);
     }
 
@@ -199,9 +199,9 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         evaluateString("(defvar a 5 \"doc\")");
         LispSymbol a = environment.find("a");
         junit.framework.Assert.assertEquals(new LispInteger(5), a.getValue());
-        LObject varDoc = evaluateString("(get 'a 'variable-documentation)");
+        LispObject varDoc = evaluateString("(get 'a 'variable-documentation)");
         junit.framework.Assert.assertEquals(new LispString("doc"), varDoc);
-        LObject b = evaluateString("(set 'a 10)");
+        LispObject b = evaluateString("(set 'a 10)");
         junit.framework.Assert.assertEquals(new LispInteger(10), b);
         varDoc = evaluateString("(get 'a 'variable-documentation)");
         junit.framework.Assert.assertEquals(new LispString("doc"), varDoc);
@@ -209,69 +209,69 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testDefun3args() {
-        LObject fun = evaluateString("(defun mult7 (arg) (* 7 arg))");
+        LispObject fun = evaluateString("(defun mult7 (arg) (* 7 arg))");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
-        LObject value = evaluateString("(mult7 5)");
+        LispObject value = evaluateString("(mult7 5)");
         junit.framework.Assert.assertEquals("mult7 return value assertion", new LispInteger(35), value);
     }
 
     @Test
     public void testDefun4args() {
-        LObject fun = evaluateString("(defun mult7 (arg) \"multiplies arg*7\" (* 7 arg))");
+        LispObject fun = evaluateString("(defun mult7 (arg) \"multiplies arg*7\" (* 7 arg))");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
-        LObject value = evaluateString("(mult7 5)");
+        LispObject value = evaluateString("(mult7 5)");
         junit.framework.Assert.assertEquals("mult7 return value assertion", new LispInteger(35), value);
     }
 
     @Test (expected = WrongNumberOfArgumentsException.class)
     public void testDefunWrongNumberOfArgs() {
-        LObject fun = evaluateString("(defun mult7 () ())");
+        LispObject fun = evaluateString("(defun mult7 () ())");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("mult7"), fun);
         evaluateString("(mult7 5)");
     }
 
     @Test
     public void testDefunEmptyBody() {
-        LObject fun = evaluateString("(defun nilFun () ())");
+        LispObject fun = evaluateString("(defun nilFun () ())");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
-        LObject value = evaluateString("(nilFun)");
+        LispObject value = evaluateString("(nilFun)");
         junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
     }
 
     @Test
     public void testDefunEmptyBody2 () {
-        LObject fun = evaluateString("(defun nilFun ())");
+        LispObject fun = evaluateString("(defun nilFun ())");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
-        LObject value = evaluateString("(nilFun)");
+        LispObject value = evaluateString("(nilFun)");
         junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
     }
 
     @Test
     public void testDefunIntBody () {
-        LObject fun = evaluateString("(defun testFun () 5)");
+        LispObject fun = evaluateString("(defun testFun () 5)");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
-        LObject value = evaluateString("(testFun)");
+        LispObject value = evaluateString("(testFun)");
         junit.framework.Assert.assertEquals("testFun return value assertion", new LispInteger(5), value);
     }
 
     @Test (expected = InvalidFunctionException.class)
     public void testDefunWrongBody () {
-        LObject fun = evaluateString("(defun testFun () (5))");
+        LispObject fun = evaluateString("(defun testFun () (5))");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
         evaluateString("(testFun)");
     }
 
     @Test
     public void testDefunComplexBody () {
-        LObject fun = evaluateString("(defun testFun () 5 6 7 8 'ann)");
+        LispObject fun = evaluateString("(defun testFun () 5 6 7 8 'ann)");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
-        LObject value = evaluateString("(testFun)");
+        LispObject value = evaluateString("(testFun)");
         junit.framework.Assert.assertEquals("testFun return value assertion", new LispSymbol("ann"), value);
     }
 
     @Test (expected = InvalidFunctionException.class)
     public void testDefunFalseBody () {
-        LObject fun = evaluateString("(defun testFun 5)");
+        LispObject fun = evaluateString("(defun testFun 5)");
         junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("testFun"), fun);
         evaluateString("(testFun)");
     }
@@ -279,7 +279,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testDefVarNilDoc() {
         evaluateString("(defvar a 5 5)");
-        LObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
     }
 
@@ -292,21 +292,21 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testFunctionSymbolArgumentsSubstitution() {
         evaluateString("(defun test (a) a)");
-        LObject LObject = evaluateString("(test 5)");
-        junit.framework.Assert.assertEquals(new LispInteger(5), LObject);
+        LispObject LispObject = evaluateString("(test 5)");
+        junit.framework.Assert.assertEquals(new LispInteger(5), LispObject);
     }
 
     @Test
     public void testFunctionArgumentsSubstitution() {
         evaluateString("(defun test (a) (+ a (+ a 1)))");
-        LObject LObject = evaluateString("(test 5)");
-        junit.framework.Assert.assertEquals(new LispInteger(11), LObject);
+        LispObject LispObject = evaluateString("(test 5)");
+        junit.framework.Assert.assertEquals(new LispInteger(11), LispObject);
     }
 
     @Test
     public void testDefunInsideLet() {
         evaluateString("(let ((x 2)) (defun one () 1))");
-        LObject result = evaluateString("(one)");
+        LispObject result = evaluateString("(one)");
         junit.framework.Assert.assertEquals(new LispInteger(1), result);
     }
 
@@ -319,13 +319,13 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testDefvarInsideLet() {
         evaluateString("(let ((x 2)) (defvar one 1))");
-        LObject result = evaluateString("one");
+        LispObject result = evaluateString("one");
         junit.framework.Assert.assertEquals(new LispInteger(1), result);
     }
     
     @Test
     public void testDefconst() {
-        LObject a = evaluateString("(defconst a 5 5)");
+        LispObject a = evaluateString("(defconst a 5 5)");
         Assert.assertEquals(LispSymbol.ourNil, ((LispSymbol) a).getDocumentation(environment));
         Assert.assertEquals(new LispInteger(5), evaluateString("a"));
         evaluateString("(setq a 10)");
@@ -342,7 +342,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testProgn() throws Exception {
-        LObject lispObject = evaluateString("(progn 1 2 3)");
+        LispObject lispObject = evaluateString("(progn 1 2 3)");
         Assert.assertEquals(new LispInteger(3), lispObject);
         evaluateString("(progn (defvar pvar 50))");
         lispObject = evaluateString("pvar");
@@ -358,13 +358,13 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testSetqNil() {
-        LObject lispObject = evaluateString("(setq)");
+        LispObject lispObject = evaluateString("(setq)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
     @Test
     public void testSetqOverrideValue () {
-        LObject lispObject = evaluateString("(defvar a 10 \"doc\")");
+        LispObject lispObject = evaluateString("(defvar a 10 \"doc\")");
         Assert.assertEquals(new LispSymbol("a"), lispObject);
         lispObject = evaluateString("a");
         Assert.assertEquals(new LispInteger(10), lispObject);
@@ -378,7 +378,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testSetqMostLocalExistingBinding_Binding () {
-        LObject lispObject = evaluateString("(setq a 20)");
+        LispObject lispObject = evaluateString("(setq a 20)");
         Assert.assertEquals(new LispInteger(20), lispObject);
         lispObject = evaluateString("a");
         Assert.assertEquals(new LispInteger(20), lispObject);
@@ -390,7 +390,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testSetqMostLocalExistingBinding_NoBinding () {
-        LObject lispObject = evaluateString("(setq a 20)");
+        LispObject lispObject = evaluateString("(setq a 20)");
         Assert.assertEquals(new LispInteger(20), lispObject);
         lispObject = evaluateString("a");
         Assert.assertEquals(new LispInteger(20), lispObject);
@@ -402,7 +402,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     
     @Test
     public void testSetqListValue () {
-        LObject lispObject = evaluateString("(setq a '(b c))");
+        LispObject lispObject = evaluateString("(setq a '(b c))");
         Assert.assertEquals(LispList.list(new LispSymbol("b"), new LispSymbol("c")),  lispObject);
     }
 
@@ -411,7 +411,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
 
     @Test
     public void testDefunReturn () {
-        LObject funCell = evaluateString("(symbol-function (defun f ()))");
+        LispObject funCell = evaluateString("(symbol-function (defun f ()))");
         Assert.assertTrue(funCell instanceof LispList);
         Assert.assertEquals(LispList.list(new LispSymbol("lambda"), LispList.list()), funCell);
     }
@@ -456,21 +456,21 @@ default-directory
     @Test
     public void testDefineMacro_Simple() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ())");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list()), fCell);
     }
 
     @Test
     public void testDefineMacro_SimpleIgnoreArgType() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 5)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), new LispInteger(5)), fCell);
     }
 
     @Test
     public void testDefineMacro_WithDocString() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"docstring\" nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("docstring"), LispSymbol.ourNil), fCell);
     }
 
@@ -482,35 +482,35 @@ default-directory
     @Test
     public void testDefineMacro_DeclareAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) \"hello2\" nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DoubleDeclareAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) \"hello3\" nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DeclareAfterDocstring() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello2\" (declare (doc-string \"hello1\")) nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DoubleDeclareAfterDocstring() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello3\" (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
     }
 
     @Test
     public void testDefineMacro_DeclareAfterDocstringAndAfterArguments() {
         LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 ()  (declare (doc-string \"hello1\")) \"hello2\" (declare (doc-string \"hello3\")) nil)");
-        LObject fCell = evaluateString("(symbol-function 'm1)");
+        LispObject fCell = evaluateString("(symbol-function 'm1)");
         Assert.assertEquals(LispList.list(new LispSymbol("macro"),
                 new LispSymbol("lambda"),
                 LispList.list(),
@@ -536,8 +536,8 @@ default-directory
     // error message must be = (void-variable a)
     @Test
     public void testConditionCase_GlobalBinding () {
-        LObject result = evaluateString("(condition-case err (progn (+ a 5)) (void-variable \"message\"))");
-        //LObject result = evaluateString("(condition-case err (+ a 5) (void-variable \"message\"))");
+        LispObject result = evaluateString("(condition-case err (progn (+ a 5)) (void-variable \"message\"))");
+        //LispObject result = evaluateString("(condition-case err (+ a 5) (void-variable \"message\"))");
         Assert.assertEquals(new LispString("message"), result);
         LispSymbol err = environment.find("err");
         Assert.assertNotNull(err);
@@ -561,7 +561,7 @@ default-directory
     @Test
     public void testConditionCase3 () {
         // in a must be stored errror-symbol
-        LObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
+        LispObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
         // (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a)))
         Assert.assertEquals(LispList.list(new LispSymbol("wrong-type-argument"),
                                         new LispSymbol("number-or-marker-p"),
@@ -574,14 +574,14 @@ default-directory
     @Test
     public void testConditionCase_LocalBinding () {
         evaluateString("(setq b 123)");
-        LObject r = evaluateString("(condition-case b (+ a 5) (void-variable (symbol-value 'b)))");
+        LispObject r = evaluateString("(condition-case b (+ a 5) (void-variable (symbol-value 'b)))");
         Assert.assertEquals(LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")), r);
         Assert.assertEquals(new LispInteger(123), evaluateString("b"));
     }
 
     @Test
     public void testConditionCase_NilBinding () {
-        LObject r = evaluateString("(condition-case nil (+ a 5) (void-variable \"hi\"))");
+        LispObject r = evaluateString("(condition-case nil (+ a 5) (void-variable \"hi\"))");
         Assert.assertEquals(new LispString("hi"), r);
         r = evaluateString("(condition-case () (+ a 5) (void-variable \"hi\"))");
         Assert.assertEquals(new LispString("hi"), r);
@@ -591,14 +591,14 @@ default-directory
     public void testDefunEnvironment() {
         evaluateString("(defun f (s) (cond ((eq s 4) (f 5) (message \"%d\" s))\n" +
                 "\t\t   ((eq s 5) (message \"Second=%d\" s))))");
-        LObject r = evaluateString("(f 4)");
+        LispObject r = evaluateString("(f 4)");
         Assert.assertEquals("\"4\"", r.toString());
     }
 
 
     @Test
     public void testNilChar() {
-        LObject r  = evaluateString("(setq b ?\\^( )");
+        LispObject r  = evaluateString("(setq b ?\\^( )");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
@@ -615,33 +615,33 @@ default-directory
     
     @Test
     public void testThrowCatch() {
-        LObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2) (throw 'a 5))");
+        LispObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2) (throw 'a 5))");
         Assert.assertEquals(new LispInteger(5), r);
     }
 
     @Test
     public void testCatchNoThrow() {
-        LObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2))");
+        LispObject r = evaluateString("(catch 'a (message \"hi\") (+ 1 2))");
         Assert.assertEquals(new LispInteger(3), r);
     }
 
     @Test
     public void testCatchNoBody() {
-        LObject r = evaluateString("(catch 'a)");
+        LispObject r = evaluateString("(catch 'a)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
     @Test
     public void testCatchInnerThrow() {
         evaluateString("(defun f () (throw 'a 1))");
-        LObject r = evaluateString("(catch 'a (message \"hi\") (f) (+ 1 2))");
+        LispObject r = evaluateString("(catch 'a (message \"hi\") (f) (+ 1 2))");
         Assert.assertEquals(new LispInteger(1), r);
     }
     
     @Test
     public void testFunction() {
-        LObject f = evaluateString("(defun f() (message \"hi\"))");
-        LObject r = evaluateString("(function f)");
+        LispObject f = evaluateString("(defun f() (message \"hi\"))");
+        LispObject r = evaluateString("(function f)");
         Assert.assertEquals(f, r);
         r = evaluateString("(function (lambda () (+ 2 3)))");
         Assert.assertEquals("(lambda nil (+ 2 3))", r.toString());

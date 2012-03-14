@@ -14,12 +14,12 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinArithmetic {
     private BuiltinArithmetic() {}
 
-    private static LispNumber numberOrMarkerToNumber (LObject lispObject) {
+    private static LispNumber numberOrMarkerToNumber (LispObject lispObject) {
         if (BuiltinPredicates.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
         LispNumber n;
         if (BuiltinPredicates.markerP(lispObject).equals(LispSymbol.ourT)) {
-            LObject pos = ((LispMarker)lispObject).getPosition();
+            LispObject pos = ((LispMarker)lispObject).getPosition();
             if (!pos.equals(LispSymbol.ourNil)) {
                 n = (LispInteger)pos;
             } else
@@ -35,11 +35,11 @@ public abstract class BuiltinArithmetic {
     }
 
     @Subroutine("+")
-    public static LispNumber plus (@Optional LObject... args) {
+    public static LispNumber plus (@Optional LispObject... args) {
         double ans = 0.0;
         boolean isDouble = false;
         if (args != null) {
-            for (LObject lispObject: args) {
+            for (LispObject lispObject: args) {
                 LispNumber n = numberOrMarkerToNumber(lispObject);
                 if (!isDouble && (n.getData() instanceof Double))
                     isDouble = true;
@@ -50,7 +50,7 @@ public abstract class BuiltinArithmetic {
     }
 
     @Subroutine("-")
-    public static LispNumber minus (@Optional LObject num, @Optional LObject... rest) {
+    public static LispNumber minus (@Optional LispObject num, @Optional LispObject... rest) {
         if (num == null)
             return new LispInteger(0);
         if (rest == null || rest.length == 0) {
@@ -61,7 +61,7 @@ public abstract class BuiltinArithmetic {
         LispNumber n = numberOrMarkerToNumber(num);
         double ans = n.getDoubleData();
         boolean isDouble = n.getData() instanceof Double;
-        for (LObject lispObject: rest) {
+        for (LispObject lispObject: rest) {
             LispNumber k = numberOrMarkerToNumber(lispObject);
             if (!isDouble && (k.getData() instanceof Double))
                 isDouble = true;
@@ -71,10 +71,10 @@ public abstract class BuiltinArithmetic {
     }
 
     @Subroutine("*")
-    public static LispNumber multiply (@Optional LObject... args) {
+    public static LispNumber multiply (@Optional LispObject... args) {
         double ans = 1;
         boolean isDouble = false;
-        for (LObject lispObject: args) {
+        for (LispObject lispObject: args) {
             LispNumber n = numberOrMarkerToNumber(lispObject);
             if (!isDouble && (n.getData() instanceof Double))
                 isDouble = true;
@@ -84,65 +84,65 @@ public abstract class BuiltinArithmetic {
     }
 
     @Subroutine(">")
-    public static LispSymbol more (LObject num1, LObject num2) {
+    public static LispSymbol more (LispObject num1, LispObject num2) {
         LispNumber n1 = numberOrMarkerToNumber(num1);
         LispNumber n2 = numberOrMarkerToNumber(num2);
         return LispSymbol.bool(n1.getDoubleData() > n2.getDoubleData());
     }
 
     @Subroutine("=")
-    public static LispSymbol equalNumbersOrMarkers (LObject num1, LObject num2) {
+    public static LispSymbol equalNumbersOrMarkers (LispObject num1, LispObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 == n2);
     }
 
     @Subroutine("/=")
-    public static LispSymbol notEqualNumbersOrMarkers (LObject num1, LObject num2) {
+    public static LispSymbol notEqualNumbersOrMarkers (LispObject num1, LispObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 != n2);
     }
 
     @Subroutine("<=")
-    public static LispSymbol lessOrEqualNumbersOrMarkers (LObject num1, LObject num2) {
+    public static LispSymbol lessOrEqualNumbersOrMarkers (LispObject num1, LispObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 <= n2);
     }
 
     @Subroutine("<")
-    public static LispSymbol less (LObject num1, LObject num2) {
+    public static LispSymbol less (LispObject num1, LispObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();
         double n2 = numberOrMarkerToNumber(num2).getDoubleData();
         return LispSymbol.bool(n1 < n2);
     }
 
     @Subroutine(">=")
-    public static LispSymbol moreOrEqual (LObject num1, LObject num2) {
+    public static LispSymbol moreOrEqual (LispObject num1, LispObject num2) {
         return LispSymbol.bool(!less(num1, num2).toBoolean());
     }
 
     @Subroutine("1-")
-    public static LispNumber minusOne (LObject num) {
+    public static LispNumber minusOne (LispObject num) {
         LispNumber n = numberOrMarkerToNumber(num);
         boolean isDouble = n.getData() instanceof Double;
         return fromDouble(isDouble, n.getDoubleData() - 1);
     }
 
     @Subroutine("1+")
-    public static LispNumber plusOne (LObject num) {
+    public static LispNumber plusOne (LispObject num) {
         LispNumber n = numberOrMarkerToNumber(num);
         boolean isDouble = n.getData() instanceof Double;
         return fromDouble(isDouble, n.getDoubleData() + 1);
     }
     
     @Subroutine("logand")
-    public static LispInteger logAnd (@Optional LObject... args) {
+    public static LispInteger logAnd (@Optional LispObject... args) {
         if (args == null)
             return new LispInteger(-1);
         int result = -1;
-        for (LObject arg: args) {
+        for (LispObject arg: args) {
             LispNumber num = numberOrMarkerToNumber(arg);
             if (!(num instanceof LispInteger))
                 throw new WrongTypeArgumentException("integer-or-marker-p", num.toString());

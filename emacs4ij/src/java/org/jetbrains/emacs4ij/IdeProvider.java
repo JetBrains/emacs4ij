@@ -23,14 +23,14 @@ public class IdeProvider implements Ide {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     @Override
                     public void run() {
-                        Messages.showErrorDialog(message, "Emacs4ij Error");
+                        Messages.showErrorDialog(message, Emacs4ijBundle.message("error"));
                     }
                 });
             }
         });
     }
 
-    @Override
+//    @Override
     public void showMessage(final String message) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
@@ -38,7 +38,7 @@ public class IdeProvider implements Ide {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     @Override
                     public void run() {
-                        Messages.showInfoMessage(message, "Emacs4ij Message");
+                        Messages.showInfoMessage(message, Emacs4ijBundle.message("message"));
                     }
                 });
             }

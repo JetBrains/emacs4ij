@@ -18,17 +18,17 @@ import java.util.List;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Lambda extends LispObject implements FunctionCell {
-    private LinkedList<LambdaArgument> myArgumentList = new LinkedList<>();
-    private LObject myDocumentation = null;
+public class Lambda implements FunctionCell {
+    private List<LambdaArgument> myArgumentList = new LinkedList<>();
+    private LispObject myDocumentation = null;
     private LispList myInteractive = null;
-    private List<LObject> myBody = new ArrayList<LObject>();
+    private List<LispObject> myBody = new ArrayList<LispObject>();
     private int nRequiredArguments = 0;
     private boolean infiniteArgs = false;
     private int nKeywords = 0;
 
     public Lambda (LispList def, Environment environment) {
-        List<LObject> data = def.toLObjectList();
+        List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
         try {
@@ -41,8 +41,8 @@ public class Lambda extends LispObject implements FunctionCell {
             //int index = 2;
             try {
                 //todo: if those instructions have some side effects, this is wrong behaviour
-                //LObject docString = data.get(2).evaluate(environment);
-                LObject docString = data.get(2);
+                //LispObject docString = data.get(2).evaluate(environment);
+                LispObject docString = data.get(2);
                 if (docString instanceof LispString) {
                     myDocumentation = docString;
                     //index = 3;
@@ -52,7 +52,7 @@ public class Lambda extends LispObject implements FunctionCell {
             }
             myBody = data.subList(2, data.size());
 
-            for (LObject bodyForm: myBody) {
+            for (LispObject bodyForm: myBody) {
                 if (bodyForm instanceof LispList && !((LispList)bodyForm).isEmpty()) {
                     if (((LispList)bodyForm).car().equals(new LispSymbol("interactive"))) {
                         myInteractive = (LispList) bodyForm;
@@ -72,9 +72,9 @@ public class Lambda extends LispObject implements FunctionCell {
         myArgumentList = new LinkedList<>();
         if (args.isEmpty())
             return;
-        List<LObject> data = args.toLObjectList();
+        List<LispObject> data = args.toLispObjectList();
         LambdaArgument.Type type = LambdaArgument.Type.REQUIRED;
-        for (LObject aData : data) {
+        for (LispObject aData : data) {
             if (aData instanceof LispSymbol) {
                 if (aData.equals(new LispSymbol("&rest"))) {
                     type = LambdaArgument.Type.REST;
@@ -101,7 +101,7 @@ public class Lambda extends LispObject implements FunctionCell {
     @Override
     public String toString() {
         String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
-        for (LObject bodyForm: myBody) {
+        for (LispObject bodyForm: myBody) {
             s += " " + bodyForm.toString();
         }
         s += ")";
@@ -109,19 +109,19 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         throw new RuntimeException("wrong usage");
     }
 
-    private LObject evaluateBody (CustomEnvironment inner) {
-        LObject result = LispSymbol.ourNil;
-        for (LObject bodyForm: myBody) {
+    private LispObject evaluateBody (CustomEnvironment inner) {
+        LispObject result = LispSymbol.ourNil;
+        for (LispObject bodyForm: myBody) {
             result = bodyForm.evaluate(inner);
         }
         return result;
     }
 
-    public LObject evaluate(Environment environment, List<LObject> args) {
+    public LispObject evaluate(Environment environment, List<LispObject> args) {
         return evaluateBody(substituteArguments(environment, args));
     }
     
@@ -129,7 +129,7 @@ public class Lambda extends LispObject implements FunctionCell {
         return !infiniteArgs && myArgumentList.size() + nKeywords * 2 < n;
     }
 
-    public CustomEnvironment substituteArguments (Environment environment, List<LObject> args) {
+    public CustomEnvironment substituteArguments (Environment environment, List<LispObject> args) {
         if (nRequiredArguments > args.size() || checkOversize(args.size()))
             throw new WrongNumberOfArgumentsException(toString(), args.size());
 
@@ -137,14 +137,14 @@ public class Lambda extends LispObject implements FunctionCell {
         if (!myArgumentList.isEmpty()) {
             int j = args.size();
             for (int i = 0, argsSize = args.size(); i < argsSize; i++) {
-                LObject argValue = args.get(i);
+                LispObject argValue = args.get(i);
                 LambdaArgument argument = myArgumentList.get(i);
                 if (argument.getType() == LambdaArgument.Type.REQUIRED || argument.getType() == LambdaArgument.Type.OPTIONAL) {
                     argument.setValue(inner, argValue);
                     continue;
                 }
                 if (argument.getType() == LambdaArgument.Type.KEYWORD) {                    
-                    LObject keyword = argValue.evaluate(inner); //todo: if this code has side effects, we shouldn't do this!
+                    LispObject keyword = argValue.evaluate(inner); //todo: if this code has side effects, we shouldn't do this!
                     if (!(keyword instanceof LispSymbol))
                         throw new WrongTypeArgumentException("keyword", keyword.getClass().getSimpleName()); 
                     if (!argument.getKeyword().equals(keyword)) {
@@ -152,7 +152,7 @@ public class Lambda extends LispObject implements FunctionCell {
                         throw new WrongTypeArgumentException(argument.getKeyword().getName(), ((LispSymbol) keyword).getName());
                     }
                     if (i+1 >= argsSize) {
-                        throw new RuntimeException("Keyword with no value: " + keyword);
+                        throw new InternalError("Keyword with no value: " + keyword);
                     }
                     argument.setValue(inner, args.get(i+1));
                     i++;
@@ -170,12 +170,12 @@ public class Lambda extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject getDocumentation() {
+    public LispObject getDocumentation() {
         return myDocumentation == null ? LispSymbol.ourNil : myDocumentation;
     }
 
     @Override
-    public void setDocumentation(LObject doc) {
+    public void setDocumentation(LispObject doc) {
         myDocumentation = doc;
     }
 
@@ -189,8 +189,8 @@ public class Lambda extends LispObject implements FunctionCell {
         LispList args = (LispList) myInteractive.cdr();
         if (args.isEmpty())
             return null;
-        if (args.toLObjectList().get(0) instanceof LispString) {
-            return ((LispString) args.toLObjectList().get(0)).getData();
+        if (args.toLispObjectList().get(0) instanceof LispString) {
+            return ((LispString) args.toLispObjectList().get(0)).getData();
         }
         return null;
     }

@@ -20,7 +20,7 @@ public class ExecuteCommand extends AnAction {
         try {
             environment.getMiniBuffer().onReadInput();
         } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Evaluation Result");
+            Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }
     }
 }

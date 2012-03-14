@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeyBoardUtil;
@@ -25,7 +26,7 @@ public abstract class BuiltinsSymbol {
     private BuiltinsSymbol() {}
 
     @Subroutine("symbol-function")
-    public static LObject symbolFunction(Environment environment, LispSymbol arg) {
+    public static LispObject symbolFunction(Environment environment, LispSymbol arg) {
         LispSymbol f = environment.find(arg.getName());
         if (f == null || !f.isFunction())
             throw new VoidFunctionException(arg.getName());
@@ -33,7 +34,7 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("symbol-value")
-    public static LObject symbolValue (Environment environment, LispSymbol arg) {
+    public static LispObject symbolValue (Environment environment, LispSymbol arg) {
         LispSymbol symbol = environment.find(arg.getName());
         if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
             throw new VoidVariableException(arg.getName());
@@ -41,35 +42,35 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("symbol-name")
-    public static LObject symbolName (LispSymbol arg) {
+    public static LispObject symbolName (LispSymbol arg) {
         return new LispString(arg.getName());
     }
 
     @Subroutine("get")
-    public static LObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
-        LObject result = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
+    public static LispObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
+        LispObject result = symbol.getProperty(propertyName);
         return result == null ? LispSymbol.ourNil : result;
     }
 
     @Subroutine("put")
-    public static LObject put(Environment environment, LispSymbol symbol, LispSymbol propertyName, LObject value) {
-        LObject found = environment.find(symbol.getName(), "setProperty", new Class[] {LispSymbol.class, LObject.class}, propertyName, value);
-        if (found == null) {
-            symbol.setProperty(propertyName, value);
+    public static LispObject put(Environment environment, LispSymbol symbol, LispSymbol propertyName, LispObject value) {
+        symbol.setProperty(propertyName, value);
+        if (environment.find(symbol.getName()) == null) {
             environment.defineSymbol(symbol);
         }
         return value;
     }
 
     @Subroutine("documentation-property")
-    public static LObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName, @Optional LObject verbatim)  {
+    public static LispObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName, @Nullable @Optional LispObject verbatim)  {
         //todo: if (verbatim != null) && !(verbatim.equals(LispSymbol.ourNil) ---
         // Third argument RAW omitted or nil means pass the result through `substitute-command-keys' if it is a string.
-        LObject value = environment.find(symbol.getName(), "getProperty", new Class[]{LispSymbol.class}, propertyName);
+        LispObject value = symbol.getProperty(propertyName);
+        if (value == null)
+            value = LispSymbol.ourNil;
         if (!(value instanceof LispString)) {
             if (!(value instanceof LispInteger))
                 return value.evaluate(environment);
-
             int offset = ((LispInteger) value).getData();
             if (offset < 0)
                 offset = -offset;
@@ -88,7 +89,6 @@ public abstract class BuiltinsSymbol {
                     doc += (doc.length() > 0 ? '\n' : "") + line.substring(0, line.indexOf(''));
                 return new LispString(doc);
             } catch (IOException e) {
-                //throw new RuntimeException(e.getMessage());
                 return LispSymbol.ourNil;
             }
         }
@@ -96,14 +96,14 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("documentation")
-    public static LObject documentation (Environment environment, LispObject function) {
+    public static LispObject documentation (Environment environment, LispObject function) {
         if (function instanceof LispSymbol) {
             String name = ((LispSymbol) function).getName();
             LispSymbol f = environment.find(name);
             if (f == null)
                 throw new VoidFunctionException(name);
 
-            LObject funPropValue = documentationProperty(environment, f, new LispSymbol("function-documentation"), null);
+            LispObject funPropValue = documentationProperty(environment, f, new LispSymbol("function-documentation"), null);
             if (!funPropValue.equals(LispSymbol.ourNil))
                 return funPropValue;
 
@@ -123,7 +123,7 @@ public abstract class BuiltinsSymbol {
 
 
     @Subroutine(value = "default-value")
-    public static LObject defaultValue (Environment environment, LispSymbol symbol) {
+    public static LispObject defaultValue (Environment environment, LispSymbol symbol) {
         LispSymbol real = environment.find(symbol.getName());
         if (real == null)// || !real.hasValue())
             throw new VoidVariableException(symbol.getName());
@@ -132,14 +132,14 @@ public abstract class BuiltinsSymbol {
                 throw new VoidVariableException(symbol.getName());
             return real.getValue();
         }
-        LObject value = GlobalEnvironment.INSTANCE.getBufferLocalSymbolValue(symbol);
+        LispObject value = GlobalEnvironment.INSTANCE.getBufferLocalSymbolValue(symbol);
         if (value == null)
             throw new VoidVariableException(symbol.getName());
         return value;
     }
 
     @Subroutine("set-default")
-    public static LObject setDefault (Environment environment, LispSymbol symbol, LObject value) {
+    public static LispObject setDefault (Environment environment, LispSymbol symbol, LispObject value) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real != null) {
             //todo: check for buffer-locality
@@ -152,9 +152,9 @@ public abstract class BuiltinsSymbol {
     }
     
     @Subroutine(value = "make-variable-buffer-local", isCmd = true, interactive = "")
-    public static LObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
+    public static LispObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
         if (!(environment instanceof GlobalEnvironment)) {
-            LObject var = environment.find(variable.getName());           
+            LispObject var = environment.find(variable.getName());
             if (var == null)
                 environment.defineSymbol(variable);           
         } else {
@@ -164,12 +164,12 @@ public abstract class BuiltinsSymbol {
     }
     
     @Subroutine("make-symbol")
-    public static LObject makeSymbol (LispString name) {
+    public static LispObject makeSymbol (LispString name) {
         return new LispSymbol(name.getData());
     }
 
     private static LispSymbol getSymbol (final String name, LispVector objectArray) {
-        return (LispSymbol) CollectionUtils.find(objectArray.toLObjectList(), new Predicate() {
+        return (LispSymbol) CollectionUtils.find(objectArray.toLispObjectList(), new Predicate() {
             @Override
             public boolean evaluate(Object o) {
                 if (!(o instanceof LispSymbol)) {
@@ -181,7 +181,7 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("intern")
-    public static LispSymbol intern (LispString name, @Optional LObject objectArray) {
+    public static LispSymbol intern (LispString name, @Optional LispObject objectArray) {
         if (objectArray == null || objectArray.equals(LispSymbol.ourNil)) {
             LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getData());
             if (symbol != null)
@@ -202,7 +202,7 @@ public abstract class BuiltinsSymbol {
     }
 
     @Subroutine("internal-event-symbol-parse-modifiers")
-    public static LObject internalEventSymbolParseModifiers (LispSymbol symbol) {
+    public static LispObject internalEventSymbolParseModifiers (LispSymbol symbol) {
         KeyBoardUtil.parseModifiers(symbol);
         return symbol.getProperty("event-symbol-elements");
     }

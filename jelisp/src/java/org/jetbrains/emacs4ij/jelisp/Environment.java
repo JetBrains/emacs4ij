@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -17,8 +16,8 @@ import java.util.HashMap;
  */
 public abstract class Environment {
     protected boolean isRecording = false;
-    protected ArrayList<String> myRecordedSymbols = new ArrayList<String>();
-    protected HashMap<String, LispSymbol> mySymbols = new HashMap<String, LispSymbol>();
+    protected ArrayList<String> myRecordedSymbols = new ArrayList<>();
+    protected HashMap<String, LispSymbol> mySymbols = new HashMap<>();
     protected boolean myArgumentsEvaluated = false;
     protected Environment myOuterEnv = null;
     protected LispBuffer myBufferCurrentForEditing = null;
@@ -61,33 +60,24 @@ public abstract class Environment {
         return (LispString) getBufferCurrentForEditing().getLocalVariableValue("default-directory");
     }
 
-    public LObject find(String name, String methodName) {
-        return find(name, methodName, null);
-    }
-
     public LispSymbol find(String name) {
-        return (LispSymbol) find(name, "", null);
-    }
-    
-    public LObject find(String name, String methodName, @Nullable Class[] parameterTypes, @Nullable Object... methodParameters) {
-        LispSymbol lispObject = mySymbols.get(name);
-
-        if (lispObject != null) {
-            if (!lispObject.isFunction() && lispObject.isBufferLocal()) {
+        LispSymbol symbol = mySymbols.get(name);
+        if (symbol != null) {
+            if (!symbol.isFunction() && symbol.isBufferLocal()) {
                 try {
                     LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
                     if (local.getValue() != null)
-                        lispObject = local;
+                        symbol = local;
                 } catch (NoOpenedBufferException e1) {
                     //return null;
                 } catch (VoidVariableException e2) {
                     //return null;
                 }
             }
-            return lispObject.invokeMethod(methodName, parameterTypes, methodParameters);
+            return symbol;
         }
         if (myOuterEnv != null) {
-            return myOuterEnv.find(name, methodName, parameterTypes, methodParameters);
+            return myOuterEnv.find(name);
         }
         return null;
     }
@@ -205,7 +195,6 @@ public abstract class Environment {
                 return;
             }
             variable.setValue(symbol.getValue());
-           // defineSymbol(variable);
             return;
         }
         myOuterEnv.setVariable(symbol);

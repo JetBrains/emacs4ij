@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
@@ -107,21 +107,21 @@ public class BackwardParser extends Parser {
     }
 
     @Override
-    public LObject parseLine (String lispCode) {
+    public LispObject parseLine (String lispCode) {
         return parseLine(lispCode, lispCode.length()-1);
     }
 
-    public LObject parseLine (String lispCode, int index) {
+    public LispObject parseLine (String lispCode, int index) {
         myCurrentIndex = index;
         myLispCode = lispCode;
-        LObject lispObject = parseObject();
+        LispObject lispObject = parseObject();
         if (lispObject == null)
             lispObject = LispSymbol.ourNil;
         return lispObject;
     }
 
     @Override
-    protected LObject tryToParse(boolean isBackQuote) {
+    protected LispObject tryToParse(boolean isBackQuote) {
         char end = getCurrentChar();
         char start = '0';
 

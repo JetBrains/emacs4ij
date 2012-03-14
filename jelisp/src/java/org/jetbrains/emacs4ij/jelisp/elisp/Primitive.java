@@ -13,15 +13,15 @@ import java.lang.reflect.Method;
  * Time: 5:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Primitive extends LispObject implements FunctionCell {
+public class Primitive implements FunctionCell {
     private String myName;
-    private LObject myDocumentation;
+    private LispObject myDocumentation;
     private boolean isInteractive;
     private String myInteractiveString;
     private Type myType;
     
     private LispInteger myMinNumArgs = null;
-    private LObject myMaxNumArgs = null;
+    private LispObject myMaxNumArgs = null;
 
     public enum Type {BUILTIN, SPECIAL_FORM}
 
@@ -31,12 +31,7 @@ public class Primitive extends LispObject implements FunctionCell {
         myInteractiveString = annotation.interactive();
         myDocumentation = documentation == null ? null : new LispString(documentation);
         myType = type;
-
         countMinMaxNumArgs();
-
-//        if (!annotation.key().equals(GlobalEnvironment.ourUnsetKeyString)) {
-//
-//        }
     }
 
     @Override
@@ -44,12 +39,8 @@ public class Primitive extends LispObject implements FunctionCell {
         return "#<subr " + myName + ">";
     }
 
-    /*public String getDocumentation() {
-        return myDocumentation;
-    }     */
-
     @Override
-    public LObject getDocumentation() {
+    public LispObject getDocumentation() {
         if (myDocumentation == null)
             return LispSymbol.ourNil;        
         if (myDocumentation instanceof LispString)
@@ -58,7 +49,7 @@ public class Primitive extends LispObject implements FunctionCell {
     }
 
     @Override
-    public void setDocumentation(LObject doc) {
+    public void setDocumentation(LispObject doc) {
         myDocumentation = doc;
     }
 
@@ -77,7 +68,7 @@ public class Primitive extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -142,7 +133,7 @@ public class Primitive extends LispObject implements FunctionCell {
         return myMinNumArgs;
     }
 
-    public LObject getMaxNumArgs() {
+    public LispObject getMaxNumArgs() {
         /*if (myMaxNumArgs == null)
             countMinMaxNumArgs();  */
         return myMaxNumArgs;

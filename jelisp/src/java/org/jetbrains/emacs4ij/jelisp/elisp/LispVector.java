@@ -17,24 +17,24 @@ import java.util.List;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVector extends LispObject implements LispSequence, LispArray {
-    private ArrayList<LObject> myData = null;
+public class LispVector implements LispObject, LispSequence, LispArray {
+    private List<LispObject> myData = null;
 
     public LispVector() {
-        myData = new ArrayList<LObject>();
+        myData = new ArrayList<>();
     }
 
-    public LispVector (LObject ... objects) {
-        myData = new ArrayList<LObject>(Arrays.asList(objects));
+    public LispVector (LispObject ... objects) {
+        myData = new ArrayList<>(Arrays.asList(objects));
     }
     
-    public LispVector (ArrayList<LObject> list) {
+    public LispVector (List<LispObject> list) {
         myData = list; //rem: don't copy for LispSequence.copy to share data 
         //myData = Lists.newArrayList(list);
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         return this;
     }
 
@@ -60,25 +60,25 @@ public class LispVector extends LispObject implements LispSequence, LispArray {
         if (myData.isEmpty())
             return "[]";
         String result = "[";
-        for (LObject element: myData) {
+        for (LispObject element: myData) {
             result += element.toString() + ' ';
         }
         return result.trim() + ']';
     }
 
-    public void add (LObject object) {
+    public void add (LispObject object) {
         if (object == null)
             return;
         myData.add(object);
     }
     
-    public void add (List<LObject> objects) {
+    public void add (List<LispObject> objects) {
         if (objects == null || objects.isEmpty())
             return;
         myData.addAll(objects);
     }
 
-    public LObject get (int index) throws IndexOutOfBoundsException {
+    public LispObject get (int index) throws IndexOutOfBoundsException {
         return myData.get(index);
     }
 
@@ -88,28 +88,28 @@ public class LispVector extends LispObject implements LispSequence, LispArray {
     }
 
     @Override
-    public List<LObject> toLObjectList() {
+    public List<LispObject> toLispObjectList() {
         return myData;
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LObject method) {
-        ArrayList<LObject> data = new ArrayList<>();
-        for (LObject item: toLObjectList()) {
+    public List<LispObject> mapCar(Environment environment, LispObject method) {
+        ArrayList<LispObject> data = new ArrayList<>();
+        for (LispObject item: toLispObjectList()) {
             data.add(BuiltinsCore.functionCall(environment, method, item));
         }
         return data;
     }
 
     @Override
-    public LObject copy() {
+    public LispObject copy() {
         return new LispVector(myData);
     }
 
     @Override
     public String toCharString() {
         String s = "";
-        for (LObject element: myData) {
+        for (LispObject element: myData) {
             if (!BuiltinPredicates.isCharacter(element))
                 throw new WrongTypeArgumentException("characterp", element);
             s += ((LispInteger)element).toCharacterString();
@@ -121,27 +121,27 @@ public class LispVector extends LispObject implements LispSequence, LispArray {
         return myData.isEmpty();
     }
     
-    public void setFirst (LObject first) {
+    public void setFirst (LispObject first) {
         myData.set(0, first);
     }
     
-    public static LispVector make (int length, LObject value) {
-        ArrayList<LObject> list = new ArrayList<>(length);
+    public static LispVector make (int length, LispObject value) {
+        ArrayList<LispObject> list = new ArrayList<>(length);
         Collections.fill(list, value);
         return new LispVector(list);
     }
 
     @Override
-    public void setItem(int position, LObject value) {
+    public void setItem(int position, LispObject value) {
         myData.set(position, value);
     }
 
     @Override
-    public LObject getItem(int position) {
+    public LispObject getItem(int position) {
         return myData.get(position);
     }
     
     public LispVector subString (int from, int to) {
-        return new LispVector(myData.subList(from, to).toArray(new LObject[to - from]));
+        return new LispVector(myData.subList(from, to).toArray(new LispObject[to - from]));
     }
 }

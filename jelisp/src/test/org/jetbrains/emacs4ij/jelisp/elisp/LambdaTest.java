@@ -32,7 +32,7 @@ public class LambdaTest {
         environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
-    private LObject evaluateString (String lispCode) {
+    private LispObject evaluateString (String lispCode) {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
     }
@@ -72,7 +72,7 @@ public class LambdaTest {
     @Test
     public void testSubstituteArguments() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key ((word var) 10 a)))");
-        List<LObject> args = ((LispList) evaluateString("'('word 5)")).toLObjectList();
+        List<LispObject> args = ((LispList) evaluateString("'('word 5)")).toLispObjectList();
         CustomEnvironment inner = new Lambda(list, environment).substituteArguments(environment, args);
         LispSymbol var = inner.find("var");
         Assert.assertNotNull(var);

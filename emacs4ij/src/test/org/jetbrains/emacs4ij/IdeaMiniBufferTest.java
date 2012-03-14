@@ -33,7 +33,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);
     }
 
-    private LObject evaluateString (String lispCode) throws LispException {
+    private LispObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
@@ -51,13 +51,13 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testReturnDefault_StringList () {
-        LObject ret = myMiniBuffer.returnDefault (LispList.list(new LispString("hi"), new LispInteger(5)));
+        LispObject ret = myMiniBuffer.returnDefault (LispList.list(new LispString("hi"), new LispInteger(5)));
         Assert.assertEquals(new LispSymbol("hi"), ret);
     }
 
     @Test
     public void testReturnDefault_String () {
-        LObject ret = myMiniBuffer.returnDefault (new LispString("hi"));
+        LispObject ret = myMiniBuffer.returnDefault (new LispString("hi"));
         Assert.assertEquals(new LispSymbol("hi"), ret);
     }
 
@@ -86,25 +86,25 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testReturnDefault_ExistingSymbol () {
         evaluateString("(setq s 5)");
-        LObject ret = myMiniBuffer.returnDefault (new LispSymbol("s"));
+        LispObject ret = myMiniBuffer.returnDefault (new LispSymbol("s"));
         Assert.assertEquals(new LispSymbol("s", new LispInteger(5)), ret);
     }
 
     @Test
     public void testReturnDefault_NonExistingSymbol () {
-        LObject ret = myMiniBuffer.returnDefault (new LispSymbol("s"));
+        LispObject ret = myMiniBuffer.returnDefault (new LispSymbol("s"));
         Assert.assertEquals(new LispSymbol("s"), ret);
     }
 
     @Test
     public void testReturnDefault_NilSymbol () {
-        LObject ret = myMiniBuffer.returnDefault (LispSymbol.ourNil);
+        LispObject ret = myMiniBuffer.returnDefault (LispSymbol.ourNil);
         Assert.assertEquals(new LispSymbol(""), ret);
     }
 
     @Test
     public void testReturnDefault_EmptyList () {
-        LObject ret = myMiniBuffer.returnDefault (LispList.list());
+        LispObject ret = myMiniBuffer.returnDefault (LispList.list());
         Assert.assertEquals(new LispSymbol(""), ret);
     }
 }

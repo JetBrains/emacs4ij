@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -16,7 +16,7 @@ import org.junit.Test;
 public class BuiltinPredicatesTest extends BaseSubroutineTest {
     @Test
     public void testStringp() throws Exception {
-        LObject lispObject = evaluateString("(stringp \"hello\")");
+        LispObject lispObject = evaluateString("(stringp \"hello\")");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(stringp 'hello)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -24,7 +24,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testSymbolp() throws Exception {
-        LObject lispObject = evaluateString("(symbolp \"hello\")");
+        LispObject lispObject = evaluateString("(symbolp \"hello\")");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(symbolp 'hello)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
@@ -32,7 +32,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testIntegerp() throws Exception {
-        LObject lispObject = evaluateString("(integerp 1)");
+        LispObject lispObject = evaluateString("(integerp 1)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(integerp 'hello)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -40,7 +40,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testSubrp() throws Exception {
-        LObject lispObject = evaluateString("(subrp 1)");
+        LispObject lispObject = evaluateString("(subrp 1)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         lispObject = evaluateString("(subrp (symbol-function 'if))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
@@ -53,7 +53,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     @Test
     public void testFunctionp () {
         evaluateString("(defun f () )");
-        LObject lispObject = evaluateString("(functionp 'f)");
+        LispObject lispObject = evaluateString("(functionp 'f)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(functionp (symbol-function 'f))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
@@ -68,14 +68,14 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     @Ignore
     @Test
     public void FunctionpLambda() {
-        LObject lispObject = evaluateString("(functionp (lambda () 1))");
+        LispObject lispObject = evaluateString("(functionp (lambda () 1))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
     @Test
     public void testCommandp () {
         evaluateString("(defun f () (interactive) )");
-        LObject lispObject = evaluateString("(commandp 'f)");
+        LispObject lispObject = evaluateString("(commandp 'f)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(commandp 1)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -83,7 +83,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testCommandp_BuiltIn () {
-        LObject lispObject = evaluateString("(commandp 'switch-to-buffer)");
+        LispObject lispObject = evaluateString("(commandp 'switch-to-buffer)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = evaluateString("(commandp 'if)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -92,7 +92,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     @Test
     public void testFboundp () {
         evaluateString("(defun f ())");
-        LObject result = evaluateString("(fboundp 'f)");
+        LispObject result = evaluateString("(fboundp 'f)");
         Assert.assertEquals(LispSymbol.ourT, result);
         result = evaluateString("(fboundp 'if)");
         Assert.assertEquals(LispSymbol.ourT, result);
@@ -104,7 +104,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testDefaultBoundP() {
-        LObject result = evaluateString("(default-boundp 'f)");
+        LispObject result = evaluateString("(default-boundp 'f)");
         Assert.assertEquals(LispSymbol.ourNil, result);
         evaluateString("(setq f 1)");
         result = evaluateString("(default-boundp 'f)");
@@ -117,7 +117,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
 
     @Test
     public void testSequenceP() {
-        LObject r = evaluateString("(sequencep ())");
+        LispObject r = evaluateString("(sequencep ())");
         Assert.assertEquals(LispSymbol.ourT, r);
         r = evaluateString("(sequencep '())");
         Assert.assertEquals(LispSymbol.ourT, r);
@@ -140,7 +140,7 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     
     @Test
     public void testCharacterP() {
-        LObject r = evaluateString("(characterp 5)");
+        LispObject r = evaluateString("(characterp 5)");
         Assert.assertEquals(LispSymbol.ourT, r);
         r = evaluateString("(characterp -1)");
         Assert.assertEquals(LispSymbol.ourNil, r);

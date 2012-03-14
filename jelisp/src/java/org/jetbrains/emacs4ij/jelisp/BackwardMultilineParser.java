@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 import java.util.Arrays;
@@ -25,10 +25,10 @@ public class BackwardMultilineParser implements Observer {
         myBackwardParser.addObserver(this);
     }
 
-    public LObject parse (int line, int column) {
+    public LispObject parse (int line, int column) {
         try {
             myIndex = line;
-            LObject result = null;
+            LispObject result = null;
             while (result == null) {
                 result = myBackwardParser.parseLine(myReader.get(line), column);
             }

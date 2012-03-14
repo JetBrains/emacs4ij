@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
@@ -48,7 +49,10 @@ public class OptionsForm extends JFrame {
 
     private boolean setServiceParameter(GlobalEnvironment.PropertyType type, JLabel label, JTextField textField) {
         String name = String.valueOf(type).toLowerCase();
-        JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home"));
+        String startDirectory = StringUtil.isEmptyOrSpaces(textField.getText())
+                ? System.getProperty("user.home")
+                : textField.getText();
+        JFileChooser fileChooser = new JFileChooser(startDirectory);
         fileChooser.setDialogTitle("Select Emacs " + name + " directory");
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -105,7 +109,7 @@ public class OptionsForm extends JFrame {
     }
 
     public OptionsForm(Project project) {
-        setTitle("Emacs4ij Settings");
+        setTitle(Emacs4ijBundle.message("settings.title"));
         setContentPane(panel1);
         myProject = project;
         myProjectComponent = project.getComponent(MyProjectComponent.class);
@@ -149,9 +153,9 @@ public class OptionsForm extends JFrame {
                     applyButton.setEnabled(false);
                     close();
                     if (isHomeValid && isSourceValid)
-                        new Task.Backgroundable(myProject, "Initializing Emacs4ij environment", false) {
+                        new Task.Backgroundable(myProject, Emacs4ijBundle.message("init.task"), false) {
                             public void run(@NotNull ProgressIndicator indicator) {
-                                indicator.setText("Loading Emacs functions");
+                                indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                                 indicator.setFraction(0.0);
                                 EnvironmentInitializer.reset();
                                 if (EnvironmentInitializer.initGlobal() && myProjectComponent != null) {

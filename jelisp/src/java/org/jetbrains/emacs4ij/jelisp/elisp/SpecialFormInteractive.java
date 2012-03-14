@@ -33,7 +33,7 @@ public class SpecialFormInteractive {
 
    // private boolean myNoMatch;
 
-    private ArrayList<LObject> myArguments;
+    private ArrayList<LispObject> myArguments;
     private String[] myParameters;
     private int myIndex;
 
@@ -115,7 +115,7 @@ public class SpecialFormInteractive {
         myEnvironment.getMiniBuffer().onInteractiveNoIoInput(this);
     }
 
-    private void addArg (LObject arg) {
+    private void addArg (LispObject arg) {
         myArguments.add(arg);
         ++myIndex;
     }
@@ -392,7 +392,7 @@ public class SpecialFormInteractive {
         if (!d.exists()) {
             int lastDelimiter = parameter.lastIndexOf('/');
             if (lastDelimiter == -1) {
-                return new ArrayList<String>();
+                return new ArrayList<>();
             } else {
                 parent = new File(parameter.substring(0, lastDelimiter+1));
                 begin = parameter.substring(lastDelimiter+1);
@@ -414,7 +414,7 @@ public class SpecialFormInteractive {
                 return f.isDirectory();
             }
         });
-        ArrayList<String> completions = new ArrayList<String>();
+        ArrayList<String> completions = new ArrayList<>();
         for (File file: files) {
             completions.add(file.getAbsolutePath());
         }
@@ -422,7 +422,7 @@ public class SpecialFormInteractive {
     }
 
     public List<String> getCompletions (String parameter) {
-        ArrayList<String> completions = new ArrayList<String>();
+        ArrayList<String> completions = new ArrayList<>();
         switch (myInteractiveChar) {
             case 'a':
                 completions = GlobalEnvironment.INSTANCE.getFunctionList(parameter);

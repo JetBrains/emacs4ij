@@ -16,13 +16,13 @@ import org.junit.Test;
 public class BuiltinArithmeticTest extends BaseSubroutineTest {
     @Test
     public void testPlusInteger() throws LispException {
-        LObject lispObject = evaluateString("(+ 2 2)");
+        LispObject lispObject = evaluateString("(+ 2 2)");
         Assert.assertEquals(new LispInteger(4), lispObject);
     }
 
     @Test
     public void testPlusFloat () {
-        LObject lispObject = evaluateString("(+ 2 2.0)");
+        LispObject lispObject = evaluateString("(+ 2 2.0)");
         Assert.assertEquals(new LispFloat(4), lispObject);
     }
 
@@ -57,19 +57,19 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testPlusEmpty () {
-        LObject lispObject = evaluateString("(+)");
+        LispObject lispObject = evaluateString("(+)");
         Assert.assertEquals(new LispInteger(0), lispObject);
     }
 
     @Test
     public void testMultiply() throws Exception {
-        LObject LObject = evaluateString("(* 2 2)");
-        Assert.assertEquals(new LispInteger(4), LObject);
+        LispObject LispObject = evaluateString("(* 2 2)");
+        Assert.assertEquals(new LispInteger(4), LispObject);
     }
 
     @Test
     public void testNumOrMarkersEqual() {
-        LObject r = evaluateString("(= 1 2)");
+        LispObject r = evaluateString("(= 1 2)");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(= 1 1.0)");
         Assert.assertEquals(LispSymbol.ourT, r);
@@ -99,7 +99,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testNumOrMarkersNotEqual() {
-        LObject r = evaluateString("(/= 1 2)");
+        LispObject r = evaluateString("(/= 1 2)");
         Assert.assertEquals(LispSymbol.ourT, r);
         r = evaluateString("(/= 1 1.0)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -107,7 +107,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testNumOrMarkersLessOrEqual() {
-        LObject r = evaluateString("(<= 1 2)");
+        LispObject r = evaluateString("(<= 1 2)");
         Assert.assertEquals(LispSymbol.ourT, r);
         r = evaluateString("(<= 1 1.0)");
         Assert.assertEquals(LispSymbol.ourT, r);
@@ -127,25 +127,25 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testMinusInteger() throws LispException {
-        LObject lispObject = evaluateString("(- 2 1)");
+        LispObject lispObject = evaluateString("(- 2 1)");
         Assert.assertEquals(new LispInteger(1), lispObject);
     }
 
     @Test
     public void testMinusOne() throws LispException {
-        LObject lispObject = evaluateString("(- 1)");
+        LispObject lispObject = evaluateString("(- 1)");
         Assert.assertEquals(new LispInteger(-1), lispObject);
     }
 
     @Test
     public void testMinusZero() throws LispException {
-        LObject lispObject = evaluateString("(-)");
+        LispObject lispObject = evaluateString("(-)");
         Assert.assertEquals(new LispInteger(0), lispObject);
     }
 
     @Test
     public void testMinusFloat () {
-        LObject lispObject = evaluateString("(- 2 2.0)");
+        LispObject lispObject = evaluateString("(- 2 2.0)");
         Assert.assertEquals(new LispFloat(0.0), lispObject);
     }
 
@@ -168,7 +168,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
     
     @Test
     public void testLogAnd() {
-        LObject r = evaluateString("(logand)");
+        LispObject r = evaluateString("(logand)");
         Assert.assertEquals(new LispInteger(-1), r);
         r = evaluateString("(logand 0)");
         Assert.assertEquals(new LispInteger(0), r);
@@ -180,7 +180,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testLogNot() {
-        LObject r = evaluateString("(lognot 0)");
+        LispObject r = evaluateString("(lognot 0)");
         Assert.assertEquals(new LispInteger(-1), r);
         r = evaluateString("(lognot 1)");
         Assert.assertEquals(new LispInteger(-2), r);

@@ -46,7 +46,7 @@ public class GlobalEnvironment extends Environment {
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
 
     private class SearchItem {
-        private LObject mySource; //may be a LispString or LispBuffer
+        private LispObject mySource; //may be a LispString or LispBuffer
         private Matcher myResult;
 
         public SearchItem (LispString string, Matcher matcher) {
@@ -173,7 +173,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     //-------- loading ------------------
-    public LispSymbol defineSymbol (String name, @NotNull LObject value) {
+    public LispSymbol defineSymbol (String name, @NotNull LispObject value) {
         LispSymbol symbol = new LispSymbol(name, value);
         defineSymbol(symbol);
         return symbol;
@@ -317,7 +317,7 @@ public class GlobalEnvironment extends Environment {
             }
             if (line == null)
                 break;
-            LObject parsed = p.parse(line);
+            LispObject parsed = p.parse(line);
             index += p.getLines();
             if (parsed == null || LispSymbol.ourNil.equals(parsed))
                 continue;
@@ -367,7 +367,7 @@ public class GlobalEnvironment extends Environment {
                 break;
         }
         BufferedReaderParser p = new BufferedReaderParser(reader);
-        LObject parsed = p.parse(line);
+        LispObject parsed = p.parse(line);
         if (parsed instanceof LispList) {
             myUploadHistory.put(name, file);
             return (LispList) parsed;
@@ -419,7 +419,7 @@ public class GlobalEnvironment extends Environment {
     private LispSymbol processDef (LispList definition, String name, SymbolType type) {
         if (definition == null)
             return null;
-        LObject evaluated = definition.evaluate(this);
+        LispObject evaluated = definition.evaluate(this);
         if (!(evaluated instanceof LispSymbol))
             throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
         LispSymbol value = find(((LispSymbol) evaluated).getName());
@@ -449,7 +449,7 @@ public class GlobalEnvironment extends Environment {
         myIde.showErrorMessage(message);
     }
 
-    public LObject getBufferLocalSymbolValue (LispSymbol symbol) {
+    public LispObject getBufferLocalSymbolValue (LispSymbol symbol) {
         LispSymbol real = mySymbols.get(symbol.getName());
         if (real == null || !real.isBufferLocal())
             return null;

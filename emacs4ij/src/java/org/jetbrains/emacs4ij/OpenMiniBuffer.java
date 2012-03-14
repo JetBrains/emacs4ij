@@ -44,7 +44,6 @@ public class OpenMiniBuffer extends AnAction {
         editor.setHeaderComponent(input);
 
         miniBuffer.setEditor(input.getEditor());
-        projectComponent.setMiniBufferOpened(true);
 
         ExecuteCommand command = new ExecuteCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);

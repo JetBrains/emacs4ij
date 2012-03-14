@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(defvar p)");
         evaluateString("(put 'p 'char-table-extra-slots 10)");
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject r = evaluateString("(get (char-table-subtype ct) 'char-table-extra-slots)");
+        LispObject r = evaluateString("(get (char-table-subtype ct) 'char-table-extra-slots)");
         Assert.assertEquals(new LispInteger(10), r);
         evaluateString("(put 'p 'char-table-extra-slots 6)");
         r = evaluateString("(get (char-table-subtype ct) 'char-table-extra-slots)");
@@ -56,7 +56,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     @Test
     public void testCharTableP() {
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject t = evaluateString("(char-table-p ct)");
+        LispObject t = evaluateString("(char-table-p ct)");
         Assert.assertEquals(LispSymbol.ourT, t);
         t = evaluateString("(char-table-p nil)");
         Assert.assertEquals(LispSymbol.ourNil, t);
@@ -68,7 +68,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(put 'p 'char-table-extra-slots 5)");
         evaluateString("(defvar ct (make-char-table 'p))");
         for (int s = 0; s < 10; ++s) {
-            LObject a = evaluateString("(char-table-extra-slot ct " + s + ')');
+            LispObject a = evaluateString("(char-table-extra-slot ct " + s + ')');
             Assert.assertEquals(LispSymbol.ourNil, a);
         }
     }
@@ -106,7 +106,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(defvar p)");
         evaluateString("(put 'p 'char-table-extra-slots 5)");
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject a = evaluateString("(set-char-table-extra-slot ct 1 5)");
+        LispObject a = evaluateString("(set-char-table-extra-slot ct 1 5)");
         Assert.assertEquals(new LispInteger(5), a);
         Assert.assertEquals(new LispInteger(5), evaluateString("(char-table-extra-slot ct 1)"));
     }
@@ -116,7 +116,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(defvar p)");
         evaluateString("(put 'p 'char-table-extra-slots 5)");
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject a = evaluateString("(char-table-parent ct)");
+        LispObject a = evaluateString("(char-table-parent ct)");
         Assert.assertEquals(LispSymbol.ourNil, a);
     }
 
@@ -125,7 +125,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(defvar p)");
         evaluateString("(put 'p 'char-table-extra-slots 0)");
         evaluateString("(defvar ct (make-char-table 'p 2))");
-        LObject a = evaluateString("ct");
+        LispObject a = evaluateString("ct");
         Assert.assertEquals("#^[2 nil p 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2]",
                 a.toString());
 
@@ -147,7 +147,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(put 'p 'char-table-extra-slots 5)");
         evaluateString("(defvar ct (make-char-table 'p 1))");
         evaluateString("(defvar ctp (make-char-table 'q 2))");
-        LObject a = evaluateString("(set-char-table-parent ct ctp)");
+        LispObject a = evaluateString("(set-char-table-parent ct ctp)");
         Assert.assertEquals(evaluateString("ctp"), a);
 //        System.out.println(evaluateString("ct").toString());
         a = evaluateString("(set-char-table-parent ct nil)");
@@ -169,7 +169,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     @Test
     public void testSetRangeCons() {
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject a = evaluateString("(set-char-table-range  ct '(1 . 3) 16)");
+        LispObject a = evaluateString("(set-char-table-range  ct '(1 . 3) 16)");
         Assert.assertEquals(new LispInteger(16), a);
         a = evaluateString("ct");
         String expected = "#^[nil nil p "
@@ -181,7 +181,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     @Test
     public void testSetRangeAsciiChar() {
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject a = evaluateString("(set-char-table-range  ct ?a 16)");
+        LispObject a = evaluateString("(set-char-table-range  ct ?a 16)");
         Assert.assertEquals(new LispInteger(16), a);
         a = evaluateString("ct");
         String expected = "#^[nil nil p "
@@ -193,7 +193,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     @Test
     public void testSetRangeT() {
         evaluateString("(defvar ct (make-char-table 'p))");
-        LObject a = evaluateString("(set-char-table-range ct t 16)");
+        LispObject a = evaluateString("(set-char-table-range ct t 16)");
         Assert.assertEquals(new LispInteger(16), a);
         a = evaluateString("ct");
         String expected = "#^[nil nil p 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16 16]";
@@ -204,7 +204,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     public void testSetRangeTThenChar() {
         evaluateString("(defvar ct (make-char-table 'p))");
         evaluateString("(set-char-table-range ct t 16)");
-        LObject a = evaluateString("(set-char-table-range ct ?a 5)");
+        LispObject a = evaluateString("(set-char-table-range ct ?a 5)");
         Assert.assertEquals(new LispInteger(5), a);
         a = evaluateString("ct");
         String expected = "#^[nil nil p "
@@ -217,7 +217,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
     public void testRangeCons() {
         evaluateString("(defvar ct (make-char-table 'p))");
         evaluateString("(set-char-table-range ct ?a 5)");
-        LObject a = evaluateString("(char-table-range ct '(97 . 123))");
+        LispObject a = evaluateString("(char-table-range ct '(97 . 123))");
         Assert.assertEquals(new LispInteger(5), a);
     }
 
@@ -226,7 +226,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
         evaluateString("(defvar ct (make-char-table 'p))");
         evaluateString("(set-char-table-range ct t 16)");
         evaluateString("(set-char-table-range ct ?a 5)");
-        LObject a = evaluateString("(char-table-range ct ?a)");
+        LispObject a = evaluateString("(char-table-range ct ?a)");
         Assert.assertEquals(new LispInteger(5), a);
     }
 

@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
@@ -26,7 +26,7 @@ public class BufferedReaderParser implements Observer {
         myForwardParser.addObserver(this);
     }
 
-    public LObject parse (String firstLine) {
+    public LispObject parse (String firstLine) {
         try {
             lines = 0;
 //            if (firstLine.contains("defmacro when "))

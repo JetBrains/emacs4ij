@@ -30,7 +30,7 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("set-marker-insertion-type")
-    public static LObject setMarkerInsertionType (LispMarker marker, LObject type) {
+    public static LispObject setMarkerInsertionType (LispMarker marker, LispObject type) {
         return marker.setInsertionType(type);
     }
 
@@ -47,7 +47,7 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("copy-marker")
-    public static LispMarker copyMarker (Environment environment, LObject markerOrInteger, @Optional LObject insertionType) {
+    public static LispMarker copyMarker (Environment environment, LispObject markerOrInteger, @Optional LispObject insertionType) {
         if (markerOrInteger instanceof LispMarker) {
             LispMarker marker = new LispMarker((LispMarker) markerOrInteger);
             if (insertionType != null)
@@ -63,7 +63,7 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("set-marker")
-    public static LispMarker setMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
+    public static LispMarker setMarker (LispMarker marker, LispObject position, @Optional LispBuffer buffer) {
         if (BuiltinPredicates.integerOrMarkerP(position).equals(LispSymbol.ourNil) && !position.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("integer-or-marker-p", position);
         if (buffer == null)
@@ -74,22 +74,22 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("move-marker")
-    public static LispMarker moveMarker (LispMarker marker, LObject position, @Optional LispBuffer buffer) {
+    public static LispMarker moveMarker (LispMarker marker, LispObject position, @Optional LispBuffer buffer) {
         return setMarker(marker, position, buffer);
     }
     
     @Subroutine("marker-position")
-    public static LObject markerPosition (LispMarker marker) {
+    public static LispObject markerPosition (LispMarker marker) {
         return marker.getPosition();
     }
 
     @Subroutine("marker-buffer")
-    public static LObject markerBuffer (LispMarker marker) {
+    public static LispObject markerBuffer (LispMarker marker) {
         return marker.getBuffer() == null ? LispSymbol.ourNil : marker.getBuffer();
     }
     
     @Subroutine("buffer-has-markers-at")
-    public static LispSymbol bufferHasMarkersAt (LObject position) {
+    public static LispSymbol bufferHasMarkersAt (LispObject position) {
         if (position instanceof LispInteger) 
             return LispSymbol.bool(GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
         return LispSymbol.ourNil;
@@ -102,7 +102,7 @@ public abstract class BuiltinsMarker {
     
     @Subroutine("region-beginning")
     public static LispInteger regionBeginning (Environment environment) {
-        LObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+        LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
         LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
         if (!mark.equals(LispSymbol.ourNil)) {
             if (BuiltinArithmetic.less(mark, point).toBoolean())
@@ -113,7 +113,7 @@ public abstract class BuiltinsMarker {
 
     @Subroutine("region-end")
     public static LispInteger regionEnd (Environment environment) {
-        LObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+        LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
         LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
         if (!mark.equals(LispSymbol.ourNil)) {
             if (BuiltinArithmetic.more(mark, point).toBoolean())

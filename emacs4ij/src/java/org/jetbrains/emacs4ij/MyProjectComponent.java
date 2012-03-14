@@ -32,7 +32,6 @@ import javax.swing.event.HyperlinkListener;
 public class MyProjectComponent implements ProjectComponent {
     private CustomEnvironment myEnvironment = null;
     private Project myProject;
-    private boolean isMiniBufferOpened = false;
 
     public MyProjectComponent(Project project) {
         myProject = project;
@@ -73,7 +72,7 @@ public class MyProjectComponent implements ProjectComponent {
 
                 if (fileEditorManagerEvent.getNewFile() == null) {
                     if (myEnvironment.getBuffersSize() != 1)
-                        throw new RuntimeException("the number of opened buffers doesn't correspond to number of opened files!");
+                        throw new Emacs4ijFatalException("The number of opened buffers doesn't correspond to number of opened files!");
                     return;
                 }
                 try {
@@ -86,17 +85,17 @@ public class MyProjectComponent implements ProjectComponent {
             }
         });
 
-        new Task.Backgroundable(myProject, "Initializing Emacs environment", false) {
+        new Task.Backgroundable(myProject, Emacs4ijBundle.message("init.task"), false) {
             public void run(@NotNull ProgressIndicator indicator) {
-                indicator.setText("Loading Emacs functions");
+                indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                 indicator.setFraction(0.0);
                 if (EnvironmentInitializer.silentInitGlobal()) {
                     myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
                     EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
                 } else {
-                    final String htmlText = "Error occurred while initializing Emacs4ij environment.\nYou can fix Emacs Settings on the Tools Panel or <a href=\"xxx\">now</a>.";
                     JBPopupFactory.getInstance()
-                            .createHtmlTextBalloonBuilder(htmlText, MessageType.WARNING, new HyperlinkListener() {
+                            .createHtmlTextBalloonBuilder(Emacs4ijBundle.message("global.env.not.initialized.message"),
+                                    MessageType.WARNING, new HyperlinkListener() {
                                 @Override
                                 public void hyperlinkUpdate(HyperlinkEvent e) {
                                     if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
@@ -131,13 +130,5 @@ public class MyProjectComponent implements ProjectComponent {
 
     public void projectClosed() {
         // called when project is being closed
-    }
-
-    public boolean isMiniBufferOpened() {
-        return isMiniBufferOpened;
-    }
-
-    public void setMiniBufferOpened(boolean miniBufferOpened) {
-        isMiniBufferOpened = miniBufferOpened;
     }
 }

@@ -11,33 +11,27 @@ import java.util.List;
  * Time: 7:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Macro extends LispObject implements FunctionCell {
-   // private String myName;
+public class Macro implements FunctionCell {
     private Lambda myLambda;
-    //private LispList myDeclaration;
 
     public Macro (LispList def, Environment environment) {
-        List<LObject> data = def.toLObjectList();
+        List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
-            throw new RuntimeException("wrong macro definition");
+            throw new InternalError("Wrong macro definition");
         myLambda = new Lambda(LispList.list(data.subList(1, data.size())), environment);
     }
 
-    /*public void setDeclaration(LispList declaration) {
-        myDeclaration = declaration;
-    }*/
-
-    public LObject expand (Environment environment, List<LObject> args) {
+    public LispObject expand (Environment environment, List<LispObject> args) {
         return myLambda.evaluate(environment, args);
     }
 
     @Override
-    public LObject getDocumentation() {
+    public LispObject getDocumentation() {
         return myLambda.getDocumentation();
     }
 
     @Override
-    public void setDocumentation(LObject doc) {
+    public void setDocumentation(LispObject doc) {
         myLambda.setDocumentation(doc);
     }
 
@@ -52,7 +46,7 @@ public class Macro extends LispObject implements FunctionCell {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
-        throw new RuntimeException("not impl");
+    public LispObject evaluate(Environment environment) {
+        throw new InternalError("We can't come to macro evaluation: it is used as function or throws void-variable exc");
     }
 }

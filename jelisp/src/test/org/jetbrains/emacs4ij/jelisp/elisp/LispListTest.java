@@ -25,7 +25,7 @@ public class LispListTest {
     @Test
     public void testCdr () {
         LispList list = LispList.list(new LispSymbol("test"));
-        LObject list1 = list.cdr();
+        LispObject list1 = list.cdr();
         Assert.assertEquals(LispList.list(), list1);
     }
     
@@ -42,7 +42,7 @@ public class LispListTest {
     @Test
     public void testMemq() {
         LispList list = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
-        LObject m = BuiltinsList.memq(new LispInteger(2), list);
+        LispObject m = BuiltinsList.memq(new LispInteger(2), list);
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), m);
     }
     
@@ -50,10 +50,10 @@ public class LispListTest {
     public void testListOfNils () {
         LispList list = LispList.list(LispSymbol.ourNil, LispSymbol.ourNil);
         Assert.assertEquals("(nil nil)", list.toString());
-        ArrayList<LObject> tList = new ArrayList<LObject> ();
+        ArrayList<LispObject> tList = new ArrayList<LispObject> ();
         tList.add(LispSymbol.ourNil);
         tList.add(LispSymbol.ourNil);
-        Assert.assertEquals(tList, list.toLObjectList());
+        Assert.assertEquals(tList, list.toLispObjectList());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class LispListTest {
     @Test
     public void testToObjectList() {
         LispList list = LispList.testList(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.ourNil, LispList.list(new LispSymbol("b"))));
-        List<LObject> a = list.toLObjectList();
+        List<LispObject> a = list.toLispObjectList();
         Assert.assertEquals(3, a.size());
     }
     

@@ -12,8 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 public abstract class TestSetup {
     public static String setGlobalEnv() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.2");
-        return "/home/kate/JetBrains/emacs4ij/emacs4ij/src/testSrc/";
-//        return "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
+        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+        return "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     }
 }

@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -17,14 +17,14 @@ public abstract class BuiltinsVector {
     private BuiltinsVector() {}
 
     @Subroutine("make-vector")
-    public static LispVector makeVector(LObject length, LObject value) {
+    public static LispVector makeVector(LispObject length, LispObject value) {
         if (!BuiltinPredicates.isWholeNumber(length))
             throw new WrongTypeArgumentException("wholenump", length);
         return LispVector.make(((LispInteger)length).getData(), value);
     }
 
     @Subroutine ("vector")
-    public static LispVector vector(@Optional LObject... args) {
+    public static LispVector vector(@Optional LispObject... args) {
         return new LispVector(args);
     }
 

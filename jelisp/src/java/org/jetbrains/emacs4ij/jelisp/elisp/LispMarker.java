@@ -10,8 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 4:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispMarker extends LispObject {
-    private LObject myPosition;
+public class LispMarker implements LispObject {
+    private LispObject myPosition;
     private LispBuffer myBuffer;
     private LispSymbol myInsertionType; // t = after, nil = before inserted text
 
@@ -28,7 +28,7 @@ public class LispMarker extends LispObject {
         if (buffer != null) buffer.addMarker(this);
     }
 
-    public LispMarker (LObject position, LispBuffer buffer) {
+    public LispMarker (LispObject position, LispBuffer buffer) {
         myBuffer = buffer;
         setPosition(position);
         myInsertionType = LispSymbol.ourNil;
@@ -46,7 +46,7 @@ public class LispMarker extends LispObject {
         return myInsertionType;
     }
 
-    public LObject setInsertionType (LObject type) {
+    public LispObject setInsertionType (LispObject type) {
         if (type.equals(LispSymbol.ourNil))
             myInsertionType = LispSymbol.ourNil;
         else
@@ -84,7 +84,7 @@ public class LispMarker extends LispObject {
         return "#<marker at " + myPosition + " in " + myBuffer.getName() + '>';
     }
 
-    public LObject getPosition() {
+    public LispObject getPosition() {
         return myPosition;
     }
 
@@ -92,7 +92,7 @@ public class LispMarker extends LispObject {
         return myBuffer;
     }
 
-    public void setPosition(LObject position) {
+    public void setPosition(LispObject position) {
         if (position.equals(LispSymbol.ourNil)) {
             myPosition = position;
             return;
@@ -129,7 +129,7 @@ public class LispMarker extends LispObject {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         return this;
     }
 }

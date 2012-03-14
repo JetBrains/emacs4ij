@@ -21,16 +21,16 @@ import java.util.List;
  *
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
-public class LispSymbol extends LispAtom {
+public class LispSymbol implements LispAtom {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
-    private LObject myValue = null; //ourVoid;
-    private LObject myFunction = null;
+    private LispObject myValue = null;
+    private LispObject myFunction = null;
     private boolean isBufferLocal = false;
-    private HashMap<LispSymbol, LObject> myProperties = new HashMap<>();
+    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
@@ -44,7 +44,7 @@ public class LispSymbol extends LispAtom {
         myProperties = symbol.myProperties;
     }
 
-    public LispSymbol (LispSymbol symbol, LObject value) {
+    public LispSymbol (LispSymbol symbol, LispObject value) {
         myName = symbol.myName;
         myValue = value;
         myFunction = symbol.myFunction;
@@ -67,12 +67,12 @@ public class LispSymbol extends LispAtom {
         isBufferLocal = bufferLocal;
     }
 
-    public LispSymbol (String myName, LObject value) {
+    public LispSymbol (String myName, LispObject value) {
         this.myName = myName;
         myValue = value;
     }
 
-    public LispSymbol (String myName, LObject value, boolean bufferLocal) {
+    public LispSymbol (String myName, LispObject value, boolean bufferLocal) {
         this.myName = myName;
         myValue = value;
         isBufferLocal = bufferLocal;
@@ -90,11 +90,11 @@ public class LispSymbol extends LispAtom {
         return myName;
     }
 
-    public LObject getValue() {
+    public LispObject getValue() {
         return myValue;
     }
 
-    public void setValue(LObject myValue) {
+    public void setValue(LispObject myValue) {
         this.myValue = myValue;
     }
 
@@ -110,11 +110,11 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    public LObject getFunction () {
+    public LispObject getFunction () {
         return myFunction;
     }
 
-    public void setFunction(LObject myFunction) {
+    public void setFunction(LispObject myFunction) {
         this.myFunction = myFunction;
     }
 
@@ -154,33 +154,21 @@ public class LispSymbol extends LispAtom {
 
     public boolean isInteractive (Environment environment) {
         if (!isFunction())
-            throw new RuntimeException("wrong usage of function isInteractive with symbol " + myName +
+            throw new InternalError("Wrong usage of function isInteractive with symbol " + myName +
                 ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
-
         castFunctionCell(environment);
         return ((FunctionCell)myFunction).isInteractive();
-        /*if (isCustom()) {
-            castToLambda(environment);
-            return ((Lambda)myFunction).isInteractive();
-        } if (isSubroutine()) {
-            return ((Primitive)myFunction).isInteractive();
-        }
-        throw new RuntimeException("wrong usage of function isInteractive with symbol " + myName +
-                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));     */
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
-
         if (o.getClass().equals(LispList.class) && ((LispList)o).isEmpty() && this.equals(ourNil))
             return true;
         if (o.getClass() != getClass())
             return false;
-
         LispSymbol that = (LispSymbol) o;
-
         return !(myName != null ? !myName.equals(that.myName) : that.myName != null);
     }
 
@@ -201,7 +189,7 @@ public class LispSymbol extends LispAtom {
     /**
      * takes Environment
      */
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         if (equals(ourNil) || equals(ourT) || equals(ourVoid) || isKeyword())
             return this;
         if (hasValue()) {
@@ -230,13 +218,13 @@ public class LispSymbol extends LispAtom {
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
         if (!q.equals(myName)) {
-            throw new RuntimeException("bug in call stack");
+            throw new InternalError("Bug in call stack!");
         }
     }
 
-    public LObject evaluateFunction (Environment environment, @Nullable List<LObject> args) {
+    public LispObject evaluateFunction (Environment environment, @Nullable List<LispObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-        LObject result;
+        LispObject result;
         if (args == null)
             args = new ArrayList<>();
         if (isSubroutine()) {
@@ -259,7 +247,7 @@ public class LispSymbol extends LispAtom {
         return result;
     }
 
-    public LObject macroExpand (Environment environment, List<LObject> args) {
+    public LispObject macroExpand (Environment environment, List<LispObject> args) {
         castToMacro(environment);
         try {
             return ((Macro)myFunction).expand(environment, args);
@@ -268,11 +256,11 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    private LObject evaluateMacro(Environment environment, List<LObject> args) {
+    private LispObject evaluateMacro(Environment environment, List<LispObject> args) {
         return macroExpand(environment, args).evaluate(environment);
     }
 
-    private LObject evaluateCustomFunction (Environment environment, List<LObject> args) {
+    private LispObject evaluateCustomFunction (Environment environment, List<LispObject> args) {
         if (!environment.areArgumentsEvaluated()) {
             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                 args.set(i, args.get(i).evaluate(environment));
@@ -285,27 +273,26 @@ public class LispSymbol extends LispAtom {
     }
 
     public LispObject getPropertyList() {
-        ArrayList<LObject> pList = new ArrayList<>();
+        ArrayList<LispObject> pList = new ArrayList<>();
         for (LispSymbol key: myProperties.keySet())
             pList.add(LispList.list(key, myProperties.get(key)));
         return LispList.list(pList);
     }
 
-    public LObject getProperty (String pName) {
-        return getProperty(new LispSymbol(pName));
+    public LispObject getProperty (String pName) {
+        LispObject value = getProperty(new LispSymbol(pName));
+        return value == null ? LispSymbol.ourNil : value;
     }
 
-    public LObject getProperty(LispSymbol pName) {
-        if (myProperties.containsKey(pName))
-            return myProperties.get(pName);
-        return LispSymbol.ourNil;
+    public LispObject getProperty(LispSymbol pName) {
+        return myProperties.get(pName);
     }
 
-    public void setProperty(LispSymbol key, LObject value) {
+    public void setProperty(LispSymbol key, LispObject value) {
         myProperties.put(key, value);
     }
 
-    public void setProperty(String keyName, LObject value) {
+    public void setProperty(String keyName, LispObject value) {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
@@ -317,26 +304,26 @@ public class LispSymbol extends LispAtom {
         }
     }
 
-    public LObject getDocumentation (Environment environment) {
+    public LispObject getDocumentation (Environment environment) {
         if (myFunction == null)
             return getProperty("variable-documentation");
         castFunctionCell(environment);
         return ((FunctionCell)myFunction).getDocumentation();
     }
 
-    public void setVariableDocumentation (LObject value) {
+    public void setVariableDocumentation (LispObject value) {
         if (value instanceof LispString)
             setProperty("variable-documentation", value);
     }
     
-    public void setFunctionDocumentation (LObject doc, Environment environment) {
+    public void setFunctionDocumentation (LispObject doc, Environment environment) {
         if (myFunction == null)
             return;
         castFunctionCell(environment);
         ((FunctionCell) myFunction).setDocumentation(doc);
     }
 
-    public void setGlobalVariableDocumentation (LObject value) {
+    public void setGlobalVariableDocumentation (LispObject value) {
         setProperty("variable-documentation", value);
     }
 
@@ -352,13 +339,13 @@ public class LispSymbol extends LispAtom {
     }
 
     public LispList parseModifiers () {
-        LObject elements = getProperty("event-symbol-element-mask");
+        LispObject elements = getProperty("event-symbol-element-mask");
         if (elements instanceof LispList)
             return (LispList) elements;
         else {
             LispInteger end = new LispInteger(0);
             int modifiers = BuiltinsKey.parseModifiersUncached(this, end);
-            LObject unmodified = BuiltinsSymbol.intern(new LispString(myName.substring(end.getData())), LispSymbol.ourNil);
+            LispObject unmodified = BuiltinsSymbol.intern(new LispString(myName.substring(end.getData())), LispSymbol.ourNil);
             if ((modifiers & ~LispNumber.INTMASK) != 0) {
 //              todo  kill (getpid (), SIGABRT); =)
                 return null;

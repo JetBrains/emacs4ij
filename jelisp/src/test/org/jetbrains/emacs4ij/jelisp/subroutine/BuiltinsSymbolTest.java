@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
@@ -21,7 +21,7 @@ import org.junit.Test;
 public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testSymbolFunction () {
-        LObject lispObject = evaluateString("(symbol-function '+)");
+        LispObject lispObject = evaluateString("(symbol-function '+)");
         Assert.assertEquals(new LispString("#<subr +>"), new LispString(lispObject.toString()));
     }
 
@@ -61,22 +61,22 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testGet() throws Exception {
         evaluateString("(set 'a 5)");
-        LObject LObject = evaluateString("(get 'a 'p2)");
-        Assert.assertEquals(LispSymbol.ourNil, LObject);
+        LispObject LispObject = evaluateString("(get 'a 'p2)");
+        Assert.assertEquals(LispSymbol.ourNil, LispObject);
     }
 
     @Test
     public void testPut() throws Exception {
         evaluateString("(set 'a 5)");
         evaluateString("(put 'a 'p1 'v1)");
-        LObject lispObject = evaluateString("(get 'a 'p1)");
+        LispObject lispObject = evaluateString("(get 'a 'p1)");
         Assert.assertEquals(new LispSymbol("v1"), lispObject);
     }
 
     @Test
     public void testSymbolValueInteger() {
         evaluateString("(set 'a 5)");
-        LObject lispObject = evaluateString("(symbol-value 'a)");
+        LispObject lispObject = evaluateString("(symbol-value 'a)");
         Assert.assertEquals(new LispInteger(5), lispObject);
     }
 
@@ -94,13 +94,13 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentationProperty_MyVar () {
         evaluateString("(defvar a 1 \"doc\")");
-        LObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), doc);
     }
 
     @Test
     public void testDocumentationProperty_GlobalVar () {
-        LObject doc = evaluateString("(documentation-property 'load-history 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'load-history 'variable-documentation)");
         LispString trueDoc = new LispString("Alist mapping loaded file names to symbols and features.\n" +
                 "Each alist element should be a list (FILE-NAME ENTRIES...), where\n" +
                 "FILE-NAME is the name of a file that has been loaded into Emacs.\n" +
@@ -124,7 +124,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
 
     @Test
     public void testDocumentationProperty_GlobalVar1 () {
-        LObject doc = evaluateString("(documentation-property 'current-load-list 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'current-load-list 'variable-documentation)");
         LispString trueDoc = new LispString("Used for internal purposes by `load'.");
         Assert.assertEquals(trueDoc, doc);
     }
@@ -132,7 +132,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentationProperty_GlobalVar2 () {
         evaluateString("global-mark-ring");
-        LObject doc = evaluateString("(documentation-property 'global-mark-ring 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'global-mark-ring 'variable-documentation)");
         LispString trueDoc = new LispString("The list of saved global marks, most recent first.");
         Assert.assertEquals(trueDoc, doc);
     }
@@ -140,14 +140,14 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentationProperty_GlobalVar3 () {
         evaluateString("global-mark-ring-max");
-        LObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
         LispString trueDoc = new LispString("Maximum size of global mark ring.  \\\nStart discarding off end if gets this big.");
         Assert.assertEquals(trueDoc, doc);
     }
 
     @Test
     public void testDocumentationProperty_GlobalVar4 () {
-        LObject doc = evaluateString("(documentation-property 'executing-kbd-macro 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'executing-kbd-macro 'variable-documentation)");
         LispString trueDoc = new LispString("Currently executing keyboard macro (string or vector).\n"+
                 "This is nil when not executing a keyboard macro.");
         Assert.assertEquals(trueDoc, doc);
@@ -156,7 +156,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentationProperty_Negative () {
         evaluateString("transient-mark-mode");
-        LObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'transient-mark-mode 'variable-documentation)");
         String trueDoc = "*Non-nil if Transient Mark mode is enabled.\n" +
                 "See the command `transient-mark-mode' for a description of this minor mode.\n" +
                 "\n" +
@@ -169,7 +169,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
 
     @Test
     public void testDocumentation_Builtin() {
-        LObject doc = evaluateString("(documentation-property 'if 'function-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'if 'function-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
         doc = evaluateString("(get 'if 'function-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
@@ -190,7 +190,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentation_Macro () {
         evaluateString("(defmacro m () \"doc\")");
-        LObject doc = evaluateString("(documentation 'm)");
+        LispObject doc = evaluateString("(documentation 'm)");
         Assert.assertEquals(new LispString("doc"), doc);
         doc = evaluateString("(documentation (symbol-function 'm))");
         Assert.assertEquals(new LispString("doc"), doc);
@@ -199,7 +199,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentation_CustomFun() {
         evaluateString("(defun f () \"doc\")");
-        LObject doc = evaluateString("(documentation-property 'f 'function-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'f 'function-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
         doc = evaluateString("(get 'f 'function-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
@@ -210,21 +210,21 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testResetLambdaDocumentation() {
         evaluateString("(defun a () \"doc1\")");
-        LObject doc = evaluateString("(documentation 'a)");
+        LispObject doc = evaluateString("(documentation 'a)");
         org.junit.Assert.assertEquals(new LispString("doc1"), doc);
         evaluateString("(put 'a 'function-documentation \"doc2\")");
         doc = evaluateString("(documentation 'a)");
         org.junit.Assert.assertEquals(new LispString("doc2"), doc);
 
         //fun staff:
-        LObject f = evaluateString("(symbol-function 'a)");
+        LispObject f = evaluateString("(symbol-function 'a)");
         Assert.assertEquals("(lambda nil \"doc1\")", f.toString());
     }
 
     @Test
     public void testFunctionDocumentationNil () {
         evaluateString("(defun a () \"doc\" 2)");
-        LObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
+        LispObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
     }
 
@@ -242,7 +242,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testDocumentationString () {
         evaluateString("(defun a () \"doc\" 2)");
-        LObject doc = evaluateString("(documentation 'a)");
+        LispObject doc = evaluateString("(documentation 'a)");
         org.junit.Assert.assertEquals(new LispString("doc"), doc);
     }
 
@@ -250,7 +250,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     public void testDocumentationProperty () {
         evaluateString("(defun a () 2)");
         evaluateString("(put 'a 'function-documentation \"doc\")");
-        LObject doc = evaluateString("(documentation 'a)");
+        LispObject doc = evaluateString("(documentation 'a)");
         org.junit.Assert.assertEquals(new LispString("doc"), doc);
         doc = evaluateString("(documentation-property 'a 'function-documentation)");
         org.junit.Assert.assertEquals(new LispString("doc"), doc);
@@ -260,27 +260,27 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     public void testDocumentationPropertyFun () {
         evaluateString("(defvar a 2)");
         evaluateString("(put 'a 'function-documentation \"doc\")");
-        LObject doc = evaluateString("(documentation 'a)");
+        LispObject doc = evaluateString("(documentation 'a)");
         org.junit.Assert.assertEquals(new LispString("doc"), doc);
     }
 
     @Test
     public void testDefaultValueDefvar () {
         evaluateString("(defvar a 1)");
-        LObject r = evaluateString("(default-value 'a)");
+        LispObject r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
     }
 
     @Test
     public void testDefaultValueSetq () {
         evaluateString("(setq a 1)");
-        LObject r = evaluateString("(default-value 'a)");
+        LispObject r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
     }
     
     @Test
     public void testSetDefault() {
-        LObject r = evaluateString("(set-default 'a 1)");
+        LispObject r = evaluateString("(set-default 'a 1)");
         Assert.assertEquals(new LispInteger(1), r);
         r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
@@ -290,7 +290,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
 
     @Test
     public void testSetDefaultIndirect() {
-        LObject r = evaluateString("(set-default (car '(a b c)) 1)");
+        LispObject r = evaluateString("(set-default (car '(a b c)) 1)");
         Assert.assertEquals(new LispInteger(1), r);
         r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
@@ -300,23 +300,9 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
 
     @Test
     public void test1() {
-        LispSymbol q = environment.find("b");
-        Assert.assertNull(q);
-
-        LObject r = environment.find("b", "setProperty", new Class[] {LispSymbol.class, LObject.class}, "some-prop", 123);
-        Assert.assertNull(r);
-
-        evaluateString("(setq b 1)");
-        r = environment.find("b", "setProperty", new Class[] {LispSymbol.class, LObject.class}, new LispSymbol("some-prop"), new LispInteger(123));
-        Assert.assertNotNull(r);
-        
-        LispSymbol s = (LispSymbol) environment.find("nil", "setProperty", new Class[] {LispSymbol.class, LObject.class}, new LispSymbol("some-prop"), new LispInteger(123));
-        System.out.println(s.getPropertyList().toString());
-
         evaluateString("(put 'q 'prop 1)");
-        r = evaluateString("(get 'q 'prop)");
+        LispObject r = evaluateString("(get 'q 'prop)");
         Assert.assertEquals(new LispInteger(1), r);
-        
         try {
             evaluateString("q");
         } catch (Exception e) {
@@ -328,7 +314,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     @Test
     public void testCustomInitReset() {
         evaluateString("(put 'q 'prop 1)");
-        LObject r = evaluateString("(get 'q 'prop)");
+        LispObject r = evaluateString("(get 'q 'prop)");
         Assert.assertEquals(new LispInteger(1), r);
         evaluateString("(custom-initialize-reset 'q 2)");
         r = evaluateString("q");
@@ -339,15 +325,15 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     
     @Test
     public void testDefCustom() {
-        LObject r = evaluateString("(defcustom a 5 \"doc\")");
-        LObject b = evaluateString("(documentation-property 'a 'variable-documentation)");
+        LispObject r = evaluateString("(defcustom a 5 \"doc\")");
+        LispObject b = evaluateString("(documentation-property 'a 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
     }
 
     @Test
     public void testCustomDeclareVariable() {
         evaluateString("(custom-declare-variable 'b 10 \"doc\")");
-        LObject b = evaluateString("b");
+        LispObject b = evaluateString("b");
         Assert.assertNotNull(b);
         b = evaluateString("(documentation-property 'b 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);

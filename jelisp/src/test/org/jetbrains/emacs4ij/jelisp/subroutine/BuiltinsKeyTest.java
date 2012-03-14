@@ -16,7 +16,7 @@ import org.junit.Test;
 public class BuiltinsKeyTest extends BaseSubroutineTest {
     @Test
     public void testKeymapP() throws Exception {
-        LObject r = evaluateString("(keymapp 5)");
+        LispObject r = evaluateString("(keymapp 5)");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(keymapp '(keymap))");
         Assert.assertEquals(LispSymbol.ourT, r);
@@ -33,7 +33,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testMakeSparseKeymap() throws Exception {
-        LObject r = evaluateString("(setq k (make-sparse-keymap))");
+        LispObject r = evaluateString("(setq k (make-sparse-keymap))");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
         r = evaluateString("k");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
@@ -41,7 +41,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testMakeKeymap() throws Exception {
-        LObject r = evaluateString("(make-keymap 5)");
+        LispObject r = evaluateString("(make-keymap 5)");
         String expected = "(keymap #^[nil nil keymap nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] 5)";
         Assert.assertEquals(expected, r.toString());
     }
@@ -54,14 +54,14 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     @Test
     public void testKeymapParent() throws Exception {
         evaluateString("(setq k (make-sparse-keymap))");
-        LObject r = evaluateString("(keymap-parent k)");
+        LispObject r = evaluateString("(keymap-parent k)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
     @Test
     public void testSetKeymapParent() throws Exception {
         evaluateString("(setq k (make-sparse-keymap))");
-        LObject r = evaluateString("(set-keymap-parent k '(keymap))");
+        LispObject r = evaluateString("(set-keymap-parent k '(keymap))");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
         r = evaluateString("(keymap-parent k)");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
@@ -76,13 +76,13 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         evaluateString("(setq arg1 '(quote setq))");
         evaluateString("(setq arg2 nil)");
         GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
-        LObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
+        LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
         Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
     }
 
     @Test
     public void testKbdMacro() {
-        LObject r = evaluateString("(kbd \"C-x\")");
+        LispObject r = evaluateString("(kbd \"C-x\")");
         Assert.assertEquals(new LispString("^X"), r);
     }
 
@@ -93,7 +93,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     
     @Test
     public void testEventConvertListNil() {
-        LObject r = evaluateString("(event-convert-list \"C-x\")");
+        LispObject r = evaluateString("(event-convert-list \"C-x\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(event-convert-list 5)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -101,7 +101,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testEventConvertList() {
-        LObject r = evaluateString("(event-convert-list '(C ?s))");
+        LispObject r = evaluateString("(event-convert-list '(C ?s))");
         Assert.assertEquals(new LispInteger(19), r);
         r = evaluateString("(event-convert-list '(C M S alt ?s))");
         Assert.assertEquals(new LispInteger(171966483), r);
@@ -120,16 +120,16 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     
     @Test
     public void testKeyDescription() {
-        LObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
+        LispObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
         Assert.assertEquals(new LispString("C-f C-g C-a C-b C-c"), r);
     }
 
     @Test
     public void testDefineKey() {
         evaluateString("(defvar km (make-sparse-keymap))");
-        LObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
+        LispObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
-        LObject keyMap = evaluateString("km");
+        LispObject keyMap = evaluateString("km");
         Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
@@ -137,9 +137,9 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     public void testDefineKeyTwo() {
         evaluateString("(defvar km (make-sparse-keymap))");
         evaluateString("(define-key km \"\\C-d\" 'forward-char)");
-        LObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
+        LispObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
-        LObject keyMap = evaluateString("km");
+        LispObject keyMap = evaluateString("km");
         Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
@@ -147,7 +147,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     public void testDefineKeyInKeyMap() {
         evaluateString("(defvar km (make-keymap))");
         evaluateString("(define-key km \"C-d\" 'forward-char)");
-        LObject km = evaluateString("km");
+        LispObject km = evaluateString("km");
         String expected = "(keymap #^[nil nil keymap " +
                 "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 " +
                 "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])";
@@ -156,13 +156,13 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testGlobalSetKey() {
-        LObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");
+        LispObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
     }
     
     @Test
     public void testGlobalMap() {
-        LObject r = evaluateString("global-map");
+        LispObject r = evaluateString("global-map");
         System.out.println(r.toString());
         r = evaluateString("ctl-x-map");
         System.out.println(r.toString());

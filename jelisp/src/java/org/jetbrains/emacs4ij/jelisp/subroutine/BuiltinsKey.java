@@ -16,22 +16,22 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinsKey {
     private BuiltinsKey() {}
 
-    public static LObject globalMap;
-    private static LObject currentGlobalMap;
+    public static LispObject globalMap;
+    private static LispObject currentGlobalMap;
     private static LispList exclude_keys;
 
     private static LispSymbol myKeyMapSymbol = new LispSymbol("keymap");
 
-    private static boolean isListKeymap (LObject object) {
+    private static boolean isListKeymap (LispObject object) {
         return (object instanceof LispList && ((LispList) object).car().equals(myKeyMapSymbol));
     }
 
-    private static boolean isKeymap (LObject object) {
+    private static boolean isKeymap (LispObject object) {
         return (object instanceof LispSymbol && isListKeymap(((LispSymbol) object).getFunction()))
                 || isListKeymap(object);
     }
 
-    private static LispList getKeymap(LObject object) {
+    private static LispList getKeymap(LispObject object) {
         if (isListKeymap(object)) {
             return (LispList) object;
         }
@@ -41,18 +41,18 @@ public abstract class BuiltinsKey {
         return null;
     }
 
-    private static void check (LObject object) {
+    private static void check (LispObject object) {
         if (!isKeymap(object))
             throw new WrongTypeArgumentException("keymapp", object);
     }
 
     @Subroutine("keymapp")
-    public static LispSymbol keymapP (LObject object) {
+    public static LispSymbol keymapP (LispObject object) {
         return LispSymbol.bool(isKeymap(object));
     }
 
     @Subroutine("make-sparse-keymap")
-    public static LispList makeSparseKeymap (@Nullable @Optional LObject prompt) {
+    public static LispList makeSparseKeymap (@Nullable @Optional LispObject prompt) {
         if (prompt != null && !prompt.equals(LispSymbol.ourNil)) {
             //todo prompt is String
             throw new NotImplementedException();
@@ -61,9 +61,9 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("make-keymap")
-    public static LispList makeKeymap (@Optional LObject prompt) {
+    public static LispList makeKeymap (@Optional LispObject prompt) {
         //note: though prompt is supposed to be a string, any object is accepted in Emacs
-        LObject tail = LispSymbol.ourNil;
+        LispObject tail = LispSymbol.ourNil;
         if (prompt != null && !prompt.equals(LispSymbol.ourNil)) {
             tail = LispList.list(prompt);
         }
@@ -72,13 +72,13 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("copy-keymap")
-    public static LispList copyKeymap (LObject object) {
+    public static LispList copyKeymap (LispObject object) {
         check(object);
         throw new NotImplementedException();
     }
 
     @Subroutine("keymap-parent")
-    public static LObject keymapParent (LObject object) {
+    public static LispObject keymapParent (LispObject object) {
         LispList element = getKeymap(object);
         if (element == null)
             throw new WrongTypeArgumentException("keymapp", object);
@@ -86,7 +86,7 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("set-keymap-parent")
-    public static LObject setKeymapParent (LObject object, LObject parent) {
+    public static LispObject setKeymapParent (LispObject object, LispObject parent) {
         LispList element = getKeymap(object);
         if (element == null)
             throw new WrongTypeArgumentException("keymapp", object);
@@ -98,18 +98,18 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("define-prefix-command")
-    public static LispSymbol definePrefixCommand (LispSymbol command, @Optional LObject mapVar, @Optional LObject name) {
+    public static LispSymbol definePrefixCommand (LispSymbol command, @Optional LispObject mapVar, @Optional LispObject name) {
         throw new NotImplementedException();
 //        return command;
     }
 
     @Subroutine("current-active-maps")
-    public static LObject currentActiveMaps (@Optional LObject olp, LObject position) {
+    public static LispObject currentActiveMaps (@Optional LispObject olp, LispObject position) {
         return null;
     }
 
     @Subroutine("key-binding")
-    public static LObject keyBinding (LObject key, @Optional LObject acceptDefault, LObject noReMap, LObject position) {
+    public static LispObject keyBinding (LispObject key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
         if (key instanceof LispString) {
             return null;
         }
@@ -120,7 +120,7 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("define-key")
-    public static LObject defineKey(Environment environment, LispList keymap, LObject key, LObject function) {
+    public static LispObject defineKey(Environment environment, LispList keymap, LispObject key, LispObject function) {
         check(keymap);
         if (!(key instanceof LispString) && !(key instanceof LispVector))
             throw new WrongTypeArgumentException("arrayp", key);
@@ -137,7 +137,7 @@ public abstract class BuiltinsKey {
             int i = ((LispVector) function).length();
             LispVector tmp = LispVector.make(i, LispSymbol.ourNil);
             while (--i >= 0) {
-                LObject c = ((LispVector) function).getItem(i);
+                LispObject c = ((LispVector) function).getItem(i);
                 if (c instanceof LispList && lucid_event_type_list_p (c))
                     c = eventConvertList(c);
                 tmp.setItem(i, c);
@@ -149,7 +149,7 @@ public abstract class BuiltinsKey {
         int idx = 0;
         int metized = 0;
         while (true) {
-            LObject c = BuiltinsCore.aRef((LispArray) key, new LispInteger(idx));
+            LispObject c = BuiltinsCore.aRef((LispArray) key, new LispInteger(idx));
             if (c instanceof LispList) {
                 if (lucid_event_type_list_p (c))
                     c = eventConvertList(c);
@@ -182,7 +182,7 @@ public abstract class BuiltinsKey {
             if (idx == length)
                 return store_in_keymap (keymap, c, function);
 
-            LObject cmd = accessKeyMap(keymap, c, 0, 1);
+            LispObject cmd = accessKeyMap(keymap, c, 0, 1);
 
             /* If this key is undefined, make it a prefix.  */
             if (cmd.equals(LispSymbol.ourNil))
@@ -198,15 +198,15 @@ public abstract class BuiltinsKey {
         }
     }
 
-    private static LObject define_as_prefix (LObject keymap, LObject c) {
-        LObject cmd = makeSparseKeymap(null);
+    private static LispObject define_as_prefix (LispObject keymap, LispObject c) {
+        LispObject cmd = makeSparseKeymap(null);
         cmd = BuiltinsList.nConcatenate(cmd, accessKeyMap (keymap, c, 0, 0));
         store_in_keymap (keymap, c, cmd);
         return cmd;
     }
 
     @Subroutine("key-description")
-    public static LispString keyDescription (Environment environment, LObject keys, @Optional LObject prefix) {
+    public static LispString keyDescription (Environment environment, LispObject keys, @Optional LispObject prefix) {
         String first = (prefix == null || prefix.equals(LispSymbol.ourNil))
                 ? ""
                 : BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), prefix, new LispString(" ")).getData();
@@ -215,7 +215,7 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("current-global-map")
-    public static LObject currentGlobalMap () {
+    public static LispObject currentGlobalMap () {
         return currentGlobalMap;
     }
 
@@ -238,11 +238,11 @@ public abstract class BuiltinsKey {
         currentGlobalMap = globalMap;
 //        staticpro (&global_map);
 //        staticpro (&current_global_map);
-        LObject meta_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
+        LispObject meta_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(g, new LispSymbol("esc-map"), meta_map);
         BuiltinsCore.functionSet(g, new LispSymbol("ESC-prefix"), meta_map);
 
-        LObject control_x_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
+        LispObject control_x_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(g, new LispSymbol("ctl-x-map"), control_x_map);
         BuiltinsCore.functionSet(g, new LispSymbol("Control-X-prefix"), control_x_map);
 
@@ -355,11 +355,11 @@ public abstract class BuiltinsKey {
         return g.defineSymbol(name, BuiltinsKey.makeSparseKeymap(LispSymbol.ourNil));
     }
 
-    public static void initial_define_key (LObject keymap, int key, String name) {
+    public static void initial_define_key (LispObject keymap, int key, String name) {
         store_in_keymap (keymap, new LispInteger(key), new LispString(name));
     }
 
-    private static LObject store_in_keymap (LObject keymap, LObject idx, LObject def) {
+    private static LispObject store_in_keymap (LispObject keymap, LispObject idx, LispObject def) {
         if (!isListKeymap(keymap))
             BuiltinsCore.error(GlobalEnvironment.INSTANCE, "attempt to define a key in a non-keymap");
         if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
@@ -377,9 +377,9 @@ public abstract class BuiltinsKey {
         /* Scan the keymap for a binding of idx.  */
 
         LispList insertion_point = (LispList) keymap;
-        for (LObject tail = ((LispList)keymap).cdr(); tail instanceof LispList; tail = ((LispList) tail).cdr())
+        for (LispObject tail = ((LispList)keymap).cdr(); tail instanceof LispList; tail = ((LispList) tail).cdr())
         {
-            LObject elt = ((LispList) tail).car();
+            LispObject elt = ((LispList) tail).car();
             if (elt instanceof LispVector) {
                 if (BuiltinPredicates.isWholeNumber(idx) && ((LispInteger)idx).getData() < ((LispVector) elt).length()) {
                     BuiltinsCore.aSet((LispVector) elt, (LispInteger) idx, def);
@@ -426,7 +426,7 @@ public abstract class BuiltinsKey {
                 }
             }
             else if (BuiltinsCore.eqs(elt, myKeyMapSymbol)) {
-                LObject tmp;
+                LispObject tmp;
                 if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
                     tmp = BuiltinsCharTable.makeCharTable(myKeyMapSymbol, LispSymbol.ourNil);
                     BuiltinsCharTable.setCharTableRange((LispCharTable) tmp, idx, def.equals(LispSymbol.ourNil) ? LispSymbol.ourT : def);
@@ -440,7 +440,7 @@ public abstract class BuiltinsKey {
             }
 //                QUIT;
         }
-        LObject tmp;
+        LispObject tmp;
         if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
             tmp = BuiltinsCharTable.makeCharTable(myKeyMapSymbol, LispSymbol.ourNil);
             BuiltinsCharTable.setCharTableRange((LispCharTable) tmp, idx, def.equals(LispSymbol.ourNil) ? LispSymbol.ourT : def);
@@ -453,7 +453,7 @@ public abstract class BuiltinsKey {
         return def;
     }
 
-    public static int parseModifiersUncached(LObject symbol, LispInteger lispModifierEnd) {
+    public static int parseModifiersUncached(LispObject symbol, LispInteger lispModifierEnd) {
         if (!(symbol instanceof LispSymbol))
             throw new WrongTypeArgumentException("symbolp", symbol);
         LispString name = new LispString(((LispSymbol) symbol).getName());
@@ -494,9 +494,9 @@ public abstract class BuiltinsKey {
         return modifiers;
     }
 
-    private static boolean lucid_event_type_list_p (LObject object) {
-        for (LObject tail = object; tail instanceof LispList; tail = ((LispList) tail).cdr()) {
-            LObject item = ((LispList) tail).car();
+    private static boolean lucid_event_type_list_p (LispObject object) {
+        for (LispObject tail = object; tail instanceof LispList; tail = ((LispList) tail).cdr()) {
+            LispObject item = ((LispList) tail).car();
             if (!(item instanceof LispInteger || item instanceof LispSymbol))
                 return false;
         }
@@ -504,12 +504,12 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("event-convert-list")
-    public static LObject eventConvertList (LObject event_desc) {
-        LObject base = LispSymbol.ourNil;
-        LObject rest = event_desc;
+    public static LispObject eventConvertList (LispObject event_desc) {
+        LispObject base = LispSymbol.ourNil;
+        LispObject rest = event_desc;
         int modifiers = 0;
         while (rest instanceof LispList) {
-            LObject item = ((LispList) rest).car();
+            LispObject item = ((LispList) rest).car();
             rest = ((LispList) rest).cdr();
             int index = 0;
             /* Given a symbol, see if it is a modifier name.  */
@@ -550,7 +550,7 @@ public abstract class BuiltinsKey {
         }
     }
 
-    private static void silly_event_symbol_error (LObject c) {
+    private static void silly_event_symbol_error (LispObject c) {
         LispList parsed = KeyBoardUtil.parseModifiers(c);
         int modifiers = ((LispInteger)((LispList)parsed.cdr()).car()).getData();
         LispSymbol base = (LispSymbol) parsed.car();
@@ -570,9 +570,9 @@ public abstract class BuiltinsKey {
         }
     }
 
-    private static LObject accessKeyMap (LObject map, LObject idx, int t_ok, int noinherit) {
+    private static LispObject accessKeyMap (LispObject map, LispObject idx, int t_ok, int noinherit) {
         LispSymbol unbound = new LispSymbol("unbound");
-        LObject val = unbound;
+        LispObject val = unbound;
 
         idx = BuiltinPredicates.eventHead(idx);
 
@@ -592,7 +592,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
 
             if ((meta_prefix_char.getData() & CharUtil.CHAR_META) != 0)
                 meta_prefix_char.setData(27);
-            LObject meta_map = accessKeyMap(map, meta_prefix_char, t_ok, noinherit);
+            LispObject meta_map = accessKeyMap(map, meta_prefix_char, t_ok, noinherit);
             if (meta_map instanceof LispList) {
                 map = meta_map;
                 ((LispInteger) idx).setData(KeyBoardModifier.META.bitwiseAndNot((LispInteger) idx));
@@ -609,20 +609,20 @@ no binding for IDX, unless a default binding exists in MAP.  */
    to use in case we do not find a binding specifically
    for this key sequence.  */
 
-        LObject t_binding = LispSymbol.ourNil;
+        LispObject t_binding = LispSymbol.ourNil;
         if (map instanceof LispList)
-            for (LObject tail = ((LispList) map).cdr();
+            for (LispObject tail = ((LispList) map).cdr();
                  tail instanceof LispList || ((tail = getKeymap (tail)) != null);
                  tail = ((LispList)tail).cdr())
             {
-                LObject binding = ((LispList)tail).car();
+                LispObject binding = ((LispList)tail).car();
                 if (binding instanceof LispSymbol) {
                     /* If NOINHERIT, stop finding prefix definitions after we pass a second occurrence of the `keymap' symbol.  */
                     if (noinherit != 0 && BuiltinsCore.eqs(binding, myKeyMapSymbol))
                         return LispSymbol.ourNil;
                 }
                 else if (binding instanceof LispList) {
-                    LObject key = ((LispList) binding).car();
+                    LispObject key = ((LispList) binding).car();
                     if (BuiltinsCore.eqs(key, idx))
                         val = ((LispList) binding).cdr();
                     else if (t_ok != 0 && BuiltinsCore.eqs(key, LispSymbol.ourT)) {
@@ -664,15 +664,15 @@ no binding for IDX, unless a default binding exists in MAP.  */
         return getKeyElement(t_binding);
     }
 
-    private static void fix_submap_inheritance (LObject map, LObject event, LObject submap) {
+    private static void fix_submap_inheritance (LispObject map, LispObject event, LispObject submap) {
         /* SUBMAP is a cons that we found as a key binding. Discard the other things found in a menu key binding.  */
         submap = getKeymap(getKeyElement(submap));
         /* If it isn't a keymap now, there's no work to do.  */
         if (submap == null)
             return;
 
-        LObject map_parent = keymapParent(map);
-        LObject parent_entry = !map_parent.equals(LispSymbol.ourNil)
+        LispObject map_parent = keymapParent(map);
+        LispObject parent_entry = !map_parent.equals(LispSymbol.ourNil)
                 ? getKeymap(accessKeyMap(map_parent, event, 0, 0))
                 : null;
 
@@ -681,9 +681,9 @@ no binding for IDX, unless a default binding exists in MAP.  */
             return;
 
         if (! BuiltinsCore.eqs (parent_entry, submap)) {
-            LObject submap_parent = submap;
+            LispObject submap_parent = submap;
             while (true) {
-                LObject tem = keymapParent(submap_parent);
+                LispObject tem = keymapParent(submap_parent);
                 if (isKeymap(tem)) {
                     if (keymap_memberp (tem, parent_entry))
                         /* Fset_keymap_parent could create a cycle.  */
@@ -698,7 +698,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
     }
 
     /* Check whether MAP is one of MAPS parents.  */
-    private static boolean keymap_memberp (LObject map, LObject maps) {
+    private static boolean keymap_memberp (LispObject map, LispObject maps) {
         if (map.equals(LispSymbol.ourNil))
             return false;
         while (isKeymap(maps) && !BuiltinsCore.eqs(map, maps))
@@ -706,7 +706,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
         return (BuiltinsCore.eqs(map, maps));
     }
 
-    private static LObject getKeyElement (LObject object) {
+    private static LispObject getKeyElement (LispObject object) {
         while (true) {
             if (!(object instanceof LispList))
                 /* This is really the value.  */
@@ -722,13 +722,13 @@ no binding for IDX, unless a default binding exists in MAP.  */
             else if (BuiltinsCore.eqs (((LispList) object).car(), new LispString("menu-item"))) {
                 if (((LispList) object).cdr() instanceof LispList) {
                     object = ((LispList) ((LispList) object).cdr()).cdr();
-                    LObject tmp = object;
+                    LispObject tmp = object;
                     if (object instanceof LispList)
                         object = ((LispList) object).car();
                     /* If there's a `:filter FILTER', apply FILTER to the menu-item's definition to get the real definition to use.  */
                     for (; tmp instanceof LispList && ((LispList) tmp).cdr() instanceof LispList; tmp = ((LispList) tmp).cdr())
                         if (BuiltinsCore.eqs (((LispList) tmp).car(), new LispString(":filter"))) {
-                            LObject filter = ((LispList) ((LispList) tmp).cdr()).car();
+                            LispObject filter = ((LispList) ((LispList) tmp).cdr()).car();
                             filter = LispList.list(filter, LispList.list(new LispSymbol("quote"), object));
                             object = filter.evaluate(GlobalEnvironment.INSTANCE);
                             break;
@@ -749,7 +749,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
                     object = ((LispList) object).cdr();
                 /* Also remove the sublist that caches key equivalences, if any.  */
                 if (object instanceof LispList && ((LispList) object).car() instanceof LispList) {
-                    LObject carcar = ((LispList) ((LispList) object).car()).car();
+                    LispObject carcar = ((LispList) ((LispList) object).car()).car();
                     if (carcar.equals(LispSymbol.ourNil) || carcar instanceof LispVector)
                         object = ((LispList) object).cdr();
                 }
@@ -757,7 +757,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
 
             /* If the contents are (KEYMAP . ELEMENT), go indirect.  */
             else {
-                LObject map1 = getKeymap(((LispList) object).car());//, 0, autoload);
+                LispObject map1 = getKeymap(((LispList) object).car());//, 0, autoload);
                 return (map1 == null ? object /* Invalid keymap */
                         : accessKeyMap(map1, ((LispList) object).cdr(), 0, 0));
             }
@@ -765,7 +765,7 @@ no binding for IDX, unless a default binding exists in MAP.  */
     }
 
     @Subroutine("single-key-description")
-    public static LObject singleKeyDescription (LObject key, @Optional LObject no_angles) {
+    public static LispObject singleKeyDescription (LispObject key, @Optional LispObject no_angles) {
         if (key instanceof LispList && lucid_event_type_list_p (key))
             key = eventConvertList(key);
         key = BuiltinPredicates.eventHead(key);

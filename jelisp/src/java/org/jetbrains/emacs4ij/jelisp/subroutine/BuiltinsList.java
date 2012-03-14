@@ -15,26 +15,26 @@ import java.util.List;
 public abstract class BuiltinsList {
     private BuiltinsList() {}
 
-    private static boolean isCons (LObject object) {
+    private static boolean isCons (LispObject object) {
         return object instanceof LispList;
     }
 
     @Subroutine("consp")
-    public static LispSymbol consp (LObject object) {
+    public static LispSymbol consp (LispObject object) {
         return LispSymbol.bool(isCons(object));
     }
     
-    private static boolean isList (LObject object) {
+    private static boolean isList (LispObject object) {
         return object instanceof LispList || object.equals(LispSymbol.ourNil);    
     } 
 
     @Subroutine("listp")
-    public static LispSymbol listp (LObject object) {
+    public static LispSymbol listp (LispObject object) {
         return LispSymbol.bool(isList(object));
     }
 
     @Subroutine("car")
-    public static LObject car (LObject arg) {
+    public static LispObject car (LispObject arg) {
         if (arg.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         if (arg instanceof LispList)
@@ -43,7 +43,7 @@ public abstract class BuiltinsList {
     }
 
     @Subroutine("cdr")
-    public static LObject cdr (LObject arg) {
+    public static LispObject cdr (LispObject arg) {
         if (arg.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         if (arg instanceof LispList)
@@ -52,48 +52,48 @@ public abstract class BuiltinsList {
     }
 
     @Subroutine("car-safe")
-    public static LObject carSafe (LObject arg) {
+    public static LispObject carSafe (LispObject arg) {
         if (isCons(arg))
             return ((LispList)arg).car();
         return LispSymbol.ourNil;
     }
     
     @Subroutine("cdr-safe")
-    public static LObject cdrSafe (LObject arg) {
+    public static LispObject cdrSafe (LispObject arg) {
         if (isCons(arg))
             return ((LispList) arg).cdr();
         return LispSymbol.ourNil;
     }
 
     @Subroutine("member")
-    public static LispObject member (LObject element, LispList list) {
+    public static LispObject member (LispObject element, LispList list) {
         return list.memq(element, "equal");
     }
 
     @Subroutine("memq")
-    public static LispObject memq (LObject element, LispList list) {
+    public static LispObject memq (LispObject element, LispList list) {
         return list.memq(element, "eq");
     }
     
     @Subroutine("list")
-    public static LispObject list (@Optional LObject... args) {
+    public static LispObject list (@Optional LispObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
         return LispList.list(args);
     }
 
     @Subroutine("cons")
-    public static LObject cons (LObject car, LObject cdr) {
+    public static LispObject cons (LispObject car, LispObject cdr) {
         return LispList.cons(car, cdr);
     }
     
     @Subroutine("nreverse")
-    public static LObject nReverse (LispList list) {
+    public static LispObject nReverse (LispList list) {
         return list.nReverse();
     }
 
     @Subroutine("nconc")
-    public static LObject nConcatenate (@Optional LObject... lists) {
+    public static LispObject nConcatenate (@Optional LispObject... lists) {
         if (lists == null || lists.length == 0)
             return LispSymbol.ourNil;
         if (lists.length == 1)
@@ -111,8 +111,8 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("nth")
-    public static LObject nthElement (LispInteger n, LispList list) {
-        List<LObject> elements = list.toLObjectList();
+    public static LispObject nthElement (LispInteger n, LispList list) {
+        List<LispObject> elements = list.toLispObjectList();
         int index = n.getData();
         if (elements.size() < index)
             return LispSymbol.ourNil;
@@ -122,12 +122,12 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("assoc")
-    public static LispList assoc (LObject key, LObject list) {
+    public static LispList assoc (LispObject key, LispObject list) {
         if (!isList(list))
             throw new WrongTypeArgumentException("listp", list);
         if (list.equals(LispSymbol.ourNil))
             return LispList.list();
-        for (LObject element : ((LispList)list).toLObjectList()) {
+        for (LispObject element : ((LispList)list).toLispObjectList()) {
             if (element instanceof LispList) {
                 if (key.equals(((LispList) element).car()))
                     return (LispList) element;
@@ -137,7 +137,7 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("setcdr")
-    public static LObject setCdr (LObject cell, LObject newCdr) {
+    public static LispObject setCdr (LispObject cell, LispObject newCdr) {
         if (!isCons(cell))
             throw new WrongTypeArgumentException("consp", cell);
         ((LispList)cell).setCdr(newCdr);
@@ -145,19 +145,19 @@ public abstract class BuiltinsList {
     }
 
     @Subroutine("delq")
-    public static LObject delq (LObject element, LObject list) {
+    public static LispObject delq (LispObject element, LispObject list) {
         if (!isCons(list))
             throw new WrongTypeArgumentException("listp", list);
         return ((LispList)list).delq(element);
     }
 
     @Subroutine("nthcdr")
-    public static LObject nthCdr (LispInteger n, LObject list) {
+    public static LispObject nthCdr (LispInteger n, LispObject list) {
         if (list.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         if (!(list instanceof LispList))
             throw new WrongTypeArgumentException("listp", list);
-        LObject result = list;
+        LispObject result = list;
         int i = 0;
         for (; i < n.getData() && result instanceof LispList; ++i) {
             result = ((LispList)result).cdr();
@@ -168,7 +168,7 @@ public abstract class BuiltinsList {
     }
     
     @Subroutine("assq")
-    public static LObject assq (LObject key, LObject list) {
+    public static LispObject assq (LispObject key, LispObject list) {
         if (!isList(list))
             throw new WrongTypeArgumentException("listp", list);
         if (list.equals(LispSymbol.ourNil))

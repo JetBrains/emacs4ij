@@ -31,7 +31,7 @@ public class EvaluatorTest {
         environment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
-    private LObject evaluateString (String lispCode) throws LispException {
+    private LispObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
     }
@@ -44,14 +44,14 @@ public class EvaluatorTest {
 
     @Test
     public void testEvaluateInteger () {
-        LObject LObject = evaluateString("5");
-        Assert.assertEquals(new LispInteger(5), LObject);
+        LispObject LispObject = evaluateString("5");
+        Assert.assertEquals(new LispInteger(5), LispObject);
     }
 
     @Test
     public void testEvaluateString () {
-        LObject LObject = evaluateString("\"test\"");
-        Assert.assertEquals(new LispString("test"), LObject);
+        LispObject LispObject = evaluateString("\"test\"");
+        Assert.assertEquals(new LispString("test"), LispObject);
     }
 
     @Test (expected = VoidVariableException.class)
@@ -61,13 +61,13 @@ public class EvaluatorTest {
 
     @Test
     public void testNil () {
-        LObject n = evaluateString("nil");
+        LispObject n = evaluateString("nil");
         Assert.assertEquals(LispSymbol.ourNil, n);
     }
 
     @Test
     public void testT () {
-        LObject n = evaluateString("t");
+        LispObject n = evaluateString("t");
         Assert.assertEquals(LispSymbol.ourT, n);
     }
 
@@ -75,24 +75,24 @@ public class EvaluatorTest {
     public void testOptionalRest() {
         try {
             evaluateString("(defun f (a &optional b) a b)");
-            LObject LObject = evaluateString("(f 5)");
-            Assert.assertEquals(LispSymbol.ourNil, LObject);
+            LispObject LispObject = evaluateString("(f 5)");
+            Assert.assertEquals(LispSymbol.ourNil, LispObject);
 
             evaluateString("(defun f (a &optional b) b a)");
-            LObject = evaluateString("(f 5)");
-            Assert.assertEquals(new LispInteger(5), LObject);
+            LispObject = evaluateString("(f 5)");
+            Assert.assertEquals(new LispInteger(5), LispObject);
 
             evaluateString("(defun f (a &optional b c &rest d e) a b c d e)");
-            LObject = evaluateString("(f 1 2 3 4 5)");
-            Assert.assertEquals(LispSymbol.ourNil, LObject);
+            LispObject = evaluateString("(f 1 2 3 4 5)");
+            Assert.assertEquals(LispSymbol.ourNil, LispObject);
 
             evaluateString("(defun f (a &optional b c &rest d e) d)");
-            LObject = evaluateString("(f 1 2 3 4 5)");
-            Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(5)), LObject);
+            LispObject = evaluateString("(f 1 2 3 4 5)");
+            Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(5)), LispObject);
 
             evaluateString("(defun f (a &optional b c) b c)");
-            LObject = evaluateString("(f 1)");
-            Assert.assertEquals(LispSymbol.ourNil, LObject);
+            LispObject = evaluateString("(f 1)");
+            Assert.assertEquals(LispSymbol.ourNil, LispObject);
 
         } catch (LispException e) {
             System.out.println(e.getMessage());
@@ -103,7 +103,7 @@ public class EvaluatorTest {
     @Ignore
     @Test
     public void testEvalGlobalVar() {
-        LObject var = evaluateString("default-directory");
+        LispObject var = evaluateString("default-directory");
         org.junit.Assert.assertEquals(LispSymbol.ourNil, var);
     }
 
@@ -111,7 +111,7 @@ public class EvaluatorTest {
     @Test
     public void testFinder () throws Throwable {
         try {
-            LObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
+            LispObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
             Assert.assertEquals(new LispString("src/buffer.c"), path);
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());

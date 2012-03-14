@@ -16,17 +16,17 @@ import java.util.List;
 public class LambdaArgument {
     private LispSymbol myKeyword = LispSymbol.ourNil;
     private LispSymbol myVar;
-    private LObject myInitForm = LispSymbol.ourNil;
+    private LispObject myInitForm = LispSymbol.ourNil;
     private LispSymbol mySetVar = LispSymbol.ourNil;
     public enum Type {REQUIRED, OPTIONAL, REST, KEYWORD}
     private Type myType;
 
-    public LambdaArgument (Type type, LObject arg, String fName) {
+    public LambdaArgument (Type type, LispObject arg, String fName) {
         myType = type;
         if (arg instanceof LispList) {
-            List<LObject> list = ((LispList) arg).toLObjectList();
+            List<LispObject> list = ((LispList) arg).toLispObjectList();
             if (myType == Type.KEYWORD && list.get(0) instanceof LispList) {
-                List<LObject> def = ((LispList) list.get(0)).toLObjectList();
+                List<LispObject> def = ((LispList) list.get(0)).toLispObjectList();
                 if (def.size() != 2 || !(def.get(0) instanceof LispSymbol) || !(def.get(1) instanceof LispSymbol))
                     throw new InvalidFunctionException(fName);
                 myKeyword = (LispSymbol) def.get(0);
@@ -72,11 +72,11 @@ public class LambdaArgument {
     }
 
     //todo: for test only
-    public LObject getInitForm() {
+    public LispObject getInitForm() {
         return myInitForm;
     }
 
-    public void setValue (Environment inner, @Nullable LObject value) {
+    public void setValue (Environment inner, @Nullable LispObject value) {
         myVar = new LispSymbol(myVar.getName());
         if (value == null) {
             myVar.setValue(myInitForm.evaluate(inner));

@@ -17,38 +17,38 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinPredicates {
     private BuiltinPredicates() {}
 
-    public static boolean isCharacter(LObject object) {
+    public static boolean isCharacter(LispObject object) {
         if (!isWholeNumber(object))
             return false;
         Integer data = ((LispInteger) object).getData();
         return data <= CharUtil.MAX_CHAR;
     }
 
-    public static boolean isString (LObject object) {
+    public static boolean isString (LispObject object) {
         return object instanceof LispString;
     }
 
-    public static boolean isCharOrString (LObject object) {
+    public static boolean isCharOrString (LispObject object) {
         return isCharacter(object) || isString(object);
     }
 
     @Subroutine("stringp")
-    public static LispSymbol stringp (LObject arg) {
+    public static LispSymbol stringp (LispObject arg) {
         return LispSymbol.bool(isString(arg));
     }
 
     @Subroutine("symbolp")
-    public static LispSymbol symbolp (LObject arg) {
+    public static LispSymbol symbolp (LispObject arg) {
         return LispSymbol.bool(arg instanceof LispSymbol);
     }
 
     @Subroutine("integerp")
-    public static LispSymbol integerp (LObject arg) {
+    public static LispSymbol integerp (LispObject arg) {
         return LispSymbol.bool(arg instanceof LispInteger);
     }
 
     @Subroutine("subrp")
-    public static LispObject subrp (LObject functionCell) {
+    public static LispObject subrp (LispObject functionCell) {
         if (functionCell == null || !(functionCell instanceof FunctionCell))
             return LispSymbol.ourNil;
         if (functionCell instanceof Primitive)
@@ -57,12 +57,12 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("bufferp")
-    public static LispSymbol bufferp (LObject arg) {
+    public static LispSymbol bufferp (LispObject arg) {
         return LispSymbol.bool(arg instanceof LispBuffer);
     }
 
     @Subroutine("commandp")
-    public static LispSymbol commandp (Environment environment, LObject function, @Nullable @Optional LObject forCallInteractively) {
+    public static LispSymbol commandp (Environment environment, LispObject function, @Nullable @Optional LispObject forCallInteractively) {
         if (function instanceof LispSymbol) {
             if (!((LispSymbol) function).isFunction())
                 return LispSymbol.ourNil;
@@ -95,7 +95,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("buffer-live-p")
-    public static LispSymbol bufferLivePredicate (Environment environment, LObject object) {
+    public static LispSymbol bufferLivePredicate (Environment environment, LispObject object) {
         if (object instanceof LispBuffer) {
             return LispSymbol.bool(!environment.isBufferDead(((LispBuffer) object).getName()));
         }
@@ -111,12 +111,12 @@ public abstract class BuiltinPredicates {
     }
     
     @Subroutine("byte-code-function-p")
-    public static LispSymbol byteCodeFunctionP (LObject object) {
+    public static LispSymbol byteCodeFunctionP (LispObject object) {
         return LispSymbol.ourNil;
     }
 
     @Subroutine("framep")
-    public static LispSymbol framep (LObject object) {
+    public static LispSymbol framep (LispObject object) {
         if (object instanceof LispFrame) {
             String os = System.getProperty("os.name").toLowerCase();
             if (os.contains("win"))
@@ -132,7 +132,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("frame-live-p")
-    public static LispSymbol frameLiveP (LObject object) {
+    public static LispSymbol frameLiveP (LispObject object) {
         LispSymbol frameP = framep(object);
         if (frameP.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
@@ -142,7 +142,7 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("frame-visible-p")
-    public static LispSymbol frameVisibleP (LObject object) {
+    public static LispSymbol frameVisibleP (LispObject object) {
         LispSymbol frameLiveP = frameLiveP(object);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", object);
@@ -154,27 +154,27 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("windowp")
-    public static LispSymbol windowP (LObject object) {
+    public static LispSymbol windowP (LispObject object) {
         return LispSymbol.bool (object instanceof LispWindow);
     }
     
     @Subroutine("number-or-marker-p") 
-    public static LispSymbol numberOrMarkerP (LObject object) {
+    public static LispSymbol numberOrMarkerP (LispObject object) {
         return LispSymbol.bool (object instanceof LispNumber || object instanceof LispMarker);
     }
 
     @Subroutine("integer-or-marker-p")
-    public static LispSymbol integerOrMarkerP (LObject object) {
+    public static LispSymbol integerOrMarkerP (LispObject object) {
         return LispSymbol.bool (object instanceof LispInteger || object instanceof LispMarker);
     }
 
     @Subroutine("markerp")
-    public static LispSymbol markerP (LObject object) {
+    public static LispSymbol markerP (LispObject object) {
         return LispSymbol.bool(object instanceof LispMarker);
     }
 
     @Subroutine("keywordp")
-    public static LispSymbol keywordP (LObject object) {
+    public static LispSymbol keywordP (LispObject object) {
         return LispSymbol.bool (object instanceof LispSymbol && ((LispSymbol) object).getName().startsWith(":"));
     }
 
@@ -189,35 +189,35 @@ public abstract class BuiltinPredicates {
     }
     
     @Subroutine("vectorp")
-    public static LispSymbol vectorP (LObject object) {
+    public static LispSymbol vectorP (LispObject object) {
         return LispSymbol.bool(object instanceof LispVector);
     }
     
     @Subroutine("characterp")
-    public static LispSymbol characterP (LObject object, @Optional LObject ignore) {
+    public static LispSymbol characterP (LispObject object, @Optional LispObject ignore) {
         return LispSymbol.bool(isCharacter(object));
     }
 
     @Subroutine("char-or-string-p")
-    public static LispSymbol charOrStringP (LObject object) {
+    public static LispSymbol charOrStringP (LispObject object) {
         return LispSymbol.bool(isCharOrString(object));
     }
     
     @Subroutine("numberp")
-    public static LispSymbol numberP (LObject object) {
+    public static LispSymbol numberP (LispObject object) {
         return LispSymbol.bool(object instanceof LispNumber);
     }
     
-    public static boolean isWholeNumber(LObject object) {
+    public static boolean isWholeNumber(LispObject object) {
         return (object instanceof LispInteger) && (((LispInteger) object).getData() > -1);
     }
     
     @Subroutine("wholenump")
-    public static LispSymbol wholeNumP (LObject object) {
+    public static LispSymbol wholeNumP (LispObject object) {
         return LispSymbol.bool(isWholeNumber(object));
     }
     
-    public static LObject eventHead (LObject event) {
+    public static LispObject eventHead (LispObject event) {
         return event instanceof LispList ? ((LispList) event).car() : event;
     }
 

@@ -7,8 +7,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,10 +36,10 @@ public class EvaluateCode extends AnAction {
             return;
         try {
             LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
-            LObject result = buffer.evaluateLastForm();
-            Messages.showInfoMessage(result.toString(), "Evaluation Result");
+            LispObject result = buffer.evaluateLastForm();
+            Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
         } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Evaluation Result");
+            Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }
     }
 }

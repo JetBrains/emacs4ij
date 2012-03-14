@@ -54,8 +54,8 @@ public class ForwardParser extends Parser {
         }
     }
 
-    private LObject parseList(boolean isBackQuote) {
-        ArrayList<LObject> data = new ArrayList<>();
+    private LispObject parseList(boolean isBackQuote) {
+        ArrayList<LispObject> data = new ArrayList<>();
         boolean makeList = true;
         boolean wasCons = false;
         while (true) {
@@ -76,13 +76,13 @@ public class ForwardParser extends Parser {
                                 throw new InvalidReadSyntax(")");
                             if (data.size() == 0) {
                                 makeList = false;
-                                LObject object = parseObject(isBackQuote);
+                                LispObject object = parseObject(isBackQuote);
                                 if (object != null)
                                     data.add(object);
                                 continue;
                             }
-                            LObject car = data.get(data.size()-1);
-                            LObject cdr = parseObject(isBackQuote);
+                            LispObject car = data.get(data.size()-1);
+                            LispObject cdr = parseObject(isBackQuote);
                             while (cdr == null) {
                                 advance();
                                 if (getCurrentChar() == ')')
@@ -97,7 +97,7 @@ public class ForwardParser extends Parser {
                             break;
                         }
                     }
-                    LObject object = parseObject(isBackQuote);
+                    LispObject object = parseObject(isBackQuote);
                     if (object != null) {
                         data.add(object);
                     }
@@ -323,7 +323,7 @@ public class ForwardParser extends Parser {
         setCharKey(c, key, false);
     }
 
-    private LObject parseCharacter () {
+    private LispObject parseCharacter () {
         Char c = new Char();
         while (true) {
             advance();
@@ -399,7 +399,7 @@ public class ForwardParser extends Parser {
     }
 
     @Override
-    public LObject parseLine (String lispCode) {
+    public LispObject parseLine (String lispCode) {
         myCurrentIndex = 0;
         myLispCode = lispCode;
         try {
@@ -407,7 +407,7 @@ public class ForwardParser extends Parser {
         } catch (EndOfLineException e) {
             return null;
         }
-        LObject lispObject = parseObject();
+        LispObject lispObject = parseObject();
         try {
             skipListSeparators();
             getMyCurrentIndex();
@@ -420,7 +420,7 @@ public class ForwardParser extends Parser {
     }
 
     @Override
-    protected LObject tryToParse(boolean isBackQuote) {
+    protected LispObject tryToParse(boolean isBackQuote) {
         switch (getCurrentChar()) {
             case '\'':
                 advance();

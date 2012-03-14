@@ -17,12 +17,12 @@ public abstract class BuiltinsCharTable {
     private BuiltinsCharTable() {}
 
     @Subroutine("make-char-table")
-    public static LispCharTable makeCharTable (LispSymbol purpose, @Optional LObject init) {
+    public static LispCharTable makeCharTable (LispSymbol purpose, @Optional LispObject init) {
         return new LispCharTable(purpose, init);
     }
     
     @Subroutine("char-table-p")
-    public static LispSymbol charTableP(LObject object) {
+    public static LispSymbol charTableP(LispObject object) {
         return LispSymbol.bool(object instanceof LispCharTable);
     }
     
@@ -32,12 +32,12 @@ public abstract class BuiltinsCharTable {
     }
 
     @Subroutine("char-table-parent")
-    public static LObject charTableParent (LispCharTable table) {
+    public static LispObject charTableParent (LispCharTable table) {
         return table.getParent();
     }
     
     @Subroutine("set-char-table-parent")
-    public static LObject setCharTableParent (LispCharTable table, LispObject newParent) {
+    public static LispObject setCharTableParent (LispCharTable table, LispObject newParent) {
         if (newParent instanceof LispCharTable || newParent.equals(LispSymbol.ourNil)) {
             table.setParent(newParent);
             return newParent;
@@ -46,28 +46,28 @@ public abstract class BuiltinsCharTable {
     }
     
     @Subroutine("char-table-extra-slot") 
-    public static LObject charTableExtraSlot (LispCharTable table, LispInteger n) {
+    public static LispObject charTableExtraSlot (LispCharTable table, LispInteger n) {
         if (n.getData() < 0 || n.getData() > 9)
             throw new ArgumentOutOfRange(table, n);
         return table.getExtraSlot(n.getData());
     }
 
     @Subroutine("set-char-table-extra-slot")
-    public static LObject setCharTableExtraSlot (LispCharTable table, LispInteger n, LObject value) {
+    public static LispObject setCharTableExtraSlot (LispCharTable table, LispInteger n, LispObject value) {
         if (n.getData() < 0 || n.getData() > 9)
             throw new ArgumentOutOfRange(table, n);
         table.setExtraSlot(n.getData(), value);
         return value;
     }
 
-    private static LispInteger checkChar(LObject object) {
+    private static LispInteger checkChar(LispObject object) {
         if (!BuiltinPredicates.isCharacter(object))
             throw new WrongTypeArgumentException("characterp", object.toString());
         return (LispInteger)object;
     }
 
     @Subroutine("char-table-range")
-    public static LObject charTableRange (Environment environment, LispCharTable table, LObject range) {
+    public static LispObject charTableRange (Environment environment, LispCharTable table, LispObject range) {
         if (range.equals(LispSymbol.ourNil)) {
             return table.getDefault();
         } else if (range instanceof LispInteger) { //i.e. char
@@ -83,7 +83,7 @@ public abstract class BuiltinsCharTable {
     }
     
     @Subroutine("set-char-table-range")
-    public static LObject setCharTableRange (LispCharTable table, LObject range, LObject value) {
+    public static LispObject setCharTableRange (LispCharTable table, LispObject range, LispObject value) {
         if (range.equals(LispSymbol.ourNil)) {
             table.setDefault(value);
         } else if (range.equals(LispSymbol.ourT)) {
@@ -103,7 +103,7 @@ public abstract class BuiltinsCharTable {
 
     //obsolete function in elisp
     @Subroutine("set-char-table-default")
-    public static LObject setCharTableDefault (LObject table, LObject ch, LObject value) {
+    public static LispObject setCharTableDefault (LispObject table, LispObject ch, LispObject value) {
         return LispSymbol.ourNil;
     }
 

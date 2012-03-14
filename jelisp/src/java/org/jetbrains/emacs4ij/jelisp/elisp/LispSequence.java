@@ -13,8 +13,8 @@ import java.util.List;
  */
 public interface LispSequence {
     int length();
-    List<LObject> toLObjectList();
-    List<LObject> mapCar (Environment environment, LObject method);
-    LObject copy();
+    List<LispObject> toLispObjectList();
+    List<LispObject> mapCar (Environment environment, LispObject method);
+    LispObject copy();
     String toCharString(); //for List, Vector and String only
 }

@@ -19,7 +19,7 @@ import java.util.List;
 public class IdeaFrame implements LispFrame {
     private String myId;
     protected IdeFrameImpl myFrame;
-    private HashMap<String, LObject> myParameters = new HashMap<>();
+    private HashMap<String, LispObject> myParameters = new HashMap<>();
     private ArrayList<LispWindow> myWindows = new ArrayList<>();
     
     public IdeaFrame(IdeFrameImpl frame) {
@@ -38,18 +38,13 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public LispObject evaluate(Environment environment) {
+        return this;
     }
 
     @Override
-    public LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LObject getParameter(String parameter) {
-        LObject value = myParameters.get(parameter);
+    public LispObject getParameter(String parameter) {
+        LispObject value = myParameters.get(parameter);
         if (value == null)
             throw new VoidVariableException(parameter);
         return value;

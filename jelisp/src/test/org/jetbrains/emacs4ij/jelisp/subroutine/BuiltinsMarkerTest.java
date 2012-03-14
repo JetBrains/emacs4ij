@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,14 +23,14 @@ public class BuiltinsMarkerTest extends BaseSubroutineTest {
 
     @Test
     public void testMakeMarker () {
-        LObject marker = evaluateString("(make-marker)");
+        LispObject marker = evaluateString("(make-marker)");
         Assert.assertEquals(new LispMarker(), marker);
     }
 
     @Test
     public void testSetMarkerInsertionType() throws Exception {
         evaluateString("(defvar m (make-marker))");
-        LObject lispObject =  evaluateString("(set-marker-insertion-type m ())");
+        LispObject lispObject =  evaluateString("(set-marker-insertion-type m ())");
         Assert.assertEquals(LispSymbol.ourNil, evaluateString("(marker-insertion-type m)"));
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
 

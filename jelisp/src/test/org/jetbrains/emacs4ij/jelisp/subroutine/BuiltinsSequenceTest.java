@@ -15,7 +15,7 @@ import org.junit.Test;
 public class BuiltinsSequenceTest extends BaseSubroutineTest{
     @Test
     public void testLength() throws Exception {
-        LObject r = evaluateString("(length '(1 2 3))");
+        LispObject r = evaluateString("(length '(1 2 3))");
         Assert.assertEquals(new LispInteger(3), r);
         r = evaluateString("(length ())");
         Assert.assertEquals(new LispInteger(0), r);
@@ -28,7 +28,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
     
     @Test
     public void testAppend() {
-        LObject r = evaluateString("(append \"h\" [1] \"llo\")");
+        LispObject r = evaluateString("(append \"h\" [1] \"llo\")");
         Assert.assertEquals(LispList.testList(new LispInteger(104), new LispInteger(1), new LispString("llo")), r);
         r = evaluateString("(append '() 'a)");
         Assert.assertEquals(new LispSymbol("a"), r);
@@ -44,7 +44,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
     
     @Test
     public void testMapCar() {
-        LObject r = evaluateString("(mapcar '+ \"hi\")");
+        LispObject r = evaluateString("(mapcar '+ \"hi\")");
         Assert.assertEquals(LispList.list(new LispInteger(104), new LispInteger(105)), r);
         r = evaluateString("(mapcar '+ nil)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -78,13 +78,13 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
     
     @Test
     public void testMapCarLambda() {
-        LObject r = evaluateString("(mapcar '(lambda (a) (+ 1 a)) '(1 2 3))");
+        LispObject r = evaluateString("(mapcar '(lambda (a) (+ 1 a)) '(1 2 3))");
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3), new LispInteger(4)), r);
     }
     
     @Test
     public void testConcat() {
-        LObject r = evaluateString("(concat)");
+        LispObject r = evaluateString("(concat)");
         Assert.assertEquals(new LispString(""), r);
         r = evaluateString("(concat nil nil)");
         Assert.assertEquals(new LispString(""), r);
@@ -100,7 +100,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
 
     @Test
     public void testConcatSpecial() {
-        LObject r = evaluateString("(concat '(127))");
+        LispObject r = evaluateString("(concat '(127))");
         Assert.assertEquals(new LispString("^?"), r);
         r = evaluateString("(concat '(160))");
         Assert.assertEquals(new LispString("_"), r);
@@ -108,7 +108,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
 
     @Test
     public void testConcatOctal() {
-        LObject r = evaluateString("(concat '(128))");
+        LispObject r = evaluateString("(concat '(128))");
         Assert.assertEquals(new LispString("\\200"), r);
         r = evaluateString("(concat '(159))");
         Assert.assertEquals(new LispString("\\237"), r);
@@ -116,7 +116,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
 
     @Test
     public void testConcatLetters() {
-        LObject r = evaluateString("(concat '(97))");
+        LispObject r = evaluateString("(concat '(97))");
         Assert.assertEquals(new LispString("a"), r);
         r = evaluateString("(concat '(32))");
         Assert.assertEquals(new LispString(" "), r);
@@ -172,13 +172,13 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
     
     @Test
     public void testConcatLimit() {
-        LObject r = evaluateString("(concat '(4194303))");
+        LispObject r = evaluateString("(concat '(4194303))");
 //        Assert.assertEquals(new LispString("ÿ"), r);
     }
     
     @Test
     public void testVConcat() {
-        LObject r = evaluateString("(vconcat '(1 2) '[3 4] \"hello\")");
+        LispObject r = evaluateString("(vconcat '(1 2) '[3 4] \"hello\")");
         Assert.assertEquals("[1 2 3 4 104 101 108 108 111]", r.toString());
         r = evaluateString("(vconcat '(1.6 \"hi\") nil '[3 4] \"hello\")");
         Assert.assertEquals("[1.6 \"hi\" 3 4 104 101 108 108 111]", r.toString());
@@ -197,7 +197,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
 
     @Test
     public void testMapConCat() {
-        LObject r = evaluateString("(mapconcat 'identity '[\"9\" \"8\" \"7\"] \" \")");
+        LispObject r = evaluateString("(mapconcat 'identity '[\"9\" \"8\" \"7\"] \" \")");
         Assert.assertEquals(new LispString("9 8 7"), r);
         r = evaluateString("(mapconcat 'identity '(nil nil) \" \")");
         Assert.assertEquals(new LispString(" "), r);

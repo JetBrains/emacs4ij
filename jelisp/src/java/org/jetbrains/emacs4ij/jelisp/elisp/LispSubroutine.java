@@ -73,7 +73,7 @@ public abstract class LispSubroutine {
         arguments.setRequiredSize(nRequiredParameters);
     }
 
-    private static ArgumentsList parseArguments (Method m, Environment environment, List<LObject> args) {
+    private static ArgumentsList parseArguments (Method m, Environment environment, List<LispObject> args) {
         Type[] parametersTypes = m.getGenericParameterTypes();
         Annotation[][] parametersAnnotations = m.getParameterAnnotations();
         if (parametersAnnotations.length != parametersTypes.length) {
@@ -96,7 +96,7 @@ public abstract class LispSubroutine {
         return arguments;
     }
 
-    private static int checkParameterizedType (ParameterizedType expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+    private static int checkParameterizedType (ParameterizedType expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
         Type rawType = expectedType.getRawType();
         Type expectedTypeArguments = expectedType.getActualTypeArguments()[0];
         try {
@@ -120,10 +120,10 @@ public abstract class LispSubroutine {
     }
 
     private static <T> T[] customizeArrayList(Class<T> type, ArrayList array) {
-        return (T[]) array.toArray((LObject[]) Array.newInstance(type, 0));
+        return (T[]) array.toArray((LispObject[]) Array.newInstance(type, 0));
     }
 
-    private static int checkArray (Class expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+    private static int checkArray (Class expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
         Class componentType = expectedType.getComponentType();
         ArrayList array = new ArrayList();
         while (argsCounter != args.size()) {
@@ -136,7 +136,7 @@ public abstract class LispSubroutine {
         return argsCounter;
     }
 
-    private static int checkSingleArgument (Class expectedType, ArgumentsList arguments, List<LObject> args, int argsCounter, int i) {
+    private static int checkSingleArgument (Class expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
         try {
             if (!(expectedType.isInstance(args.get(argsCounter)))) {
                 if (expectedType.equals(LispList.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
@@ -161,7 +161,7 @@ public abstract class LispSubroutine {
         }
     }
 
-    private static void checkArguments (ArgumentsList arguments, List<LObject> args) {
+    private static void checkArguments (ArgumentsList arguments, List<LispObject> args) {
         int argsCounter = 0;
         for (int i=0; i != arguments.getSize(); ++i) {
             Type expectedType = arguments.getType(i);
@@ -186,7 +186,7 @@ public abstract class LispSubroutine {
         return getCause(e.getCause());
     }
 
-    public static LObject evaluate (LispSymbol f, Environment environment, List<LObject> args) {
+    public static LispObject evaluate (LispSymbol f, Environment environment, List<LispObject> args) {
         for (Class c: getSubroutineContainers()) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {
@@ -206,7 +206,7 @@ public abstract class LispSubroutine {
                     ArgumentsList arguments = parseArguments(m, environment, args);
                     checkArguments(arguments, args);
                     try {
-                        return (LObject) m.invoke(null, arguments.getValues());
+                        return (LispObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
                         System.err.println(e.getCause().getMessage());
                         throw new RuntimeException(e.getCause());

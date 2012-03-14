@@ -25,15 +25,15 @@ public abstract class KeyBoardUtil {
     static LispVector modifier_symbols;
 
     /* Return the list of modifier symbols corresponding to the mask MODIFIERS.  */
-    public static LObject lispyModifierList(int modifiers) {
-        LObject modifierList = LispSymbol.ourNil;
+    public static LispObject lispyModifierList(int modifiers) {
+        LispObject modifierList = LispSymbol.ourNil;
         for (int i = 0; (1 << i) <= modifiers && i < NUM_MOD_NAMES; i++)
             if ((modifiers & (1 << i)) != 0)
                 modifierList = LispList.cons(modifier_symbols.getItem(i), modifierList);
         return modifierList;
     }
 
-    public static LispList parseModifiers (LObject symbol) {
+    public static LispList parseModifiers (LispObject symbol) {
         if (symbol instanceof LispInteger)
             return LispList.list (new LispInteger(((LispInteger) symbol).keyToChar()),
                     new LispInteger (((LispInteger) symbol).getData() & CharUtil.CHAR_MODIFIER_MASK));
@@ -42,7 +42,7 @@ public abstract class KeyBoardUtil {
         return ((LispSymbol) symbol).parseModifiers();
     }
 
-    public static LObject reorderModifiers (LObject symbol) {
+    public static LispObject reorderModifiers (LispObject symbol) {
         LispList parsed = parseModifiers (symbol);
         try {
             return applyModifiers (((LispInteger)BuiltinsList.car(parsed.cdr())).getData(), parsed.car());
@@ -57,17 +57,15 @@ public abstract class KeyBoardUtil {
         return BuiltinsSymbol.intern(new LispString(newMods + base), LispSymbol.ourNil);
     }
 
-    public static LObject applyModifiers (int modifiers, LObject base) {
+    public static LispObject applyModifiers (int modifiers, LispObject base) {
         modifiers &= LispNumber.INTMASK;
         if (base instanceof LispInteger)
             return new LispInteger(((LispInteger) base).getData() | modifiers);
         if (!(base instanceof LispSymbol))
             throw new WrongTypeArgumentException("symbolp", base);
-
-        LObject cache = ((LispSymbol) base).getProperty("modifier-cache");
+        LispObject cache = ((LispSymbol) base).getProperty("modifier-cache");
         LispInteger index = new LispInteger(modifiers & ~KeyBoardModifier.CLICK.value);
-        LObject entry = BuiltinsCore.assqNoQuit(index, cache);
-
+        LispObject entry = BuiltinsCore.assqNoQuit(index, cache);
         LispSymbol newSymbol;
         if (entry instanceof LispList)
             newSymbol = (LispSymbol) ((LispList) entry).cdr();
@@ -77,7 +75,7 @@ public abstract class KeyBoardUtil {
             ((LispSymbol) base).setProperty("modifier-cache", LispList.cons(entry, cache));
         }
         if (newSymbol.getProperty("event-kind").equals(LispSymbol.ourNil)) {
-            LObject kind = ((LispSymbol) base).getProperty("event-kind");
+            LispObject kind = ((LispSymbol) base).getProperty("event-kind");
             if (!kind.equals(LispSymbol.ourNil))
                 newSymbol.setProperty("event-kind", kind);
         }

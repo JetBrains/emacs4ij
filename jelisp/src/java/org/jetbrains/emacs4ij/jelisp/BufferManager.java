@@ -136,7 +136,7 @@ public class BufferManager {
     }
 
     public LispList getBufferList() {
-        ArrayList<LObject> bufferList = new ArrayList<>();
+        ArrayList<LispObject> bufferList = new ArrayList<>();
         for (LispBuffer buffer: myBuffers) {
             bufferList.add(buffer);
         }

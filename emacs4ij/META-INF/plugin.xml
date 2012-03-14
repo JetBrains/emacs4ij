@@ -1,54 +1,56 @@
 <idea-plugin version="2">
-  <name>Emacs4ij</name>
-  <description>Plugin for Emacs support</description>
-  <version>1.0</version>
-  <vendor logo="/general/ijLogo.png">JetBrains</vendor>
-  <idea-version since-build="8000"/>
+    <name>Emacs4ij</name>
+    <description>Plugin for Emacs support</description>
+    <version>1.0</version>
+    <vendor logo="/general/ijLogo.png">JetBrains</vendor>
+    <idea-version since-build="8000"/>
 
-  <application-components>
-    <!-- Add your application components here -->
-      <component>
-          <implementation-class>org.jetbrains.emacs4ij.MyApplicationComponent</implementation-class>
-      </component>
-  </application-components>
+    <application-components>
+        <!-- Add your application components here -->
+        <component>
+            <implementation-class>org.jetbrains.emacs4ij.MyApplicationComponent</implementation-class>
+        </component>
+    </application-components>
 
-  <project-components>
-    <!-- Add your project components here -->
-      <component>
-          <implementation-class>org.jetbrains.emacs4ij.MyProjectComponent</implementation-class>
-      </component>
-  </project-components>
+    <project-components>
+        <!-- Add your project components here -->
+        <component>
+            <implementation-class>org.jetbrains.emacs4ij.MyProjectComponent</implementation-class>
+        </component>
+    </project-components>
 
-  <actions>
-    <!-- Add your actions here -->
-      <group id="Emacs4ijActionGroup" text="Emacs4ij Group" description="Group with Emacs4ij actions" popup="false">
-          <action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
-                  text="Execute command in minibuffer" icon="icons/execute.png"
-                  description="Execute command in minibuffer">
-              <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
-          </action>
-          <action id="org.jetbrains.emacs4ij.OpenSettings" class="org.jetbrains.emacs4ij.OpenSettings"
-                  text="Emacs4ij settings" icon="icons/options.png"
-                  description="View and edit Emacs4ij settings">
-          </action>
-          <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
-      </group>
+    <actions>
+        <!-- Add your actions here -->
+        <group id="Emacs4ijActionGroup" text="Emacs4ij Group" description="Group with Emacs4ij actions" popup="false">
+            <action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
+                    text="Execute command in minibuffer" icon="icons/execute.png"
+                    description="Execute command in minibuffer">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
+            </action>
+            <action id="org.jetbrains.emacs4ij.OpenSettings" class="org.jetbrains.emacs4ij.OpenSettings"
+                    text="Emacs4ij settings" icon="icons/options.png"
+                    description="View and edit Emacs4ij settings">
+            </action>
+            <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
+        </group>
 
-      <action id="org.jetbrains.emacs4ij.EvaluateCode" class="org.jetbrains.emacs4ij.EvaluateCode"
-              text="Evaluate elisp code">
-          <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
-      </action>
+        <action id="org.jetbrains.emacs4ij.EvaluateCode" class="org.jetbrains.emacs4ij.EvaluateCode"
+                text="Evaluate elisp code">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
+        </action>
 
-      <action id="org.jetbrains.emacs4ij.ExecuteCommand" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
-      <action id="org.jetbrains.emacs4ij.AutoComplete" class="org.jetbrains.emacs4ij.AutoComplete"/>
-      <action id="org.jetbrains.emacs4ij.InterruptMiniBuffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
+        <action id="org.jetbrains.emacs4ij.ExecuteCommand" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
+        <action id="org.jetbrains.emacs4ij.AutoComplete" class="org.jetbrains.emacs4ij.AutoComplete"/>
+        <action id="org.jetbrains.emacs4ij.InterruptMiniBuffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
 
-  </actions>
+    </actions>
 
-  <extensions defaultExtensionNs="com.intellij">
-    <!-- Add your extensions here -->
-    <!-- Declare the application level service -->
-  <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
-  <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <!-- Declare the application level service -->
+        <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
+        <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
+    </extensions>
+
+    <resource-bundle>org.jetbrains.emacs4ij.Emacs4ijBundle</resource-bundle>
 </idea-plugin>

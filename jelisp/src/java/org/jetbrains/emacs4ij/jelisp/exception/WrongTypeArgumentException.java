@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +16,7 @@ public class WrongTypeArgumentException extends LispException {
         super("'(wrong-type-argument " + expectedType + " " + gotValue + ')');
     }
 
-    public WrongTypeArgumentException(String expectedType, LObject gotValue) {
+    public WrongTypeArgumentException(String expectedType, LispObject gotValue) {
         super("'(wrong-type-argument " + expectedType + " " + (gotValue == null ? "NULL" : gotValue.toString()) + ')');
     }
 }

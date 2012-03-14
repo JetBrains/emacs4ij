@@ -4,8 +4,8 @@ import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,13 +50,13 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         return getCause(e.getCause());
     }
 
-    private LObject evaluateString (String lispCode) {
+    private LispObject evaluateString (String lispCode) {
         return myForwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
     @Test
     public void testSetMarker() {
-        LObject marker = evaluateString("(setq m (point-marker))");
+        LispObject marker = evaluateString("(setq m (point-marker))");
         Assert.assertEquals("#<marker at 1 in 3.txt>", marker.toString());
         marker = evaluateString("(set-marker m 5)");
         Assert.assertEquals("#<marker at 5 in 3.txt>", marker.toString());
@@ -71,14 +71,14 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMakeMarker() {
-        LObject m = evaluateString("(setq m1 (make-marker))");
+        LispObject m = evaluateString("(setq m1 (make-marker))");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
     }
     
     @Test
     public void testMarkerMoving() {
         evaluateString("(setq m1 (make-marker))");
-        LObject m = evaluateString("(set-marker m1 5)");
+        LispObject m = evaluateString("(set-marker m1 5)");
         Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
         m = evaluateString("(goto-char (point-min))");
         Assert.assertEquals(new LispInteger(1), m);
@@ -95,7 +95,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testMarkerEquality() {
         evaluateString("(setq m1 (make-marker))");
         evaluateString("(set-marker m1 6)");
-        LObject m2 = evaluateString("(setq m2 (copy-marker m1))");
+        LispObject m2 = evaluateString("(setq m2 (copy-marker m1))");
         Assert.assertEquals("#<marker at 6 in 3.txt>", m2.toString());
         m2 = evaluateString("(eq m1 m2)");
         Assert.assertEquals(LispSymbol.ourNil, m2);
@@ -106,7 +106,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testGetMarkerPos () {
         evaluateString("(setq m (point-marker))");
-        LObject p = evaluateString("(marker-position m)");
+        LispObject p = evaluateString("(marker-position m)");
         Assert.assertEquals(new LispInteger(1), p);
         evaluateString("(set-marker m nil)");
         p = evaluateString("(marker-position m)");
@@ -116,14 +116,14 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testGetMarkerBuffer() {
         evaluateString("(setq m (point-marker))");
-        LObject b = evaluateString("(marker-buffer m)");
+        LispObject b = evaluateString("(marker-buffer m)");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), b);
     }
     
     @Test
     public void testBufferHasMarkersAt() {
         evaluateString("(setq m (point-marker))");
-        LObject b = evaluateString("(buffer-has-markers-at 1)");
+        LispObject b = evaluateString("(buffer-has-markers-at 1)");
         Assert.assertEquals(LispSymbol.ourT, b);
         b = evaluateString("(buffer-has-markers-at nil)");
         Assert.assertEquals(LispSymbol.ourNil, b);
@@ -147,7 +147,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMarkForced () throws Throwable {
-        LObject mark = evaluateString("(mark t)");
+        LispObject mark = evaluateString("(mark t)");
         Assert.assertEquals(LispSymbol.ourNil, mark);
     }
 
@@ -155,7 +155,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testSetMark () throws Throwable {
         try {
             //GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
-            LObject mark = evaluateString("(set-mark 5)");
+            LispObject mark = evaluateString("(set-mark 5)");
             Assert.assertEquals("#<marker at 5 in 3.txt>", mark.toString());
             mark = evaluateString("(set-mark 50)");
             Assert.assertEquals("#<marker at 9 in 3.txt>", mark.toString());
@@ -167,7 +167,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMarkMarker() {
-        LObject m = evaluateString("(setq m (mark-marker))");
+        LispObject m = evaluateString("(setq m (mark-marker))");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
         m = evaluateString("(set-marker m 5)");
         Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
@@ -177,7 +177,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     
     @Test
     public void testPushMark () {
-        LObject r = evaluateString("(push-mark)");
+        LispObject r = evaluateString("(push-mark)");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(mark t)");
         Assert.assertEquals(new LispInteger(1), r);
@@ -198,7 +198,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testPopMark () {
         evaluateString("(push-mark 5 t t)");
         evaluateString("(pop-mark)");
-        LObject r = evaluateString("(mark t)");
+        LispObject r = evaluateString("(mark t)");
         Assert.assertEquals(new LispInteger(5), r);
     }
 
@@ -206,7 +206,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testRegionBeginning() {
-        LObject r = evaluateString("(region-beginning)");
+        LispObject r = evaluateString("(region-beginning)");
         Assert.assertEquals(new LispInteger(1), r);
         evaluateString("(set-mark 2)");
         myEnvironment.getBufferCurrentForEditing().gotoChar(6);
@@ -216,7 +216,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testRegionEnd() {
-        LObject r = evaluateString("(region-end)");
+        LispObject r = evaluateString("(region-end)");
         Assert.assertEquals(new LispInteger(1), r);
         evaluateString("(set-mark 5)");
         r = evaluateString("(region-end)");
@@ -225,7 +225,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testUseRegionP() {
-        LObject r = evaluateString("(use-region-p)");
+        LispObject r = evaluateString("(use-region-p)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 

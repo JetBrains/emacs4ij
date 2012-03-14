@@ -23,11 +23,11 @@ public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
     public static void error (Environment environment, String message) {
-        error(environment, message, new LObject[0]);
+        error(environment, message, new LispObject[0]);
     }
 
-    public static void error (Environment environment, String message, LObject... args) {
-        ArrayList<LObject> data = new ArrayList<>();
+    public static void error (Environment environment, String message, LispObject... args) {
+        ArrayList<LispObject> data = new ArrayList<>();
         data.add(new LispSymbol("error"));
         data.add(new LispString(message));
         if (args.length > 0) {
@@ -37,19 +37,19 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("set")
-    public static LObject set (Environment environment, LispSymbol variable, LObject initValue) {
-        LObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
+    public static LispObject set (Environment environment, LispSymbol variable, LispObject initValue) {
+        LispObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
         LispSymbol symbol = new LispSymbol(variable.getName(), value);
         environment.setVariable(symbol);
         return value;
     }
 
-    public static boolean equals (LObject one, LObject two) {
+    public static boolean equals (LispObject one, LispObject two) {
         return one.equals(two);
     }
 
     @Subroutine("equal")
-    public static LispObject equal (LObject one, LObject two) {
+    public static LispObject equal (LispObject one, LispObject two) {
         return LispSymbol.bool(equals(one, two));
     }
 
@@ -60,7 +60,7 @@ public abstract class BuiltinsCore {
     same change in the contents of the other.
     * */
 
-    public static boolean eqs (LObject one, LObject two) {
+    public static boolean eqs (LispObject one, LispObject two) {
         if (one == two) return true;
         if (one.getClass() != two.getClass()) return false;
         if (one instanceof LispNumber) {
@@ -76,22 +76,22 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("eq")
-    public static LispObject eq (LObject one, LObject two) {
+    public static LispObject eq (LispObject one, LispObject two) {
         return LispSymbol.bool(eqs(one, two));
     }
 
     @Subroutine("null")
-    public static LispObject lispNull (LObject lObject) {
+    public static LispObject lispNull (LispObject lObject) {
         return LispSymbol.bool(lObject.equals(LispSymbol.ourNil));
     }
 
     @Subroutine("not")
-    public static LispObject lispNot (LObject lObject) {
+    public static LispObject lispNot (LispObject lObject) {
         return lispNull(lObject);
     }
 
     @Subroutine("call-interactively")
-    public static LObject callInteractively (Environment environment, LispSymbol function, @Optional LObject recordFlag, LObject keys) {
+    public static LispObject callInteractively (Environment environment, LispSymbol function, @Optional LispObject recordFlag, LispObject keys) {
         if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         //read args
@@ -102,9 +102,9 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("funcall")
-    public static LObject functionCall (Environment environment, LObject function, @Optional LObject... args) {
+    public static LispObject functionCall (Environment environment, LispObject function, @Optional LispObject... args) {
         environment.setArgumentsEvaluated(true);
-        ArrayList<LObject> data = new ArrayList<LObject>();
+        ArrayList<LispObject> data = new ArrayList<LispObject>();
         data.add(function);
         Collections.addAll(data, args);
         LispList funcall = LispList.list(data);
@@ -112,8 +112,8 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("signal")
-    public static LObject signal (LispSymbol errorSymbol, LispList data) {
-//        LObject errorMessage = errorSymbol.getProperty("error-message");
+    public static LispObject signal (LispSymbol errorSymbol, LispList data) {
+//        LispObject errorMessage = errorSymbol.getProperty("error-message");
         String msg = "";// '[' + ((errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error") + "] ";
         msg += '(' + errorSymbol.getName() + ' ';
         msg += (data.length() == 1 ? data.car().toString() : data.toString()) + ')';
@@ -127,11 +127,11 @@ public abstract class BuiltinsCore {
         if (!function.isFunction()) {
             throw new InvalidFunctionException(function.getName());
         }
-        function.evaluateFunction(environment, new ArrayList<LObject>());
+        function.evaluateFunction(environment, new ArrayList<LispObject>());
     }
 
     @Subroutine("run-hooks")
-    public static LObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
+    public static LispObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
         if (hooks == null)
             return LispSymbol.ourNil;
         for (LispSymbol hook: hooks) {
@@ -143,7 +143,7 @@ public abstract class BuiltinsCore {
                 continue;
             }
             if (hook.getValue() instanceof LispList) {
-                for (LObject function: ((LispList) hook.getValue()).toLObjectList()) {
+                for (LispObject function: ((LispList) hook.getValue()).toLispObjectList()) {
                     if (!(function instanceof LispSymbol))
                         throw new WrongTypeArgumentException("symbolp", function);
 
@@ -158,7 +158,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("macroexpand")
-    public static LObject macroExpand (Environment environment, LObject macroCall) {
+    public static LispObject macroExpand (Environment environment, LispObject macroCall) {
         if (!(macroCall instanceof LispList))
             return macroCall;
         LispSymbol macro;
@@ -171,17 +171,17 @@ public abstract class BuiltinsCore {
         if (!trueMacro.isMacro())
             return macroCall;
 
-        return trueMacro.macroExpand(environment, ((LispList) ((LispList) macroCall).cdr()).toLObjectList());
+        return trueMacro.macroExpand(environment, ((LispList) ((LispList) macroCall).cdr()).toLispObjectList());
     }
 
     @Subroutine("fset")
-    public static LObject functionSet (Environment environment, LispSymbol symbol, LObject function) {
+    public static LispObject functionSet (Environment environment, LispSymbol symbol, LispObject function) {
         symbol.setFunction(function);
         environment.setVariable(symbol);
         return function;
     }
 
-    /* private static LObject signalOrNot (LObject noError, String name, String data) {
+    /* private static LispObject signalOrNot (LispObject noError, String name, String data) {
         if (noError != null && !noError.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
 
@@ -192,7 +192,7 @@ public abstract class BuiltinsCore {
     }*/
 
     @Subroutine("indirect-function")
-    public static LObject indirectFunction (LObject object, @Optional LObject noError) {
+    public static LispObject indirectFunction (LispObject object, @Optional LispObject noError) {
         if (!(object instanceof LispSymbol)) {
             return object;
         }
@@ -207,7 +207,7 @@ public abstract class BuiltinsCore {
                 throw new VoidFunctionException(((LispSymbol) object).getName());
                 //return signalOrNot(noError, "void-function", symbol.getName());
             }
-            LObject f = symbol.getFunction();
+            LispObject f = symbol.getFunction();
             if (f instanceof LispSymbol) {
                 if (examined.contains(((LispSymbol) f).getName())) {
                     if (noError != null && !noError.equals(LispSymbol.ourNil))
@@ -225,7 +225,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("subr-arity")
-    public static LObject subrArity (LObject object) {
+    public static LispObject subrArity (LispObject object) {
         if (subrp(object).equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("subrp",
                     object instanceof LispSymbol ? ((LispSymbol) object).getName() : object.toString());
@@ -234,7 +234,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("aref")
-    public static LObject aRef (LispArray array, LispInteger index) {
+    public static LispObject aRef (LispArray array, LispInteger index) {
         try {
             return array.getItem(index.getData());
             //todo: bool-vector
@@ -245,7 +245,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("aset")
-    public static LObject aSet (LispArray array, LispInteger index, LObject value) {
+    public static LispObject aSet (LispArray array, LispInteger index, LispObject value) {
         try {
             array.setItem(index.getData(), value);
             return value;
@@ -257,7 +257,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine(value = "apply")
-    public static LObject apply (Environment environment, LObject function, LObject... args) {
+    public static LispObject apply (Environment environment, LispObject function, LispObject... args) {
         if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
                 || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
             throw new InvalidFunctionException((function instanceof LispSymbol ?
@@ -265,11 +265,11 @@ public abstract class BuiltinsCore {
 
         if (!(args[args.length-1] instanceof LispList) && args[args.length-1] != LispSymbol.ourNil)
             throw new WrongTypeArgumentException("listp", args[args.length-1]);
-        ArrayList<LObject> list = new ArrayList<>();
+        ArrayList<LispObject> list = new ArrayList<>();
         list.addAll(Arrays.asList(args).subList(0, args.length - 1));
 
         if (!args[args.length-1].equals(LispSymbol.ourNil)) {
-            List<LObject> last = ((LispList)args[args.length-1]).toLObjectList();
+            List<LispObject> last = ((LispList)args[args.length-1]).toLispObjectList();
             list.addAll(last);
         }
         environment.setArgumentsEvaluated(true);
@@ -277,7 +277,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine(value = "purecopy")
-    public static LObject pureCopy (LObject object) {
+    public static LispObject pureCopy (LispObject object) {
         /*
         TODO: ?
          */
@@ -285,20 +285,20 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine(value = "eval")
-    public static LObject evaluate (Environment environment, LObject object) {
+    public static LispObject evaluate (Environment environment, LispObject object) {
         return object.evaluate(environment);
     }
 
-    /* private static boolean checkFunction (Environment environment, LObject object) {
+    /* private static boolean checkFunction (Environment environment, LispObject object) {
        CustomEnvironment inner = new CustomEnvironment(environment);
        inner.setArgumentsEvaluated(true);
        LispList list = LispList.list(new LispSymbol("functionp"), object);
-       LObject result = list.evaluate(inner);
+       LispObject result = list.evaluate(inner);
        return true;
    } */
 
     @Subroutine("defalias")
-    public static LObject defineAlias (Environment environment, LispSymbol symbol, LObject functionDefinition, @Optional LObject docString) {
+    public static LispObject defineAlias (Environment environment, LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
             real = new LispSymbol(symbol.getName());
@@ -311,33 +311,33 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("provide")
-    public static LispSymbol provide (LispSymbol feature, @Optional LObject subFeatures) {
+    public static LispSymbol provide (LispSymbol feature, @Optional LispObject subFeatures) {
         //todo: implement
         return feature;
     }
 
     @Subroutine("atom")
-    public static LispSymbol atom (LObject object) {
+    public static LispSymbol atom (LispObject object) {
         return LispSymbol.bool(!(object instanceof LispList));
     }
     
     @Subroutine("throw")
-    public static void lispThrow (LObject tag, LObject value) {
+    public static void lispThrow (LispObject tag, LispObject value) {
         throw new LispThrow(tag, value);
     }
     
     @Subroutine("identity")
-    public static LObject identity (LObject arg) {
+    public static LispObject identity (LispObject arg) {
         return arg;
     }
     
     @Subroutine("match-data")
-    public static LObject matchData(@Optional LObject integers, LObject reuse, LObject reseat) {
+    public static LispObject matchData(@Optional LispObject integers, LispObject reuse, LispObject reseat) {
         //todo :)
         return LispSymbol.ourNil;
     }
 
-    public static LObject assqNoQuit (LObject key, LObject list) {
+    public static LispObject assqNoQuit (LispObject key, LispObject list) {
         while (list instanceof LispList &&
                 (!(((LispList) list).car() instanceof LispList)
                   || !eqs (((LispList)((LispList) list).car()).car(), key)))
@@ -345,7 +345,7 @@ public abstract class BuiltinsCore {
         return BuiltinsList.carSafe(list);
     }
     
-    private static LispInteger getInt (LObject object) {
+    private static LispInteger getInt (LispObject object) {
         if (!(object instanceof LispInteger))
             throw new WrongTypeArgumentException("integerp", object);
         return (LispInteger) object;
@@ -356,7 +356,7 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("substring")
-    public static LObject substring (LObject string, LispInteger from, @Optional LObject to) {
+    public static LispObject substring (LispObject string, LispInteger from, @Optional LispObject to) {
         if (!(string instanceof LispString) && !(string instanceof LispVector))
             throw new WrongTypeArgumentException("vector-or-string-p", string);
         int length = ((LispSequence)string).length();        

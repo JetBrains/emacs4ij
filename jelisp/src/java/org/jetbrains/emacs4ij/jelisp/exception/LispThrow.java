@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,19 +10,19 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
  * To change this template use File | Settings | File Templates.
  */
 public class LispThrow extends LispException {
-    private LObject myTag;
-    private LObject myValue;
+    private LispObject myTag;
+    private LispObject myValue;
 
-    public LispThrow (LObject tag, LObject value) {
+    public LispThrow (LispObject tag, LispObject value) {
         myTag = tag;
         myValue = value;
     }
 
-    public LObject getTag() {
+    public LispObject getTag() {
         return myTag;
     }
 
-    public LObject getValue() {
+    public LispObject getValue() {
         return myValue;
     }
 }

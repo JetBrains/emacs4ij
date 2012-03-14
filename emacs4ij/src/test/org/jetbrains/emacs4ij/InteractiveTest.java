@@ -6,8 +6,8 @@ import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -52,7 +52,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         super.tearDown();
     }
 
-    private LObject evaluateString (String lispCode) throws LispException {
+    private LispObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
@@ -70,7 +70,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
     }
 
@@ -81,7 +81,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(LispSymbol.ourT, result);
 
     }
@@ -92,7 +92,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertNull(result);
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
     }
@@ -102,7 +102,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         evaluateString("(defun f (buf) (interactive \"bBuffer: \") (buffer-name (get-buffer buf)))");
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispString(myFileName), result);
     }
 
@@ -112,7 +112,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("buffer.lisp");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertNull(result);
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
     }
@@ -122,7 +122,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         evaluateString("(defun f (buf) (interactive \"BBuffer: \") (buffer-name (get-buffer buf)))");
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispString(myFileName), result);
     }
 
@@ -132,7 +132,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("buffer.lisp");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals (new LispString("It is not allowed to create files this way."), result);
     }
 
@@ -157,7 +157,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertNull(result);
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
     }
@@ -169,7 +169,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertNull(result);
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("No Match"));
     }
@@ -199,7 +199,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("g");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
     }
 
@@ -209,7 +209,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("5.6");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertEquals(new LispInteger(10), result);
     }
 
@@ -219,7 +219,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         myMiniBuffer.appendText("f");
         myMiniBuffer.onReadInput();
         myMiniBuffer.appendText("hello");
-        LObject result = myMiniBuffer.onReadInput();
+        LispObject result = myMiniBuffer.onReadInput();
         Assert.assertNull(result);
         Assert.assertTrue(myMiniBuffer.getEditor().getDocument().getText().contains("Please, enter a number."));
     }

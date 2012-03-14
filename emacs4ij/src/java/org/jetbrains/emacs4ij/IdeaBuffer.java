@@ -6,7 +6,6 @@ import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
@@ -26,7 +25,7 @@ import java.util.HashMap;
  * Time: 11:10 AM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaBuffer extends LispObject implements LispBuffer {
+public class IdeaBuffer implements LispBuffer {
     protected String myName;
     protected Editor myEditor;
     protected Environment myEnvironment;
@@ -46,15 +45,15 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         setLocalVariable("default-directory", new LispString(path));
     }
     
-    private void addLocalVar (String name, LObject value) {
-        myLocalVariables.put(name, new LispSymbol(name, value, true));
-    }
+//    private void addLocalVar (String name, LispObject value) {
+//        myLocalVariables.put(name, new LispSymbol(name, value, true));
+//    }
 
     public static void setProject(Project project) {
         ourProject = project;
     }
 
-    private void setLocalVariable (String name, LObject value) {
+    private void setLocalVariable (String name, LispObject value) {
         LispSymbol var = myLocalVariables.get(name);
         if (var == null)
             throw new VoidVariableException(name);
@@ -62,7 +61,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LObject getLocalVariableValue (String name) {
+    public LispObject getLocalVariableValue (String name) {
         LispSymbol localVar = getLocalVariable(name);
         return localVar.getValue();
     }
@@ -75,10 +74,10 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         return var;
     }
 
-    @Override
-    public void defineLocalVariable(LispSymbol variable) {
-        myLocalVariables.put(variable.getName(), new LispSymbol(variable));
-    }
+//    @Override
+//    public void defineLocalVariable(LispSymbol variable) {
+//        myLocalVariables.put(variable.getName(), new LispSymbol(variable));
+//    }
 
     @Override
     public void defineLocalVariable(LispSymbol variable, boolean noValue) {
@@ -86,7 +85,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LObject evaluateLastForm() {
+    public LispObject evaluateLastForm() {
         String[] code = myEditor.getDocument().getText().split("\n");
         int line = myEditor.getCaretModel().getVisualPosition().getLine();
         int column = myEditor.getCaretModel().getVisualPosition().getColumn() - 1;
@@ -97,7 +96,7 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
             column = code[line].length() - 1;
         }
         BackwardMultilineParser parser = new BackwardMultilineParser(code);
-        LObject parsed = parser.parse(line, column);
+        LispObject parsed = parser.parse(line, column);
         return parsed.evaluate(myEnvironment);
     }
 
@@ -135,8 +134,8 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
-        throw new RuntimeException("Cannot evaluate buffer!");
+    public LispObject evaluate(Environment environment) {
+        return this;
     }
 
     @Override
@@ -164,10 +163,10 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         return getSize()+1;
     }
 
-    @Override
-    public int bufferEnd(double parameter) {
-        return (parameter > 0) ? pointMax() : pointMin();
-    }
+//    @Override
+//    public int bufferEnd(double parameter) {
+//        return (parameter > 0) ? pointMax() : pointMin();
+//    }
 
     @Override
     public String gotoChar (int position) {
@@ -210,16 +209,14 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         if (myEnvironment.getServiceBuffer(myName) == null)
             throw new NoBufferException(myName);
         if (myEditor == null)
-            throw new RuntimeException("null editor!");
+            throw new Emacs4ijFatalException("Null editor!");
         if (!(this instanceof IdeaMiniBuffer))
             write("");
-        //myEnvironment.updateServiceBuffer(this);
         myEditor.getContentComponent().grabFocus();
     }
 
     private boolean isHeaderBuffer () {
         return this instanceof LispMiniBuffer;
-        //return (myName.equals(GlobalEnvironment.ourScratchBufferName) || this instanceof LispMiniBuffer);
     }
 
     @Override
@@ -268,10 +265,10 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
         }
     }
 
-    @Override
-    public void showMessage(String message) {
-        Messages.showInfoMessage(message, "Elisp message");
-    }
+//    @Override
+//    public void showMessage(String message) {
+//        Messages.showInfoMessage(message, "Elisp message");
+//    }
 
     //--------------- mark --------------------------------
     @Override
@@ -298,41 +295,4 @@ public class IdeaBuffer extends LispObject implements LispBuffer {
     public LispMarker getMark() {
         return myMark;
     }
-
-    /* @Override
- public Integer getMark() {
-     return myMark;
- }   */
-
-   /* @Override
-    public void setMark(int position) {
-        myMark = position;
-        isMarkActive = true;
-    }
-
-    @Override
-    public void pushMark(@Nullable Integer position, boolean activate) {
-        if (position == null) {
-            position = point();
-        }
-        if (myMark != null) {
-            LObject markRingMax = GlobalEnvironment.getInstance().find("mark-ring-max").getValue();
-            if (!(markRingMax instanceof LispInteger || markRingMax instanceof LispMarker))
-                throw new WrongTypeArgumentException("mark-ring-max", markRingMax.toString());
-            int max = (markRingMax instanceof LispInteger) ? ((LispInteger) markRingMax).getData() : ((LispMarker)markRingMax).getPosition();
-            while (myMarkRing.size() >= max)
-                myMarkRing.removeLast();
-            myMarkRing.push(myMark);
-        }
-        myMark = position;
-        isMarkActive = activate;
-    }
-
-    @Override
-    public void popMark() {
-        if (myMarkRing.isEmpty())
-            return;
-        isMarkActive = false;
-        myMark = myMarkRing.pop();
-    }  */
 }

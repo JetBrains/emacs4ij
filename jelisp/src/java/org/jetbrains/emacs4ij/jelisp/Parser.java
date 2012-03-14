@@ -31,7 +31,7 @@ public abstract class Parser extends Observable {
     protected abstract String extractForm(int nextSeparatorIndex);
 
     public abstract void append (String lispCode);
-    public abstract LObject parseLine (String lispCode);
+    public abstract LispObject parseLine (String lispCode);
 
     protected void advanceTo(int newValue) {
         myCurrentIndex = newValue;
@@ -81,12 +81,12 @@ public abstract class Parser extends Observable {
     }
 
     protected LispObject parseQuote(boolean isBackQuote) {
-        LObject lispObject = parseObject(isBackQuote);
+        LispObject lispObject = parseObject(isBackQuote);
         return LispList.list(new LispSymbol("quote"), lispObject);
     }
 
     protected LispObject parseBackQuote() {
-        LObject lispObject = parseObject(true);
+        LispObject lispObject = parseObject(true);
         return LispList.list(new LispSymbol("\\`"), lispObject);
     }
 
@@ -96,17 +96,17 @@ public abstract class Parser extends Observable {
             advance();
             spec += '@';
         }
-        LObject lispObject = parseObject(true);
+        LispObject lispObject = parseObject(true);
         return LispList.list(new LispSymbol(spec), lispObject);
     }
 
-    protected LObject parseObject() {
+    protected LispObject parseObject() {
         return parseObject(false);
     }
     
-    protected abstract LObject tryToParse (boolean isBackQuote);
+    protected abstract LispObject tryToParse (boolean isBackQuote);
 
-    protected LObject parseObject(boolean isBackQuote) {
+    protected LispObject parseObject(boolean isBackQuote) {
         try {
             getCurrentChar();
         } catch (EndOfLineException e) {

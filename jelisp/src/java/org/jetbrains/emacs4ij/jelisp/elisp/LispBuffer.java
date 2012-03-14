@@ -9,8 +9,8 @@ import com.intellij.openapi.editor.Editor;
  * Time: 5:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispBuffer extends LObject {
-    LObject getLocalVariableValue (String name);
+public interface LispBuffer extends LispObject {
+    LispObject getLocalVariableValue (String name);
     LispSymbol getLocalVariable (String name);
     void defineLocalVariable (LispSymbol variable, boolean noValue);
     String getName();
@@ -21,7 +21,7 @@ public interface LispBuffer extends LObject {
     String gotoChar(int position);
     String forwardChar (int shift);
     void kill();
-    LObject evaluateLastForm ();
+    LispObject evaluateLastForm ();
     void setBufferActive ();
     Editor getEditor();
     void setEditor (Editor editor);

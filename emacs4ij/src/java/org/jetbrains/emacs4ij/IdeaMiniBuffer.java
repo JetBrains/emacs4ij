@@ -27,12 +27,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public static String ourEvalPrompt = "M-x ";
     private MiniBufferStatus myStatus;
     private int myActivationsDepth = 0;
-
-   // private LObject myDefaultValue;
     private SpecialFormInteractive myInteractive;
     private String myPrompt;
     private LispSymbol myCommand;
-
     private Integer myCharCode = null;
     private Alarm myAlarm;
 
@@ -125,11 +122,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     private void clearNoMatch () {
-       // myAlarm.cancelAllRequests();
-
         myEditor.getDocument().addDocumentListener(myMiniBufferChangedListener);
         isDocumentListenerSet = true;
-
         myAlarm.addRequest(new Runnable() {
             @Override
             public void run() {
@@ -179,7 +173,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     //is public only for test!
-    public LispSymbol returnDefault(LObject defaultValue) {
+    public LispSymbol returnDefault(LispObject defaultValue) {
         if (defaultValue == null)
             return new LispSymbol("");
         if (defaultValue instanceof LispSymbol) {
@@ -244,26 +238,25 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myInteractive.setNoMatch(input);
     }
 
-    private void viewResult (LObject result) {
+    private void viewResult (LispObject result) {
         //todo: it is only for testing stage
 //        Messages.showInfoMessage(result.toString(), "Evaluation result");
     }
 
     @Override
-    public LObject onReadInput () {
+    public LispObject onReadInput () {
         switch (myStatus) {
             case READ_COMMAND:
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
                     LispSymbol cmd = (LispSymbol) myInteractive.getArguments().car();
-                    //cmd.castToLambda(myEnvironment);
                     String interactiveString = cmd.getInteractiveString(myEnvironment);
                     if (interactiveString == null) {
-                        throw new RuntimeException("Command has null interactive string!");
+                        throw new Emacs4ijFatalException("Command " + cmd.getName() + " has null interactive string!");
                     }
                     if (interactiveString.equals("")) {
                         hide();
-                        LObject result = cmd.evaluateFunction(myEnvironment, new ArrayList<LObject>());
+                        LispObject result = cmd.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
                         viewResult(result);
                         return result;
                     }
@@ -273,14 +266,14 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                     myInteractive.readNextArgument();
                 } else {
                     if (!myInteractive.isNoMatch())
-                        throw new RuntimeException("impossible situation!");
+                        throw new Emacs4ijFatalException("Interactive read of parameters was finished, but not all parameters were set!");
                 }
                 break;
             case READ_ARG:
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
                     myEnvironment.setArgumentsEvaluated(true);
-                    LObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLObjectList());
+                    LispObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLispObjectList());
                     hide();
                     viewResult(result);
                     return result;
@@ -294,12 +287,12 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     @Override
-    public LObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
+    public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
         //note: myStatus == READ_ARG
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
             myEnvironment.setArgumentsEvaluated(true);
-            LObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLObjectList());
+            LispObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLispObjectList());
             hide();
 
             viewResult(result);

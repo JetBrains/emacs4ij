@@ -51,15 +51,15 @@ public class AutoComplete extends AnAction {
                 miniBuffer.updateEditorText();
 
                 if (completions.size()>1) {
-                    String message = "Possible completions are:\n";
+                    String message = Emacs4ijBundle.message("possible.completions");
                     for (String name: completions) {
                         message += name + "\n";
                     }
-                    Messages.showInfoMessage(message, "Possible completions");
+                    Messages.showInfoMessage(message, Emacs4ijBundle.message("possible.completions.title"));
                 }
             }
         } catch (RuntimeException exc) {
-            Messages.showErrorDialog(exc.getMessage(), "Auto complete error");
+            Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("auto.complete.error.title"));
         }
     }
 }

@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class BufferedReaderParserTest {
         } catch (IOException e) {
             throw e;
         }
-        LObject lispObject = bufferedReaderParser.parse(s);
+        LispObject lispObject = bufferedReaderParser.parse(s);
         Assert.assertEquals(new LispString("one\ntwo"), lispObject);
     }
 
@@ -44,7 +44,7 @@ public class BufferedReaderParserTest {
         } catch (IOException e) {
             throw e;
         }
-        LObject lispObject = bufferedReaderParser.parse(s);
+        LispObject lispObject = bufferedReaderParser.parse(s);
         Assert.assertEquals(LispList.list(new LispSymbol("defun"), new LispSymbol("test"), LispList.list(), new LispString("doc\ndoc\ndoc()"), LispList.list(new LispSymbol("message"), new LispString("test"))), lispObject);
     }
 
@@ -61,14 +61,14 @@ public class BufferedReaderParserTest {
                 "\\(fn COND BODY...)\"\n" +
                 "  (declare (indent 1) (debug t))\n" +
                 "  (list 'if cond (cons 'progn body)))";
-        LObject parsed = p.parseLine(def);
+        LispObject parsed = p.parseLine(def);
         Assert.assertEquals(parsed, when);
     }
 
     @Test
     public void testParseDefineMinorMode() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        LObject dmm = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/emacs-lisp/easy-mmode.el", "define-minor-mode", GlobalEnvironment.SymbolType.FUN);
+        LispObject dmm = GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/emacs-lisp/easy-mmode.el", "define-minor-mode", GlobalEnvironment.SymbolType.FUN);
         Assert.assertNotNull(dmm);
     }
 }

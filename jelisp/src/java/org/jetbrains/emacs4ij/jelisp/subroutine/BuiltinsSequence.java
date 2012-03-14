@@ -19,18 +19,18 @@ import java.util.List;
 public abstract class BuiltinsSequence {
     private BuiltinsSequence() {}
 
-    private static boolean isSequence (LObject object) {
+    private static boolean isSequence (LispObject object) {
         //Returns t if object is a list, vector, string, char-table, todo: bool-vector, nil otherwise.
         return (object instanceof LispSequence || object.equals(LispSymbol.ourNil));    
     }
     
     @Subroutine("sequencep")
-    public static LispSymbol sequenceP (LObject object) {
+    public static LispSymbol sequenceP (LispObject object) {
         return LispSymbol.bool(isSequence(object));
     }
     
     @Subroutine("length")
-    public static LispInteger length (LObject sequence) {
+    public static LispInteger length (LispObject sequence) {
         if (!isSequence(sequence))
             throw new WrongTypeArgumentException("sequencep", sequence);
         if (sequence.equals(LispSymbol.ourNil))
@@ -39,17 +39,17 @@ public abstract class BuiltinsSequence {
     }
 
     @Subroutine(value = "append")
-    public static LObject append (@Optional LObject... args) {
+    public static LispObject append (@Optional LispObject... args) {
         if (args == null || args.length == 0)
             return LispSymbol.ourNil;
-        ArrayList<LObject> list = new ArrayList<>();
+        ArrayList<LispObject> list = new ArrayList<>();
         for (int i = 0; i < args.length - 1; ++i) {
-            LObject sequence = args[i];
+            LispObject sequence = args[i];
             if (!isStringListVectorNil(sequence))
                 throw new WrongTypeArgumentException("sequencep", sequence);
             if (sequence.equals(LispSymbol.ourNil))
                 continue;
-            list.addAll(((LispSequence)sequence).toLObjectList());
+            list.addAll(((LispSequence)sequence).toLispObjectList());
         }
         if (!list.isEmpty()) {
             LispList result = LispList.list(list);
@@ -60,7 +60,7 @@ public abstract class BuiltinsSequence {
     }
     
     @Subroutine("mapcar")
-    public static LispList mapCar (Environment environment, LObject function, LObject sequence) {
+    public static LispList mapCar (Environment environment, LispObject function, LispObject sequence) {
         int length = length(sequence).getData();
         if (sequence instanceof LispCharTable)
             throw new WrongTypeArgumentException("listp", sequence);
@@ -79,7 +79,7 @@ public abstract class BuiltinsSequence {
     }
 
     @Subroutine("copy-sequence")
-    public static LObject copySequence (LObject arg) {
+    public static LispObject copySequence (LispObject arg) {
         if (LispSymbol.ourNil.equals(arg))
             return arg;
         //todo: bool-vector
@@ -88,21 +88,21 @@ public abstract class BuiltinsSequence {
         return ((LispSequence)arg).copy();
     }
     
-    private static boolean isStringListVectorNil (LObject object) {
+    private static boolean isStringListVectorNil (LispObject object) {
         return (object instanceof LispVector) || (object instanceof LispString) || (object instanceof LispList)
          || (object.equals(LispSymbol.ourNil));
     }
     
     @Subroutine("concat")
-    public static LispString concat (Environment environment, @Optional LObject... sequences) {
+    public static LispString concat (Environment environment, @Optional LispObject... sequences) {
         if (sequences == null || sequences.length == 0)
             return new LispString("");
-        for (LObject s: sequences) {
+        for (LispObject s: sequences) {
             if (!isStringListVectorNil(s))
                 throw new WrongTypeArgumentException("sequencep", s);
         }
         String res = "";
-        for (LObject s: sequences) {
+        for (LispObject s: sequences) {
             if (s.equals(LispSymbol.ourNil))
                 continue;
             LispSequence sequence = (LispSequence) s;
@@ -112,36 +112,36 @@ public abstract class BuiltinsSequence {
     }
     
     @Subroutine("vconcat")
-    public static LispVector vConcat (Environment environment, @Optional LObject... sequences) {
+    public static LispVector vConcat (Environment environment, @Optional LispObject... sequences) {
         if (sequences == null || sequences.length == 0)
             return new LispVector();
-        for (LObject s: sequences) {
+        for (LispObject s: sequences) {
             if (!isStringListVectorNil(s))
                 throw new WrongTypeArgumentException("sequencep", s);
         }
         LispVector v = new LispVector();
-        for (LObject s : sequences) {
+        for (LispObject s : sequences) {
             if (s.equals(LispSymbol.ourNil))
                 continue;
             LispSequence sequence = (LispSequence) s;
-            v.add(sequence.toLObjectList());
+            v.add(sequence.toLispObjectList());
         }
         return v;
     }
 
     @Subroutine("mapconcat")
-    public static LispString mapConcat (Environment environment, LObject function, LObject sequence, LObject separator) {
-        List<LObject> mapped = mapCar(environment, function, sequence).toLObjectList();
+    public static LispString mapConcat (Environment environment, LispObject function, LispObject sequence, LispObject separator) {
+        List<LispObject> mapped = mapCar(environment, function, sequence).toLispObjectList();
         if (mapped.isEmpty())
             return new LispString("");
-        ArrayList<LObject> toConcat = new ArrayList<>();
+        ArrayList<LispObject> toConcat = new ArrayList<>();
         toConcat.add(mapped.get(0));
         for (int i = 1, mappedSize = mapped.size(); i < mappedSize; i++) {
-            LObject object = mapped.get(i);
+            LispObject object = mapped.get(i);
             toConcat.add(separator);
             toConcat.add(object);
         }
-        return concat(environment, toConcat.toArray(new LObject[toConcat.size()]));
+        return concat(environment, toConcat.toArray(new LispObject[toConcat.size()]));
     }
 
 }

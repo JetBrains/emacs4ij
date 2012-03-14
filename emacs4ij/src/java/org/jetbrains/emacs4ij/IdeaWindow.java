@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 
 /**
@@ -37,12 +37,7 @@ public class IdeaWindow implements LispWindow {
     }
 
     @Override
-    public LObject evaluate(Environment environment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public LispObject evaluate(Environment environment) {
+        return this;
     }
 }

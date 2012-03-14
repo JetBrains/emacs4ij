@@ -14,6 +14,6 @@ public interface LispMiniBuffer extends LispBuffer {
     int getActivationsDepth();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
-    LObject onReadInput();
-    LObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
+    LispObject onReadInput();
+    LispObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
 }

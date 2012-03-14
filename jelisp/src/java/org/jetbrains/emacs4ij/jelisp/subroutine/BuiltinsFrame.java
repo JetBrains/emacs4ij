@@ -18,13 +18,13 @@ public abstract class BuiltinsFrame {
     private BuiltinsFrame() {}
 
     @Subroutine("selected-frame")
-    public static LObject selectedFrame () {
+    public static LispObject selectedFrame () {
         return GlobalEnvironment.INSTANCE.getSelectedFrame() == null ?
                 LispSymbol.ourNil : GlobalEnvironment.INSTANCE.getSelectedFrame();
     }
 
     @Subroutine("frame-parameter")
-    public static LObject frameParameter (LObject frame, LispSymbol parameter) {
+    public static LispObject frameParameter (LispObject frame, LispSymbol parameter) {
         System.out.println("Ask for frame parameter: " + parameter.getName());
         if (frame.equals(LispSymbol.ourNil)) {
             frame = GlobalEnvironment.INSTANCE.getSelectedFrame();
@@ -37,7 +37,7 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine("get-buffer-window")
-    public static LObject getBufferWindow(Environment environment, @Optional LObject bufferOrName, @Optional LObject frame) {
+    public static LispObject getBufferWindow(Environment environment, @Optional LispObject bufferOrName, @Optional LispObject frame) {
         LispBuffer buffer = BuiltinsBuffer.getBufferByBufferNameOrNil(environment, bufferOrName);
         ArrayList<LispFrame> frames = new ArrayList<>();
         if (frame == null) {
@@ -52,7 +52,7 @@ public abstract class BuiltinsFrame {
         } else if (frame instanceof LispFrame) { //search only that frame.
             frames.add((LispFrame) frame);
         } else {
-            LObject selectedFrame = selectedFrame();
+            LispObject selectedFrame = selectedFrame();
             if (!selectedFrame.equals(LispSymbol.ourNil))
                 frames.add((LispFrame) selectedFrame);
         }
@@ -67,7 +67,7 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "make-frame-visible", isCmd = true, interactive = "")
-    public static LObject makeFrameVisible(@Optional LObject frame) {
+    public static LispObject makeFrameVisible(@Optional LispObject frame) {
         if (frame == null || frame.equals(LispSymbol.ourNil)) {
             frame = selectedFrame();
         }
@@ -80,7 +80,7 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "make-frame-invisible", isCmd = true, interactive = "")
-    public static LObject makeFrameInvisible(@Optional LObject frame, @Optional LObject force) {
+    public static LispObject makeFrameInvisible(@Optional LispObject frame, @Optional LispObject force) {
         if (frame == null || frame.equals(LispSymbol.ourNil)) {
             frame = selectedFrame();
         }
@@ -103,7 +103,7 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "iconify-frame", isCmd = true, interactive = "")
-    public static LObject iconifyFrame(@Optional LObject frame) {
+    public static LispObject iconifyFrame(@Optional LispObject frame) {
         if (frame == null || frame.equals(LispSymbol.ourNil)) {
             frame = selectedFrame();
         }

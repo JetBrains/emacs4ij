@@ -25,7 +25,6 @@ public class InterruptMiniBuffer extends AnAction {
             IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
             miniBuffer.hide();
             //todo: reduce minibuffer recursion depth
-            projectComponent.setMiniBufferOpened(false);
 //            Messages.showInfoMessage("Quit " + miniBuffer.getName(), "MiniBuffer");
         } catch (NullPointerException e) {
             //skip

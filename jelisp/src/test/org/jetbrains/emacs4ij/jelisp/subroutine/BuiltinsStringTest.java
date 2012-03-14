@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.LObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Test;
@@ -18,13 +18,13 @@ import org.junit.Test;
 public class BuiltinsStringTest extends BaseSubroutineTest {
     @Test
     public void testFormatEmpty() {
-        LObject s = evaluateString("(format \"\")");
+        LispObject s = evaluateString("(format \"\")");
         Assert.assertEquals(new LispString(""), s);
     }
 
     @Test
     public void testFormatNoNeedInArgs() {
-        LObject s = evaluateString("(format \"hello\" 1 2 3)");
+        LispObject s = evaluateString("(format \"hello\" 1 2 3)");
         Assert.assertEquals(new LispString("hello"), s);
     }
 
@@ -63,13 +63,13 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testFormatSimple() {
-        LObject s = evaluateString("(format \"%1234d\" 1 2 3)");
+        LispObject s = evaluateString("(format \"%1234d\" 1 2 3)");
         Assert.assertEquals(new LispString("1"), s);
     }
 
     @Test
     public void testStringMatchSimple() {
-        LObject r = evaluateString("(string-match \"a\" \"africa\")");
+        LispObject r = evaluateString("(string-match \"a\" \"africa\")");
         Assert.assertEquals(new LispInteger(0), r);
         evaluateString("(setq case-fold-search t)");
         r = evaluateString("(string-match \"A\" \"africa\" 1)");
@@ -92,7 +92,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatchTick() {
-        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
+        LispObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
         Assert.assertEquals(new LispInteger(0), r);
         r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kvaM-x\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -100,19 +100,19 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatchTickAfterNewLine() {
-        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kva\nM-x\")");
+        LispObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kva\nM-x\")");
         Assert.assertEquals(new LispInteger(4), r);
     }
 
     @Test
     public void testStringMatchCharAlternative() {
-        LObject r = evaluateString("(string-match \"[abc]\" \"d\\^alla\")");
+        LispObject r = evaluateString("(string-match \"[abc]\" \"d\\^alla\")");
         Assert.assertEquals(new LispInteger(3), r);
     }
 
     @Test
     public void testStringMatchStar() {
-        LObject r = evaluateString("(string-match \"hi*\" \"hihihi5\")");
+        LispObject r = evaluateString("(string-match \"hi*\" \"hihihi5\")");
         Assert.assertEquals(new LispInteger(0), r);
         r = evaluateString("(string-match \"a*\" \"sdf\")");
         Assert.assertEquals(new LispInteger(0), r);
@@ -120,13 +120,13 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatchBackSlash() {
-        LObject r = evaluateString("(string-match \"a\\\\\\\\.b\" \"a\\\\.b\")");
+        LispObject r = evaluateString("(string-match \"a\\\\\\\\.b\" \"a\\\\.b\")");
         Assert.assertEquals(new LispInteger(0), r);
     }
 
     @Test
     public void testStringMatchQuestion() {
-        LObject r = evaluateString("(string-match \"caca?r\" \"cacr\")");
+        LispObject r = evaluateString("(string-match \"caca?r\" \"cacr\")");
         Assert.assertEquals(new LispInteger(0), r);
         r = evaluateString("(string-match \"a?\" \"crtcr\")");
         Assert.assertEquals(new LispInteger(0), r);
@@ -134,7 +134,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatchDollar() {
-        LObject r = evaluateString("(string-match \"u?hhhh$\" \"ah\")");
+        LispObject r = evaluateString("(string-match \"u?hhhh$\" \"ah\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(string-match \"u?h$\" \"ah\")");
         Assert.assertEquals(new LispInteger(1), r);
@@ -142,7 +142,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatchDot() {
-        LObject r = evaluateString("(string-match \"[.]\" \"a.\")");
+        LispObject r = evaluateString("(string-match \"[.]\" \"a.\")");
         Assert.assertEquals(new LispInteger(1), r);
         r = evaluateString("(string-match \".\" \"a.\")");
         Assert.assertEquals(new LispInteger(0), r);
@@ -150,13 +150,13 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testStringMatch() {
-        LObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
+        LispObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
         Assert.assertEquals(new LispInteger(0), r);
     }
 
     @Test
     public void testCapitalize() {
-        LObject r = evaluateString("?a");
+        LispObject r = evaluateString("?a");
         Assert.assertEquals(new LispInteger(97), r);
         r = evaluateString("(capitalize ?a)");
         Assert.assertEquals(new LispInteger(65), r);
@@ -170,7 +170,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
     
     @Test
     public void testMatchBeginningNil() {
-        LObject r = evaluateString("(match-beginning 0)");    
+        LispObject r = evaluateString("(match-beginning 0)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
     
@@ -188,7 +188,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
     @Test
     public void testMatchBeginningZero() {
         evaluateString("(string-match \"quick\" \"The quick fox jumped quickly.\")");
-        LObject r = evaluateString("(match-beginning 0)");
+        LispObject r = evaluateString("(match-beginning 0)");
         Assert.assertEquals(new LispInteger(4), r);
         r = evaluateString("(match-beginning 1)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -198,7 +198,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
     public void testMatchBeginningTwo() {
         evaluateString("(string-match \"one\" \"Test string one.\")");
         evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
-        LObject r = evaluateString("(match-beginning 0)");
+        LispObject r = evaluateString("(match-beginning 0)");
         Assert.assertEquals(new LispInteger(4), r);
         r = evaluateString("(match-beginning 1)");
         Assert.assertEquals(new LispInteger(4), r);
@@ -212,7 +212,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
     public void testMatchEnd() {
         evaluateString("(string-match \"one\" \"Test string one.\")");
         evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
-        LObject r = evaluateString("(match-end 0)");
+        LispObject r = evaluateString("(match-end 0)");
         Assert.assertEquals(new LispInteger(9), r);
         r = evaluateString("(match-end 1)");
         Assert.assertEquals(new LispInteger(6), r);
@@ -279,7 +279,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testSubstring() {
-        LObject r = evaluateString("(substring \"hello\" 3 3)");
+        LispObject r = evaluateString("(substring \"hello\" 3 3)");
         Assert.assertEquals(new LispString(""), r);
         r = evaluateString("(substring \"hello\" -1)");
         Assert.assertEquals(new LispString("o"), r);
@@ -289,7 +289,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
     
     @Test
     public void testMatchString() {
-        LObject r = evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        LispObject r = evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
         Assert.assertEquals(new LispInteger(4), r);
         r = evaluateString("(match-string 0 \"The quick fox jumped quickly.\")");
         Assert.assertEquals(new LispString("quick"), r);

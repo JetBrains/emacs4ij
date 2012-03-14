@@ -18,22 +18,22 @@ import java.util.List;
  * Time: 3:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispCharTable extends LispObject implements LispArray, LispSequence, Cloneable {
-    private LObject myDefault;
+public class LispCharTable implements LispObject, LispArray, LispSequence {
+    private LispObject myDefault;
     private LispObject myParent;
     private LispSymbol mySubtype;
-    private LObject myAscii = null;
-    private LObject[] myContent = new LObject[(1 << CharUtil.CHARTABLE_SIZE_BIT[0])];
-    private LObject[] myExtras = new LObject[CharUtil.MAX_N_EXTRA_SLOTS];
+    private LispObject myAscii = null;
+    private LispObject[] myContent = new LispObject[(1 << CharUtil.CHARTABLE_SIZE_BIT[0])];
+    private LispObject[] myExtras = new LispObject[CharUtil.MAX_N_EXTRA_SLOTS];
     private int myNExtras = 0;
 
     @Override
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         return null;
     }
     
-    public LispCharTable(LispSymbol purpose, @Nullable LObject init) {
-        LObject n = purpose.getProperty("char-table-extra-slots");
+    public LispCharTable(LispSymbol purpose, @Nullable LispObject init) {
+        LispObject n = purpose.getProperty("char-table-extra-slots");
         if (!n.equals(LispSymbol.ourNil)) {
             if (!BuiltinPredicates.isWholeNumber(n))
                 throw new WrongTypeArgumentException("wholenump", n);
@@ -61,18 +61,18 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         return myParent;
     }
 
-    public void setDefault(LObject myDefault) {
+    public void setDefault(LispObject myDefault) {
         this.myDefault = myDefault;
     }
 
-    public LObject getDefault() {
+    public LispObject getDefault() {
         return myDefault;
     }
 
     @Override
     public String toString() {
         String s = "#^[" + myDefault + ' ' + myParent + ' ' + mySubtype + (myAscii == null ? "" : " " + myAscii);
-        for (LObject item: myContent) {
+        for (LispObject item: myContent) {
             s += ' ' + item.toString();
         }
         for (int i = 0; i < myNExtras; ++i) {
@@ -82,11 +82,11 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         return s;        
     }
     
-    public LObject getExtraSlot(int n) {
+    public LispObject getExtraSlot(int n) {
         return myExtras[n];
     }
     
-    public void setExtraSlot (int n, LObject value) {
+    public void setExtraSlot (int n, LispObject value) {
         myExtras[n] = value;
     }
 
@@ -121,7 +121,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
     }
 
     @Override
-    public LObject getItem(int position) {
+    public LispObject getItem(int position) {
         try {
             return myContent[position];
         } catch (IndexOutOfBoundsException e) {
@@ -129,14 +129,14 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         }
     }
 
-    public void setContent (LObject value) {
+    public void setContent (LispObject value) {
         for (int i = 0; i < myContent.length; ++i) {
             myContent[i] = value;
         }
     }
     
     @Override
-    public void setItem(int c, LObject value) {
+    public void setItem(int c, LispObject value) {
         if (CharUtil.isAsciiChar(c) && myAscii instanceof LispSubCharTable) {
             ((LispSubCharTable) myAscii).setItem(c, value);
             return;
@@ -150,7 +150,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
             myAscii = charTableAscii();
     }
     
-    public void setRange (int from, int to, LObject value) {
+    public void setRange (int from, int to, LispObject value) {
         if (from == to) {
             setItem(from, value);
             return;
@@ -165,25 +165,25 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
             myAscii = charTableAscii();
     }
 
-    private LObject charTableAscii () {
+    private LispObject charTableAscii () {
         if (!(myContent[0] instanceof LispSubCharTable))
             return myContent[0];
-        LObject item = ((LispSubCharTable) myContent[0]).getItem(0);
+        LispObject item = ((LispSubCharTable) myContent[0]).getItem(0);
         if (!(item instanceof LispSubCharTable))
             return item;
         return ((LispSubCharTable) item).getItem(0);
     }
     
-    public void setAscii (LObject value) {
+    public void setAscii (LispObject value) {
         myAscii = value;
     }
 
-    public LObject getAscii() {
+    public LispObject getAscii() {
         return myAscii;
     }
 
-    private LObject ref(int c) {
-        LObject value;
+    private LispObject ref(int c) {
+        LispObject value;
         if (CharUtil.isAsciiChar(c)) {
             value = myAscii;
             if (value instanceof LispSubCharTable)
@@ -201,9 +201,9 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         return value;
     }
 
-    private LObject refAscii (int index) {
+    private LispObject refAscii (int index) {
         LispCharTable table = null;
-        LObject value;
+        LispObject value;
         do {								
             table = table != null ? (LispCharTable)myParent : this;
             value = !(table.getAscii() instanceof LispSubCharTable)
@@ -215,14 +215,14 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         return value;
     }
 
-    public LObject charTableRef (int index) {
+    public LispObject charTableRef (int index) {
         return CharUtil.isAsciiChar(index) ? refAscii(index) : ref(index);
     }
 
-    public LObject refAndRange (int c, int from, int to) {
+    public LispObject refAndRange (int c, int from, int to) {
         int index = CharUtil.index(c, 0, 0);
         int idx;
-        LObject val = myContent[index];
+        LispObject val = myContent[index];
         if (from < 0)
             from = 0;
         if (to < 0)
@@ -236,7 +236,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         while (from < idx * CharUtil.charTableChars(0)) {
             c = idx * CharUtil.charTableChars(0) - 1;
             idx--;
-            LObject this_val = myContent[idx];
+            LispObject this_val = myContent[idx];
             if (this_val instanceof LispSubCharTable)
                 this_val = ((LispSubCharTable) this_val).refAndRange(c, from, to, myDefault);
             else if (this_val.equals(LispSymbol.ourNil))
@@ -249,7 +249,7 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
         while (to >= (index + 1) * CharUtil.charTableChars(0)) {
             index++;
             c = index * CharUtil.charTableChars(0);
-            LObject this_val = myContent[index];
+            LispObject this_val = myContent[index];
             if (this_val instanceof LispSubCharTable)
                 this_val = ((LispSubCharTable) val).refAndRange(c, from, to, myDefault);
             else if (this_val.equals(LispSymbol.ourNil))
@@ -269,17 +269,17 @@ public class LispCharTable extends LispObject implements LispArray, LispSequence
     }
 
     @Override
-    public List<LObject> toLObjectList() {
+    public List<LispObject> toLispObjectList() {
         return null;
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LObject method) {
+    public List<LispObject> mapCar(Environment environment, LispObject method) {
         return null;
     }
 
     @Override
-    public LObject copy() {
+    public LispObject copy() {
         Cloner c = new Cloner();
         return c.deepClone(this);
     }

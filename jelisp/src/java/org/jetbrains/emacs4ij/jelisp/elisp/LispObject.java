@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 
-import java.lang.reflect.Method;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -10,16 +10,17 @@ import java.lang.reflect.Method;
  * Time: 1:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class LispObject implements LObject {
+public abstract interface LispObject {
+    LispObject evaluate(Environment environment);
 
-    @Override
-    public LObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
-        try {
-            Method m = this.getClass().getMethod(methodName, parameterTypes);
-            LispObject result = (LispObject) m.invoke(this, methodParameters);
-            return result == null ? this : result;
-        } catch (Exception e) {
-            return this;
-        }
-    }
+//    @Override
+//    public LispObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
+//        try {
+//            Method m = this.getClass().getMethod(methodName, parameterTypes);
+//            LispObject result = (LispObject) m.invoke(this, methodParameters);
+//            return result == null ? this : result;
+//        } catch (Exception e) {
+//            return this;
+//        }
+//    }
 }

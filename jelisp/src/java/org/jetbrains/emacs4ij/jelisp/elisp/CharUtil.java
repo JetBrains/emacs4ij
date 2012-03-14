@@ -264,7 +264,7 @@ public abstract class CharUtil {
 
     private static int MAYBE_UNIFY_CHAR(int c) {
         if (c > MAX_UNICODE_CHAR && c <= MAX_5_BYTE_CHAR) {
-            LObject val = charUnifyTable == null ? LispSymbol.ourNil : charUnifyTable.charTableRef(c);
+            LispObject val = charUnifyTable == null ? LispSymbol.ourNil : charUnifyTable.charTableRef(c);
             if (val instanceof LispInteger)
                 return ((LispInteger) val).getData();
             else if (!val.equals(LispSymbol.ourNil))

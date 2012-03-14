@@ -22,7 +22,7 @@ public abstract class BuiltinsString {
     private BuiltinsString () {}
 
     @Subroutine(value = "format")
-    public static LispString format (LispString formatString, @Optional LObject... objects) {
+    public static LispString format (LispString formatString, @Optional LispObject... objects) {
         String s = formatString.getData();
         int k = s.indexOf('%');
         String result = s.substring(0, (k == -1 ? s.length() : k));
@@ -92,7 +92,7 @@ public abstract class BuiltinsString {
     }
 
     @Subroutine(value = "string-match")
-    public static LObject stringMatch (Environment environment, LispString regexp, LispString string, @Optional LispInteger start) {
+    public static LispObject stringMatch (Environment environment, LispString regexp, LispString string, @Optional LispInteger start) {
         int from = 0;
         if (start != null) {
             from = start.getData();
@@ -107,7 +107,7 @@ public abstract class BuiltinsString {
     }
 
     @Subroutine("message")
-    public static LispString message (LispString formatString, @Optional LObject... args) {
+    public static LispString message (LispString formatString, @Optional LispObject... args) {
         //todo: write in echo area
         LispString s = format(formatString, args);
         System.out.println(s.getData());
@@ -115,7 +115,7 @@ public abstract class BuiltinsString {
     }
 
     @Subroutine("capitalize")
-    public static LObject capitalize (LObject object) {
+    public static LispObject capitalize (LispObject object) {
         if (object instanceof LispString) {
             return ((LispString)object).capitalize();
         }
@@ -130,7 +130,7 @@ public abstract class BuiltinsString {
     }
     
     @Subroutine("match-beginning")
-    public static LObject matchBeginning (LispInteger subExp) {
+    public static LispObject matchBeginning (LispInteger subExp) {
         int index = subExp.getData();
         if (index < 0)
             throw new ArgumentOutOfRange(subExp, 0);
@@ -145,7 +145,7 @@ public abstract class BuiltinsString {
     }
 
     @Subroutine("match-end")
-    public static LObject matchEnd (LispInteger subExp) {
+    public static LispObject matchEnd (LispInteger subExp) {
         int index = subExp.getData();
         if (index < 0)
             throw new ArgumentOutOfRange(subExp, 0);

@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString extends LispAtom implements LispSequence, LispArray {
+public class LispString implements LispAtom, LispSequence, LispArray {
     private String myData;
 
     public LispString (String data) {
@@ -61,7 +61,7 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     /**
      * no parameters required
      */
-    public LObject evaluate(Environment environment) {
+    public LispObject evaluate(Environment environment) {
         return this;
     }
 
@@ -71,8 +71,8 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     }
 
     @Override
-    public List<LObject> toLObjectList() {
-        ArrayList<LObject> data = new ArrayList<>();
+    public List<LispObject> toLispObjectList() {
+        ArrayList<LispObject> data = new ArrayList<>();
         for (int i = 0; i < myData.length(); ++i) {
             data.add(new LispInteger(myData.charAt(i)));
         }
@@ -80,16 +80,16 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     }
 
     @Override
-    public List<LObject> mapCar(Environment environment, LObject method) {
-        ArrayList<LObject> data = new ArrayList<>();
-        for (LObject item: toLObjectList()) {
+    public List<LispObject> mapCar(Environment environment, LispObject method) {
+        ArrayList<LispObject> data = new ArrayList<>();
+        for (LispObject item: toLispObjectList()) {
             data.add(BuiltinsCore.functionCall(environment, method, item));
         }
         return data;
     }
 
     @Override
-    public LObject copy() {
+    public LispObject copy() {
         return new LispString(myData);
     }
 
@@ -156,14 +156,14 @@ public class LispString extends LispAtom implements LispSequence, LispArray {
     }
 
     @Override
-    public void setItem(int position, LObject value) {
+    public void setItem(int position, LispObject value) {
         if (!BuiltinPredicates.isCharacter(value))
             throw new WrongTypeArgumentException("characterp", value);
         myData = myData.substring(0, position) + ((LispInteger)value).toCharacterString() + myData.substring(position + 1);
     }
 
     @Override
-    public LObject getItem(int position) {
+    public LispObject getItem(int position) {
         char c = myData.charAt(position);
         return new LispInteger(c);
 //        String s = "?" + c;

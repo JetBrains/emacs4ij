@@ -9,8 +9,8 @@ import java.util.List;
  * Time: 1:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispFrame extends LObject {
-    LObject getParameter (String parameter);
+public interface LispFrame extends LispObject {
+    LispObject getParameter (String parameter);
     void setVisible (boolean visible);
     boolean isVisible ();
     void setIconified (boolean iconified);
