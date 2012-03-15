@@ -136,7 +136,7 @@ public class LispSymbol implements LispAtom {
 
     public boolean isCustom() {
         return ((myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("lambda")))
-                || (myFunction instanceof Lambda));
+                || myFunction instanceof Lambda);
     }
 
     public boolean isFunction() {
@@ -144,8 +144,8 @@ public class LispSymbol implements LispAtom {
     }
 
     public boolean isMacro() {
-        return (myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("macro"))
-                || (myFunction instanceof Macro));
+        return ((myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("macro")))
+                || myFunction instanceof Macro);
     }
     
     public boolean isAlias() {
@@ -156,8 +156,7 @@ public class LispSymbol implements LispAtom {
         if (!isFunction())
             throw new InternalError("Wrong usage of function isInteractive with symbol " + myName +
                 ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
-        castFunctionCell(environment);
-        return ((FunctionCell)myFunction).isInteractive();
+        return castFunctionCell(environment) && ((FunctionCell) myFunction).isInteractive();
     }
 
     @Override
@@ -296,12 +295,17 @@ public class LispSymbol implements LispAtom {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    private void castFunctionCell (Environment environment) {
+    private boolean castFunctionCell (Environment environment) {
+        if (myFunction instanceof FunctionCell)
+            return true;
         if (isCustom()) {
             castToLambda(environment);
+            return true;
         } else if (isMacro()) {
             castToMacro(environment);
+            return true;
         }
+        return false;
     }
 
     public LispObject getDocumentation (Environment environment) {

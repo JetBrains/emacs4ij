@@ -47,6 +47,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             if (myInteractive.isNoMatch()) {
                 String newText = documentEvent.getDocument().getText();
                 int k = newText.indexOf(myInteractive.getNoMatchMessage());
+                if (k < 0)
+                    return;
                 newText = newText.substring(0, k);
                 write(newText);
             }

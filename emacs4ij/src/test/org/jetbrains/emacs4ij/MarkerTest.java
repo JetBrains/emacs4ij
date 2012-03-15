@@ -1,8 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.keymap.Keymap;
-import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.keymap.impl.KeymapImpl;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
@@ -232,10 +229,4 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
-    @Test
-    public void testIdeaKeymap() {
-        KeymapImpl km = (KeymapImpl) KeymapManager.getInstance().getActiveKeymap();
-        Keymap keymap = km.deriveKeymap();
-        System.out.print(1);
-    }
 }

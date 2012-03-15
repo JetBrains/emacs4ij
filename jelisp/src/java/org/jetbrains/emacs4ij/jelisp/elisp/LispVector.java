@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
@@ -143,5 +144,10 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
     
     public LispVector subString (int from, int to) {
         return new LispVector(myData.subList(from, to).toArray(new LispObject[to - from]));
+    }
+
+    @Override
+    public String toShortcutString() {
+        throw new NotImplementedException();
     }
 }

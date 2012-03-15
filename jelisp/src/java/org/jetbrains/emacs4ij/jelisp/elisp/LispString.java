@@ -8,7 +8,9 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -167,5 +169,29 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
     public boolean isMultibyte () {
         //todo
         return false;
+    }
+
+    @Override
+    public String toShortcutString() {
+        String data = myData;
+        Map<String, String> replaceMap = new HashMap<>();
+        replaceMap.put("M-", "meta ");
+        replaceMap.put("C-", "ctrl ");
+//        replaceMap.put("H-", "hyper ");
+        replaceMap.put("S-", "shift ");
+//        replaceMap.put("s-", "super ");
+        replaceMap.put("A-", "alt ");
+        for (Map.Entry<String, String> entry: replaceMap.entrySet()) {
+            data = data.replaceAll(entry.getKey(), entry.getValue());
+        }
+        Pattern p = Pattern.compile("(^|\\s)\\w(\\s|$)");
+        Matcher m = p.matcher(data);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String replacement = m.group().toUpperCase();
+            m.appendReplacement(sb, replacement);
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 }

@@ -90,6 +90,12 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     }
 
     @Test
+    public void testCommandpKeymap () {
+        LispObject lispObject = evaluateString("(commandp 'Control-X-prefix)");
+        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    }
+
+    @Test
     public void testFboundp () {
         evaluateString("(defun f ())");
         LispObject result = evaluateString("(fboundp 'f)");

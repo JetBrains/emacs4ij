@@ -7,7 +7,6 @@ import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.keymap.impl.KeymapImpl;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSequence;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
@@ -22,8 +21,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 public class IdeaKeymap implements LispKeymap {
     private Keymap myKeymap;
     
-    public IdeaKeymap() {
+    public IdeaKeymap(String name) {
+//        myKeymap = new KeymapImpl();
         myKeymap = ((KeymapImpl) KeymapManager.getInstance().getActiveKeymap()).deriveKeymap();
+        ((KeymapImpl)myKeymap).setName(name);
     }
     
     public IdeaKeymap (Keymap keymap) {
@@ -71,7 +72,7 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     private Shortcut toShortcut (LispStringOrVector key) {
-        String s = ((LispSequence)key).toCharString();
+        String s = key.toShortcutString();
         return KeyboardShortcut.fromString(s);
     }
     

@@ -6,6 +6,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.*;
 
+import java.util.ArrayList;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -13,9 +15,9 @@ import org.junit.*;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class CustomEnvironmentTest {
+public class EnvironmentTest {
 
-    private CustomEnvironment e;
+    private Environment e;
 
     @BeforeClass
     public static void runBeforeClass() throws Exception {
@@ -68,6 +70,13 @@ public class CustomEnvironmentTest {
         LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/simple.el", "region-active-p", GlobalEnvironment.SymbolType.FUN);
         Assert.assertNotNull(def);
     }
+    
+    @Test
+    public void testCommandList() {
+        ArrayList<String> commandList = GlobalEnvironment.INSTANCE.getCommandList("f");
+        Assert.assertFalse(commandList.isEmpty());
+    }
+
 
     /*
     @Ignore

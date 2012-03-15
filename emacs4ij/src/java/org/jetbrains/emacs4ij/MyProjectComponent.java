@@ -18,8 +18,6 @@ import com.intellij.ui.awt.RelativePoint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
@@ -94,8 +92,7 @@ public class MyProjectComponent implements ProjectComponent {
                 indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                 indicator.setFraction(0.0);
                 if (EnvironmentInitializer.silentInitGlobal()) {
-                    myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-                    EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
+                    initEnv();
                 } else {
                     JBPopupFactory.getInstance()
                             .createHtmlTextBalloonBuilder(Emacs4ijBundle.message("global.env.not.initialized.message"),
@@ -118,10 +115,15 @@ public class MyProjectComponent implements ProjectComponent {
     public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
+        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
+        keymapManager.setActiveKeymap(keymapManager.getKeymap(KeymapManager.DEFAULT_IDEA_KEYMAP));
 
-        LispKeymap globalKeymap = new IdeaKeymap();
-        globalKeymap.defineKey("backward-char", new LispString("a"));
-        ((KeymapManagerImpl)KeymapManager.getInstance()).setActiveKeymap(globalKeymap.getKeymap());
+
+//        LispKeymap globalKeymap = new IdeaKeymap("Emacs4ijKeymap");
+//        globalKeymap.defineKey("org.jetbrains.emacs4ij.OpenMiniBuffer", new LispString("C-z"));
+//        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
+//        keymapManager.addKeymap(globalKeymap.getKeymap());
+//        keymapManager.setActiveKeymap(globalKeymap.getKeymap());
     }
 
     public CustomEnvironment getEnvironment() {
