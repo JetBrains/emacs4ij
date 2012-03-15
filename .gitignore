@@ -3,5 +3,4 @@
 *.iws
 *.class
 *.jar
-*.properties
 out/
