@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -91,14 +92,20 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("call-interactively")
-    public static LispObject callInteractively (Environment environment, LispSymbol function, @Optional LispObject recordFlag, LispObject keys) {
+    public static void callInteractively (Environment environment, LispSymbol symbol, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
+        LispSymbol function = environment.find(symbol.getName());
+        if (function == null)
+            function = symbol;
         if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
-        //read args
-        //assign args
-        //invoke function
-        return LispSymbol.ourNil;
-
+        FunctionCell f = (FunctionCell) function.getFunction();
+        if (f.getNRequiredArguments() == 0) {
+            LispList.list(function).evaluate(environment);
+            return;
+        }
+        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        miniBuffer.open(environment.getBufferCurrentForEditing().getEditor());
+        miniBuffer.onInteractiveNoIoInput(new SpecialFormInteractive(environment, f.getInteractiveString()));
     }
 
     @Subroutine("funcall")
@@ -230,7 +237,7 @@ public abstract class BuiltinsCore {
             throw new WrongTypeArgumentException("subrp",
                     object instanceof LispSymbol ? ((LispSymbol) object).getName() : object.toString());
         Primitive subr = (Primitive)object;
-        return LispList.cons(subr.getMinNumArgs(), subr.getMaxNumArgs());
+        return LispList.cons(new LispInteger(subr.getNRequiredArguments()), subr.getMaxNumArgs());
     }
 
     @Subroutine("aref")

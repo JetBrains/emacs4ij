@@ -315,15 +315,15 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     @Test
     public void testPrimitiveMinMaxArgsNum() {
         LispSymbol f = environment.find("indirect-function");
-        Assert.assertEquals(new LispInteger(1), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(1, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispInteger(2), ((Primitive)f.getFunction()).getMaxNumArgs());
 
         f = environment.find("run-hooks");
-        Assert.assertEquals(new LispInteger(0), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(0, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispSymbol("many"), ((Primitive) f.getFunction()).getMaxNumArgs());
 
         f = environment.find("if");
-        Assert.assertEquals(new LispInteger(2), ((Primitive) f.getFunction()).getMinNumArgs());
+        Assert.assertEquals(2, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive)f.getFunction()).getMaxNumArgs());
     }
 

@@ -12,7 +12,7 @@ public abstract class TestSetup {
     public static void runBeforeClass() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
         GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
-        GlobalEnvironment.initialize(null, null);
+        GlobalEnvironment.initialize(null, null, null);
         GlobalEnvironment.INSTANCE.startRecording();
     }
 

@@ -46,6 +46,11 @@ public class Macro implements FunctionCell {
     }
 
     @Override
+    public int getNRequiredArguments() {
+        return myLambda.getNRequiredArguments();
+    }
+
+    @Override
     public LispObject evaluate(Environment environment) {
         throw new InternalError("We can't come to macro evaluation: it is used as function or throws void-variable exc");
     }

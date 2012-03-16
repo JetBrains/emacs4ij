@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -23,7 +23,7 @@ public class EvaluateCode extends AnAction {
     }
 
     public void actionPerformed(AnActionEvent e) {
-        CustomEnvironment environment;
+        Environment environment;
         try {
             environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         } catch (NullPointerException exc) {

@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
  * To change this template use File | Settings | File Templates.
  */
 public class GlobalEnvironment extends Environment {
-    private ArrayList<LispFrame> myFrames = new ArrayList<>();
+    private List<LispFrame> myFrames = new ArrayList<>();
     private LispFrame myCurrentFrame = null;
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
@@ -37,10 +37,10 @@ public class GlobalEnvironment extends Environment {
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
     private static DocumentationExtractor myDocumentationExtractor;
-    private ArrayList<String> myBufferLocals = new ArrayList<>();
-
+    private List<String> myBufferLocals = new ArrayList<>();
+    
     //for debug & extract definition on th fly
-    public static ArrayDeque<String> ourCallStack = new ArrayDeque<String>();
+    public static Deque<String> ourCallStack = new ArrayDeque<>();
 
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
@@ -129,9 +129,13 @@ public class GlobalEnvironment extends Environment {
                 return false;
         }
     }
-    
-    public static void initialize (@Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
+
+    //input parameters are nullable only for test!!!
+    public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
+        ourKeymapManager = new KeymapManager(keymapFactory);
+        ourBufferManager = new BufferManager(bufferFactory);
+
         myIde = ide;
         if (INSTANCE.myCurrentFrame != null) {
             INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
@@ -164,9 +168,6 @@ public class GlobalEnvironment extends Environment {
 
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
-
-        ourBufferManager = new BufferManager(bufferFactory);
-        //findAndRegisterEmacsFunction(ourFinder);
 
     }
 
@@ -628,7 +629,7 @@ public class GlobalEnvironment extends Environment {
         return frames;
     }
 
-    public static ArrayList<LispFrame> getAllFrames () {
+    public static List<LispFrame> getAllFrames () {
         if (INSTANCE == null)
             return new ArrayList<>();
         return INSTANCE.myFrames;
@@ -654,5 +655,9 @@ public class GlobalEnvironment extends Environment {
         } catch (NoSuchElementException e) {
             return null;
         }
+    }
+    
+    public LispKeymap makeKeymap (@Nullable String name) {
+        return ourKeymapManager.createKeymap(name);
     }
 }

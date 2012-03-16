@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +21,7 @@ public class InterruptMiniBuffer extends AnAction {
             return;
         try {
             MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(event.getDataContext()).getComponent(MyProjectComponent.class);
-            CustomEnvironment environment = projectComponent.getEnvironment();
+            Environment environment = projectComponent.getEnvironment();
             IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
             miniBuffer.hide();
             //todo: reduce minibuffer recursion depth

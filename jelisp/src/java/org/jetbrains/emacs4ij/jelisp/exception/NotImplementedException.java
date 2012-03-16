@@ -8,7 +8,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class NotImplementedException extends LispException {
-    public NotImplementedException () {
-        super("Not implemented!");
+    public NotImplementedException (String what) {
+        super("Not implemented: " + what);
     }
 }

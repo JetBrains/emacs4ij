@@ -196,6 +196,11 @@ public class Lambda implements FunctionCell {
     }
 
     @Override
+    public int getNRequiredArguments() {
+        return nRequiredArguments;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Lambda)) return false;

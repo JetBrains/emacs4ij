@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -144,5 +145,10 @@ public class IdeaFrame implements LispFrame {
         result = 31 * result + (myParameters != null ? myParameters.hashCode() : 0);
         result = 31 * result + (myWindows != null ? myWindows.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public JComponent getComponent() {
+        return myFrame.getComponent();
     }
 }

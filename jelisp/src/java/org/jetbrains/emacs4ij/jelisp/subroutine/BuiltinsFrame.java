@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,7 +40,7 @@ public abstract class BuiltinsFrame {
     @Subroutine("get-buffer-window")
     public static LispObject getBufferWindow(Environment environment, @Optional LispObject bufferOrName, @Optional LispObject frame) {
         LispBuffer buffer = BuiltinsBuffer.getBufferByBufferNameOrNil(environment, bufferOrName);
-        ArrayList<LispFrame> frames = new ArrayList<>();
+        List<LispFrame> frames = new ArrayList<>();
         if (frame == null) {
             frame = LispSymbol.ourNil;
         }

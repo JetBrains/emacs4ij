@@ -4,9 +4,10 @@ import com.intellij.ide.IdeEventQueue;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -63,7 +64,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }
     }
 
-    public IdeaMiniBuffer (int number, Editor editor, CustomEnvironment environment) {
+    public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
         myName = " *Minibuf-" + number + '*';
         myEditor = editor;
         myEnvironment = environment;
@@ -231,6 +232,20 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         return myActivationsDepth;
     }
 
+    @Override
+    public void open(Editor parent) {
+        EditorTextField input = new EditorTextField();
+        parent.setHeaderComponent(input);
+        setEditor(input.getEditor());
+        ExecuteCommand command = new ExecuteCommand();
+        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
+        InterruptMiniBuffer imb = new InterruptMiniBuffer();
+        imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
+        AutoComplete autoComplete = new AutoComplete();
+        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
+        setBufferActive();
+    }
+
     //for test
     public void appendText (String text) {
         write (myEditor.getDocument().getText() + text);
@@ -290,19 +305,18 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
-        //note: myStatus == READ_ARG
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
             myEnvironment.setArgumentsEvaluated(true);
             LispObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLispObjectList());
             hide();
-
             viewResult(result);
             return result;
-
         } else {
-            if (!myInteractive.isNoMatch())
+            myStatus = MiniBufferStatus.READ_ARG;
+            if (!myInteractive.isNoMatch()) {
                 myInteractive.readNextArgument();
+            }
         }
         return null;
     }

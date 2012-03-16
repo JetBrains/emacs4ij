@@ -9,7 +9,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
@@ -38,7 +38,7 @@ public class EnvironmentInitializer {
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
             try {
-                GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
+                GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
                 isGlobalInitialized = true;
             } catch (LispException e) {
                 //skip
@@ -51,7 +51,7 @@ public class EnvironmentInitializer {
         if (isGlobalInitialized)
             return true;
         try {
-            GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
+            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
             isGlobalInitialized = true;
         } catch (LispException e) {
             GlobalEnvironment.showErrorMessage(e.getMessage());
@@ -59,7 +59,7 @@ public class EnvironmentInitializer {
         return isGlobalInitialized;
     }
 
-    public static void initProjectEnv (final Project project, final CustomEnvironment environment) {
+    public static void initProjectEnv (final Project project, final Environment environment) {
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
             GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));

@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,24 +18,18 @@ import java.util.Collections;
  * To change this template use File | Settings | File Templates.
  */
 public class BufferManager {
-    private ArrayList<LispBuffer> myBuffers = new ArrayList<LispBuffer>();
-    private ArrayList<LispBuffer> myDeadBuffers = new ArrayList<LispBuffer>();
-    private ArrayList<LispBuffer> myServiceBuffers = new ArrayList<LispBuffer>();
-    private ArrayList<String> myRecordedBuffers = new ArrayList<String>();
+    private List<LispBuffer> myBuffers = new ArrayList<>();
+    private List<LispBuffer> myDeadBuffers = new ArrayList<>();
+    private List<LispBuffer> myServiceBuffers = new ArrayList<>();
+    private List<String> myRecordedBuffers = new ArrayList<>();
     private LispBufferFactory myBufferFactory = null;
 
     public BufferManager(LispBufferFactory bufferFactory) {
         myBufferFactory = bufferFactory;
     }
-    
-    private LispBufferFactory getBufferFactory() {
-        return myBufferFactory;
-    }
-    
+        
     public LispBuffer createBuffer (String bufferName) {
-        LispBuffer buffer = myBufferFactory.createBuffer(bufferName);
-        //getMainEnvironment().defineBuffer(buffer);
-        return buffer;
+        return myBufferFactory.createBuffer(bufferName);
     }
 
     public LispBuffer getCurrentBuffer () {
@@ -43,7 +38,7 @@ public class BufferManager {
         return myBuffers.get(myBuffers.size() - 1);
     }
 
-    private int getIndexByName(ArrayList<LispBuffer> buffers, String bufferName) {
+    private int getIndexByName(List<LispBuffer> buffers, String bufferName) {
         for (int i=0; i!= buffers.size(); ++i) {
             if (buffers.get(i).getName().equals(bufferName))
                 return i;
@@ -105,20 +100,11 @@ public class BufferManager {
         myServiceBuffers.add(buffer);
     }
 
-//    public void updateBuffer(LispBuffer buffer) {
-//        myBuffers.set(getIndexByName(myBuffers, buffer.getName()), buffer);
-//    }
-//
-//    public void updateServiceBuffer (LispBuffer buffer) {
-//        myServiceBuffers.set(getIndexByName(myServiceBuffers, buffer.getName()), buffer);
-//    }
-
-    public ArrayList<LispBuffer> getBuffers () {
+    public List<LispBuffer> getBuffers () {
         return myBuffers;
     }
 
     public LispBuffer getOtherBuffer (String bufferName) {
-        //ArrayList<LispBuffer> noSpace = getBuffersWithNameNotBeginningWithSpace();
         if (myBuffers.isEmpty())
             throw new NoOpenedBufferException();
         if (myBuffers.size() == 1) {
@@ -147,13 +133,6 @@ public class BufferManager {
         myBuffers.remove(buffer);
     }
 
-    /*public void killBuffer (String bufferName) {
-        LispBuffer buffer = findBuffer(bufferName);
-        if (buffer == null)
-            throw new NoBufferException(bufferName);
-        killBuffer(buffer);
-    }*/
-
     public void killBuffer (LispBuffer buffer) {
         buffer.kill();
         myDeadBuffers.add(buffer);        
@@ -162,8 +141,6 @@ public class BufferManager {
 
     public void closeAllBuffers () {
         myBuffers.clear();
-        //myDeadBuffers.clear();
-        //myServiceBuffers.clear();
     }
 
     public LispBuffer getBufferByIndex (int index) {
@@ -184,10 +161,6 @@ public class BufferManager {
         }
         return buffersNames;
     }
-
-    /*public LispString getDefaultDirectory () {
-        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("directory");
-    }     */
 
     public void buryBuffer (LispBuffer buffer) {
         myBuffers.remove(buffer);

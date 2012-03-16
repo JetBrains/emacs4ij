@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import javax.swing.*;
 import java.util.List;
 
 /**
@@ -22,4 +23,5 @@ public interface LispFrame extends LispObject {
     LispWindow containsBuffer (LispBuffer buffer);
     void closeWindow (LispBuffer buffer);
     List<LispBuffer> getBufferList();
+    JComponent getComponent();
 }

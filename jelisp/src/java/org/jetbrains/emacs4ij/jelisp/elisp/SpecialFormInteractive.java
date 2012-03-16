@@ -33,7 +33,7 @@ public class SpecialFormInteractive {
 
    // private boolean myNoMatch;
 
-    private ArrayList<LispObject> myArguments;
+    private List<LispObject> myArguments;
     private String[] myParameters;
     private int myIndex;
 

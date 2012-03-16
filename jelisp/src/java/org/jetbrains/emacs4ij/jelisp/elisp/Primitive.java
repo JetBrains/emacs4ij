@@ -20,7 +20,7 @@ public class Primitive implements FunctionCell {
     private String myInteractiveString;
     private Type myType;
     
-    private LispInteger myMinNumArgs = null;
+    private int myMinNumArgs = -1;
     private LispObject myMaxNumArgs = null;
 
     public enum Type {BUILTIN, SPECIAL_FORM}
@@ -63,13 +63,18 @@ public class Primitive implements FunctionCell {
         return myInteractiveString;
     }
 
+    @Override
+    public int getNRequiredArguments() {
+        return myMinNumArgs;
+    }
+
     public Type getType () {
         return myType;
     }
 
     @Override
     public LispObject evaluate(Environment environment) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return this;
     }
 
     public void countMinMaxNumArgs() {
@@ -94,7 +99,7 @@ public class Primitive implements FunctionCell {
                     }
 
                     if (parametersTypes.length == 0) {
-                        myMinNumArgs = new LispInteger(0);
+                        myMinNumArgs = 0;
                         if (myMaxNumArgs == null)
                             myMaxNumArgs = new LispInteger(0);
                         return;
@@ -107,7 +112,7 @@ public class Primitive implements FunctionCell {
                         if (!optional) {
                             if (parametersAnnotations[i].length > 0 && parametersAnnotations[i][0] instanceof Optional) {
                                 optional = true;
-                                myMinNumArgs = new LispInteger(i + correction);
+                                myMinNumArgs = i + correction;
                             }
                         }
                         if (((Class)parametersTypes[i]).isArray()) {
@@ -115,8 +120,8 @@ public class Primitive implements FunctionCell {
                                 myMaxNumArgs = new LispSymbol("many");
                         }
                     }
-                    if (myMinNumArgs == null)
-                        myMinNumArgs = new LispInteger(parametersTypes.length + correction);
+                    if (myMinNumArgs == -1)
+                        myMinNumArgs = parametersTypes.length + correction;
                     if (myMaxNumArgs == null)
                         myMaxNumArgs = new LispInteger(parametersTypes.length + correction);
                     
@@ -127,15 +132,7 @@ public class Primitive implements FunctionCell {
         throw new RuntimeException("Cannot count min and max number of arguments for primitive " + myName);
     }
 
-    public LispInteger getMinNumArgs() {
-        /*if (myMinNumArgs == null)
-            countMinMaxNumArgs();*/
-        return myMinNumArgs;
-    }
-
     public LispObject getMaxNumArgs() {
-        /*if (myMaxNumArgs == null)
-            countMinMaxNumArgs();  */
         return myMaxNumArgs;
     }
 

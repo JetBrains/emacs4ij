@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.editor.Editor;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -12,6 +14,7 @@ public interface LispMiniBuffer extends LispBuffer {
     void readParameter(SpecialFormInteractive interactive);
     void addCharListener();
     int getActivationsDepth();
+    void open(Editor parent);
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
     LispObject onReadInput();

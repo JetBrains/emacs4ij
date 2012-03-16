@@ -42,7 +42,7 @@
         <action id="org.jetbrains.emacs4ij.ExecuteCommand" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
         <action id="org.jetbrains.emacs4ij.AutoComplete" class="org.jetbrains.emacs4ij.AutoComplete"/>
         <action id="org.jetbrains.emacs4ij.InterruptMiniBuffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
-
+        <action id="EmacsAction" class="org.jetbrains.emacs4ij.EmacsAction"/>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

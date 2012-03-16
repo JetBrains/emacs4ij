@@ -1,11 +1,13 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,6 +25,7 @@ public abstract class Environment {
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
     protected static BufferManager ourBufferManager;
+    protected static KeymapManager ourKeymapManager;
 
     public boolean isMainOrGlobal() {
         return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);
@@ -151,7 +154,7 @@ public abstract class Environment {
         ourBufferManager.killBuffer(buffer);
     }
 
-    public ArrayList<LispBuffer> getBuffers () {
+    public List<LispBuffer> getBuffers () {
         return ourBufferManager.getBuffers();
     }
 
@@ -231,5 +234,18 @@ public abstract class Environment {
         } catch (RuntimeException e) {
             return 0;
         }
+    }
+    
+    //========= keymaps ===========
+    public LispKeymap createKeymap (@Nullable String name) {
+        return ourKeymapManager.createKeymap(name);
+    }
+    
+    public LispKeymap getActiveKeymap() {
+        return ourKeymapManager.getActiveKeymap();
+    }
+    
+    public void setActiveKeymap(LispKeymap keymap) {
+
     }
 }

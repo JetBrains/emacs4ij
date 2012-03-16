@@ -95,6 +95,9 @@ public class IdeaBuffer implements LispBuffer {
                 throw new LispException("End of file during parsing");
             column = code[line].length() - 1;
         }
+        if (code[line].length() - 1 < column) {
+            column = code[line].length() - 1;
+        }
         BackwardMultilineParser parser = new BackwardMultilineParser(code);
         LispObject parsed = parser.parse(line, column);
         return parsed.evaluate(myEnvironment);

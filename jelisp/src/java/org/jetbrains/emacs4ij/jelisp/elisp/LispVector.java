@@ -148,6 +148,6 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
 
     @Override
     public String toShortcutString() {
-        throw new NotImplementedException();
+        throw new NotImplementedException("LispVector.toShortcutString()");
     }
 }

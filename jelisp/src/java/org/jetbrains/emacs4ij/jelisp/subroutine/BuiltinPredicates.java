@@ -64,10 +64,6 @@ public abstract class BuiltinPredicates {
     @Subroutine("commandp")
     public static LispSymbol commandp (Environment environment, LispObject function, @Nullable @Optional LispObject forCallInteractively) {
         if (function instanceof LispSymbol) {
-            if (((LispSymbol) function).getName().equals("forward-char"))
-                System.out.print(1);
-
-
             if (!((LispSymbol) function).isFunction())
                 return LispSymbol.ourNil;
             if (((LispSymbol) function).isInteractive(environment))

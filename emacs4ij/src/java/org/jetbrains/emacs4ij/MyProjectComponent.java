@@ -4,8 +4,6 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -17,6 +15,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
@@ -32,7 +31,7 @@ import javax.swing.event.HyperlinkListener;
  * To change this template use File | Settings | File Templates.
  */
 public class MyProjectComponent implements ProjectComponent {
-    private CustomEnvironment myEnvironment = null;
+    private Environment myEnvironment = null;
     private Project myProject;
 
     public MyProjectComponent(Project project) {
@@ -115,8 +114,9 @@ public class MyProjectComponent implements ProjectComponent {
     public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
-        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
-        keymapManager.setActiveKeymap(keymapManager.getKeymap(KeymapManager.DEFAULT_IDEA_KEYMAP));
+
+//        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
+//        keymapManager.setActiveKeymap(keymapManager.getKeymap(KeymapManager.DEFAULT_IDEA_KEYMAP));
 
 
 //        LispKeymap globalKeymap = new IdeaKeymap("Emacs4ijKeymap");
@@ -126,7 +126,7 @@ public class MyProjectComponent implements ProjectComponent {
 //        keymapManager.setActiveKeymap(globalKeymap.getKeymap());
     }
 
-    public CustomEnvironment getEnvironment() {
+    public Environment getEnvironment() {
         return myEnvironment;
     }
 

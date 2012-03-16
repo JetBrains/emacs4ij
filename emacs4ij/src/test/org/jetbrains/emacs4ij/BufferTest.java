@@ -14,8 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,7 +36,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
-        GlobalEnvironment.initialize(new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
@@ -453,7 +453,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testBuryBuffer_Current () {
         LispBuffer current = myEnvironment.getBufferCurrentForEditing();
-        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        List<LispBuffer> buffers = myEnvironment.getBuffers();
         buffers.remove(current);
         buffers.add(0, current);
         evaluateString("(bury-buffer)");
@@ -463,7 +463,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testBuryBuffer_String () {
         LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
-        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        List<LispBuffer> buffers = myEnvironment.getBuffers();
         buffers.remove(current);
         buffers.add(0, current);
         evaluateString("(bury-buffer \"" + myTestFiles[1] + "\")");
@@ -473,7 +473,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testBuryBuffer_Buffer () {
         LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
-        ArrayList<LispBuffer> buffers = myEnvironment.getBuffers();
+        List<LispBuffer> buffers = myEnvironment.getBuffers();
         buffers.remove(current);
         buffers.add(0, current);
         evaluateString("(bury-buffer (get-buffer \"" + myTestFiles[1] + "\"))");

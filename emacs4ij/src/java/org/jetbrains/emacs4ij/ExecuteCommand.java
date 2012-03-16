@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.ui.Messages;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,7 +16,7 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 public class ExecuteCommand extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
-        CustomEnvironment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+        Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         try {
             environment.getMiniBuffer().onReadInput();
         } catch (RuntimeException exc) {

@@ -4,10 +4,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.ui.EditorTextField;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-
-import java.awt.event.KeyEvent;
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,7 +21,7 @@ public class OpenMiniBuffer extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        CustomEnvironment environment;
+        Environment environment;
         MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class);
         try {
             environment = projectComponent.getEnvironment();
@@ -39,19 +37,7 @@ public class OpenMiniBuffer extends AnAction {
             //todo: open new mini buffer over old ones and increase recursion depth
             return;
         }
-        IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-        EditorTextField input = new EditorTextField();
-        editor.setHeaderComponent(input);
-
-        miniBuffer.setEditor(input.getEditor());
-
-        ExecuteCommand command = new ExecuteCommand();
-        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
-        InterruptMiniBuffer imb = new InterruptMiniBuffer();
-        imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
-        AutoComplete autoComplete = new AutoComplete();
-        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
-
-        miniBuffer.setBufferActive();
+        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        miniBuffer.open(editor);
     }
 }

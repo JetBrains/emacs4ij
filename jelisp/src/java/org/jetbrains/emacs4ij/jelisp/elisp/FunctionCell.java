@@ -12,4 +12,5 @@ public interface FunctionCell extends LispObject {
     void setDocumentation (LispObject doc);
     boolean isInteractive();
     String getInteractiveString();
+    int getNRequiredArguments();
 }
