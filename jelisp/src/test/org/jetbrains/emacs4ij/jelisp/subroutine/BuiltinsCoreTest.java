@@ -487,7 +487,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(defalias 'a (symbol-function 'f) (make-marker))");
         Assert.assertEquals("(lambda nil)", r.toString());
         r = evaluateString("(symbol-function 'a)");
-        Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil), environment);
+        Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil));
         test.setDocumentation(new LispMarker());
         Assert.assertEquals(test, r);
         r = evaluateString("(get 'variable-documentation 'a)");
@@ -730,5 +730,12 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         r = evaluateString("a");
         Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
                 new LispInteger(4), new LispInteger(5)), r);
+    }
+    
+    @Test
+    public void testInteractiveInBody() {
+        evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
+        LispObject r = evaluateString("(f)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
     }
 }

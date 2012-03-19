@@ -30,8 +30,8 @@ public class IdeProvider implements Ide {
         });
     }
 
-//    @Override
-    public void showMessage(final String message) {
+    @Override
+    public void showInfoMessage(final String message) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {

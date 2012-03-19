@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
@@ -193,5 +194,20 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         }
         m.appendTail(sb);
         return sb.toString();
+    }
+
+    @Override
+    public boolean isInteractive() {
+        throw new NotImplementedException("LispString.isInteractive()");
+    }
+
+    @Override
+    public String getInteractiveString() {
+        throw new NotImplementedException("LispString.getInteractiveString()");
+    }
+
+    @Override
+    public LispList getInteractiveForm() {
+        throw new NotImplementedException("LispString.getInteractiveForm()");
     }
 }

@@ -7,7 +7,9 @@ import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -217,7 +219,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
         cancelNoMatchMessageUpdate();
         write(myPrompt);
-        myActivationsDepth--;
+        myActivationsDepth = 0;
+//        todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
+//        myActivationsDepth--;
         kill();
     }
 
@@ -247,6 +251,11 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         setBufferActive();
     }
 
+    @Override
+    public boolean wasInteractiveFormResult() {
+        return myCommand == null;
+    }
+
     //for test
     public void appendText (String text) {
         write (myEditor.getDocument().getText() + text);
@@ -256,45 +265,34 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myInteractive.setNoMatch(input);
     }
 
-    private void viewResult (LispObject result) {
-        //todo: it is only for testing stage
-//        Messages.showInfoMessage(result.toString(), "Evaluation result");
-    }
-
     @Override
     public LispObject onReadInput () {
         switch (myStatus) {
             case READ_COMMAND:
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
-                    LispSymbol cmd = (LispSymbol) myInteractive.getArguments().car();
-                    String interactiveString = cmd.getInteractiveString(myEnvironment);
+                    LispSymbol cmd = (LispSymbol) myInteractive.getArguments().get(0);
+                    String interactiveString = cmd.getInteractiveString();
                     if (interactiveString == null) {
-                        throw new Emacs4ijFatalException("Command " + cmd.getName() + " has null interactive string!");
-                    }
-                    if (interactiveString.equals("")) {
-                        hide();
-                        LispObject result = cmd.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
-                        viewResult(result);
-                        return result;
+                        throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.string.error", cmd.getName()));
                     }
                     myCommand = cmd;
+                    if (interactiveString.equals("")) {
+                        hide();
+                        return myCommand.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
+                    }
                     myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
                     setReadArgumentStatus();
                     myInteractive.readNextArgument();
                 } else {
                     if (!myInteractive.isNoMatch())
-                        throw new Emacs4ijFatalException("Interactive read of parameters was finished, but not all parameters were set!");
+                        throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.read.error"));
                 }
                 break;
             case READ_ARG:
                 myInteractive.onReadParameter(readInputString());
                 if (myInteractive.isFinished()) {
-                    myEnvironment.setArgumentsEvaluated(true);
-                    LispObject result =  myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLispObjectList());
-                    hide();
-                    viewResult(result);
-                    return result;
+                    return runInteractive();
                 } else {
                     if (!myInteractive.isNoMatch())
                         myInteractive.readNextArgument();
@@ -303,28 +301,43 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }
         return null;
     }
-
-    @Override
-    public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
+    
+    private LispObject onInteractiveNoIoInput (@Nullable LispSymbol command, SpecialFormInteractive interactive) {
+        myCommand = command;
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
-            myEnvironment.setArgumentsEvaluated(true);
-            LispObject result = myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments().toLispObjectList());
-            hide();
-            viewResult(result);
-            return result;
+            return runInteractive();
         } else {
             myStatus = MiniBufferStatus.READ_ARG;
-            if (!myInteractive.isNoMatch()) {
-                myInteractive.readNextArgument();
+            open(myEnvironment.getBufferCurrentForEditing().getEditor());
+            if (myActivationsDepth > 1) {
+                hide();
+                GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
+                return null;
             }
+
+            myInteractive.readNextArgument();
         }
-        return null;
+        return null;        
+    }
+    
+    @Override
+    public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
+        return onInteractiveNoIoInput(null, interactive);    
     }
 
     @Override
     public LispObject onInteractiveCall(Environment environment, LispSymbol command) {
-        myCommand = command;
-        return onInteractiveNoIoInput(new SpecialFormInteractive(environment, ((FunctionCell)command.getFunction()).getInteractiveString()));
+        return onInteractiveNoIoInput(command,
+                new SpecialFormInteractive(environment, ((LispCommand)command.getFunction()).getInteractiveString()));
+    }
+
+    private LispObject runInteractive() {
+        myEnvironment.setArgumentsEvaluated(true);
+        LispObject result = myCommand == null
+                ? LispList.list(myInteractive.getArguments())
+                : myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments());
+        hide();
+        return result;
     }
 }

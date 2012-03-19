@@ -14,11 +14,11 @@ import java.util.List;
 public class Macro implements FunctionCell {
     private Lambda myLambda;
 
-    public Macro (LispList def, Environment environment) {
+    public Macro (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
             throw new InternalError("Wrong macro definition");
-        myLambda = new Lambda(LispList.list(data.subList(1, data.size())), environment);
+        myLambda = new Lambda(LispList.list(data.subList(1, data.size())));
     }
 
     public LispObject expand (Environment environment, List<LispObject> args) {
@@ -35,15 +35,15 @@ public class Macro implements FunctionCell {
         myLambda.setDocumentation(doc);
     }
 
-    @Override
-    public boolean isInteractive() {
-        return false;
-    }
-
-    @Override
-    public String getInteractiveString() {
-        return null;
-    }
+//    @Override
+//    public boolean isInteractive() {
+//        return false;
+//    }
+//
+//    @Override
+//    public String getInteractiveString() {
+//        return null;
+//    }
 
     @Override
     public int getNRequiredArguments() {

@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * Time: 5:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Primitive implements FunctionCell {
+public class Primitive implements FunctionCell, LispCommand {
     private String myName;
     private LispObject myDocumentation;
     private boolean isInteractive;
@@ -22,6 +22,14 @@ public class Primitive implements FunctionCell {
     
     private int myMinNumArgs = -1;
     private LispObject myMaxNumArgs = null;
+
+    @Override
+    public LispList getInteractiveForm() {
+        if (isInteractive()) {
+            return LispList.list(new LispSymbol("interactive"), new LispString(myInteractiveString));
+        }
+        return LispList.list();
+    }
 
     public enum Type {BUILTIN, SPECIAL_FORM}
 

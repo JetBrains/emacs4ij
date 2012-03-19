@@ -229,29 +229,23 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LispObject interactive(Environment environment, @Optional LispObject args) {
-        return null;
+        if (!environment.isMainOrGlobal())
+            return LispSymbol.ourNil;
 
-
-        /*if (args == null)
+        if (args == null || args.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
         if (args instanceof LispList) {
             args = args.evaluate(environment);
             if (args instanceof LispList)
                 return args;
+            throw new WrongTypeArgumentException("listp", args.toString());
         }
         if (args instanceof LispString) {
-            //TODO: interactively read the arguments
             SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
-            synchronized (interactive) {
-                while (!interactive.isFinished()) {
-                    LispObject a = interactive.getArgument();
-                    System.out.println(a);
-                }
-            }
-
-            return null;
+            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+            return miniBuffer.onInteractiveNoIoInput(interactive);
         }
-        throw new WrongTypeArgumentException("listp", args.toString()); */
+        throw new WrongTypeArgumentException("listp", args.toString());
     }
 
     @Subroutine("progn")

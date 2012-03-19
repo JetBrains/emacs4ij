@@ -326,7 +326,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testDefconst() {
         LispObject a = evaluateString("(defconst a 5 5)");
-        Assert.assertEquals(LispSymbol.ourNil, ((LispSymbol) a).getDocumentation(environment));
+        Assert.assertEquals(LispSymbol.ourNil, ((LispSymbol) a).getDocumentation());
         Assert.assertEquals(new LispInteger(5), evaluateString("a"));
         evaluateString("(setq a 10)");
         Assert.assertEquals(new LispInteger(10), evaluateString("a"));
@@ -647,4 +647,37 @@ default-directory
         Assert.assertEquals("(lambda nil (+ 2 3))", r.toString());
     } 
 
+    @Test
+    public void testInteractiveNil() {
+        LispObject i = evaluateString("(interactive)");
+        Assert.assertEquals(LispSymbol.ourNil, i);
+        i = evaluateString("(interactive nil)");
+        Assert.assertEquals(LispSymbol.ourNil, i);
+        i = evaluateString("(interactive ())");
+        Assert.assertEquals(LispSymbol.ourNil, i);
+    }
+
+    @Test
+    public void testInteractiveList() {
+        LispObject i = evaluateString("(interactive (list (+ 5 3)))");
+        Assert.assertEquals(LispList.list(new LispInteger(8)), i);
+    }
+
+    @Test
+    public void testInteractiveListWrong() {
+        try {
+            evaluateString("(interactive (+ 5 3))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 8)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
+    
+    @Test
+    public void testInteractiveInnerScope() {
+        evaluateString("(defun f () (+ 3 6) (interactive))");
+        LispObject r = evaluateString("(f)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
 }

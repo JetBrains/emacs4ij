@@ -82,6 +82,12 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
     }
 
     @Test
+    public void testCommandpLambda () {
+        LispObject lispObject = evaluateString("(commandp '(lambda () (+ 6 3) (interactive \"f\")))");
+        Assert.assertEquals(LispSymbol.ourT, lispObject);
+    }
+
+    @Test
     public void testCommandp_BuiltIn () {
         LispObject lispObject = evaluateString("(commandp 'switch-to-buffer)");
         Assert.assertEquals(LispSymbol.ourT, lispObject);

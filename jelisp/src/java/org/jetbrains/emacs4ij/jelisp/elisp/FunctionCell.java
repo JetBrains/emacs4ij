@@ -10,8 +10,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 public interface FunctionCell extends LispObject {
     LispObject getDocumentation();
     void setDocumentation (LispObject doc);
-    boolean isInteractive();
-    String getInteractiveString();
     int getNRequiredArguments();
-
 }

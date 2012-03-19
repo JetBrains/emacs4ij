@@ -21,18 +21,13 @@ import java.util.List;
 public class SpecialFormInteractive {
     private final static String ourStandardNoMatchMessage = " [No Match]";
     private final static String ourEmptyMessage = "";
-
     private char myInteractiveChar;
     private Environment myEnvironment;
     private String myPrompt;
     private String myPromptDefaultValue;
     private String myParameterStartValue;
     private String myParameterDefaultValue;
-
     private String myNoMatchMessage;
-
-   // private boolean myNoMatch;
-
     private List<LispObject> myArguments;
     private String[] myParameters;
     private int myIndex;
@@ -44,7 +39,6 @@ public class SpecialFormInteractive {
         myArguments = new ArrayList<>();
         myNoMatchMessage = ourEmptyMessage;
         myPromptDefaultValue = ourEmptyMessage;
-
         try {
             myInteractiveChar = myParameters[0].charAt(0);
             myPrompt = myParameters[0].substring(1);
@@ -70,8 +64,8 @@ public class SpecialFormInteractive {
         return !myNoMatchMessage.equals(ourEmptyMessage);
     }
 
-    public LispList getArguments() {
-        return LispList.list(myArguments);
+    public List<LispObject> getArguments() {
+        return myArguments;
     }
 
     public String getPromptDefaultValue () {
@@ -84,10 +78,6 @@ public class SpecialFormInteractive {
 
     public boolean toShowNoMatchMessage() {
         return (!myNoMatchMessage.equals(ourEmptyMessage) && !myNoMatchMessage.equals(ourStandardNoMatchMessage));
-    }
-
-    public char getInteractiveChar() {
-        return myInteractiveChar;
     }
 
     public void setParameterStartValue (String parameterStartValue) {
@@ -159,20 +149,20 @@ public class SpecialFormInteractive {
                     parameter = myParameterDefaultValue;
                 addArg(new LispString(parameter));
                 return;
-            case 'c': // -- Character (no input method is used).
+            case 'c': // -- Character (todo no input method is used).
                 addArg(new LispInteger(Integer.parseInt(parameter)));
                 return;
             case 'C':
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
-                    if (BuiltinPredicates.commandp(myEnvironment, cmd, null).equals(LispSymbol.ourT)) {
+                    if (BuiltinPredicates.commandp(cmd, null).equals(LispSymbol.ourT)) {
                         addArg(cmd);
                         return;
                     }
                 break;
-            /*case 'd': // -- Value of point as number. Does not do I/O.
-                args.add(new LispInteger(environment.getBufferCurrentForEditing().point()));
-                break;  */
+            case 'd': // -- Value of point as number. todo Does not do I/O.
+                addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));
+                break;
             case 'D': // -- Directory name.
                 if (parameter.length() > 1) {
                     if (parameter.charAt(0) == '~') {

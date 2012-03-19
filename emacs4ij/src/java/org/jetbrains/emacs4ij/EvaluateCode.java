@@ -37,7 +37,8 @@ public class EvaluateCode extends AnAction {
         try {
             LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
             LispObject result = buffer.evaluateLastForm();
-            Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
+            if (result != null)
+                Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }

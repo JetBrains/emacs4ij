@@ -40,7 +40,7 @@ public class LambdaTest {
     @Test
     public void testParseArgumentsList() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (a &optional b &key c &rest d))");
-        List<LambdaArgument> args = new Lambda(list, environment).getArguments();
+        List<LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(4, args.size());
         Assert.assertEquals(LambdaArgument.Type.REQUIRED, args.get(0).getType());
         Assert.assertEquals(LambdaArgument.Type.OPTIONAL, args.get(1).getType());
@@ -51,7 +51,7 @@ public class LambdaTest {
     @Test
     public void testParseArgumentsList_Keyword_Simple() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key (c 10)))");
-        List<LambdaArgument> args = new Lambda(list, environment).getArguments();
+        List<LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(1, args.size());
         Assert.assertEquals(new LispInteger(10), args.get(0).getInitForm());
         Assert.assertEquals(new LispSymbol(":c"), args.get(0).getKeyword());
@@ -61,7 +61,7 @@ public class LambdaTest {
     @Test
     public void testParseArguments_Keyword_Complex() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key ((word var) 10 a)))");
-        List<LambdaArgument> args = new Lambda(list, environment).getArguments();
+        List<LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(1, args.size());
         Assert.assertEquals(new LispInteger(10), args.get(0).getInitForm());
         Assert.assertEquals(new LispSymbol("word"), args.get(0).getKeyword());
@@ -73,9 +73,20 @@ public class LambdaTest {
     public void testSubstituteArguments() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key ((word var) 10 a)))");
         List<LispObject> args = ((LispList) evaluateString("'('word 5)")).toLispObjectList();
-        CustomEnvironment inner = new Lambda(list, environment).substituteArguments(environment, args);
+        CustomEnvironment inner = new Lambda(list).substituteArguments(environment, args);
         LispSymbol var = inner.find("var");
         Assert.assertNotNull(var);
         Assert.assertEquals(new LispInteger(5), var.getValue());
+    }
+
+    @Test
+    public void testSetInteractive() {
+        LispSymbol f = (LispSymbol) evaluateString("(defun f () (+ 3 6) (interactive \"B1\") (interactive \"B2\"))");
+        if (f.isInteractive()) {
+            LispCommand cmd = (LispCommand) f.getFunction();
+            Assert.assertEquals(cmd.getInteractiveString(), "B1");
+            return;
+        }
+        Assert.fail();
     }
 }

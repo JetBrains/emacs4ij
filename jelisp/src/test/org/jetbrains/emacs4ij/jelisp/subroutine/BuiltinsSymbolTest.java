@@ -2,10 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -337,5 +334,17 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         Assert.assertNotNull(b);
         b = evaluateString("(documentation-property 'b 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
+    }
+    
+    @Test
+    public void testInteractiveForm() {
+        LispObject r = evaluateString("(interactive-form 5)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+        r = evaluateString("(interactive-form 'forward-char)");
+        Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("")), r);
+        r = evaluateString("(interactive-form 'switch-to-buffer)");
+        Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("BSwitch to buffer")), r);
+        r = evaluateString("(interactive-form '(lambda () (+ 6 3) (interactive \"f\")))");
+        Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("f")), r);
     }
 }

@@ -128,7 +128,7 @@ public class LispList implements LispObject, LispSequence {
             List<LispObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
             return symbol.evaluateFunction(environment, data);
         } else if (function instanceof LispList) {
-            Lambda lambda = new Lambda((LispList) function, environment);
+            Lambda lambda = new Lambda((LispList) function);
             List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
             if (!environment.areArgumentsEvaluated()) {
                 for (int i = 0, dataSize = args.size(); i < dataSize; i++) {

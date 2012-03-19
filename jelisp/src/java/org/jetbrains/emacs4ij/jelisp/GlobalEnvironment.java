@@ -450,6 +450,10 @@ public class GlobalEnvironment extends Environment {
         myIde.showErrorMessage(message);
     }
 
+    public static void showInfoMessage (String message) {
+        myIde.showInfoMessage(message);
+    }
+
     public LispObject getBufferLocalSymbolValue (LispSymbol symbol) {
         LispSymbol real = mySymbols.get(symbol.getName());
         if (real == null || !real.isBufferLocal())
@@ -518,7 +522,7 @@ public class GlobalEnvironment extends Environment {
         ArrayList<String> commandList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
-            if (BuiltinPredicates.commandp(this, symbol, null).equals(LispSymbol.ourT)) {
+            if (BuiltinPredicates.commandp(symbol, null).equals(LispSymbol.ourT)) {
                 if (symbol.getName().length() < begin.length())
                     continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))

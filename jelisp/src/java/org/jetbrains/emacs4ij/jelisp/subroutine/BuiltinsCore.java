@@ -96,7 +96,7 @@ public abstract class BuiltinsCore {
         LispSymbol function = environment.find(symbol.getName());
         if (function == null)
             function = symbol;
-        if (!BuiltinPredicates.commandp(environment, function, null).equals(LispSymbol.ourT))
+        if (!BuiltinPredicates.commandp(function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         FunctionCell f = (FunctionCell) function.getFunction();
         if (f.getNRequiredArguments() == 0) {
@@ -104,7 +104,7 @@ public abstract class BuiltinsCore {
             return;
         }
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-        miniBuffer.open(environment.getBufferCurrentForEditing().getEditor());
+//        miniBuffer.open(environment.getBufferCurrentForEditing().getEditor());
         miniBuffer.onInteractiveCall(environment, function);
     }
 
@@ -305,13 +305,13 @@ public abstract class BuiltinsCore {
    } */
 
     @Subroutine("defalias")
-    public static LispObject defineAlias (Environment environment, LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
+    public static LispObject defineAlias (LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
             real = new LispSymbol(symbol.getName());
         real.setFunction(functionDefinition);
         if (docString != null && !(docString instanceof LispNumber)) {
-            real.setFunctionDocumentation(docString, environment);
+            real.setFunctionDocumentation(docString);
         }
         GlobalEnvironment.INSTANCE.defineSymbol(real);
         return functionDefinition;

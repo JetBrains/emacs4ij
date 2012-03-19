@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,7 +20,10 @@ public class ExecuteCommand extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         Environment environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
         try {
-            environment.getMiniBuffer().onReadInput();
+            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+            LispObject result = miniBuffer.onReadInput();
+            if (result != null && miniBuffer.wasInteractiveFormResult())
+                Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
         } catch (RuntimeException exc) {
             Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }

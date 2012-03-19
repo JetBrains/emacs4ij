@@ -109,7 +109,7 @@ public abstract class BuiltinsSymbol {
 
             if (!f.isFunction())
                 throw new VoidFunctionException(name);
-            return f.getDocumentation(environment);
+            return f.getDocumentation();
 
         } else if (function instanceof Lambda) {
             return ((Lambda) function).getDocumentation();
@@ -205,5 +205,14 @@ public abstract class BuiltinsSymbol {
     public static LispObject internalEventSymbolParseModifiers (LispSymbol symbol) {
         KeyBoardUtil.parseModifiers(symbol);
         return symbol.getProperty("event-symbol-elements");
+    }
+    
+    @Subroutine("interactive-form")
+    public static LispObject interactiveForm (LispObject command) {
+        if (command instanceof LispList)
+            command = new Lambda((LispList) command);
+        if (!BuiltinPredicates.commandp(command, null).toBoolean())
+            return LispSymbol.ourNil;
+        return ((LispCommand)command).getInteractiveForm();
     }
 }

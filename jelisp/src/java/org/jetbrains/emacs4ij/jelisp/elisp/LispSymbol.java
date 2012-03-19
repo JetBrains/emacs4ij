@@ -21,7 +21,7 @@ import java.util.List;
  *
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
-public class LispSymbol implements LispAtom {
+public class LispSymbol implements LispAtom, LispCommand {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
@@ -98,15 +98,15 @@ public class LispSymbol implements LispAtom {
         this.myValue = myValue;
     }
 
-    private void castToLambda (Environment environment) {
+    private void castToLambda () {
         if (isCustom() && !(myFunction instanceof Lambda)) {
-            myFunction = new Lambda((LispList) myFunction, environment);
+            myFunction = new Lambda((LispList) myFunction);
         }
     }
 
-    private void castToMacro (Environment environment) {
+    private void castToMacro () {
         if (isMacro() && !(myFunction instanceof Macro)) {
-            myFunction = new Macro((LispList) myFunction, environment);
+            myFunction = new Macro((LispList) myFunction);
         }
     }
 
@@ -152,12 +152,12 @@ public class LispSymbol implements LispAtom {
         return myFunction instanceof LispSymbol && ((LispSymbol) myFunction).isFunction();
     }
 
-    public boolean isInteractive (Environment environment) {
-        if (!isFunction())
-            throw new InternalError("Wrong usage of function isInteractive with symbol " + myName +
-                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
-        return castFunctionCell(environment) && ((FunctionCell) myFunction).isInteractive();
-    }
+//    public boolean isInteractive (Environment environment) {
+//        if (!isFunction())
+//            throw new InternalError("Wrong usage of function isInteractive with symbol " + myName +
+//                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
+//        return castFunctionCell(environment) && ((FunctionCell) myFunction).isInteractive();
+//    }
 
     @Override
     public boolean equals(Object o) {
@@ -247,7 +247,7 @@ public class LispSymbol implements LispAtom {
     }
 
     public LispObject macroExpand (Environment environment, List<LispObject> args) {
-        castToMacro(environment);
+        castToMacro();
         try {
             return ((Macro)myFunction).expand(environment, args);
         } catch (ClassCastException e) {
@@ -267,7 +267,7 @@ public class LispSymbol implements LispAtom {
         } else {
             environment.setArgumentsEvaluated(false);
         }
-        castToLambda(environment);
+        castToLambda();
         return ((Lambda)myFunction).evaluate(environment, args);
     }
 
@@ -295,23 +295,23 @@ public class LispSymbol implements LispAtom {
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    private boolean castFunctionCell (Environment environment) {
+    private boolean castFunctionCell () {
         if (myFunction instanceof FunctionCell)
             return true;
         if (isCustom()) {
-            castToLambda(environment);
+            castToLambda();
             return true;
         } else if (isMacro()) {
-            castToMacro(environment);
+            castToMacro();
             return true;
         }
         return false;
     }
 
-    public LispObject getDocumentation (Environment environment) {
+    public LispObject getDocumentation () {
         if (myFunction == null)
             return getProperty("variable-documentation");
-        castFunctionCell(environment);
+        castFunctionCell();
         return ((FunctionCell)myFunction).getDocumentation();
     }
 
@@ -320,22 +320,15 @@ public class LispSymbol implements LispAtom {
             setProperty("variable-documentation", value);
     }
     
-    public void setFunctionDocumentation (LispObject doc, Environment environment) {
+    public void setFunctionDocumentation (LispObject doc) {
         if (myFunction == null)
             return;
-        castFunctionCell(environment);
+        castFunctionCell();
         ((FunctionCell) myFunction).setDocumentation(doc);
     }
 
     public void setGlobalVariableDocumentation (LispObject value) {
         setProperty("variable-documentation", value);
-    }
-
-    public String getInteractiveString (Environment environment) {
-        if (myFunction == null)
-            return null;
-        castFunctionCell(environment);
-        return ((FunctionCell)myFunction).getInteractiveString();
     }
 
     public boolean isKeyword () {
@@ -361,5 +354,32 @@ public class LispSymbol implements LispAtom {
         }
         
     }
-    
+
+    @Override
+    public boolean isInteractive() {
+        if (myFunction == null)
+            return false;
+        castFunctionCell();
+        return myFunction instanceof LispCommand && ((LispCommand) myFunction).isInteractive();
+    }
+
+    @Override
+    public String getInteractiveString() {
+        if (myFunction == null)
+            return null;
+        castFunctionCell();
+        if (myFunction instanceof LispCommand)
+            return ((LispCommand)myFunction).getInteractiveString();
+        return null;
+    }
+
+    @Override
+    public LispList getInteractiveForm() {
+        if (myFunction == null)
+            return null;
+        castFunctionCell();
+        if (myFunction instanceof LispCommand)
+            return ((LispCommand)myFunction).getInteractiveForm();
+        return null;
+    }
 }

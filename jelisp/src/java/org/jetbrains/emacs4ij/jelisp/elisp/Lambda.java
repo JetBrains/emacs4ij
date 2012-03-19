@@ -18,7 +18,7 @@ import java.util.List;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Lambda implements FunctionCell {
+public class Lambda implements FunctionCell, LispCommand {
     private List<LambdaArgument> myArgumentList = new LinkedList<>();
     private LispObject myDocumentation = null;
     private LispList myInteractive = null;
@@ -27,7 +27,7 @@ public class Lambda implements FunctionCell {
     private boolean infiniteArgs = false;
     private int nKeywords = 0;
 
-    public Lambda (LispList def, Environment environment) {
+    public Lambda (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
             throw new RuntimeException("wrong lambda definition");
@@ -38,23 +38,25 @@ public class Lambda implements FunctionCell {
             throw new InvalidFunctionException(def.toString());
         }
         if (data.size() > 2) {
-            //int index = 2;
+//            int index = 2;
             try {
                 //todo: if those instructions have some side effects, this is wrong behaviour
                 //LispObject docString = data.get(2).evaluate(environment);
                 LispObject docString = data.get(2);
                 if (docString instanceof LispString) {
                     myDocumentation = docString;
-                    //index = 3;
+//                    index = 3;
                 }
             } catch (LispException e) {
                 myDocumentation = null;
             }
+
+
             myBody = data.subList(2, data.size());
 
             for (LispObject bodyForm: myBody) {
                 if (bodyForm instanceof LispList && !((LispList)bodyForm).isEmpty()) {
-                    if (((LispList)bodyForm).car().equals(new LispSymbol("interactive"))) {
+                    if (((LispList)bodyForm).car().equals(new LispSymbol("interactive")) && myInteractive == null) {
                         myInteractive = (LispList) bodyForm;
                     }
                 }
@@ -231,5 +233,10 @@ public class Lambda implements FunctionCell {
         result = 31 * result + (infiniteArgs ? 1 : 0);
         result = 31 * result + nKeywords;
         return result;
+    }
+
+    @Override
+    public LispList getInteractiveForm() {
+        return myInteractive == null ? LispList.list() : myInteractive;
     }
 }

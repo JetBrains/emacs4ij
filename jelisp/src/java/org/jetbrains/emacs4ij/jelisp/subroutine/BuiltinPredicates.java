@@ -62,32 +62,29 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("commandp")
-    public static LispSymbol commandp (Environment environment, LispObject function, @Nullable @Optional LispObject forCallInteractively) {
-        if (function instanceof LispSymbol) {
-            if (!((LispSymbol) function).isFunction())
-                return LispSymbol.ourNil;
-            if (((LispSymbol) function).isInteractive(environment))
-                return LispSymbol.ourT;
-            else
-                return LispSymbol.ourNil;
-
-            //todo: autoload objects
-            // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
+    public static LispSymbol commandp (LispObject function, @Nullable @Optional LispObject forCallInteractively) {
+        LispObject f = function;
+        if (function instanceof LispSymbol)
+            f = ((LispSymbol) function).getFunction();
+        if (f instanceof LispList)
+            f = new Lambda((LispList) f);
+        
+        if (f instanceof Lambda || f instanceof Primitive) {
+            return LispSymbol.bool(((LispCommand) f).isInteractive());
         }
-
-        if (function instanceof Lambda || function instanceof Primitive) {
-            return ((FunctionCell) function).isInteractive() ? LispSymbol.ourT : LispSymbol.ourNil;
-        }
+        
+        //todo: autoload objects
+        // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
 
         if (forCallInteractively == null || forCallInteractively.equals(LispSymbol.ourNil)) {
             // do not accept keyboard macros: string and vector
             return LispSymbol.ourNil;
         }
-        if (function instanceof LispString) {
+        if (f instanceof LispString) {
             //todo: check
             return LispSymbol.ourNil;
         }
-        if (function instanceof LispVector) {
+        if (f instanceof LispVector) {
             //todo: check
             return LispSymbol.ourNil;
         }

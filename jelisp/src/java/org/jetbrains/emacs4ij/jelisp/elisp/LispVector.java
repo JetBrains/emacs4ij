@@ -150,4 +150,19 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
     public String toShortcutString() {
         throw new NotImplementedException("LispVector.toShortcutString()");
     }
+
+    @Override
+    public boolean isInteractive() {
+        throw new NotImplementedException("LispVector.isInteractive()");
+    }
+
+    @Override
+    public String getInteractiveString() {
+        throw new NotImplementedException("LispVector.getInteractiveString()");
+    }
+
+    @Override
+    public LispList getInteractiveForm() {
+        throw new NotImplementedException("LispVector.getInteractiveForm()");
+    }
 }
