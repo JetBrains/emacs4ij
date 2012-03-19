@@ -140,6 +140,14 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testEventConvertListWords() {
+        LispObject r = evaluateString("(event-convert-list '(control meta ?a))");
+        Assert.assertEquals(new LispInteger(134217729), r);
+        r = evaluateString("(event-convert-list '(control super f1))");
+        Assert.assertEquals(new LispSymbol("C-s-f1"), r);
+    }
+
+    @Test
     public void testEventConvertListWrong() {
         try {
             evaluateString("(event-convert-list '(C ?s ?D ?g))");
