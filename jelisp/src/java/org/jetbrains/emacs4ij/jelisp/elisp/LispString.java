@@ -176,12 +176,13 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
     public String toShortcutString() {
         String data = myData;
         Map<String, String> replaceMap = new HashMap<>();
-        replaceMap.put("M-", "meta ");
-        replaceMap.put("C-", "ctrl ");
+        replaceMap.put("\\\\{0,2}M-", "meta ");
+        replaceMap.put("\\\\{0,2}C-", "ctrl ");
 //        replaceMap.put("H-", "hyper ");
-        replaceMap.put("S-", "shift ");
+        replaceMap.put("\\\\{0,2}S-", "shift ");
 //        replaceMap.put("s-", "super ");
-        replaceMap.put("A-", "alt ");
+        replaceMap.put("\\\\{0,2}A-", "alt ");
+
         for (Map.Entry<String, String> entry: replaceMap.entrySet()) {
             data = data.replaceAll(entry.getKey(), entry.getValue());
         }

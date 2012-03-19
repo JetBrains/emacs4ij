@@ -16,7 +16,11 @@ public class KeymapCreator implements LispKeymapFactory {
     
     @Override
     public LispKeymap createKeymap(@Nullable String name) {
-        String keymapName = name == null ? Emacs4ijBundle.message("empty.keymap.name") : name;
-        return new IdeaKeymap(keymapName);
+        return createKeymap(name, null);
+    }
+
+    @Override
+    public LispKeymap createKeymap(@Nullable String name, @Nullable LispKeymap parent) {
+        return new IdeaKeymap(name, parent);
     }
 }

@@ -5,12 +5,8 @@ import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.KeyBoardUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -203,8 +199,8 @@ public abstract class BuiltinsSymbol {
 
     @Subroutine("internal-event-symbol-parse-modifiers")
     public static LispObject internalEventSymbolParseModifiers (LispSymbol symbol) {
-        KeyBoardUtil.parseModifiers(symbol);
-        return symbol.getProperty("event-symbol-elements");
+        //note: for internal use
+        throw new NotImplementedException("internal-event-symbol-parse-modifiers");
     }
     
     @Subroutine("interactive-form")

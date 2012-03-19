@@ -29,11 +29,15 @@ public class KeymapManager {
     }
     
     public LispKeymap createKeymap (@Nullable String name) {
-        //todo: this hack is only for test!
-        if (myKeymapFactory == null)
-            return null;
+        return createKeymap(name, null);
+    }
 
-        LispKeymap keymap = myKeymapFactory.createKeymap(name);
+    public LispKeymap createKeymap (@Nullable String name, @Nullable LispKeymap parent) {
+//        //todo: this hack is only for test!
+//        if (myKeymapFactory == null)
+//            return null;
+
+        LispKeymap keymap = myKeymapFactory.createKeymap(name, parent);
         if (myCurrentKeyMap == null)
             myCurrentKeyMap = keymap;
         myKeymaps.add(keymap);

@@ -1,20 +1,43 @@
-package org.jetbrains.emacs4ij.jelisp.subroutine;
+package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.actionSystem.KeyboardShortcut;
+import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.
  * User: kate
- * Date: 2/16/12
- * Time: 12:07 PM
+ * Date: 3/19/12
+ * Time: 3:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsKeyTest extends BaseSubroutineTest {
+public class KeymapTest extends CodeInsightFixtureTestCase {
+    private Environment myEnvironment;
+
+    @Before
+    public void setUp() throws Exception {
+        TestSetup.setGlobalEnv();
+        super.setUp();
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
+    }
+
+    private LispObject evaluateString (String lispCode) throws LispException {
+        ForwardParser forwardParser = new ForwardParser();
+        return forwardParser.parseLine(lispCode).evaluate(myEnvironment);
+    }
+
     @Test
     public void testKeymapP() throws Exception {
         LispObject r = evaluateString("(keymapp 5)");
@@ -49,7 +72,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
 
     @Test
     public void testCopyKeymap() throws Exception {
-    //todo
+        //todo
     }
 
     @Test
@@ -69,7 +92,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         r = evaluateString("k");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), r);
     }
-    
+
     @Test
     public void testClLoopLet() {
         evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
@@ -99,7 +122,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
     public void testCurrentGlobalKeyMap() {
         System.out.println(evaluateString("(current-global-map)").toString());
     }
-    
+
     @Test
     public void testEventConvertListNil() {
         LispObject r = evaluateString("(event-convert-list \"C-x\")");
@@ -121,12 +144,12 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         try {
             evaluateString("(event-convert-list '(C ?s ?D ?g))");
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Two bases given in one event\")", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("(error \"Two bases given in one event\")", org.jetbrains.emacs4ij.jelisp.TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testKeyDescription() {
         LispObject r = evaluateString("(key-description '[1 2 3] '[6 7])");
@@ -139,7 +162,10 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        LispKeymap expected = new IdeaKeymap(null, null);
+        expected.defineKey("forward-char", KeyboardShortcut.fromString("ctrl D"));
+        Assert.assertEquals(expected, keyMap);
+//        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
     @Test
@@ -149,7 +175,11 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        LispKeymap expected = new IdeaKeymap(null, null);
+        expected.defineKey("forward-char", KeyboardShortcut.fromString("ctrl D"));
+        expected.defineKey("forward-char", KeyboardShortcut.fromString("meta D"));
+        Assert.assertEquals(expected, keyMap);
+//        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
     @Test
@@ -168,18 +198,18 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         try {
             evaluateString("(define-key (current-global-map) \"C-a\" 'backward-char)");
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", org.jetbrains.emacs4ij.jelisp.TestSetup.getCause(e).getMessage());
             return;
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testGlobalSetKey() {
         LispObject r = evaluateString("(global-set-key \"\\C-q\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
     }
-    
+
     @Test
     public void testGlobalMap() {
         LispObject r = evaluateString("global-map");
@@ -187,7 +217,7 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         r = evaluateString("ctl-x-map");
         System.out.println(r.toString());
     }
-    
+
     @Test
     public void testDefinePrefixCommand () {
         evaluateString("(setq cmd 1)");
@@ -198,8 +228,23 @@ public class BuiltinsKeyTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispInteger(1), ((LispSymbol) cmd).getValue());
         LispObject keymap = evaluateString("mapvar");
         Assert.assertEquals(((LispSymbol) cmd).getFunction(), keymap);
-        //todo: == km?
-        Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("name")), keymap);
+        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"));
+        Assert.assertEquals(km, keymap);
     }
-    
+
+    @Test
+    public void testDefinePrefixCommandNoOpt () {
+        evaluateString("(setq cmd 1)");
+        LispObject cmd = evaluateString("(define-prefix-command 'cmd)");
+        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, null);
+        Assert.assertTrue(cmd instanceof LispSymbol);
+        Assert.assertEquals(km, ((LispSymbol) cmd).getValue());
+        Assert.assertEquals(km, ((LispSymbol) cmd).getFunction());
+    }
+
+    @Test
+    public void testKeymapType() {
+        Assert.assertEquals(LispSymbol.ourT, BuiltinsList.consp(BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"))));
+    }
+
 }

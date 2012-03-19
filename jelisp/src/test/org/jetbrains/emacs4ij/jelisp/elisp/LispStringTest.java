@@ -17,6 +17,12 @@ public class LispStringTest {
         Assert.assertEquals("ctrl X", s.toShortcutString());
     }
     @Test
+    public void testToShortcutString1() throws Exception {
+        LispString s = new LispString("\\C-x");
+        Assert.assertEquals("ctrl X", s.toShortcutString());
+    }
+
+    @Test
     public void testToShortcutString2() throws Exception {
         LispString s = new LispString("C-x ");
         Assert.assertEquals("ctrl X ", s.toShortcutString());

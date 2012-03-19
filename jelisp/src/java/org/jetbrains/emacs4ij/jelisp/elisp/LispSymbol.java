@@ -3,10 +3,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.KeyBoardUtil;
+import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +19,7 @@ import java.util.List;
  *
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
-public class LispSymbol implements LispAtom, LispCommand {
+public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
@@ -152,12 +150,7 @@ public class LispSymbol implements LispAtom, LispCommand {
         return myFunction instanceof LispSymbol && ((LispSymbol) myFunction).isFunction();
     }
 
-//    public boolean isInteractive (Environment environment) {
-//        if (!isFunction())
-//            throw new InternalError("Wrong usage of function isInteractive with symbol " + myName +
-//                ", functionCell = " + (myFunction == null ? "NULL" : myFunction.toString()));
-//        return castFunctionCell(environment) && ((FunctionCell) myFunction).isInteractive();
-//    }
+//
 
     @Override
     public boolean equals(Object o) {
@@ -333,26 +326,6 @@ public class LispSymbol implements LispAtom, LispCommand {
 
     public boolean isKeyword () {
         return myName.startsWith(":");
-    }
-
-    public LispList parseModifiers () {
-        LispObject elements = getProperty("event-symbol-element-mask");
-        if (elements instanceof LispList)
-            return (LispList) elements;
-        else {
-            LispInteger end = new LispInteger(0);
-            int modifiers = BuiltinsKey.parseModifiersUncached(this, end);
-            LispObject unmodified = BuiltinsSymbol.intern(new LispString(myName.substring(end.getData())), LispSymbol.ourNil);
-            if ((modifiers & ~LispNumber.INTMASK) != 0) {
-//              todo  kill (getpid (), SIGABRT); =)
-                return null;
-            }
-            elements = LispList.list(unmodified, new LispInteger(modifiers));
-            setProperty("event-symbol-element-mask", elements);
-            setProperty("event-symbol-elements", LispList.cons(unmodified, KeyBoardUtil.lispyModifierList(modifiers)));
-            return (LispList) elements;
-        }
-        
     }
 
     @Override

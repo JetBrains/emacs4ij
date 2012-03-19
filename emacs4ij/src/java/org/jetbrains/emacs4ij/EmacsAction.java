@@ -43,9 +43,9 @@ public class EmacsAction extends AnAction {
         KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) inputEvent);
         //todo: shortcuts with second keystroke
         KeyboardShortcut shortcut = new KeyboardShortcut(keyStroke, null);
-        String name = activeKeymap.getKeyBinding(shortcut);
+        LispSymbol action = activeKeymap.getKeyBinding(shortcut);
         try {
-            BuiltinsCore.callInteractively(environment, new LispSymbol(name), null, null);
+            BuiltinsCore.callInteractively(environment, action, null, null);
         } catch (Exception exc2) {
             Messages.showErrorDialog(exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));
         }

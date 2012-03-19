@@ -1,8 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
-import com.intellij.util.SystemProperties;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -15,9 +13,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -233,62 +228,4 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(use-region-p)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
-
-    private static String getAbsolutePath(String path) {
-        if (path.startsWith("~/") || path.startsWith("~\\")) {
-            path = SystemProperties.getUserHome() + path.substring(1);
-        }
-        return new File(path).getAbsolutePath();
-    }
-
-    private static void addMacro(Map<String, String> myMacros, String macro, String expansion) {
-        myMacros.put("$" + macro + "$", expansion);
-    }
-
-    @Test
-    public void test2() {
-        Pattern MACRO_PATTERN = Pattern.compile("(\\$[^\\$]*\\$)");
-        String file = "$ROOT_CONFIG$/keymaps";
-        final Matcher matcher = MACRO_PATTERN.matcher(file);
-        while (matcher.find()) {
-            String m = matcher.group(1);
-        }
-
-        String actualFile = file;
-
-        String PROJECT_FILE_MACRO = "PROJECT_FILE";
-        String WS_FILE_MACRO = "WORKSPACE_FILE";
-        String PROJECT_CONFIG_DIR = "PROJECT_CONFIG_DIR";
-        String PROJECT_FILE_STORAGE = "$" + PROJECT_FILE_MACRO + "$";
-        String WS_FILE_STORAGE = "$" + WS_FILE_MACRO + "$";
-        String DEFAULT_STATE_STORAGE = PROJECT_FILE_STORAGE;
-        String CONFIG_MACRO = "ROOT_CONFIG";
-        String APP_CONFIG_STORAGE_MACRO = "APP_CONFIG";
-        String OPTIONS_MACRO = "OPTIONS";
-
-        Map<String, String> myMacros = new HashMap<String, String>();
-
-
-        String PROPERTY_HOME_PATH = "idea.home.path";
-        String ourHomePath = getAbsolutePath(System.getProperty(PROPERTY_HOME_PATH));
-        String ourConfigPath = getHomePath() + File.separator + "config";
-
-
-        addMacro(myMacros, CONFIG_MACRO, ourConfigPath);
-
-
-        for (String macro : myMacros.keySet()) {
-            String replacement = myMacros.get(macro);
-            if (replacement == null) {
-                replacement = "";
-            }
-
-            actualFile = StringUtil.replace(actualFile, macro, replacement);
-
-        }
-
-       // /home/kate/.IdeaIC11/system/plugins-sandbox/test/config/keymaps
-
-    }
-
 }
