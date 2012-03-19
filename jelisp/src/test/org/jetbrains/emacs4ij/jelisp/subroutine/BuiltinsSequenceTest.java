@@ -66,17 +66,6 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
     }
 
     @Test
-    public void testMapCarFunctionException() {
-        try {
-            evaluateString("(mapcar 'quote '(1 . 2))");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function quote)", TestSetup.getCause(e).getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-    
-    @Test
     public void testMapCarLambda() {
         LispObject r = evaluateString("(mapcar '(lambda (a) (+ 1 a)) '(1 2 3))");
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3), new LispInteger(4)), r);

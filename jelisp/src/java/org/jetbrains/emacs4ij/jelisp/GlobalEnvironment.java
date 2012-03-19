@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp;
 import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
@@ -175,8 +174,8 @@ public class GlobalEnvironment extends Environment {
     }
 
     //-------- loading ------------------
-    public LispSymbol defineSymbol (String name, @NotNull LispObject value) {
-        LispSymbol symbol = new LispSymbol(name, value);
+    public LispSymbol defineSymbol (String name, @Nullable LispObject value) {
+        LispSymbol symbol = new LispSymbol(name, value == null ? LispSymbol.ourNil : value);
         defineSymbol(symbol);
         return symbol;
     }

@@ -123,7 +123,9 @@ public abstract class Environment {
     }
 
     public void switchToBuffer(String bufferName) {
-        ourBufferManager.switchToBuffer(bufferName);
+        LispBuffer buffer = ourBufferManager.switchToBuffer(bufferName);
+        if (buffer != null)
+            setBufferCurrentForEditing(buffer);
     }
 
     public LispList getBufferList() {

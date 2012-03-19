@@ -105,7 +105,7 @@ public abstract class BuiltinsCore {
         }
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
         miniBuffer.open(environment.getBufferCurrentForEditing().getEditor());
-        miniBuffer.onInteractiveNoIoInput(new SpecialFormInteractive(environment, f.getInteractiveString()));
+        miniBuffer.onInteractiveCall(environment, function);
     }
 
     @Subroutine("funcall")

@@ -266,9 +266,12 @@ public abstract class BuiltinsKey {
     private static LispSymbol makeKeyMap(GlobalEnvironment g, String name, LispSymbol parentSymbol) {
         LispKeymap keymap = BuiltinsKey.makeSparseKeymap(g, null);
         try {
-            //todo: can parentSymbol.value = nil, but be valid for set parent?
-            LispKeymap parent = (LispKeymap) parentSymbol.getValue();
-            keymap.setParent(parent);
+            LispObject value = parentSymbol.getValue();
+            LispKeymap parent = value.equals(LispSymbol.ourNil) ? null : (LispKeymap) value;
+            //todo: this hack is only for test!
+            if (keymap != null)
+                keymap.setParent(parent);
+
             return g.defineSymbol(name, keymap);
         } catch (ClassCastException e) {
             throw new InternalError("makeKeyMap: parent symbol value is not instance of LispKeymap");

@@ -213,8 +213,8 @@ public class IdeaBuffer implements LispBuffer {
             throw new NoBufferException(myName);
         if (myEditor == null)
             throw new Emacs4ijFatalException("Null editor!");
-        if (!(this instanceof IdeaMiniBuffer))
-            write("");
+//        if (!(this instanceof IdeaMiniBuffer))
+//            write("");
         myEditor.getContentComponent().grabFocus();
     }
 

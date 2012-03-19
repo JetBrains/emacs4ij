@@ -116,6 +116,10 @@ public class SpecialFormInteractive {
     }
 
     private void addArg (LispObject arg) {
+        if (isFinished()) {
+            myArguments.set(myArguments.size() - 1, arg);
+            return;
+        }
         myArguments.add(arg);
         ++myIndex;
     }

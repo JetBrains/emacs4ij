@@ -46,15 +46,16 @@ public class BufferManager {
         return -1;
     }
 
-    public void switchToBuffer(String bufferName) {
+    public LispBuffer switchToBuffer(String bufferName) {
         if (myBuffers.size() == 0)
-            return;
+            return null;
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
-            return;
+            return null;
         int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
             throw new EnvironmentException("this buffer is not opened");
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
+        return myBuffers.get(myBuffers.size() - 1);
     }
 
     public LispBuffer findBuffer (String bufferName) {

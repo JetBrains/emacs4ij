@@ -236,6 +236,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void open(Editor parent) {
         EditorTextField input = new EditorTextField();
         parent.setHeaderComponent(input);
+        input.setEnabled(true);
         setEditor(input.getEditor());
         ExecuteCommand command = new ExecuteCommand();
         command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
@@ -319,5 +320,11 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             }
         }
         return null;
+    }
+
+    @Override
+    public LispObject onInteractiveCall(Environment environment, LispSymbol command) {
+        myCommand = command;
+        return onInteractiveNoIoInput(new SpecialFormInteractive(environment, ((FunctionCell)command.getFunction()).getInteractiveString()));
     }
 }

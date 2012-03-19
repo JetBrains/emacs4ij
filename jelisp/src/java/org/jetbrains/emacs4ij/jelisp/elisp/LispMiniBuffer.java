@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,4 +20,5 @@ public interface LispMiniBuffer extends LispBuffer {
     //todo: these methods mustn't return the evaluation result. This is only for testing.
     LispObject onReadInput();
     LispObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
+    LispObject onInteractiveCall(Environment environment, LispSymbol command);
 }
