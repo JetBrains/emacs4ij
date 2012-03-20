@@ -409,8 +409,8 @@ public abstract class KeyBoardUtil {
         g.defineSymbol("system-key-alist");  //DEFVAR_KBOARD
         g.defineSymbol("local-function-key-map");  //DEFVAR_KBOARD
         g.defineSymbol("input-decode-map");  //DEFVAR_KBOARD
-        g.defineSymbol("function-key-map", BuiltinsKey.makeSparseKeymap(g, LispSymbol.ourNil));
-        g.defineSymbol("key-translation-map", BuiltinsKey.makeSparseKeymap(g, LispSymbol.ourNil));
+        g.defineSymbol("function-key-map", BuiltinsKey.makeSparseKeymap(LispSymbol.ourNil));
+        g.defineSymbol("key-translation-map", BuiltinsKey.makeSparseKeymap(LispSymbol.ourNil));
         g.defineSymbol("deferred-action-list");
         g.defineSymbol("deferred-action-function");
         g.defineSymbol("suggest-key-bindings", LispSymbol.ourT);

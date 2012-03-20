@@ -160,7 +160,7 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
 
-        BuiltinsKey.defineKeyMaps(INSTANCE);
+        BuiltinsKey.defineKeyMaps();
         BuiltinsKey.keys_of_keymap();
         KeyBoardUtil.defineKbdSymbols(INSTANCE);
         KeyBoardUtil.keys_of_keyboard();

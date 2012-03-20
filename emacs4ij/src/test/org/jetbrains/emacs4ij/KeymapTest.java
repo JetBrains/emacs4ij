@@ -98,19 +98,20 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(defvar km (make-sparse-keymap))");
         evaluateString("(set-keymap-parent km 'parent)");
         LispObject km = evaluateString("km");
-        //todo: km == (keymap keymap)
+        System.out.println(km.toString());
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), km);
     }
     
-    @Test
-    public void testClLoopLet() {
-        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
-        evaluateString("(setq arg0 (nreverse loop-for-sets))");
-        evaluateString("(setq arg1 '(quote setq))");
-        evaluateString("(setq arg2 nil)");
-        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
-        LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
-        Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
-    }
+//    @Test
+//    public void testClLoopLet() {
+//        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
+//        evaluateString("(setq arg0 (nreverse loop-for-sets))");
+//        evaluateString("(setq arg1 '(quote setq))");
+//        evaluateString("(setq arg2 nil)");
+//        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
+//        LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
+//        Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
+//    }
 
 //    @Ignore
 //    @Test
@@ -255,7 +256,8 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispInteger(1), ((LispSymbol) cmd).getValue());
         LispObject keymap = evaluateString("mapvar");
         Assert.assertEquals(((LispSymbol) cmd).getFunction(), keymap);
-        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"));
+        LispKeymap km = BuiltinsKey.makeSparseKeymap(new LispSymbol("name"));
+//        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"));
         Assert.assertEquals(km, keymap);
     }
 
@@ -263,7 +265,8 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     public void testDefinePrefixCommandNoOpt () {
         evaluateString("(setq cmd 1)");
         LispObject cmd = evaluateString("(define-prefix-command 'cmd)");
-        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, null);
+        LispKeymap km = BuiltinsKey.makeSparseKeymap(null);
+//        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, null);
         Assert.assertTrue(cmd instanceof LispSymbol);
         Assert.assertEquals(km, ((LispSymbol) cmd).getValue());
         Assert.assertEquals(km, ((LispSymbol) cmd).getFunction());
@@ -271,7 +274,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testKeymapType() {
-        Assert.assertEquals(LispSymbol.ourT, BuiltinsList.consp(BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"))));
+        Assert.assertEquals(LispSymbol.ourT, BuiltinsList.consp(BuiltinsKey.makeSparseKeymap(new LispSymbol("name"))));
     }
 
 }
