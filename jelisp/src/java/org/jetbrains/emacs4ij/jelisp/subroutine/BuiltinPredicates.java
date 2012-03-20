@@ -222,5 +222,14 @@ public abstract class BuiltinPredicates {
         return object == null || object.equals(LispSymbol.ourNil);
     }
 
+    public static boolean lucidEventTypeListP(LispObject object) {
+        for (LispObject tail = object; tail instanceof LispList; tail = ((LispList) tail).cdr()) {
+            LispObject item = ((LispList) tail).car();
+            if (!(item instanceof LispInteger || item instanceof LispSymbol))
+                return false;
+        }
+        return true;
+    }
+
 
 }

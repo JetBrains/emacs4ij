@@ -25,7 +25,7 @@ import java.util.List;
  *
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
-public class LispList implements LispObject, LispSequence, LispKeymap {
+public class LispList extends LispKeymap implements LispObject, LispSequence{
     private LispObject myCar = null;
     private LispObject myCdr = null;
     private Boolean isTrueList;
@@ -388,16 +388,6 @@ public class LispList implements LispObject, LispSequence, LispKeymap {
 
 
     @Override
-    public void defineKey(Environment environment, LispObject function, LispStringOrVector key) {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LispObject accessKeymap(LispObject idx, boolean tOk, boolean noInherit) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
     public LispSymbol getKeyDefinition(Shortcut key) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -427,8 +417,5 @@ public class LispList implements LispObject, LispSequence, LispKeymap {
         return new LispList(toLispObjectList());
     }
 
-    @Override
-    public boolean keymapMemberP(LispObject maps) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+
 }
