@@ -139,7 +139,6 @@ public class BackwardParser extends Parser {
                 throw new ScanException("Containing expression ends prematurely");
         }
         if (start != '0') {
-            //advance();
             String form = extractSymmetricForm(start, end);
             return myForwardParser.parseLine(form);
         }

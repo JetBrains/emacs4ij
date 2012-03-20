@@ -202,7 +202,7 @@ public abstract class CharUtil {
             return BYTE8_STRING (c);
         }
         else
-            BuiltinsCore.error (GlobalEnvironment.INSTANCE, "Invalid character: " + c);
+            BuiltinsCore.error("Invalid character: " + c);
 
         return null;
     }

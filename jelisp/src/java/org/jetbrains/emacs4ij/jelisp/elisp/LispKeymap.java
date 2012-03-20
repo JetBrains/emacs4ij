@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
-import com.intellij.openapi.keymap.Keymap;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 
@@ -21,7 +20,6 @@ public interface LispKeymap extends KeymapCell {
     LispKeymap getParent();
     void setParent(@Nullable LispKeymap parent);
     void definePrefixCommand();
-    Keymap getKeymap();
     LispSymbol getKeyBinding (Shortcut shortcut);
     KeymapCell getKeyBinding(LispStringOrVector key);
     

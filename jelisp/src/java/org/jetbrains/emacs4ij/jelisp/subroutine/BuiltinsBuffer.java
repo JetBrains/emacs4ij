@@ -6,6 +6,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -17,7 +19,7 @@ public abstract class BuiltinsBuffer {
     private BuiltinsBuffer() {}
 
     public static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LispObject bufferOrName) {
-        if (bufferOrName == null || bufferOrName.equals(LispSymbol.ourNil))
+        if (isNil(bufferOrName))
             return environment.getBufferCurrentForEditing();
         if (bufferOrName instanceof LispString) {
             return environment.findBufferSafe(((LispString) bufferOrName).getData());
@@ -34,7 +36,7 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("buffer-size")
     public static LispObject bufferSize(Environment environment, @Optional LispObject buffer) {
-        if (buffer == null || buffer.equals(LispSymbol.ourNil))
+        if (isNil(buffer))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
             throw new WrongTypeArgumentException("bufferp", buffer);
@@ -43,7 +45,7 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("buffer-name")
     public static LispObject bufferName (Environment environment, @Optional LispObject buffer) {
-        if (buffer == null || buffer.equals(LispSymbol.ourNil))
+        if (isNil(buffer))
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
             throw new WrongTypeArgumentException("bufferp", buffer);
@@ -52,7 +54,7 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("get-buffer")
     public static LispObject getBuffer (Environment environment, LispObject bufferOrName) {
-        if (bufferOrName instanceof  LispString) {
+        if (bufferOrName instanceof LispString) {
             LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
             if (buffer == null)
                 return LispSymbol.ourNil;
@@ -153,12 +155,6 @@ public abstract class BuiltinsBuffer {
         return new LispInteger(environment.getBufferCurrentForEditing().pointMax());
     }
 
-    //todo: it's a compiled lisp function
-    /*@Subroutine("buffer-end")
-    public static LispObject bufferEnd (Environment environment, LispNumber arg) {
-        return new LispInteger(environment.getBufferCurrentForEditing().bufferEnd((Double)arg.getData()));
-    } */
-
     //todo: accepts integer OR MARKER
     //todo:  bound to <menu-bar> <edit> <goto> <go-to-pos>
     @Subroutine(value = "goto-char", isCmd = true, interactive = "nGoto char: ")
@@ -168,12 +164,13 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: bound to C-f, <right>
-    @Subroutine(value = "forward-char", isCmd = true, interactive = "")//, key = "\\C-f")
-    public static LispObject forwardChar (Environment environment, @Optional LispInteger shift) {
-        if (shift == null) {
+    @Subroutine(value = "forward-char", isCmd = true, interactive = "")
+    public static LispObject forwardChar (Environment environment, @Optional LispObject shift) {
+        if (isNil(shift))
             shift = new LispInteger(1);
-        }
-        String message = environment.getBufferCurrentForEditing().forwardChar(shift.getData());
+        if (!(shift instanceof LispInteger))
+            throw new WrongTypeArgumentException("integerp", shift.toString());
+        String message = environment.getBufferCurrentForEditing().forwardChar(((LispInteger)shift).getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);
@@ -181,11 +178,12 @@ public abstract class BuiltinsBuffer {
 
     //todo: bound to C-b, <left>
     @Subroutine(value = "backward-char", isCmd = true, interactive = "")//, key = "\\C-b")
-    public static LispObject backwardChar (Environment environment, @Optional LispInteger shift) {
-        if (shift == null) {
+    public static LispObject backwardChar (Environment environment, @Optional LispObject shift) {
+        if (isNil(shift))
             shift = new LispInteger(1);
-        }
-        String message = environment.getBufferCurrentForEditing().forwardChar(-shift.getData());
+        if (!(shift instanceof LispInteger))
+            throw new WrongTypeArgumentException("integerp", shift.toString());
+        String message = environment.getBufferCurrentForEditing().forwardChar(-((LispInteger)shift).getData());
         if (message.equals(""))
             return LispSymbol.ourNil;
         return new LispSymbol(message);
@@ -210,7 +208,7 @@ public abstract class BuiltinsBuffer {
     @Subroutine(value = "bury-buffer", isCmd = true, interactive = "")
     public static LispObject buryBuffer (Environment environment, @Optional LispObject bufferOrName) {
         LispBuffer buffer;
-        if (bufferOrName == null) {
+        if (isNil(bufferOrName)) {
             buffer = environment.getBufferCurrentForEditing();
         } else if (bufferOrName instanceof LispString) {
             buffer = environment.findBufferSafe(((LispString) bufferOrName).getData());

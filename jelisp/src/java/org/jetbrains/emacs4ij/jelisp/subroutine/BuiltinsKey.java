@@ -22,6 +22,10 @@ public abstract class BuiltinsKey {
     public static LispKeymap globalMap;
     private static LispSymbol myKeyMapSymbol = new LispSymbol("keymap");
 
+    private static boolean isListKeymap (LispObject object) {
+            return (object instanceof LispList && ((LispList) object).car().equals(myKeyMapSymbol));
+    }
+    
     private static boolean isKeymapItself(LispObject object) {
         return object instanceof LispKeymap;
     }
@@ -58,7 +62,7 @@ public abstract class BuiltinsKey {
 
     @Subroutine("make-keymap")
     public static LispKeymap makeKeymap (Environment environment, @Nullable @Optional LispObject prompt) {
-        return environment.createKeymap(prompt == null || prompt.equals(LispSymbol.ourNil) ? null : prompt.toString());
+        return environment.createKeymap(prompt);
     }
 
     @Subroutine("copy-keymap")
@@ -132,7 +136,6 @@ public abstract class BuiltinsKey {
     @Subroutine("use-global-map")
     public static LispSymbol useGlobalMap (Environment environment, LispKeymap keymap) {
         environment.setActiveKeymap(keymap);
-        //todo check that keymap manger now holds 'keymap' as active
         return LispSymbol.ourNil;
     }
 
@@ -207,7 +210,7 @@ public abstract class BuiltinsKey {
             if (index != 0)
                 modifiers |= index;
             else if (!base.equals(LispSymbol.ourNil))
-                BuiltinsCore.error(GlobalEnvironment.INSTANCE, "Two bases given in one event");
+                BuiltinsCore.error("Two bases given in one event");
             else
                 base = item;
         }
@@ -234,12 +237,10 @@ public abstract class BuiltinsKey {
         else if (base instanceof LispSymbol)
             return KeyBoardUtil.applyModifiers(modifiers, base);
         else {
-            BuiltinsCore.error(GlobalEnvironment.INSTANCE, "Invalid base event");
+            BuiltinsCore.error("Invalid base event");
             return LispSymbol.ourNil;
         }
     }
-
-
 
     @Subroutine("single-key-description")
     public static LispObject singleKeyDescription (LispObject key, @Optional LispObject no_angles) {
@@ -259,7 +260,7 @@ public abstract class BuiltinsKey {
         else if (key instanceof LispString)	/* Buffer names in the menubar.  */
             return BuiltinsSequence.copySequence(key);
         else
-            BuiltinsCore.error (GlobalEnvironment.INSTANCE, "KEY must be an integer, cons, symbol, or string");
+            BuiltinsCore.error("KEY must be an integer, cons, symbol, or string");
         return LispSymbol.ourNil;
     }
 

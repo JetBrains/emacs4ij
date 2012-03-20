@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
 
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ public class KeymapManager {
         return myCurrentKeyMap;        
     }
     
-    public LispKeymap createKeymap (@Nullable String name) {
+    public LispKeymap createKeymap (@Nullable LispObject name) {
         return createKeymap(name, null);
     }
 
-    public LispKeymap createKeymap (@Nullable String name, @Nullable LispKeymap parent) {
+    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
 //        //todo: this hack is only for test!
 //        if (myKeymapFactory == null)
 //            return null;

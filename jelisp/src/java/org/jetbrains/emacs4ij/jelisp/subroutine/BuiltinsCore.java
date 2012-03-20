@@ -23,18 +23,22 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 public abstract class BuiltinsCore {
     private BuiltinsCore() {}
 
-    public static void error (Environment environment, String message) {
-        error(environment, message, new LispObject[0]);
+    public static LispObject thisOrNil (@Nullable LispObject object) {
+        return object == null ? LispSymbol.ourNil : object;
     }
 
-    public static void error (Environment environment, String message, LispObject... args) {
+    public static void error (String message) {
+        error(message, new LispObject[0]);
+    }
+
+    public static void error (String message, LispObject... args) {
         ArrayList<LispObject> data = new ArrayList<>();
         data.add(new LispSymbol("error"));
         data.add(new LispString(message));
         if (args.length > 0) {
             data.addAll(Arrays.asList(args));
         }
-        LispList.list(data).evaluate(environment);
+        LispList.list(data).evaluate(GlobalEnvironment.INSTANCE);
     }
 
     @Subroutine("set")
@@ -188,16 +192,6 @@ public abstract class BuiltinsCore {
         return function;
     }
 
-    /* private static LispObject signalOrNot (LispObject noError, String name, String data) {
-        if (noError != null && !noError.equals(LispSymbol.ourNil))
-            return LispSymbol.ourNil;
-
-
-        LispSymbol errorSymbol = new LispSymbol(name);
-        errorSymbol.setProperty("error-message", new LispString(name));
-        return signal(errorSymbol, new LispList(new LispSymbol(data)));    
-    }*/
-
     @Subroutine("indirect-function")
     public static LispObject indirectFunction (LispObject object, @Optional LispObject noError) {
         if (!(object instanceof LispSymbol)) {
@@ -296,14 +290,6 @@ public abstract class BuiltinsCore {
         return object.evaluate(environment);
     }
 
-    /* private static boolean checkFunction (Environment environment, LispObject object) {
-       CustomEnvironment inner = new CustomEnvironment(environment);
-       inner.setArgumentsEvaluated(true);
-       LispList list = LispList.list(new LispSymbol("functionp"), object);
-       LispObject result = list.evaluate(inner);
-       return true;
-   } */
-
     @Subroutine("defalias")
     public static LispObject defineAlias (LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
@@ -368,7 +354,7 @@ public abstract class BuiltinsCore {
             throw new WrongTypeArgumentException("vector-or-string-p", string);
         int length = ((LispSequence)string).length();        
         int start = processBound(from, length);        
-        int end = to == null || to.equals(LispSymbol.ourNil)
+        int end = BuiltinPredicates.isNil(to)
                 ? ((LispSequence)string).length()
                 : processBound(getInt(to), length);
         try {
@@ -379,7 +365,4 @@ public abstract class BuiltinsCore {
             throw new ArgumentOutOfRange(string, start, end);
         }
     }
-
-
-    
 }

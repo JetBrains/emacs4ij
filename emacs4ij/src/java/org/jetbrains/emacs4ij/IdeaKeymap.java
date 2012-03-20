@@ -3,24 +3,21 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
-import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.keymap.impl.KeymapImpl;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,28 +26,21 @@ import java.util.Map;
  * Time: 3:24 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaKeymap implements LispKeymap {
-    private Keymap myKeymap;
+public class IdeaKeymap implements LispKeymap {    
     private String myName;
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
     protected static KeymapManager ourKeymapManager = KeymapManager.getInstance();
     private static EmacsAction ourAction = new EmacsAction();
+    
+    private LispList myEmacsKeymap; 
+    private LispSymbol myKeymapSymbol = new LispSymbol("keymap");
+    
 
-//    //global keymap, derived from Idea active keymap
-//    public IdeaKeymap(String name) {
-//        this(name, new IdeaKeymap(ourKeymapManager.getActiveKeymap()));
-//    }
-
-//    public IdeaKeymap (Keymap keymap) {
-//        myKeymap = keymap;
-//        myName = "Derived from " + keymap.getPresentableName();
-//    }
-
-    public IdeaKeymap(String name, LispKeymap parent) {
-        myKeymap = new KeymapImpl();
+    public IdeaKeymap(@Nullable LispObject name, LispKeymap parent) {
         myParent = parent;
-        myName = name == null ? Emacs4ijBundle.message("empty.keymap.name") : name;
+        myName = isNil(name) ? Emacs4ijBundle.message("empty.keymap.name") : name.toString();
+        myEmacsKeymap = isNil(name) ? LispList.list(myKeymapSymbol) : LispList.list(myKeymapSymbol, name);
     }
 
     private JComponent getFrameComponent() {
@@ -115,12 +105,7 @@ public class IdeaKeymap implements LispKeymap {
         KeymapCell function = getKeyBinding(toShortcut(key));
         return function == null ? LispSymbol.ourNil : function;
     }
-
-    @Override
-    public Keymap getKeymap() {
-        return myKeymap;
-    }
-
+   
     @Override
     public LispSymbol getKeyBinding(Shortcut shortcut) {
         KeymapCell function = myKeyBindings.get(shortcut);
@@ -167,7 +152,6 @@ public class IdeaKeymap implements LispKeymap {
 
         if (myKeyBindings != null ? !myKeyBindings.equals(that.myKeyBindings) : that.myKeyBindings != null)
             return false;
-        if (myKeymap != null ? !myKeymap.equals(that.myKeymap) : that.myKeymap != null) return false;
         if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
         if (myParent != null ? !myParent.equals(that.myParent) : that.myParent != null) return false;
 
@@ -176,8 +160,7 @@ public class IdeaKeymap implements LispKeymap {
 
     @Override
     public int hashCode() {
-        int result = myKeymap != null ? myKeymap.hashCode() : 0;
-        result = 31 * result + (myName != null ? myName.hashCode() : 0);
+        int result = myName != null ? myName.hashCode() : 0;
         result = 31 * result + (myParent != null ? myParent.hashCode() : 0);
         result = 31 * result + (myKeyBindings != null ? myKeyBindings.hashCode() : 0);
         return result;

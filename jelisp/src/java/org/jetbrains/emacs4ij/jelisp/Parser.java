@@ -17,10 +17,8 @@ import java.util.Observable;
 public abstract class Parser extends Observable {
     protected int myCurrentIndex = 0;
     protected String myLispCode;
-    //TODO: to enum or hashmap
     protected final List<Character> mySeparators = Arrays.asList(']', ')', '"', ' ', ';', '\n', '\t', '(', '[');
     protected final List<Character> myInnerSeparators = Arrays.asList('\n', ' ', '\t');
-    protected final List<Character> mySpecialChars = Arrays.asList('.', ',', '?');
 
     protected abstract void advance();
     protected abstract int getMyCurrentIndex();

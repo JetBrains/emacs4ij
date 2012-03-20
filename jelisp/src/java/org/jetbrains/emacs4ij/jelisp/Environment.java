@@ -239,7 +239,7 @@ public abstract class Environment {
     }
     
     //========= keymaps ===========
-    public LispKeymap createKeymap (@Nullable String name) {
+    public LispKeymap createKeymap (@Nullable LispObject name) {
         return ourKeymapManager.createKeymap(name);
     }
     

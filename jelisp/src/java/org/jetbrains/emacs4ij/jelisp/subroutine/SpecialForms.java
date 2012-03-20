@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
+
 /**
 * Created by IntelliJ IDEA.
 * User: Kate
@@ -118,7 +120,6 @@ public abstract class SpecialForms {
                 result = condition;
                 for (int k = 0; k != data.size(); ++k)
                     result = data.get(k).evaluate(environment);
-                //if (!result.equals(LispSymbol.ourNil))
                 return result;
             }
         }
@@ -193,9 +194,8 @@ public abstract class SpecialForms {
         }
         if (overwrite || (!variable.hasValue() && initValue != null)) {
             if (initValue == null)
-                throw new RuntimeException("Init value is null!"); 
+                throw new InternalError("defSymbol: null init value!");
             LispObject value = initValue.evaluate(environment);
-            //LispSymbol symbol = new LispSymbol(name.getName(), value);
             variable.setValue(value);
         }
         if (docString != null) {
@@ -229,10 +229,7 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LispObject interactive(Environment environment, @Optional LispObject args) {
-        if (!environment.isMainOrGlobal())
-            return LispSymbol.ourNil;
-
-        if (args == null || args.equals(LispSymbol.ourNil))
+        if (!environment.isMainOrGlobal() || isNil(args))
             return LispSymbol.ourNil;
         if (args instanceof LispList) {
             args = args.evaluate(environment);
@@ -355,41 +352,32 @@ public abstract class SpecialForms {
                         throw new ClassCastException();
                     h.add(handler);
                 } catch (ClassCastException e) {
-                    throw new RuntimeException("Invalid condition handler");
-                    //todo: return parseString("(error \"\"Invalid condition handler\")").evaluate(environment);
+                    BuiltinsCore.error("Invalid condition handler");
                 }
             }
         }
-        
         try {
             return bodyForm.evaluate(environment);
         } catch (RuntimeException e) {
-
             Throwable exc = e;
             while (!(exc instanceof LispException)) {
                 exc = exc.getCause();
             }
-
             Error annotation = exc.getClass().getAnnotation(Error.class);
             if (annotation != null) {
                 for (LispList handler: h) {
                     LispSymbol errorSymbol = (LispSymbol) handler.car();
                     if (errorSymbol.getName().equals(annotation.value())) {
-
                         // todo: unbind all bindings; clean-ups for all unwind-protect forms
-
-
                         ForwardParser forwardParser = new ForwardParser();
                         LispList errorInfo = (LispList) forwardParser.parseLine(exc.getMessage());
                         while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
                             //todo: make full error list and store it in errorInfo
                             // make somehow new error message
                             // errorInfo = new LispList( <new error> errorInfo);
-
                             GlobalEnvironment.ourCallStack.removeFirst();
                         }
-
-                        CustomEnvironment inner = new CustomEnvironment(environment);
+                        Environment inner = new CustomEnvironment(environment);
                         if (!var.equals(LispSymbol.ourNil)) {
                             LispSymbol test = environment.find(var.getName());
                             if (test == null) {
@@ -401,12 +389,10 @@ public abstract class SpecialForms {
                                 inner.defineSymbol(var);
                             }
                         }
-
                         LispObject result = LispSymbol.ourNil;
                         for (LispObject form: ((LispList)handler.cdr()).toLispObjectList()) {
                             result = form.evaluate(inner);
                         }
-
                         return result;
                     }
                 }
@@ -417,7 +403,7 @@ public abstract class SpecialForms {
     
     @Subroutine("catch")
     public static LispObject lispCatch (Environment environment, LispObject tagObject, @Optional LispObject... body) {
-        //todo: emacs man says nil cannot be tag, but signals no error though
+        //note: emacs man says nil cannot be tag, but signals no error though
         LispObject tag = tagObject.evaluate(environment);
         try {
             LispObject result = LispSymbol.ourNil;
@@ -427,7 +413,6 @@ public abstract class SpecialForms {
             return result;
         } catch (LispThrow e) {
             if (BuiltinsCore.eqs(tag, e.getTag())) {
-
                 return e.getValue();
             }
             throw e;
@@ -436,7 +421,7 @@ public abstract class SpecialForms {
     
     @Subroutine("function")
     public static LispObject function (Environment environment, LispObject arg) {
-        //todo: In byte compilation, `function' causes its argument to be compiled.=)
+        //note: In byte compilation, `function' causes its argument to be compiled.=)
         return quote(environment, arg);
     }
     

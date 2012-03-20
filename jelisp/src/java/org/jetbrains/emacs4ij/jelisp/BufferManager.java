@@ -87,7 +87,7 @@ public class BufferManager {
 
     public boolean defineBuffer(LispBuffer buffer) {
         if (containsBuffer(buffer.getName())) {
-            throw new DoubleBufferException("double "+buffer.getName());
+            throw new DoubleBufferException("Double " + buffer.getName());
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);
@@ -115,7 +115,7 @@ public class BufferManager {
             if (!myBuffers.get(i).getName().equals(bufferName))
                 return myBuffers.get(i);
         }
-        throw new RuntimeException("other-buffer " + bufferName);
+        throw new InternalError("other-buffer " + bufferName);
     }
 
     public int getBuffersSize() {

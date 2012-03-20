@@ -169,7 +169,7 @@ public abstract class BuiltinsSymbol {
             @Override
             public boolean evaluate(Object o) {
                 if (!(o instanceof LispSymbol)) {
-                    BuiltinsCore.error(GlobalEnvironment.INSTANCE, "Bad data in guts of obarray");
+                    BuiltinsCore.error("Bad data in guts of obarray");
                 }
                 return ((LispSymbol) o).getName().equals(name);
             }

@@ -19,7 +19,6 @@ public abstract class KeyBoardUtil {
             null, null, "alt", "super", "hyper", "shift", "control", "meta"};
 
     public static int NUM_MOD_NAMES = ModifierNames.length;
-
     static LispVector modifier_symbols;
 
     /* Return the list of modifier symbols corresponding to the mask MODIFIERS.  */
@@ -30,8 +29,6 @@ public abstract class KeyBoardUtil {
                 modifierList = LispList.cons(modifier_symbols.getItem(i), modifierList);
         return modifierList;
     }
-
-
 
     private static LispSymbol applyModifiersUncached (int modifiers, String base) {
         //todo: deal with multibyte chars

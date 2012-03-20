@@ -42,7 +42,6 @@ public class BackwardMultilineParser implements Observer {
     }
 
     public void update(Observable o, Object arg) {
-        //myIndex++;
         String nextLine;
         try {
             nextLine = myReader.get(--myIndex);

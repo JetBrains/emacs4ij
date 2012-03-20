@@ -94,7 +94,7 @@ public abstract class BuiltinsSequence {
     }
     
     @Subroutine("concat")
-    public static LispString concat (Environment environment, @Optional LispObject... sequences) {
+    public static LispString concat (@Optional LispObject... sequences) {
         if (sequences == null || sequences.length == 0)
             return new LispString("");
         for (LispObject s: sequences) {
@@ -112,7 +112,7 @@ public abstract class BuiltinsSequence {
     }
     
     @Subroutine("vconcat")
-    public static LispVector vConcat (Environment environment, @Optional LispObject... sequences) {
+    public static LispVector vConcat (@Optional LispObject... sequences) {
         if (sequences == null || sequences.length == 0)
             return new LispVector();
         for (LispObject s: sequences) {
@@ -141,7 +141,7 @@ public abstract class BuiltinsSequence {
             toConcat.add(separator);
             toConcat.add(object);
         }
-        return concat(environment, toConcat.toArray(new LispObject[toConcat.size()]));
+        return concat(toConcat.toArray(new LispObject[toConcat.size()]));
     }
 
 }

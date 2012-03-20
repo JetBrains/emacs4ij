@@ -319,7 +319,7 @@ public class GlobalEnvironment extends Environment {
             if (line == null)
                 break;
             LispObject parsed = p.parse(line);
-            index += p.getLines();
+            index += p.getLine();
             if (parsed == null || LispSymbol.ourNil.equals(parsed))
                 continue;
             if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
@@ -660,7 +660,7 @@ public class GlobalEnvironment extends Environment {
         }
     }
     
-    public LispKeymap makeKeymap (@Nullable String name) {
+    public LispKeymap makeKeymap (@Nullable LispObject name) {
         return ourKeymapManager.createKeymap(name);
     }
 }
