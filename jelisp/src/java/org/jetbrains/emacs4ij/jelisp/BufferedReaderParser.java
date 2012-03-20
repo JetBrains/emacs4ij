@@ -19,7 +19,7 @@ import java.util.Observer;
 public class BufferedReaderParser implements Observer {
     private ForwardParser myForwardParser = new ForwardParser();
     private BufferedReader myReader;
-    int lines = 0;
+    private int myLine = 0;
 
     public BufferedReaderParser (BufferedReader reader) {
         myReader = reader;
@@ -28,12 +28,10 @@ public class BufferedReaderParser implements Observer {
 
     public LispObject parse (String firstLine) {
         try {
-            lines = 0;
-//            if (firstLine.contains("defmacro when "))
-//                System.out.print(1);
+            myLine = 0;
             return myForwardParser.parseLine(firstLine);
         } catch (LispException e) {
-            System.out.println("line " + lines + ": " + e.getMessage());
+            System.out.println("line " + myLine + ": " + e.getMessage());
             return null;
         }
     }
@@ -41,7 +39,7 @@ public class BufferedReaderParser implements Observer {
     public void update(Observable o, Object arg) {
         try {
             String nextLine = myReader.readLine();
-            lines++;
+            myLine++;
             if (nextLine == null)
                 if (arg instanceof LispException)
                     throw (LispException) arg;
@@ -58,7 +56,7 @@ public class BufferedReaderParser implements Observer {
         }
     }
     
-    public int getLines() {
-        return lines;
+    public int getLine() {
+        return myLine;
     }
 }

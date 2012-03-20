@@ -25,7 +25,7 @@ public abstract class Environment {
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
     protected static BufferManager ourBufferManager;
-    protected static KeymapManager ourKeymapManager;
+    protected static EmacsKeymapManager ourKeymapManager;
 
     public boolean isMainOrGlobal() {
         return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);
@@ -239,7 +239,11 @@ public abstract class Environment {
     }
     
     //========= keymaps ===========
-    public LispKeymap createKeymap (@Nullable String name) {
+    public LispKeymap makeSparseKeymap(@Nullable LispObject name) {
+        return ourKeymapManager.createSparseKeymap(name);
+    }
+    
+    public LispKeymap makeKeymap(@Nullable LispObject name) {
         return ourKeymapManager.createKeymap(name);
     }
     
@@ -248,6 +252,6 @@ public abstract class Environment {
     }
     
     public void setActiveKeymap(LispKeymap keymap) {
-
+        ourKeymapManager.setActiveKeymap(keymap);
     }
 }

@@ -1,9 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
 
 /**
@@ -19,7 +21,6 @@ public abstract class KeyBoardUtil {
             null, null, "alt", "super", "hyper", "shift", "control", "meta"};
 
     public static int NUM_MOD_NAMES = ModifierNames.length;
-
     static LispVector modifier_symbols;
 
     /* Return the list of modifier symbols corresponding to the mask MODIFIERS.  */
@@ -30,8 +31,6 @@ public abstract class KeyBoardUtil {
                 modifierList = LispList.cons(modifier_symbols.getItem(i), modifierList);
         return modifierList;
     }
-
-
 
     private static LispSymbol applyModifiersUncached (int modifiers, String base) {
         //todo: deal with multibyte chars
@@ -62,6 +61,24 @@ public abstract class KeyBoardUtil {
                 newSymbol.setProperty("event-kind", kind);
         }
         return newSymbol;
+    }
+
+    public static LispList parseModifiers (LispObject symbol) {
+        if (symbol instanceof LispInteger)
+            return LispList.list (new LispInteger(((LispInteger) symbol).keyToChar()),
+                    new LispInteger (((LispInteger) symbol).getData() & CharUtil.CHAR_MODIFIER_MASK));
+        else if (!(symbol instanceof LispSymbol))
+            return LispList.list();
+        return ((LispSymbol) symbol).parseModifiers();
+    }
+
+    public static LispObject reorderModifiers (LispObject symbol) {
+        LispList parsed = parseModifiers (symbol);
+        try {
+            return applyModifiers (((LispInteger) BuiltinsList.car(parsed.cdr())).getData(), parsed.car());
+        } catch (ClassCastException e) {
+            throw new LispException("Internal error");
+        }
     }
 
     public static void defineKbdSymbols (GlobalEnvironment g) {

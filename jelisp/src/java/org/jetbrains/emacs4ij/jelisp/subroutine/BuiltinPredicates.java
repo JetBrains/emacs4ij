@@ -218,4 +218,9 @@ public abstract class BuiltinPredicates {
         return event instanceof LispList ? ((LispList) event).car() : event;
     }
 
+    public static boolean isNil (LispObject object) {
+        return object == null || object.equals(LispSymbol.ourNil);
+    }
+
+
 }

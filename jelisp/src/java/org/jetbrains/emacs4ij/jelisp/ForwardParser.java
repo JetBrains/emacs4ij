@@ -230,8 +230,6 @@ public class ForwardParser extends Parser {
         }
     }
 
-//    private static List<Integer> mySpecialChars = Arrays.asList(7 , 8, 9, 10, 11, 12, 13, 27, 92, 127);
-
     private static int ctrlConvert (char c, boolean asIs) {
         switch (Character.toLowerCase(c)) {
             case 'g':
@@ -269,14 +267,12 @@ public class ForwardParser extends Parser {
             }
         }
         private char myModifiers[] = new char[] {'0', '0', '0', '0', '0', '0'}; //MCSHsA
-//        private boolean hasModifiers = false;
         private int myKey = -1;
         private int myCtrlCount = 0;
         private boolean isAsIs = false;
         public Char() {}
 
         public void setModifier(Modifier modifier) {
-//            hasModifiers = true;
             myModifiers[Modifier.indexOf(modifier)] = '1';
             if (modifier == Modifier.C)
                 myCtrlCount++;
@@ -297,9 +293,6 @@ public class ForwardParser extends Parser {
                     myKey = k;
                 }
             }
-//            } else if (!hasModifiers) {
-//                myKey = Character.toUpperCase((char)myKey);
-//            }
             String number = new String(myModifiers);
             String key = Integer.toBinaryString(myKey);
             for (int i = 6; i != 27 - key.length() + 1; ++i)
@@ -433,10 +426,8 @@ public class ForwardParser extends Parser {
                 advance();
                 return parseVector(isBackQuote);
             case '?':
-                //advance();
                 return parseCharacter();
             case ';':
-                //it is a comment, skip to the end of line
                 advanceTo(getNextIndexOf('\n'));
                 return null;
             case '`':

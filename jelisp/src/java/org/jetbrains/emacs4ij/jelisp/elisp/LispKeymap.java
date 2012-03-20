@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
-import com.intellij.openapi.keymap.Keymap;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 
 /**
@@ -13,17 +13,13 @@ import org.jetbrains.emacs4ij.jelisp.KeymapCell;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispKeymap extends KeymapCell {
-    void defineKey (String actionId, Shortcut sc);
-    void defineKey(KeymapCell action, Shortcut shortcut);
-    void defineKey(String actionId, LispStringOrVector key);
-    void defineKey(KeymapCell action, LispStringOrVector key);
-
+    void defineKey(Environment environment, LispObject function, LispStringOrVector key);
+    LispObject accessKeymap(LispObject idx, boolean tOk, boolean noInherit);
+    LispSymbol getKeyDefinition (Shortcut key);
+    LispObject getKeyDefinition (LispStringOrVector key, @Nullable @Optional LispObject acceptDefault);
     LispKeymap getParent();
     void setParent(@Nullable LispKeymap parent);
-    void definePrefixCommand();
-    Keymap getKeymap();
-    LispSymbol getKeyBinding (Shortcut shortcut);
-    KeymapCell getKeyBinding(LispStringOrVector key);
-    
-
+    LispKeymap copy();
+//    Check whether THIS is one of MAPS parents.
+    boolean keymapMemberP(LispObject maps);
 }

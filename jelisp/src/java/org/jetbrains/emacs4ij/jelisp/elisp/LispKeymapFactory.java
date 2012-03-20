@@ -10,6 +10,6 @@ import org.jetbrains.annotations.Nullable;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispKeymapFactory {
-    LispKeymap createKeymap (@Nullable String name);
-    LispKeymap createKeymap (@Nullable String name, @Nullable LispKeymap parent);
+    LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent);
+//    LispKeymap fromList (LispList list);
 }
