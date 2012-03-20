@@ -130,9 +130,9 @@ public class GlobalEnvironment extends Environment {
     }
 
     //input parameters are nullable only for test!!!
-    public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
+    public static void initialize (EmacsKeymapManager manager, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
-        ourKeymapManager = new KeymapManager(keymapFactory);
+        ourKeymapManager = manager;
         ourBufferManager = new BufferManager(bufferFactory);
 
         myIde = ide;

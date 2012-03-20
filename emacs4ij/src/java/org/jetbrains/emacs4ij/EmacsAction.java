@@ -41,10 +41,12 @@ public class EmacsAction extends AnAction {
         }
         LispKeymap activeKeymap = GlobalEnvironment.INSTANCE.getActiveKeymap();
         KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) inputEvent);
-        //todo: shortcuts with second keystroke
+        //todo: shortcuts with second keystroke?
         KeyboardShortcut shortcut = new KeyboardShortcut(keyStroke, null);
-        LispSymbol action = activeKeymap.getKeyBinding(shortcut);
+        LispSymbol action = activeKeymap.getKeyDefinition(shortcut);
         try {
+            if (action.equals(LispSymbol.ourNil))
+                throw new InternalError("KeyDefinition is not a symbol!");
             BuiltinsCore.callInteractively(environment, action, null, null);
         } catch (Exception exc2) {
             Messages.showErrorDialog(exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));

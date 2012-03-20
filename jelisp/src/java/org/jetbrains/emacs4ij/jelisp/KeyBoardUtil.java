@@ -1,9 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
 
 /**
@@ -59,6 +61,24 @@ public abstract class KeyBoardUtil {
                 newSymbol.setProperty("event-kind", kind);
         }
         return newSymbol;
+    }
+
+    public static LispList parseModifiers (LispObject symbol) {
+        if (symbol instanceof LispInteger)
+            return LispList.list (new LispInteger(((LispInteger) symbol).keyToChar()),
+                    new LispInteger (((LispInteger) symbol).getData() & CharUtil.CHAR_MODIFIER_MASK));
+        else if (!(symbol instanceof LispSymbol))
+            return LispList.list();
+        return ((LispSymbol) symbol).parseModifiers();
+    }
+
+    public static LispObject reorderModifiers (LispObject symbol) {
+        LispList parsed = parseModifiers (symbol);
+        try {
+            return applyModifiers (((LispInteger) BuiltinsList.car(parsed.cdr())).getData(), parsed.car());
+        } catch (ClassCastException e) {
+            throw new LispException("Internal error");
+        }
     }
 
     public static void defineKbdSymbols (GlobalEnvironment g) {

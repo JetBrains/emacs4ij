@@ -38,7 +38,7 @@ public class EnvironmentInitializer {
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
             try {
-                GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+                GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
                 isGlobalInitialized = true;
             } catch (LispException e) {
                 //skip
@@ -51,7 +51,7 @@ public class EnvironmentInitializer {
         if (isGlobalInitialized)
             return true;
         try {
-            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+            GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
             isGlobalInitialized = true;
         } catch (LispException e) {
             GlobalEnvironment.showErrorMessage(e.getMessage());

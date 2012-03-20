@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
@@ -12,7 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -29,7 +27,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
@@ -94,6 +92,16 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testSetKeymapParentAsSymbol () {
+        evaluateString("(defvar parent 1)");
+        evaluateString("(fset 'parent (make-sparse-keymap))");
+        evaluateString("(defvar km (make-sparse-keymap))");
+        evaluateString("(set-keymap-parent km 'parent)");
+        LispObject km = evaluateString("km");
+        //todo: km == (keymap keymap)
+    }
+    
+    @Test
     public void testClLoopLet() {
         evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
         evaluateString("(setq arg0 (nreverse loop-for-sets))");
@@ -104,19 +112,19 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
     }
 
-    @Ignore
-    @Test
-    public void testKbdMacro() {
-        LispObject r = evaluateString("(kbd \"C-x\")");
-        Assert.assertEquals(new LispString("^X"), r);
-        r = evaluateString("(kbd \"\\C-x\")");
-        Assert.assertEquals(new LispString("^X"), r);
-        r = evaluateString("(kbd \"\\C-x\\t\")");
-        Assert.assertEquals(new LispString("^X"), r);
-        r = evaluateString("(kbd \"^x\")");
-        Assert.assertEquals(new LispString("^X"), r);
-        Assert.assertEquals(1, ((LispSequence)r).length());
-    }
+//    @Ignore
+//    @Test
+//    public void testKbdMacro() {
+//        LispObject r = evaluateString("(kbd \"C-x\")");
+//        Assert.assertEquals(new LispString("^X"), r);
+//        r = evaluateString("(kbd \"\\C-x\")");
+//        Assert.assertEquals(new LispString("^X"), r);
+//        r = evaluateString("(kbd \"\\C-x\\t\")");
+//        Assert.assertEquals(new LispString("^X"), r);
+//        r = evaluateString("(kbd \"^x\")");
+//        Assert.assertEquals(new LispString("^X"), r);
+//        Assert.assertEquals(1, ((LispSequence)r).length());
+//    }
 
     @Test
     public void testCurrentGlobalKeyMap() {
@@ -157,15 +165,30 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testDefineKeySimple() {
+        evaluateString("(defvar km (make-sparse-keymap))");
+        LispObject r = evaluateString("(define-key km \"d\" 'forward-char)");
+        Assert.assertEquals(new LispSymbol("forward-char"), r);
+        LispObject keyMap = evaluateString("km");
+        Assert.assertEquals("(keymap (100 . #<subr forward-char>))", keyMap.toString());
+    }
+
+    @Test
+    public void testDefineKeySimple2() {
+        evaluateString("(defvar km (make-sparse-keymap))");
+        LispObject r = evaluateString("(define-key km \"Cd\" 'forward-char)");
+        Assert.assertEquals(new LispSymbol("forward-char"), r);
+        LispObject keyMap = evaluateString("km");
+        Assert.assertEquals("(keymap (67 keymap (100 . #<subr forward-char>)))", keyMap.toString());
+    }
+
+    @Test
     public void testDefineKey() {
         evaluateString("(defvar km (make-sparse-keymap))");
         LispObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        LispKeymap expected = new IdeaKeymap(null, null);
-        expected.defineKey("forward-char", KeyboardShortcut.fromString("ctrl D"));
-        Assert.assertEquals(expected, keyMap);
-//        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
     @Test
@@ -175,11 +198,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        LispKeymap expected = new IdeaKeymap(null, null);
-        expected.defineKey("forward-char", KeyboardShortcut.fromString("ctrl D"));
-        expected.defineKey("forward-char", KeyboardShortcut.fromString("meta D"));
-        Assert.assertEquals(expected, keyMap);
-//        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
     }
 
     @Test

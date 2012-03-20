@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.actionSystem.Shortcut;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -23,6 +24,10 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
 
     public LispVector() {
         myData = new ArrayList<>();
+    }
+    
+    public LispVector(Shortcut shortcut) {
+        //todo
     }
 
     public LispVector (LispObject ... objects) {

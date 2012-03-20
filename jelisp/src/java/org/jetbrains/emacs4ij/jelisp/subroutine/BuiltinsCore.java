@@ -352,10 +352,10 @@ public abstract class BuiltinsCore {
     public static LispObject substring (LispObject string, LispInteger from, @Optional LispObject to) {
         if (!(string instanceof LispString) && !(string instanceof LispVector))
             throw new WrongTypeArgumentException("vector-or-string-p", string);
-        int length = ((LispSequence)string).length();        
+        int length = ((LispStringOrVector)string).length();
         int start = processBound(from, length);        
         int end = BuiltinPredicates.isNil(to)
-                ? ((LispSequence)string).length()
+                ? length
                 : processBound(getInt(to), length);
         try {
             if (string instanceof LispString)

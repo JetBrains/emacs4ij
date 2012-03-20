@@ -9,4 +9,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  */
 public interface LispStringOrVector extends LispCommand {
     String toShortcutString();
+    int length();
 }
