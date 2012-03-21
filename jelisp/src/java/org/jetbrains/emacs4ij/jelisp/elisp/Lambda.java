@@ -30,7 +30,7 @@ public class Lambda implements FunctionCell, LispCommand {
     public Lambda (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
-            throw new RuntimeException("wrong lambda definition");
+            throw new InternalError("Wrong lambda definition");
         try {
             if (!data.get(1).equals(LispSymbol.ourNil))
                 parseArgumentsList((LispList) data.get(1));

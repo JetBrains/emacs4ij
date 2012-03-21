@@ -239,19 +239,28 @@ public abstract class Environment {
     }
     
     //========= keymaps ===========
+    
     public LispKeymap makeSparseKeymap(@Nullable LispObject name) {
+        if (ourKeymapManager == null)
+            return null;
         return ourKeymapManager.createSparseKeymap(name);
     }
     
     public LispKeymap makeKeymap(@Nullable LispObject name) {
+        if (ourKeymapManager == null)
+            return null;
         return ourKeymapManager.createKeymap(name);
     }
     
     public LispKeymap getActiveKeymap() {
+        if (ourKeymapManager == null)
+            return null;
         return ourKeymapManager.getActiveKeymap();
     }
     
     public void setActiveKeymap(LispKeymap keymap) {
+        if (ourKeymapManager == null)
+            return;
         ourKeymapManager.setActiveKeymap(keymap);
     }
 }

@@ -24,7 +24,7 @@ public class EmacsKeymapManagerImpl implements EmacsKeymapManager {
     private static EmacsAction ourAction = new EmacsAction();
     private static KeymapManager ourKeymapManager = KeymapManager.getInstance();
     private List<LispKeymap> myKeymaps = new ArrayList<>();
-    private LispKeymap myCurrentKeyMap = null;         
+    private LispKeymap myCurrentKeyMap = null;
     
     public EmacsKeymapManagerImpl() {}
     
@@ -44,7 +44,7 @@ public class EmacsKeymapManagerImpl implements EmacsKeymapManager {
 
     @Override
     public LispKeymap createSparseKeymap (@Nullable LispObject prompt) {
-        LispList keymap = (prompt != null && !prompt.equals(LispSymbol.ourNil))
+        LispList keymap = prompt != null && !prompt.equals(LispSymbol.ourNil)
                 ? LispList.list(BuiltinsKey.ourKeyMapSymbol, prompt)
                 : LispList.list(BuiltinsKey.ourKeyMapSymbol);
         registerKeymap(keymap);
@@ -53,10 +53,8 @@ public class EmacsKeymapManagerImpl implements EmacsKeymapManager {
 
     @Override
     public LispKeymap createKeymap (@Nullable LispObject prompt) {
-        LispObject tail = LispSymbol.ourNil;
-        if (prompt != null && !prompt.equals(LispSymbol.ourNil)) {
-            tail = LispList.list(prompt);
-        }
+        LispObject tail = prompt != null && !prompt.equals(LispSymbol.ourNil)
+                ? LispList.list(prompt) : LispSymbol.ourNil;
         LispList keymap = LispList.cons(BuiltinsKey.ourKeyMapSymbol,
                 LispList.cons(new LispCharTable(BuiltinsKey.ourKeyMapSymbol, LispSymbol.ourNil), tail));
         registerKeymap(keymap);

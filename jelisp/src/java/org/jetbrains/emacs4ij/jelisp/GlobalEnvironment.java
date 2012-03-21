@@ -8,7 +8,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
@@ -130,7 +129,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     //input parameters are nullable only for test!!!
-    public static void initialize (EmacsKeymapManager manager, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
+    public static void initialize (@Nullable EmacsKeymapManager manager, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
         INSTANCE = new GlobalEnvironment();
         ourKeymapManager = manager;
         ourBufferManager = new BufferManager(bufferFactory);
@@ -160,8 +159,8 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
 
-        BuiltinsKey.defineKeyMaps();
-        BuiltinsKey.keys_of_keymap();
+//        BuiltinsKey.defineKeyMaps();
+//        BuiltinsKey.init();
         KeyBoardUtil.defineKbdSymbols(INSTANCE);
         KeyBoardUtil.keys_of_keyboard();
 
@@ -638,9 +637,6 @@ public class GlobalEnvironment extends Environment {
         return INSTANCE.myFrames;
     }
 
-    //==============
-
-
     @Override
     public void clearRecorded() {
         super.clearRecorded();
@@ -658,9 +654,5 @@ public class GlobalEnvironment extends Environment {
         } catch (NoSuchElementException e) {
             return null;
         }
-    }
-    
-    public LispKeymap makeKeymap (@Nullable LispObject name) {
-        return ourKeymapManager.createKeymap(name);
     }
 }

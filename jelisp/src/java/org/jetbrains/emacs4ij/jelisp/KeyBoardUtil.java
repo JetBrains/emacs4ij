@@ -447,11 +447,11 @@ public abstract class KeyBoardUtil {
 
     //todo
     public static void keys_of_keyboard () {
-//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initial_define_key (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initial_define_key (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
-//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
-//        BuiltinsKey.initial_define_key (meta_map, 'x', "execute-extended-command");
+//        BuiltinsKey.initialDefineKey (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initialDefineKey (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initialDefineKey (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
+//        BuiltinsKey.initialDefineKey (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
+//        BuiltinsKey.initialDefineKey (meta_map, 'x', "execute-extended-command");
 //
 //        initial_define_lispy_key (Vspecial_event_map, "delete-frame", "handle-delete-frame");
 //        initial_define_lispy_key (Vspecial_event_map, "ns-put-working-text", "ns-put-working-text");

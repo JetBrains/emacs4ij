@@ -70,7 +70,14 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testCopyKeymap() throws Exception {
-        //todo
+        LispSymbol k1 = (LispSymbol) evaluateString("(defvar k1 (make-keymap))");
+        LispSymbol k2 = (LispSymbol) evaluateString("(defvar k2 (copy-keymap k1))");
+        Assert.assertEquals(k1.getValue(), k2.getValue());
+        evaluateString("(set-keymap-parent k1 '(keymap))");
+        LispObject parent = evaluateString("(keymap-parent k1)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), parent);
+        parent = evaluateString("(keymap-parent k2)");
+        Assert.assertEquals(LispSymbol.ourNil, parent);
     }
 
     @Test
@@ -81,7 +88,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
-    public void testSetKeymapParent() throws Exception {
+    public void testSetKeymapParentSparse() throws Exception {
         evaluateString("(setq k (make-sparse-keymap))");
         LispObject r = evaluateString("(set-keymap-parent k '(keymap))");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
@@ -89,6 +96,18 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
         r = evaluateString("k");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), r);
+    }
+
+    @Test
+    public void testSetKeymapParent() throws Exception {
+        evaluateString("(setq k (make-keymap))");
+        LispObject r = evaluateString("(set-keymap-parent k '(keymap))");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+        r = evaluateString("(keymap-parent k)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+        r = evaluateString("k");
+        String expected = "(keymap #^[nil nil keymap nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] keymap)";
+        Assert.assertEquals(expected, r.toString());
     }
 
     @Test
@@ -257,7 +276,6 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject keymap = evaluateString("mapvar");
         Assert.assertEquals(((LispSymbol) cmd).getFunction(), keymap);
         LispKeymap km = BuiltinsKey.makeSparseKeymap(new LispSymbol("name"));
-//        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, new LispSymbol("name"));
         Assert.assertEquals(km, keymap);
     }
 
@@ -266,7 +284,6 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(setq cmd 1)");
         LispObject cmd = evaluateString("(define-prefix-command 'cmd)");
         LispKeymap km = BuiltinsKey.makeSparseKeymap(null);
-//        LispKeymap km = BuiltinsKey.makeSparseKeymap(myEnvironment, null);
         Assert.assertTrue(cmd instanceof LispSymbol);
         Assert.assertEquals(km, ((LispSymbol) cmd).getValue());
         Assert.assertEquals(km, ((LispSymbol) cmd).getFunction());

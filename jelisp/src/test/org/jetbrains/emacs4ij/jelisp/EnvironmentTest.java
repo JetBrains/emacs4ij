@@ -76,19 +76,4 @@ public class EnvironmentTest {
         ArrayList<String> commandList = GlobalEnvironment.INSTANCE.getCommandList("f");
         Assert.assertFalse(commandList.isEmpty());
     }
-
-
-    /*
-    @Ignore
-    @Test
-    public void findir() {
-        File[] fList = new File("c:\\Users\\ekaterina.polishchuk\\Downloads\\emacs-23.3\\lisp").listFiles();
-        for (File f: fList) {
-
-            if (f.isDirectory())
-                System.out.println(f.getName() + " --DIR");
-            else
-                System.out.println(f.getName());
-        }
-    }    */
 }

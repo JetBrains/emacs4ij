@@ -553,7 +553,7 @@ default-directory
         try {
             evaluateString("(condition-case a (+ a 5) 5 (void-variable \"message\"))");
         } catch (RuntimeException e) {
-            conditionCaseErrorChecker(e, "Invalid condition handler");
+            conditionCaseErrorChecker(e, "(error \"Invalid condition handler\")");
         }
     }
 
