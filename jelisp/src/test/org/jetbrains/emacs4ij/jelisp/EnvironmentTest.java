@@ -48,7 +48,7 @@ public class EnvironmentTest {
     public void testGetFunctionFromFile() {
         String lispObjectFileNameFile = GlobalEnvironment.getEmacsSource() + "/lisp/help-fns.el";
         String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = GlobalEnvironment.INSTANCE.getDefFromFile(lispObjectFileNameFile, lispFunctionName, GlobalEnvironment.SymbolType.FUN);
+        LispList functionFromFile = GlobalEnvironment.getDefFromFile(lispObjectFileNameFile, lispFunctionName, GlobalEnvironment.SymbolType.FUN);
         Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList)functionFromFile.cdr()).car());
     }
 
@@ -56,7 +56,7 @@ public class EnvironmentTest {
     @Test
     public void testFindEmacsFinder() {
         LispSymbol finder = e.find(GlobalEnvironment.ourFinder.getName());
-        Assert.assertEquals(GlobalEnvironment.ourFinder, finder.getName());
+        Assert.assertEquals(GlobalEnvironment.ourFinder, finder);
     }
     
     @Test

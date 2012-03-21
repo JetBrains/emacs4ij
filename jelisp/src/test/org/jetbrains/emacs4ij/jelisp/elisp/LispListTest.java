@@ -38,6 +38,22 @@ public class LispListTest {
         list = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
         Assert.assertEquals("(1 2 3)", list.toString());
     }
+
+    @Test
+    public void testToStringCons() {
+        LispList list = LispList.cons(new LispInteger(1), LispSymbol.ourNil);
+        Assert.assertEquals("(1)", list.toString());
+        list = LispList.cons(LispSymbol.ourNil, new LispInteger(1));
+        Assert.assertEquals("(nil . 1)", list.toString());
+        list = LispList.cons(LispSymbol.ourNil, LispSymbol.ourNil);
+        Assert.assertEquals("(nil)", list.toString());
+    }
+
+    @Test
+    public void testToString() {
+        LispList list = LispList.list(LispList.list(new LispInteger(1), new LispInteger(2)), LispSymbol.ourNil);
+        Assert.assertEquals("((1 2) nil)", list.toString());
+    }
     
     @Test
     public void testMemq() {

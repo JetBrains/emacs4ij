@@ -554,7 +554,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             evaluateString("(generate-new-buffer \"1.txt\")");
             myEnvironment.createBuffer("1.txt<2>");
         } catch (Exception e) {
-            Assert.assertEquals("double 1.txt<2>", getCause(e).getMessage());
+            Assert.assertEquals("Double 1.txt<2>", getCause(e).getMessage());
         }
     }
 

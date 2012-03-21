@@ -419,7 +419,28 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals (LispList.cons(new LispInteger(5), new LispInteger(3)), r);
     }
 
+    @Test
+    public void testSetcdr() {
+        evaluateString("(defvar b (list 1 2 nil))");
+        LispObject r = evaluateString("(setcdr b 3)");
+        Assert.assertEquals(new LispInteger(3), r);
+        r = evaluateString("b");
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(3)), r);
+    }
 
+    @Test
+    public void testSetcdrNil() {
+        evaluateString("(defvar b (list 1 nil))");
+        LispObject b = evaluateString("b");
+        Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.ourNil), b);
+        evaluateString("(setcdr b 2)");
+        b = evaluateString("b");
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), b);
+        evaluateString("(setcdr b nil)");
+        b = evaluateString("b");
+        Assert.assertEquals("(1)", b.toString());
+        Assert.assertEquals(LispList.list(new LispInteger(1)), b);
+    }
 }
 
 
