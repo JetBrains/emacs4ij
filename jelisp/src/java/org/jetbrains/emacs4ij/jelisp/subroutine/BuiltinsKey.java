@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.*;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.lucidEventTypeListP;
@@ -17,8 +18,7 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.lucidEv
 public abstract class BuiltinsKey {
     private BuiltinsKey() {}
 
-    public static LispObject globalMap;
-    private static LispObject currentGlobalMap;
+//    public static LispObject globalMap;
     public static LispList ourExcludeKeys;
     public static LispSymbol ourKeyMapSymbol = new LispSymbol("keymap");
 
@@ -94,21 +94,23 @@ public abstract class BuiltinsKey {
         else command.setValue(keymap);
         return command;
     }
-// =====
+
     @Subroutine("current-active-maps")
     public static LispObject currentActiveMaps (@Optional LispObject olp, LispObject position) {
-        return null;
+        throw new NotImplementedException("current-active-maps");
     }
 
     @Subroutine("key-binding")
     public static LispObject keyBinding (LispStringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
-        if (key instanceof LispString) {
-            return null;
-        }
-        if (key instanceof LispVector) {
-            return null;
-        }
-        throw new WrongTypeArgumentException("arrayp", key);
+        throw new NotImplementedException("key-binding");
+    }
+
+    @Subroutine("lookup-key")
+    public static LispObject lookupKey (LispObject keymapObject, LispStringOrVector key, @Nullable @Optional LispObject acceptDefault) {
+        check(keymapObject);
+        if (key.length() == 0)
+            return keymapObject;
+        return getKeymap(keymapObject).getKeyDefinition(key, acceptDefault);
     }
 
     @Subroutine("define-key")
@@ -127,17 +129,23 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("current-global-map")
-    public static LispObject currentGlobalMap () {
-        return currentGlobalMap;
+    public static LispObject currentGlobalMap (Environment environment) {
+        return environment.getActiveKeymap();
+    }
+
+    @Subroutine("use-global-map")
+    public static LispSymbol useGlobalMap (Environment environment, LispKeymap keymap) {
+        environment.setActiveKeymap(keymap);
+        return LispSymbol.ourNil;
     }
 
     public static void defineKeyMaps () {
         ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
         GlobalEnvironment g = GlobalEnvironment.INSTANCE;
         g.defineSymbol(ourKeyMapSymbol);
-        globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
+        LispKeymap globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(g, new LispSymbol("global-map"), globalMap);
-        currentGlobalMap = globalMap;
+        g.setActiveKeymap(globalMap);
         LispObject meta_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(g, new LispSymbol("esc-map"), meta_map);
         BuiltinsCore.functionSet(g, new LispSymbol("ESC-prefix"), meta_map);
@@ -167,9 +175,10 @@ public abstract class BuiltinsKey {
         g.defineSymbol("where-is-preferred-modifier");
     }
 
-    public static void keys_of_keymap () {
-        initial_define_key (globalMap, 27, "ESC-prefix");
-        initial_define_key (globalMap, CharUtil.Ctl('X'), "Control-X-prefix");
+    public static void init() {
+        LispKeymap globalMap = GlobalEnvironment.INSTANCE.getActiveKeymap();
+        initialDefineKey(globalMap, 27, "ESC-prefix");
+        initialDefineKey(globalMap, CharUtil.Ctl('X'), "Control-X-prefix");
     }
 
     private static LispSymbol makeKeyMap(GlobalEnvironment g, String name, LispSymbol parent) {
@@ -182,7 +191,7 @@ public abstract class BuiltinsKey {
         return g.defineSymbol(name, BuiltinsKey.makeSparseKeymap(LispSymbol.ourNil));
     }
 
-    public static void initial_define_key (LispObject keymap, int key, String name) {
+    private static void initialDefineKey(LispKeymap keymap, int key, String name) {
 //        todo store_in_keymap (keymap, new LispInteger(key), new LispString(name));
     }
 

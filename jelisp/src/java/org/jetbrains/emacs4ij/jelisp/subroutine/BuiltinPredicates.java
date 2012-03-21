@@ -66,9 +66,13 @@ public abstract class BuiltinPredicates {
         LispObject f = function;
         if (function instanceof LispSymbol)
             f = ((LispSymbol) function).getFunction();
-        if (f instanceof LispList)
-            f = new Lambda((LispList) f);
-        
+        if (f instanceof LispList) {
+            try {
+                f =  new Lambda((LispList) f);
+            } catch (InternalError e) {
+                return LispSymbol.ourNil;
+            }
+        }
         if (f instanceof Lambda || f instanceof Primitive) {
             return LispSymbol.bool(((LispCommand) f).isInteractive());
         }
@@ -230,6 +234,4 @@ public abstract class BuiltinPredicates {
         }
         return true;
     }
-
-
 }
