@@ -10,6 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         return new LispList(data, true);
     }
 
-    public static LispList cons (LispObject car, LispObject cdr) {
+    public static LispList cons (LispObject car, @Nullable LispObject cdr) {
         return new LispList(car, cdr);
     }
 
@@ -86,15 +87,15 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         myCdr = new LispList(data.subList(1, data.size()));
     }
 
-    private LispList (@NotNull LispObject car, @NotNull LispObject cdr) {
-        if (cdr.equals(LispSymbol.ourNil)) {
+    private LispList (@NotNull LispObject car, @Nullable LispObject cdr) {
+        if (BuiltinPredicates.isNil(cdr)) {
             myCar = car;
             isTrueList = true;
             return;
         }
         myCar = car;
         myCdr = cdr;
-        isTrueList = false;
+        isTrueList = cdr instanceof LispList && ((LispList)cdr).isTrueList();
     }
 
     public boolean isEmpty() {
@@ -143,27 +144,31 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         throw new InvalidFunctionException(function.toString());
     }
 
+    private boolean isTrueList() {
+        return isTrueList;
+    }
+    
     @Override
     public List<LispObject> toLispObjectList() {
         ArrayList<LispObject> list = new ArrayList<>();
         if (isEmpty())
             return list;
-        LispObject cell = this;
+        LispList cell = this;
         do {
-            LispObject cdr = ((LispList)cell).realCdr();
-            if (cdr == null || cdr instanceof LispList) {
-                if (((LispList)cell).car() != null)
-                    list.add(((LispList)cell).car());
+            LispObject cdr = cell.realCdr();
+            if (cdr == null || (cdr instanceof LispList && cell.isTrueList())) {
+                if (cell.realCar() != null)
+                    list.add(cell.realCar());
             } else {
-                if (!isTrueList) {
+                if (!cell.isTrueList()) {
                     list.add(cell);
                     break;
                 }
-                list.add(((LispList)cell).car());
-                list.add(((LispList)cell).cdr());
+                list.add(cell.car());
+                list.add(cdr);
                 break;
             }
-             cell = cdr;
+            cell = (LispList) cdr;
         } while (cell != null);
         return list;
     }
@@ -204,23 +209,25 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         if (objectList.isEmpty())
             return "nil";
         String list = drawBrackets ? "(" : "";
+        String closingBracket = drawBrackets ? ")" : "";
         if (isTrueList) {
-            for (int i = 0; i != objectList.size(); ++i) {
-                list += objectList.get(i).toString() + " ";
+            for (int i = 0, objectListSize = objectList.size(); i < objectListSize; i++) {
+                LispObject item = objectList.get(i);
+                if (i == objectListSize - 1 && item instanceof LispList && !((LispList)item).isTrueList())
+                    list += ((LispList)item).toString(false) + " ";
+                else
+                    list += item.toString() + " ";
             }
-            return list.trim() + (drawBrackets ? ")" : "");
+            return list.trim() + closingBracket;
         } else {
-//            if (isNil(myCar) && isNil(myCdr))
-//                list += "nil" + (drawBrackets ? ")" : "");
-//            else
             if (myCdr == null)
-                list += myCar.toString() + (drawBrackets ? ")" : "");
+                list += myCar.toString() + closingBracket;
             else {
                 list += myCar.toString();
                 if (myCdr instanceof LispList)
-                    list += " " + ((LispList)myCdr).toString(false) + (drawBrackets ? ")" : "");
+                    list += " " + ((LispList)myCdr).toString(false) + closingBracket;
                 else
-                    list += " . " + myCdr.toString() + (drawBrackets ? ")" : "");
+                    list += " . " + myCdr.toString() + closingBracket;
             }
             return list;
         }
@@ -236,6 +243,10 @@ public class LispList extends LispKeymapImpl implements LispSequence {
 
     private LispObject realCdr() {
         return myCdr;
+    }
+
+    private LispObject realCar() {
+        return myCar;
     }
 
     @Override
@@ -263,7 +274,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         try {
             if (equalityFunctionName.equals("eq")) {
                 for (; cdr != null; cdr = ((LispList)cdr).realCdr()) {
-                    if (BuiltinsCore.eqs(((LispList) cdr).car(), element)) {
+                    if (((LispList) cdr).realCar() != null && BuiltinsCore.eqs(element, ((LispList) cdr).realCar())) {
                         return (LispList)cdr;
                     }
                 }
@@ -272,7 +283,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
 
             if (equalityFunctionName.equals("equal")) {
                 for (; cdr != null; cdr = ((LispList)cdr).realCdr()) {
-                    if (BuiltinsCore.equals(((LispList) cdr).car(), element)) {
+                    if (((LispList) cdr).realCar() != null && BuiltinsCore.equals(element, ((LispList) cdr).realCar())) {
                         return (LispList)cdr;
                     }
                 }
@@ -282,10 +293,6 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         } catch (ClassCastException e) {
             throw new WrongTypeArgumentException("listp", cdr);
         }
-    }
-
-    public void setCdr (@Nullable LispObject cdr) {
-        myCdr = BuiltinPredicates.isNil(cdr) ? null : cdr;
     }
 
     public LispObject nReverse () {
@@ -313,8 +320,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         else {
             if (myCdr == null) {
                 myCdr = object;
-                if (!(object instanceof LispList))
-                    isTrueList = false;
+                isTrueList = object instanceof LispList && ((LispList)object).isTrueList();
             } else
                 throw new WrongTypeArgumentException("listp", myCdr);
         }
@@ -325,33 +331,14 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         return toLispObjectList().size();
     }
 
-    public void resetTail (LispObject newTail) {
-
-//            if (isNil(myCdr) || myCdr instanceof LispList || isTrueList) {
-//                if (myCar != null)
-//                    ((LispList) cell).resetTail(newTail);
-////                    list.add(((LispList)cell).car());
-//            } else {
-//                myCdr = newTail;
-//                break;
-//            }
-//            cell = cdr;
-//        } while (cell != null && cell instanceof LispList);
-//
-//        if (!isTrueList) {
-//            myCdr = newTail;
-//            return;
-//        }
-//        if (myCdr instanceof LispList) {
-//            ((LispList) myCdr).resetTail(newTail);
-//            return;
-//        }
-//        myCdr = newTail;
-    }
-
-    public LispObject tail() {
-        List<LispObject> data = toLispObjectList();
-        return data.get(data.size()-1);
+    public void setCdr (@Nullable LispObject cdr) {
+        if (BuiltinPredicates.isNil(cdr)) {
+            myCdr = null;
+            isTrueList = true;
+            return;
+        }
+        myCdr = cdr;
+        isTrueList = cdr instanceof LispList && ((LispList) cdr).isTrueList();
     }
 
     public LispList delq (LispObject element) {
@@ -362,7 +349,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         LispList prev = LispList.list();
         while (tail instanceof LispList) {
             LispObject cdr = ((LispList) tail).realCdr();
-            if (BuiltinsCore.eqs(element, ((LispList) tail).car())) {
+            if (BuiltinsCore.eqs(element, ((LispList) tail).realCar())) {
                 if (prev.isEmpty()) {
                     if (cdr == null)
                         list = LispList.list();
@@ -386,7 +373,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
     public LispObject assq (LispObject first) {
         for (LispObject item: toLispObjectList()) {
             if (item instanceof LispList) {
-                if (BuiltinsCore.eqs(first, ((LispList) item).car()))
+                if (BuiltinsCore.eqs(first, ((LispList) item).realCar()))
                     return item;
             }
         }
@@ -410,7 +397,9 @@ public class LispList extends LispKeymapImpl implements LispSequence {
     public LispKeymap getParent() {
         List<LispObject> data = toLispObjectList();
         LispObject parent = data.size() > 1 ? data.get(data.size()-1) : null;
-        return BuiltinPredicates.isNil(parent) || (!parent.equals(LispSymbol.ourNil) && !(parent instanceof LispKeymap))
+        if (parent != null && parent.equals(BuiltinsKey.ourKeyMapSymbol))
+            return LispList.list(BuiltinsKey.ourKeyMapSymbol);
+        return BuiltinPredicates.isNil(parent) || !BuiltinsKey.isListKeymap(parent)
                 ? null
                 : (LispKeymap) parent;
     }
@@ -418,8 +407,14 @@ public class LispList extends LispKeymapImpl implements LispSequence {
     @Override
     public void setParent(@Nullable LispKeymap parent) {
         //todo: If keymap has submaps (bindings for prefix keys), they too receive new parent keymaps
-        // that reflect what parent specifies for those prefix keys.
-        resetTail(parent);
+        if (BuiltinsKey.isListKeymap(myCdr)) {
+            //this is the current parent
+            setCdr(parent);
+            return;
+        }
+        if (myCdr != null && myCdr instanceof LispList && isTrueList)
+            ((LispList) myCdr).setParent(parent);
+        else setCdr(parent);
     }
 
     @Override

@@ -54,9 +54,9 @@ public class EmacsKeymapManagerImpl implements EmacsKeymapManager {
     @Override
     public LispKeymap createKeymap (@Nullable LispObject prompt) {
         LispObject tail = prompt != null && !prompt.equals(LispSymbol.ourNil)
-                ? LispList.list(prompt) : LispSymbol.ourNil;
+                ? LispList.list(prompt) : null;
         LispList keymap = LispList.cons(BuiltinsKey.ourKeyMapSymbol,
-                LispList.cons(new LispCharTable(BuiltinsKey.ourKeyMapSymbol, LispSymbol.ourNil), tail));
+                LispList.cons(new LispCharTable(BuiltinsKey.ourKeyMapSymbol, null), tail));
         registerKeymap(keymap);
         return keymap;
     }

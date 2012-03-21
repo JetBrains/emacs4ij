@@ -85,6 +85,19 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(setq k (make-sparse-keymap))");
         LispObject r = evaluateString("(keymap-parent k)");
         Assert.assertEquals(LispSymbol.ourNil, r);
+
+        evaluateString("(setq k (make-keymap))");
+        r = evaluateString("(keymap-parent k)");
+        Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+
+    @Test
+    public void testSetKeymapParentSparseTwice() throws Exception {
+        evaluateString("(setq k (make-sparse-keymap))");
+        evaluateString("(set-keymap-parent k '(keymap))");
+        evaluateString("(set-keymap-parent k '(keymap))");
+        LispObject r = evaluateString("k");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), r);
     }
 
     @Test
@@ -98,6 +111,36 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), r);
     }
 
+    @Test
+    public void testAppendParentSparse() {
+        evaluateString("(setq k (make-sparse-keymap))");
+        LispObject keymap = evaluateString("(setq k (append k '(keymap)))");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), keymap);
+        LispObject parent = evaluateString("(keymap-parent k)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), parent);
+    }
+
+    @Test
+    public void testAppendParent() {
+        evaluateString("(setq k (make-keymap))");
+        evaluateString("(setq k (append k '(keymap)))");
+        LispObject parent = evaluateString("(keymap-parent k)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), parent);
+    }
+
+    @Test
+    public void testSetKeymapParentValues() throws Exception {
+        evaluateString("(setq k (make-sparse-keymap))");
+        LispObject r = evaluateString("(set-keymap-parent k '(keymap))");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+        r = evaluateString("(car k)");
+        Assert.assertEquals(new LispSymbol("keymap"), r);
+        r = evaluateString("(cdr k)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+        r = evaluateString("(keymap-parent k)");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
+    }
+    
     @Test
     public void testSetKeymapParent() throws Exception {
         evaluateString("(setq k (make-keymap))");

@@ -182,15 +182,13 @@ public abstract class SpecialForms {
         LispSymbol variable = GlobalEnvironment.INSTANCE.find(name.getName());
         if (variable == null) {
             LispObject value = (initValue == null) ? null : initValue.evaluate(environment);
-
             LispSymbol symbol = new LispSymbol(name.getName());
             symbol.setValue(value);
-
             if (docString != null) {
                 symbol.setVariableDocumentation(docString.evaluate(environment));
             }
             GlobalEnvironment.INSTANCE.defineSymbol(symbol);
-            return name;
+            return symbol;
         }
         if (overwrite || (!variable.hasValue() && initValue != null)) {
             if (initValue == null)

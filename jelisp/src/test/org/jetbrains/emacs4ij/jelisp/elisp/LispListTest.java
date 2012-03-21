@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
 import org.junit.Test;
 
@@ -21,14 +22,14 @@ public class LispListTest {
         LispList list = LispList.list();
         Assert.assertEquals(LispSymbol.ourNil, list);
     }
-    
+
     @Test
     public void testCdr () {
         LispList list = LispList.list(new LispSymbol("test"));
         LispObject list1 = list.cdr();
         Assert.assertEquals(LispList.list(), list1);
     }
-    
+
     @Test
     public void testToStringTrueList() {
         LispList list = LispList.list(new LispSymbol("test"));
@@ -54,14 +55,14 @@ public class LispListTest {
         LispList list = LispList.list(LispList.list(new LispInteger(1), new LispInteger(2)), LispSymbol.ourNil);
         Assert.assertEquals("((1 2) nil)", list.toString());
     }
-    
+
     @Test
     public void testMemq() {
         LispList list = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
         LispObject m = BuiltinsList.memq(new LispInteger(2), list);
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), m);
     }
-    
+
     @Test
     public void testListOfNils () {
         LispList list = LispList.list(LispSymbol.ourNil, LispSymbol.ourNil);
@@ -77,19 +78,55 @@ public class LispListTest {
         LispList list = LispList.list(new LispInteger(1), new LispInteger(2));
         list.toString();
     }
-    
+
     @Test
     public void testToObjectList() {
-        LispList list = LispList.testList(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.ourNil, LispList.list(new LispSymbol("b"))));
+        LispList list = LispList.list(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.ourNil, LispList.list(new LispSymbol("b"))));
         List<LispObject> a = list.toLispObjectList();
+        Assert.assertEquals(2, a.size());
+
+        list = LispList.list(new LispInteger(1), LispList.cons(new LispInteger(2), new LispInteger(3)), new LispInteger(4));
+        a = list.toLispObjectList();
         Assert.assertEquals(3, a.size());
+
+        list = LispList.list(new LispSymbol("a"), LispList.list(new LispSymbol("b"), new LispSymbol("c")));
+        a = list.toLispObjectList();
+        Assert.assertEquals(2, a.size());
+        Assert.assertTrue(a.get(1) instanceof LispList);
+
+        list = LispList.list(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.ourNil));
+        a = list.toLispObjectList();
+        Assert.assertEquals(2, a.size());
+        Assert.assertTrue(a.get(1) instanceof LispList);
     }
-    
+
+    @Test
+    public void testToObjectListCons() {
+        LispList list = LispList.cons(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.ourNil));
+        List<LispObject> a = list.toLispObjectList();
+        Assert.assertEquals("(a a)", list.toString());
+        Assert.assertEquals(2, a.size());
+        Assert.assertTrue(list.cdr() instanceof LispList);
+    }
+
     @Test
     public void testAppend() {
         LispList a = LispList.list(new LispSymbol("a"));
         LispList b = LispList.list(new LispSymbol("b"));
         a.append(b);
         Assert.assertEquals(LispList.list(new LispSymbol("a"), new LispSymbol("b")), a);
+    }
+
+    @Test
+    public void testAppendCons() {
+        try {
+            LispList a = LispList.cons(new LispSymbol("a"), new LispInteger(1));
+            LispList b = LispList.list(new LispSymbol("b"));
+            a.append(b);
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 1)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
     }
 }

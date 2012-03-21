@@ -18,11 +18,10 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.lucidEv
 public abstract class BuiltinsKey {
     private BuiltinsKey() {}
 
-//    public static LispObject globalMap;
     public static LispList ourExcludeKeys;
     public static LispSymbol ourKeyMapSymbol = new LispSymbol("keymap");
 
-    private static boolean isListKeymap (LispObject object) {
+    public static boolean isListKeymap (@Nullable LispObject object) {
         return (object instanceof LispList && ((LispList) object).car().equals(ourKeyMapSymbol));
     }
 

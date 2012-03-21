@@ -441,6 +441,44 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals("(1)", b.toString());
         Assert.assertEquals(LispList.list(new LispInteger(1)), b);
     }
+    
+    @Test
+    public void testAppend () {
+        evaluateString("(setq l2 (list 1 2 3))");
+        LispObject list = evaluateString("(append l2 4)");
+        Assert.assertEquals(LispList.testList(new LispInteger(1), new LispInteger(2), new LispInteger(3), new LispInteger(4)), list);
+        Assert.assertEquals("(1 2 3 . 4)", list.toString());
+
+        list = evaluateString("(append l2 '(4))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3), new LispInteger(4)), list);
+        Assert.assertEquals("(1 2 3 4)", list.toString());
+
+        evaluateString("(setq l1 (list 1 (cons 2 3)))");
+        list = evaluateString("(append l1 4)");
+        Assert.assertEquals("(1 (2 . 3) . 4)", list.toString());
+        list = evaluateString("(append l1 '(4))");
+        Assert.assertEquals("(1 (2 . 3) 4)", list.toString());
+    }
+    
+    @Test
+    public void testAfterAppend() {
+        evaluateString("(setq k '(keymap))");
+        evaluateString("(setq k (append k '(keymap)))");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(consp (cdr k))"));
+    }
+    
+    @Test
+    public void testLengthAppended() {
+        evaluateString("(setq l1 (list 1 2 3))");
+        evaluateString("(setq a (append l1 4))");
+        try {
+            evaluateString("(length a)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument listp 4)", TestSetup.getCause(e).getMessage());
+            return;
+        }
+        Assert.fail();
+    }
 }
 
 

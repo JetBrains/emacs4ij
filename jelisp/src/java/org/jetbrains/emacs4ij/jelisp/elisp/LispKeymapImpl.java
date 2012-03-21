@@ -20,8 +20,6 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey.*;
 public abstract class LispKeymapImpl implements LispKeymap {
     @Override
     public LispObject defineKey(Environment environment, LispObject function, LispStringOrVector key) {
-        if (!(key instanceof LispString) && !(key instanceof LispVector))
-            throw new WrongTypeArgumentException("arrayp", key);
         int length = key.length();
         if (length == 0)
             return LispSymbol.ourNil;
@@ -79,7 +77,7 @@ public abstract class LispKeymapImpl implements LispKeymap {
                 BuiltinsCore.error("Key sequence contains invalid event");
 
             if (idx == length)
-                return keymap.store_in_keymap(c, function);
+                return keymap.store(c, function);
 
             LispObject cmd = accessKeymap(c, false, true);
 
@@ -197,11 +195,11 @@ public abstract class LispKeymapImpl implements LispKeymap {
     private LispObject define_as_prefix (LispObject c) {
         LispObject cmd = BuiltinsKey.makeSparseKeymap(null);
         cmd = BuiltinsList.nConcatenate(cmd, accessKeymap(c, false, false));
-        store_in_keymap(c, cmd);
+        store(c, cmd);
         return cmd;
     }
 
-    private LispObject store_in_keymap (LispObject idx, LispObject def) {
+    private LispObject store (LispObject idx, LispObject def) {
 //        if (!isListKeymap(keymap))
 //            BuiltinsCore.error("attempt to define a key in a non-keymap");
         if (idx instanceof LispList && BuiltinPredicates.isCharacter(((LispList) idx).car())) {
