@@ -164,6 +164,74 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), km);
     }
     
+    @Test
+    public void testDefineCtrlKey() {
+        evaluateString("(setq p (make-sparse-keymap))");
+        evaluateString("(define-key p \"\\C-d\" 'forward-char)");
+        LispObject keymap = evaluateString("p");
+        Assert.assertEquals("(keymap (4 . forward-char))", keymap.toString());
+    }
+    
+    @Test
+    public void testParentWithParent () {
+        evaluateString("(setq k (make-sparse-keymap))");
+        evaluateString("(setq p (make-sparse-keymap))");
+        evaluateString("(define-key p \"3\" 'forward-char)");
+        evaluateString("(define-key k \"1\" 'forward-char)");
+        evaluateString("(define-key k \"2\" 'forward-char)");
+        evaluateString("(set-keymap-parent p '(keymap))");
+        evaluateString("(set-keymap-parent k p)");
+        LispObject keymap = evaluateString("k");
+        Assert.assertEquals("(keymap (50 . forward-char) (49 . forward-char) keymap (51 . forward-char) keymap)", keymap.toString());
+        LispObject parent = evaluateString("(keymap-parent k)");
+        Assert.assertEquals("(keymap (51 . forward-char) keymap)", parent.toString());
+    }
+
+    @Test
+    public void testCyclicParents() {
+        evaluateString("(setq k (make-sparse-keymap))");
+        evaluateString("(setq p1 (make-sparse-keymap))");
+        evaluateString("(setq p2 (make-sparse-keymap))");
+        evaluateString("(set-keymap-parent k p1)");
+        evaluateString("(set-keymap-parent p1 p2)");
+        try {
+            evaluateString("(set-keymap-parent p2 k)");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Cyclic keymap inheritance\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testCyclicParentsSelf() {
+        evaluateString("(setq k (make-sparse-keymap))");
+        try {
+            evaluateString("(set-keymap-parent k k)");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Cyclic keymap inheritance\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testCyclicParentsCdr() {
+        evaluateString("(setq k (make-sparse-keymap))");
+        evaluateString("(setq p1 (make-sparse-keymap))");
+        evaluateString("(setq p2 (make-sparse-keymap))");
+        evaluateString("(set-keymap-parent k p1)");
+        evaluateString("(set-keymap-parent p1 p2)");
+        try {
+            evaluateString("(set-keymap-parent p1 k)");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Cyclic keymap inheritance\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    
 //    @Test
 //    public void testClLoopLet() {
 //        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
@@ -172,7 +240,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 //        evaluateString("(setq arg2 nil)");
 //        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
 //        LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
-//        Assert.assertEquals("(#<subr let*> ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
+//        Assert.assertEquals("(let* ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
 //    }
 
 //    @Ignore
@@ -223,7 +291,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(event-convert-list '(C ?s ?D ?g))");
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Two bases given in one event\")", org.jetbrains.emacs4ij.jelisp.TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("(error \"Two bases given in one event\")", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -241,7 +309,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(define-key km \"d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (100 . #<subr forward-char>))", keyMap.toString());
+        Assert.assertEquals("(keymap (100 . forward-char))", keyMap.toString());
     }
 
     @Test
@@ -250,7 +318,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(define-key km \"Cd\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (67 keymap (100 . #<subr forward-char>)))", keyMap.toString());
+        Assert.assertEquals("(keymap (67 keymap (100 . forward-char)))", keyMap.toString());
     }
 
     @Test
@@ -259,7 +327,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(define-key km \"\\C-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . forward-char)))))", keyMap.toString());
     }
 
     @Test
@@ -269,7 +337,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispObject r = evaluateString("(define-key km \"M-d\" 'forward-char)");
         Assert.assertEquals(new LispSymbol("forward-char"), r);
         LispObject keyMap = evaluateString("km");
-        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . #<subr forward-char>))) (92 keymap (67 keymap (45 keymap (100 . #<subr forward-char>)))))", keyMap.toString());
+        Assert.assertEquals("(keymap (77 keymap (45 keymap (100 . forward-char))) (92 keymap (67 keymap (45 keymap (100 . forward-char)))))", keyMap.toString());
     }
 
     @Test
@@ -278,8 +346,8 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(define-key km \"C-d\" 'forward-char)");
         LispObject km = evaluateString("km");
         String expected = "(keymap #^[nil nil keymap " +
-                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 " +
-                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . #<subr forward-char>))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])";
+                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . forward-char))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] #^^[1 0 #^^[2 0 " +
+                "#^^[3 0 nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil (keymap (45 keymap (100 . forward-char))) nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil] nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil nil])";
         Assert.assertEquals(expected, km.toString());
     }
 
@@ -288,7 +356,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(define-key (current-global-map) \"C-a\" 'backward-char)");
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", org.jetbrains.emacs4ij.jelisp.TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

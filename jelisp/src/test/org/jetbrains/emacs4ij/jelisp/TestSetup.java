@@ -16,9 +16,9 @@ public abstract class TestSetup {
         GlobalEnvironment.INSTANCE.startRecording();
     }
 
-    public static Throwable getCause (Throwable e) {
+    public static String getCause (Throwable e) {
         if (e.getCause() == null)
-            return e;
+            return e.getMessage();
         return getCause(e.getCause());
     }
 }

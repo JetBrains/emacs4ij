@@ -4,7 +4,6 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Test;
 
 /**
@@ -44,7 +43,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
             evaluateString("(set 'p 'defun)");
             evaluateString("(car p)");
         } catch (Exception e) {
-            Assert.assertTrue(TestSetup.getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertTrue(TestSetup.getCause(e).contains("wrong-type-argument"));
             return;
         }
         Assert.fail();
@@ -66,7 +65,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
             evaluateString("(set 'p 'defun)");
             evaluateString("(cdr p)");
         } catch (Exception e) {
-            Assert.assertTrue(TestSetup.getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertTrue(TestSetup.getCause(e).contains("wrong-type-argument"));
             return;
         }
         Assert.fail();
@@ -107,7 +106,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
             evaluateString("(setq x (cons 1 (cons (cons 5 6) 3)))");
             evaluateString("(memq 6 x)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 3)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 3)", TestSetup.getCause(e));
         }
     }
 
@@ -200,7 +199,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         try {
             evaluateString("(nreverse (cons 1 2))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp (1))", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp (1))", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -363,7 +362,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         try {
             evaluateString("(delq 1 '(2 . 1))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp (2 . 1))", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp (2 . 1))", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -386,7 +385,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         try {
             evaluateString("(nthcdr 2 '(1 . 2))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -474,7 +473,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         try {
             evaluateString("(length a)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 4)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 4)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

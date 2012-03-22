@@ -545,7 +545,7 @@ public class ForwardParserTest {
             LispObject c = p.parseLine("?\\^\"");
             System.out.println(c.toString());
         } catch (Exception e)  {
-            Assert.assertEquals("\"Unbalanced parentheses\"", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("\"Unbalanced parentheses\"", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

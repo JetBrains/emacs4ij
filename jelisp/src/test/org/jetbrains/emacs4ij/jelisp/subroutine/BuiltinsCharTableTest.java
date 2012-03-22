@@ -34,7 +34,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(put 'p 'char-table-extra-slots -1)");
             evaluateString("(defvar ct (make-char-table 'p))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument wholenump -1)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument wholenump -1)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -47,7 +47,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(put 'p 'char-table-extra-slots 11)");
             evaluateString("(defvar ct (make-char-table 'p))");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range 11 nil)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range 11 nil)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -81,7 +81,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(defvar ct (make-char-table 'p))");
             evaluateString("(char-table-extra-slot ct -1)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range " + evaluateString("ct").toString() + " -1)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range " + evaluateString("ct").toString() + " -1)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -95,7 +95,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(defvar ct (make-char-table 'p))");
             evaluateString("(char-table-extra-slot ct 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range " + evaluateString("ct").toString() + " 10)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range " + evaluateString("ct").toString() + " 10)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -160,7 +160,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(defvar ct (make-char-table 'p))");
             evaluateString("(set-char-table-parent ct 5)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument char-table-p 5)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument char-table-p 5)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -236,7 +236,7 @@ public class BuiltinsCharTableTest extends BaseSubroutineTest {
             evaluateString("(defvar ct (make-char-table 'p))");
             evaluateString("(char-table-range ct t)");
         } catch (Exception e) {
-            Assert.assertTrue(TestSetup.getCause(e).getMessage().contains("Invalid RANGE argument to `char-table-range'"));
+            Assert.assertTrue(TestSetup.getCause(e).contains("Invalid RANGE argument to `char-table-range'"));
             return;
         }
         Assert.fail();

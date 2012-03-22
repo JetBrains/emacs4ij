@@ -59,7 +59,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(mapcar '+ '(1 . 2))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -120,7 +120,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(concat '(\"hello\"))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument characterp \"hello\")", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument characterp \"hello\")", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -131,7 +131,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(concat '(134217825))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument characterp 134217825)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument characterp 134217825)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -142,7 +142,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(concat '(4194401))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument characterp 4194401)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument characterp 4194401)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -153,7 +153,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(concat '(4194304))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument characterp 4194304)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument characterp 4194304)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -178,7 +178,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         try {
             evaluateString("(mapconcat '1+ '[9 8 7] \" \")");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument sequencep 10)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument sequencep 10)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

@@ -5,7 +5,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -94,10 +93,10 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(cond (nil 10 15) 5)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof WrongTypeArgumentException))
-                Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(wrong-type-argument)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -105,10 +104,10 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(cond 5)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof WrongTypeArgumentException))
-                Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(wrong-type-argument)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
     
     @Test
@@ -129,10 +128,10 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(if t)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof WrongNumberOfArgumentsException))
-                Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(wrong-number-of-arguments)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -140,10 +139,10 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(if nil)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof WrongNumberOfArgumentsException))
-                Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(wrong-number-of-arguments)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -528,7 +527,7 @@ default-directory
             return;
         }
         if (error instanceof RuntimeException) {
-            Assert.assertEquals(expectedMessage, TestSetup.getCause((Throwable) error).getMessage());
+            Assert.assertEquals(expectedMessage, TestSetup.getCause((Throwable) error));
             //return;
         }
     }
@@ -607,7 +606,7 @@ default-directory
         try {
             evaluateString("(setq b ?^\\( )");
         } catch (Exception e) {
-            Assert.assertEquals("'(invalid-read-syntax \"?\")", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(invalid-read-syntax \"?\")", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -668,7 +667,7 @@ default-directory
         try {
             evaluateString("(interactive (+ 5 3))");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 8)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 8)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

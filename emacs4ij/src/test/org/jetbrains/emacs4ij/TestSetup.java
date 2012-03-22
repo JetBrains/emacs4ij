@@ -15,4 +15,10 @@ public abstract class TestSetup {
         GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
         return "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     }
+
+    public static String getCause (Throwable e) {
+        if (e.getCause() == null)
+            return e.getMessage();
+        return getCause(e.getCause());
+    }
 }

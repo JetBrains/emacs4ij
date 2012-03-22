@@ -33,7 +33,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(format \"%d\")");
         } catch (Exception e) {
-            Assert.assertEquals("Not enough arguments for format string", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("Not enough arguments for format string", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -44,7 +44,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(format \"%123456\" 1)");
         } catch (Exception e) {
-            Assert.assertEquals("Format string ends in middle of format specifier", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("Format string ends in middle of format specifier", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -55,7 +55,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(format \"%123456q\" 1)");
         } catch (Exception e) {
-            Assert.assertEquals("Invalid format operation %q", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("Invalid format operation %q", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -84,7 +84,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(string-match \"a\" \"africa\" 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"africa\" 10)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"africa\" 10)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -179,7 +179,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(match-beginning -10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range -10 0)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range -10 0)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -227,7 +227,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(match-string -1)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range -1 0)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range -1 0)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -238,7 +238,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(substring \"hello\" -6 5)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hello\" -1 5)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hello\" -1 5)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -249,7 +249,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(substring \"hello\" 1 7)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hello\" 1 7)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hello\" 1 7)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -260,7 +260,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(substring \"hello\" 0 -6)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hello\" 0 -1)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hello\" 0 -1)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -271,7 +271,7 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         try {
             evaluateString("(substring \"hello\" 3 2)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hello\" 3 2)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hello\" 3 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

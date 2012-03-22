@@ -4,7 +4,10 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -157,11 +160,10 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(funcall 0 1 2)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            Assert.assertTrue(q instanceof InvalidFunctionException);
+            Assert.assertEquals("'(invalid-function 0)", TestSetup.getCause(e));
             return;
         }
-        Assert.assertTrue(false);
+        Assert.fail();
     }
 
     @Test
@@ -179,11 +181,10 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
             evaluateString("(set 'hook1 5)");
             evaluateString("(run-hooks 'hook1)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            Assert.assertTrue(q instanceof InvalidFunctionException);
+            Assert.assertEquals("'(invalid-function hook1)", TestSetup.getCause(e));
             return;
         }
-        Assert.assertTrue(false);
+        Assert.fail();
     }
 
     @Test
@@ -281,8 +282,8 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         evaluateString("(fset 'g 'f)");
         try {
             evaluateString("(indirect-function 'g)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(void-function g)", TestSetup.getCause(e).getMessage());
+        } catch (Exception e) {            
+            Assert.assertEquals("'(void-function g)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -295,7 +296,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(indirect-function 'g)");
         } catch (Exception e) {
-            Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -332,7 +333,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(subr-arity 'if)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -359,7 +360,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(aref '[1 2 3] 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -378,7 +379,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(aref \"hi\" 10)");
         } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -408,7 +409,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(apply '+ 1 2)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -425,7 +426,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(apply '< 1 2)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -436,7 +437,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(apply 'setq 'a '(5))");
         } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -447,7 +448,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(apply 'when 't '(message \"hi\"))");
         } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -468,7 +469,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(defalias a nil)");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

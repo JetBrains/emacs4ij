@@ -213,9 +213,9 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         if (isTrueList) {
             for (int i = 0, objectListSize = objectList.size(); i < objectListSize; i++) {
                 LispObject item = objectList.get(i);
-                if (i == objectListSize - 1 && item instanceof LispList && !((LispList)item).isTrueList())
-                    list += ((LispList)item).toString(false) + " ";
-                else
+//                if (i == objectListSize - 1 && item instanceof LispList && !((LispList)item).isTrueList())
+//                    list += ((LispList)item).toString(false) + " ";
+//                else
                     list += item.toString() + " ";
             }
             return list.trim() + closingBracket;
@@ -393,34 +393,48 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    public LispObject nthCdr (int n) {
+        LispObject result = this;
+        int i = 0;
+        for (; i < n && result instanceof LispList; ++i) {
+            result = ((LispList)result).realCdr();
+        }
+        if (i < n && result != null)
+            throw new WrongTypeArgumentException("listp", result);
+        return result;
+    }
+
     @Override
     public LispKeymap getParent() {
         List<LispObject> data = toLispObjectList();
-        LispObject parent = data.size() > 1 ? data.get(data.size()-1) : null;
-        if (parent != null && parent.equals(BuiltinsKey.ourKeyMapSymbol))
-            return LispList.list(BuiltinsKey.ourKeyMapSymbol);
-        return BuiltinPredicates.isNil(parent) || !BuiltinsKey.isListKeymap(parent)
-                ? null
-                : (LispKeymap) parent;
+        int parentIndex = data.subList(1, data.size()).indexOf(BuiltinsKey.ourKeyMapSymbol) + 1;
+        if (parentIndex == 0)
+            return null;
+        LispObject parent = nthCdr(parentIndex);
+        return parent == null ? null : (LispKeymap)parent;
+    }
+
+    private void setKeymapParent (@Nullable LispKeymap parent) {
+        if ((myCdr != null && ((LispKeymapImpl)myCdr).isParentOf(parent))
+            || (myCdr == null && isParentOf(parent)))
+            BuiltinsCore.error("Cyclic keymap inheritance");
+        setCdr(parent);
     }
 
     @Override
     public void setParent(@Nullable LispKeymap parent) {
         //todo: If keymap has submaps (bindings for prefix keys), they too receive new parent keymaps
-        if (BuiltinsKey.isListKeymap(myCdr)) {
-            //this is the current parent
-            setCdr(parent);
+        if (BuiltinsKey.isListKeymap(myCdr)) { //this is the current parent
+            setKeymapParent(parent);
             return;
         }
         if (myCdr != null && myCdr instanceof LispList && isTrueList)
             ((LispList) myCdr).setParent(parent);
-        else setCdr(parent);
+        else setKeymapParent(parent);
     }
 
     @Override
     public LispKeymap copy() {
         return new LispList(toLispObjectList());
     }
-
-
 }

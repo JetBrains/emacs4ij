@@ -120,11 +120,12 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     }
 
     @Override
-    public String toString() {        
-        if (myFunction == null) {
-            return myName;
-        }
-        return myFunction.toString();
+    public String toString() {
+        return myName;
+//        if (myFunction == null) {
+//            return myName;
+//        }
+//        return myFunction.toString();
     }
 
     public boolean isSubroutine () {

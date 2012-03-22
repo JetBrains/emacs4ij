@@ -157,14 +157,7 @@ public abstract class BuiltinsList {
             return LispSymbol.ourNil;
         if (!(list instanceof LispList))
             throw new WrongTypeArgumentException("listp", list);
-        LispObject result = list;
-        int i = 0;
-        for (; i < n.getData() && result instanceof LispList; ++i) {
-            result = ((LispList)result).cdr();
-        }
-        if (i < n.getData() && !LispSymbol.ourNil.equals(result))
-            throw new WrongTypeArgumentException("listp", result);
-        return result;
+        return BuiltinsCore.thisOrNil(((LispList)list).nthCdr(n.getData()));
     }
     
     @Subroutine("assq")

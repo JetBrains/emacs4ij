@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Test;
@@ -32,10 +31,10 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         try {
             evaluateString("(symbol-function 'a)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof VoidFunctionException))
-                org.junit.Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(void-function a)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -44,10 +43,10 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
             evaluateString("(defvar a 10)");
             evaluateString("(symbol-function 'a)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof VoidFunctionException))
-                org.junit.Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(void-function a)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test (expected = WrongTypeArgumentException.class)
@@ -82,10 +81,10 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         try {
             evaluateString("(symbol-value 'a)");
         } catch (Exception e) {
-            Assert.assertTrue(TestSetup.getCause(e) instanceof VoidVariableException);
+            Assert.assertEquals("'(void-function a)", TestSetup.getCause(e));
             return;
         }
-        Assert.assertTrue(false);
+        Assert.fail();
     }
 
     @Test
@@ -230,10 +229,10 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         try {
             evaluateString("(documentation 'a)");
         } catch (Exception e) {
-            Throwable q = TestSetup.getCause(e);
-            if (!(q instanceof VoidFunctionException))
-                org.junit.Assert.fail(q.getLocalizedMessage());
+            Assert.assertEquals("'(void-function a)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -303,9 +302,10 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         try {
             evaluateString("q");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-variable q)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(void-variable q)", TestSetup.getCause(e));
+            return;
         }
-        
+        Assert.fail();
     }
     
     @Test

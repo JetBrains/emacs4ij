@@ -124,7 +124,7 @@ public class LispListTest {
             LispList b = LispList.list(new LispSymbol("b"));
             a.append(b);
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 1)", TestSetup.getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument listp 1)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
