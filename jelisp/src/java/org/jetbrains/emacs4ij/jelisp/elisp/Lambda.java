@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalError;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class Lambda implements FunctionCell, LispCommand {
     public Lambda (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
-            throw new InternalError("Wrong lambda definition");
+            throw new InternalException("Wrong lambda definition");
         try {
             if (!data.get(1).equals(LispSymbol.ourNil))
                 parseArgumentsList((LispList) data.get(1));
@@ -152,7 +151,7 @@ public class Lambda implements FunctionCell, LispCommand {
                         throw new WrongTypeArgumentException(argument.getKeyword().getName(), ((LispSymbol) keyword).getName());
                     }
                     if (i+1 >= argsSize) {
-                        throw new InternalError("Keyword with no value: " + keyword);
+                        throw new InternalException("Keyword with no value: " + keyword);
                     }
                     argument.setValue(inner, args.get(i+1));
                     i++;

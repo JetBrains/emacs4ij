@@ -7,8 +7,8 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 1:21 PM
  * To change this template use File | Settings | File Templates.
  */
-public class InternalError extends RuntimeException {
-    public InternalError (String message) {
+public class InternalException extends RuntimeException {
+    public InternalException(String message) {
         super(message);
     }
 }

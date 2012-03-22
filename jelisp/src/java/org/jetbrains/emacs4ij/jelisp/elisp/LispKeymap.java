@@ -28,4 +28,6 @@ public interface LispKeymap extends LispObject {
     void setParent(@Nullable LispKeymap parent);
 //    LispKeymap copy();
 //    boolean isEmpty();
+    
+    String getName();
 }

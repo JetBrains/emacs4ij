@@ -4,6 +4,11 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.keymap.Keymap;
+import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.openapi.keymap.impl.DefaultKeymap;
+import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -114,19 +119,12 @@ public class MyProjectComponent implements ProjectComponent {
     public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
-
-
-        //todo: set emacs
-
-//        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
-//        keymapManager.setActiveKeymap(keymapManager.getKeymap(KeymapManager.DEFAULT_IDEA_KEYMAP));
-
-
-//        LispKeymap globalKeymap = new IdeaKeymap("Emacs4ijKeymap");
-//        globalKeymap.defineKey("org.jetbrains.emacs4ij.OpenMiniBuffer", new LispString("C-z"));
-//        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
-//        keymapManager.addKeymap(globalKeymap.getKeymap());
-//        keymapManager.setActiveKeymap(globalKeymap.getKeymap());
+        for (Keymap keymap: DefaultKeymap.getInstance().getKeymaps()) {
+            if (KeymapUtil.isEmacsKeymap(keymap)) {
+                ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(keymap);
+                break;
+            }
+        }
     }
 
     public Environment getEnvironment() {

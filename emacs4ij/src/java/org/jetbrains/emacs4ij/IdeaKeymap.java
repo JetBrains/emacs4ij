@@ -1,27 +1,23 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.actionSystem.CustomShortcutSet;
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
+import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.util.ArrayUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,21 +26,17 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
  * Time: 3:24 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaKeymap implements LispKeymap {    
+public class IdeaKeymap implements LispKeymap {
     private String myName;
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
     protected static KeymapManager ourKeymapManager = KeymapManager.getInstance();
-    private static EmacsAction ourAction = new EmacsAction();
-    
-//    private LispList myEmacsKeymap;
-//    private LispSymbol myKeymapSymbol = new LispSymbol("keymap");
-    
 
-    public IdeaKeymap(@Nullable LispObject name, @Nullable LispKeymap parent) {
+    public IdeaKeymap(@NotNull LispObject name, @Nullable LispKeymap parent) {
         myParent = parent;
-        myName = isNil(name) ? Emacs4ijBundle.message("empty.keymap.name") : name.toString();
-//        myEmacsKeymap = isNil(name) ? LispList.list(myKeymapSymbol) : LispList.list(myKeymapSymbol, name);
+        myName = name instanceof LispInteger
+                ? Emacs4ijBundle.message("empty.keymap.name") + name.toString()
+                : name.toString();
     }
 
     private JComponent getFrameComponent() {
@@ -52,7 +44,7 @@ public class IdeaKeymap implements LispKeymap {
             return null;
         return GlobalEnvironment.INSTANCE.getSelectedFrame().getComponent();
     }
-    
+
     @Override
     public void defineKey(KeymapCell action, LispStringOrVector key) {
         defineKey(action, toShortcut(key));
@@ -68,20 +60,36 @@ public class IdeaKeymap implements LispKeymap {
         defineKey(new LispSymbol(actionId), shortcut);
     }
 
+    private String generateActionId (String binding) {
+        return "emacs4ij.action."+ myName + "." + binding;
+    }
+
+    private void unregisterShortcut (Shortcut shortcut) {
+        Keymap activeKeymap = ourKeymapManager.getActiveKeymap();
+        String[] actionIds = activeKeymap.getActionIds(shortcut);
+        while (actionIds != ArrayUtil.EMPTY_STRING_ARRAY) {
+            for (String actionId: actionIds)
+                activeKeymap.removeShortcut(actionId, shortcut);
+            actionIds = activeKeymap.getActionIds(shortcut);
+        }
+    }
+
     @Override
     public void defineKey(KeymapCell action, Shortcut shortcut) {
         myKeyBindings.put(shortcut, action);
+        if (action instanceof LispSymbol) {
+            ActionManager actionManager = ActionManager.getInstance();
+            String id = generateActionId(action.toString());
 
-        Shortcut[] shortcuts = ourAction.getShortcutSet().getShortcuts();
-        if (shortcuts.length == 0)
-            ourAction.registerCustomShortcutSet(new CustomShortcutSet(shortcut),
-                    getFrameComponent());
-        else {
-            ArrayList<Shortcut> a = new ArrayList<>();
-            a.addAll(Arrays.asList(shortcuts));
-            a.add(shortcut);
-            ourAction.registerCustomShortcutSet(new CustomShortcutSet(a.toArray(new Shortcut[a.size()])),
-                    getFrameComponent());
+            if (actionManager.getActionIds(id).length != 0)
+                actionManager.unregisterAction(id);
+
+            Map<String, PluginId> registeredIds = PluginId.getRegisteredIds();
+            actionManager.registerAction(id, new EmacsAction((LispSymbol) action));
+
+
+            unregisterShortcut(shortcut);
+            ourKeymapManager.getActiveKeymap().addShortcut(id, shortcut);
         }
     }
 
@@ -90,14 +98,14 @@ public class IdeaKeymap implements LispKeymap {
     public LispKeymap getParent() {
         return myParent;
     }
-    
+
     private boolean equalsOrIsParentFor (LispKeymap keymap) {
         for (LispKeymap parent = keymap; parent != null; parent = parent.getParent())
             if (this == parent)
                 return true;
         return false;
     }
-    
+
     @Override
     public void setParent(@Nullable LispKeymap parent) {
         if (equalsOrIsParentFor(parent))
@@ -110,6 +118,11 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
+    public String getName() {
+        return myName;
+    }
+
+    @Override
     public void definePrefixCommand() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -119,11 +132,11 @@ public class IdeaKeymap implements LispKeymap {
         KeymapCell function = getKeyBinding(toShortcut(key));
         return function == null ? LispSymbol.ourNil : function;
     }
-   
+
     @Override
     public LispSymbol getKeyBinding(Shortcut shortcut) {
         KeymapCell function = myKeyBindings.get(shortcut);
-        
+
         if (function != null) {
             if (function instanceof LispSymbol)
                 return (LispSymbol) function;
