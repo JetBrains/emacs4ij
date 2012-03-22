@@ -110,7 +110,7 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("define-key")
-    public static LispObject defineKey(Environment environment, LispObject keymapObject, LispStringOrVector key, LispSymbol function) {
+    public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, LispSymbol function) {
         check(keymapObject);
         LispKeymap keymap = getKeymap(keymapObject);
         keymap.defineKey(function, key);

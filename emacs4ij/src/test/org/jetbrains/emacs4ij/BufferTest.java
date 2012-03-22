@@ -36,7 +36,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
-        GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);

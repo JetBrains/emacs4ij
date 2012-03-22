@@ -13,6 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class IdeaKeymap implements LispKeymap {
 //    private LispSymbol myKeymapSymbol = new LispSymbol("keymap");
     
 
-    public IdeaKeymap(@Nullable LispObject name, LispKeymap parent) {
+    public IdeaKeymap(@Nullable LispObject name, @Nullable LispKeymap parent) {
         myParent = parent;
         myName = isNil(name) ? Emacs4ijBundle.message("empty.keymap.name") : name.toString();
 //        myEmacsKeymap = isNil(name) ? LispList.list(myKeymapSymbol) : LispList.list(myKeymapSymbol, name);
@@ -70,6 +71,7 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public void defineKey(KeymapCell action, Shortcut shortcut) {
         myKeyBindings.put(shortcut, action);
+
         Shortcut[] shortcuts = ourAction.getShortcutSet().getShortcuts();
         if (shortcuts.length == 0)
             ourAction.registerCustomShortcutSet(new CustomShortcutSet(shortcut),
@@ -88,9 +90,18 @@ public class IdeaKeymap implements LispKeymap {
     public LispKeymap getParent() {
         return myParent;
     }
-
+    
+    private boolean equalsOrIsParentFor (LispKeymap keymap) {
+        for (LispKeymap parent = keymap; parent != null; parent = parent.getParent())
+            if (this == parent)
+                return true;
+        return false;
+    }
+    
     @Override
     public void setParent(@Nullable LispKeymap parent) {
+        if (equalsOrIsParentFor(parent))
+            BuiltinsCore.error("Cyclic keymap inheritance");
         myParent = parent;
         for (KeymapCell cell: myKeyBindings.values()) {
             if (cell instanceof LispKeymap)

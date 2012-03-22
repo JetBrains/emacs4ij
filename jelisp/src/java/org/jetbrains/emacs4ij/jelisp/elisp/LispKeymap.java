@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,11 +12,20 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispKeymap extends LispObject {
-    LispObject defineKey(Environment environment, LispObject function, LispStringOrVector key);
-    LispSymbol getKeyDefinition (Shortcut key);
-    LispObject getKeyDefinition (LispStringOrVector key, @Nullable @Optional LispObject acceptDefault);
+    void defineKey(KeymapCell action, LispStringOrVector key);
+    void defineKey(String actionId, LispStringOrVector key);
+    void defineKey(String actionId, Shortcut shortcut);
+    void defineKey(KeymapCell action, Shortcut shortcut);
+//    LispObject defineKey(Environment environment, LispObject function, LispStringOrVector key);
+    KeymapCell getKeyBinding(LispStringOrVector key);
+    LispSymbol getKeyBinding(Shortcut shortcut);
+    void definePrefixCommand();
+
+//    LispSymbol getKeyDefinition (Shortcut key);
+//    LispObject getKeyDefinition (LispStringOrVector key, @Nullable @Optional LispObject acceptDefault);
+
     LispKeymap getParent();
     void setParent(@Nullable LispKeymap parent);
-    LispKeymap copy();
-    boolean isEmpty();
+//    LispKeymap copy();
+//    boolean isEmpty();
 }

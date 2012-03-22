@@ -34,7 +34,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<>();
-        GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         // GlobalEnvironment.getInstance().clearRecorded();
         for (String fileName: myTestFiles) {

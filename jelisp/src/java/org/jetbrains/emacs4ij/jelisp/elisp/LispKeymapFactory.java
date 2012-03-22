@@ -11,5 +11,4 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface LispKeymapFactory {
     LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent);
-//    LispKeymap fromList (LispList list);
 }

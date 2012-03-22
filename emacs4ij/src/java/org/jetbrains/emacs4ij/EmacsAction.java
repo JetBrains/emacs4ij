@@ -43,7 +43,7 @@ public class EmacsAction extends AnAction {
         KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) inputEvent);
         //todo: shortcuts with second keystroke?
         KeyboardShortcut shortcut = new KeyboardShortcut(keyStroke, null);
-        LispSymbol action = activeKeymap.getKeyDefinition(shortcut);
+        LispSymbol action = activeKeymap.getKeyBinding(shortcut);
         try {
             if (action.equals(LispSymbol.ourNil))
                 throw new InternalError("KeyDefinition is not a symbol!");
