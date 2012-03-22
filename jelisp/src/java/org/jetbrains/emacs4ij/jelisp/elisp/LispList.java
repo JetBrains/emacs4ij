@@ -311,7 +311,13 @@ public class LispList extends LispKeymapImpl implements LispSequence {
 
     @Override
     public int length() {
-        return toLispObjectList().size();
+        if (isEmpty())
+            return 0;
+        if (myCdr == null)
+            return 1;
+        if (!(myCdr instanceof LispList))
+            throw new WrongTypeArgumentException("listp", myCdr);
+        return 1 + ((LispList) myCdr).length();
     }
 
     public void setCdr (@Nullable LispObject cdr) {

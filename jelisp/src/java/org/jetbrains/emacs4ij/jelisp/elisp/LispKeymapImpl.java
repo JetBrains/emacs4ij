@@ -397,7 +397,7 @@ public abstract class LispKeymapImpl implements LispKeymap {
 
     protected boolean isParentOf (LispKeymap keymap) {
         for (LispKeymap parent = keymap; parent != null; parent = parent.getParent()) {
-            if (equals(parent))
+            if (this == parent)
                 return true;
         }
         return false;

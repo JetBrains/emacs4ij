@@ -163,7 +163,23 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         System.out.println(km.toString());
         Assert.assertEquals(LispList.list(new LispSymbol("keymap"), new LispSymbol("keymap")), km);
     }
-    
+
+    @Test
+    public void testSetKeymapParentNil() {
+        evaluateString("(setq k (make-sparse-keymap))");
+        evaluateString("(set-keymap-parent k nil)");
+        LispObject keymap = evaluateString("k");
+        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), keymap);
+    }
+
+    @Test
+    public void testDefineSlashCtrlKey() {
+        evaluateString("(setq p (make-sparse-keymap))");
+        evaluateString("(define-key p \"\\\\C-d\" 'forward-char)");
+        LispObject keymap = evaluateString("p");
+        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . forward-char)))))", keymap.toString());
+    }
+
     @Test
     public void testDefineCtrlKey() {
         evaluateString("(setq p (make-sparse-keymap))");
