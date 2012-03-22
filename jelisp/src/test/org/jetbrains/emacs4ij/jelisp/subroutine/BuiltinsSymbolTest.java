@@ -106,14 +106,14 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
                 "\n" +
                 "The remaining ENTRIES in the alist element describe the functions and\n" +
                 "variables defined in that file, the features provided, and the\n" +
-                "features required.  Each entry has the form `(provide . FEATURE)',\n" +
+                "features required. Each entry has the form `(provide . FEATURE)',\n" +
                 "`(require . FEATURE)', `(defun . FUNCTION)', `(autoload . SYMBOL)',\n" +
-                "`(defface . SYMBOL)', or `(t . SYMBOL)'.  In addition, an entry `(t\n" +
+                "`(defface . SYMBOL)', or `(t . SYMBOL)'. In addition, an entry `(t\n" +
                 ". SYMBOL)' may precede an entry `(defun . FUNCTION)', and means that\n" +
                 "SYMBOL was an autoload before this file redefined it as a function.\n" +
                 "\n" +
                 "During preloading, the file name recorded is relative to the main Lisp\n" +
-                "directory.  These file names are converted to absolute at startup.");
+                "directory. These file names are converted to absolute at startup.");
 
         Assert.assertEquals(trueDoc, doc);
     }
@@ -137,7 +137,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     public void testDocumentationProperty_GlobalVar3 () {
         evaluateString("global-mark-ring-max");
         LispObject doc = evaluateString("(documentation-property 'global-mark-ring-max 'variable-documentation)");
-        LispString trueDoc = new LispString("Maximum size of global mark ring.  \\\nStart discarding off end if gets this big.");
+        LispString trueDoc = new LispString("Maximum size of global mark ring. \\\nStart discarding off end if gets this big.");
         Assert.assertEquals(trueDoc, doc);
     }
 
@@ -273,7 +273,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(default-value 'a)");
         Assert.assertEquals(new LispInteger(1), r);
     }
-    
+
     @Test
     public void testSetDefault() {
         LispObject r = evaluateString("(set-default 'a 1)");
@@ -307,7 +307,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testCustomInitReset() {
         evaluateString("(put 'q 'prop 1)");
@@ -319,7 +319,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         r = evaluateString("(get 'q 'prop)");
         Assert.assertEquals(new LispInteger(1), r);
     }
-    
+
     @Test
     public void testDefCustom() {
         LispObject r = evaluateString("(defcustom a 5 \"doc\")");
@@ -335,7 +335,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         b = evaluateString("(documentation-property 'b 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
     }
-    
+
     @Test
     public void testInteractiveForm() {
         LispObject r = evaluateString("(interactive-form 5)");

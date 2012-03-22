@@ -62,8 +62,6 @@ public abstract class BuiltinsSequence {
     @Subroutine("mapcar")
     public static LispList mapCar (Environment environment, LispObject function, LispObject sequence) {
         int length = length(sequence).getData();
-        if (sequence instanceof LispCharTable)
-            throw new WrongTypeArgumentException("listp", sequence);
         if (length == 0)
             return LispList.list();
         if (function instanceof LispSymbol) {

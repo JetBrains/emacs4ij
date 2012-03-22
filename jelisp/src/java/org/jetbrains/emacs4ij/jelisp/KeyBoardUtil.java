@@ -1,12 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,70 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsSymbol;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class KeyBoardUtil {
-    public static String ModifierNames[] = {"up", "down", "drag", "click", "double", "triple", null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, "alt", "super", "hyper", "shift", "control", "meta"};
-
-    public static int NUM_MOD_NAMES = ModifierNames.length;
-    static LispVector modifier_symbols;
-
-    /* Return the list of modifier symbols corresponding to the mask MODIFIERS.  */
-    public static LispObject lispyModifierList(int modifiers) {
-        LispObject modifierList = LispSymbol.ourNil;
-        for (int i = 0; (1 << i) <= modifiers && i < NUM_MOD_NAMES; i++)
-            if ((modifiers & (1 << i)) != 0)
-                modifierList = LispList.cons(modifier_symbols.getItem(i), modifierList);
-        return modifierList;
-    }
-
-    private static LispSymbol applyModifiersUncached (int modifiers, String base) {
-        //todo: deal with multibyte chars
-        String newMods = KeyBoardModifier.apply(modifiers);
-        return BuiltinsSymbol.intern(new LispString(newMods + base), LispSymbol.ourNil);
-    }
-
-    public static LispObject applyModifiers (int modifiers, LispObject base) {
-        modifiers &= LispNumber.INTMASK;
-        if (base instanceof LispInteger)
-            return new LispInteger(((LispInteger) base).getData() | modifiers);
-        if (!(base instanceof LispSymbol))
-            throw new WrongTypeArgumentException("symbolp", base);
-        LispObject cache = ((LispSymbol) base).getProperty("modifier-cache");
-        LispInteger index = new LispInteger(modifiers & ~KeyBoardModifier.CLICK.value);
-        LispObject entry = BuiltinsCore.assqNoQuit(index, cache);
-        LispSymbol newSymbol;
-        if (entry instanceof LispList)
-            newSymbol = (LispSymbol) ((LispList) entry).cdr();
-        else {
-            newSymbol = applyModifiersUncached(modifiers, ((LispSymbol) base).getName());
-            entry = LispList.cons (index, newSymbol);
-            ((LispSymbol) base).setProperty("modifier-cache", LispList.cons(entry, cache));
-        }
-        if (newSymbol.getProperty("event-kind").equals(LispSymbol.ourNil)) {
-            LispObject kind = ((LispSymbol) base).getProperty("event-kind");
-            if (!kind.equals(LispSymbol.ourNil))
-                newSymbol.setProperty("event-kind", kind);
-        }
-        return newSymbol;
-    }
-
-    public static LispList parseModifiers (LispObject symbol) {
-        if (symbol instanceof LispInteger)
-            return LispList.list (new LispInteger(((LispInteger) symbol).keyToChar()),
-                    new LispInteger (((LispInteger) symbol).getData() & CharUtil.CHAR_MODIFIER_MASK));
-        else if (!(symbol instanceof LispSymbol))
-            return LispList.list();
-        return ((LispSymbol) symbol).parseModifiers();
-    }
-
-    public static LispObject reorderModifiers (LispObject symbol) {
-        LispList parsed = parseModifiers (symbol);
-        try {
-            return applyModifiers (((LispInteger) BuiltinsList.car(parsed.cdr())).getData(), parsed.car());
-        } catch (ClassCastException e) {
-            throw new LispException("Internal error");
-        }
-    }
 
     public static void defineKbdSymbols (GlobalEnvironment g) {
 //        pending_funcalls = Qnil;
@@ -447,11 +378,11 @@ public abstract class KeyBoardUtil {
 
     //todo
     public static void keys_of_keyboard () {
-//        BuiltinsKey.initialDefineKey (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initialDefineKey (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initialDefineKey (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
-//        BuiltinsKey.initialDefineKey (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
-//        BuiltinsKey.initialDefineKey (meta_map, 'x', "execute-extended-command");
+//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initial_define_key (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initial_define_key (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
+//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
+//        BuiltinsKey.initial_define_key (meta_map, 'x', "execute-extended-command");
 //
 //        initial_define_lispy_key (Vspecial_event_map, "delete-frame", "handle-delete-frame");
 //        initial_define_lispy_key (Vspecial_event_map, "ns-put-working-text", "ns-put-working-text");

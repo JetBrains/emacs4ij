@@ -285,7 +285,7 @@ public abstract class SpecialForms {
         LispObject value = LispSymbol.ourNil;
         while (index < args.length) {
             if (!(args[index] instanceof LispSymbol))
-                throw new WrongTypeArgumentException("symbolp", args[index].getClass().getSimpleName());
+                throw new WrongTypeArgumentException("symbolp", args[index]);
             value = (index+1 == args.length) ? LispSymbol.ourNil : args[index+1].evaluate(inner);
             LispSymbol symbol = new LispSymbol(((LispSymbol) args[index]).getName(), value);
             environment.setVariable(symbol);

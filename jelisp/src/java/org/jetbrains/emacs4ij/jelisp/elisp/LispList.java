@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import com.intellij.openapi.actionSystem.Shortcut;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -10,7 +9,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +23,7 @@ import java.util.List;
  *
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
-public class LispList extends LispKeymapImpl implements LispSequence {
+public class LispList implements LispSequence {
     private LispObject myCar = null;
     private LispObject myCdr = null;
     private Boolean isTrueList;
@@ -147,7 +145,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
     private boolean isTrueList() {
         return isTrueList;
     }
-    
+
     @Override
     public List<LispObject> toLispObjectList() {
         ArrayList<LispObject> list = new ArrayList<>();
@@ -209,7 +207,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
                 string += ' ' + ((LispList) cdr).car().toString();
                 cdr = ((LispList) cdr).realCdr();
                 continue;
-            } 
+            }
             string += " . " + cdr.toString();
             break;
         }
@@ -369,19 +367,6 @@ public class LispList extends LispKeymapImpl implements LispSequence {
         return LispSymbol.ourNil;
     }
 
-    //========= as keymap =============================
-
-
-    @Override
-    public LispSymbol getKeyDefinition(Shortcut key) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LispObject getKeyDefinition(LispStringOrVector key, @Nullable @Optional LispObject acceptDefault) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public LispObject nthCdr (int n) {
         LispObject result = this;
         int i = 0;
@@ -394,36 +379,7 @@ public class LispList extends LispKeymapImpl implements LispSequence {
     }
 
     @Override
-    public LispKeymap getParent() {
-        List<LispObject> data = toLispObjectList();
-        int parentIndex = data.subList(1, data.size()).indexOf(BuiltinsKey.ourKeyMapSymbol) + 1;
-        if (parentIndex == 0)
-            return null;
-        LispObject parent = nthCdr(parentIndex);
-        return parent == null ? null : (LispKeymap)parent;
-    }
-
-    private void setKeymapParent (@Nullable LispKeymap parent) {
-        if ((myCdr != null && ((LispKeymapImpl)myCdr).isParentOf(parent))
-            || (myCdr == null && isParentOf(parent)))
-            BuiltinsCore.error("Cyclic keymap inheritance");
-        setCdr(parent);
-    }
-
-    @Override
-    public void setParent(@Nullable LispKeymap parent) {
-        //todo: If keymap has submaps (bindings for prefix keys), they too receive new parent keymaps
-        if (BuiltinsKey.isListKeymap(myCdr)) { //this is the current parent
-            setKeymapParent(parent);
-            return;
-        }
-        if (myCdr != null && myCdr instanceof LispList && isTrueList)
-            ((LispList) myCdr).setParent(parent);
-        else setKeymapParent(parent);
-    }
-
-    @Override
-    public LispKeymap copy() {
+    public LispList copy() {
         return new LispList(toLispObjectList());
     }
 }

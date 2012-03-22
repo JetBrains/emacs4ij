@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.ide.IdeEventQueue;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
@@ -23,8 +22,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import java.awt.*;
-import java.awt.event.KeyEvent;
 
 /**
  * Created by IntelliJ IDEA.
@@ -118,15 +115,8 @@ public class MyProjectComponent implements ProjectComponent {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
 
-        IdeEventQueue.getInstance().addDispatcher(new IdeEventQueue.EventDispatcher() {
-            @Override
-            public boolean dispatch(AWTEvent awtEvent) {
-                if (awtEvent instanceof KeyEvent) {
-                    System.out.println(((KeyEvent) awtEvent).getKeyChar());
-                }
-                return false;
-            }
-        }, myProject);
+
+        //todo: set emacs
 
 //        KeymapManagerImpl keymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
 //        keymapManager.setActiveKeymap(keymapManager.getKeymap(KeymapManager.DEFAULT_IDEA_KEYMAP));

@@ -134,19 +134,13 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), evaluateString("b"));
     }
-    
-    @Test
-    public void testListWithCons() {
-        LispObject list = evaluateString("(list 1 (cons 2 3) 4)");
-        Assert.assertEquals("(1 (2 . 3) 4)", list.toString());
-    }
 
     @Test
     public void testCons() {
         LispObject cons = evaluateString("(cons (+ 4 5) \"hi\")");
         Assert.assertEquals(LispList.cons(new LispInteger(9), new LispString("hi")), cons);
     }
-    
+
     @Test
     public void testToString() {
         evaluateString("(setq a '(and (< (setq --cl-idx-- (1+ --cl-idx--)) (length --cl-vec--)) (progn (setq ch (aref --cl-vec-- --cl-idx--)) (setq --cl-flag-- (and (characterp ch) (let ((ch2 (logand ch (lognot 134217728)))) (and (>= ch2 0) (<= ch2 127))))))))");
@@ -179,7 +173,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals("(5 (2 . 1) (5 6) \"hi\")", a.toString());
     }
 
-    
+
     @Test
     public void testMixedList() {
         LispObject a = evaluateString("(cons 1 (cons 2 3))");
@@ -290,7 +284,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(nconc '(1 2) nil '(3) nil)");
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     }
-    
+
     @Test
     public void testNthListElement() {
         evaluateString("(setq a '(1 2 3 4))");
@@ -414,7 +408,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         r = evaluateString("(nthcdr -1 '(1 2 3))");
         Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     }
-    
+
     @Test
     public void testAssq() {
         evaluateString("(setq foo '(1 (2 (3))))");
@@ -446,7 +440,7 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals("(1)", b.toString());
         Assert.assertEquals(LispList.list(new LispInteger(1)), b);
     }
-    
+
     @Test
     public void testAppend () {
         evaluateString("(setq l2 (list 1 2 3))");
@@ -464,14 +458,14 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         list = evaluateString("(append l1 '(4))");
         Assert.assertEquals("(1 (2 . 3) 4)", list.toString());
     }
-    
+
     @Test
     public void testAfterAppend() {
         evaluateString("(setq k '(keymap))");
         evaluateString("(setq k (append k '(keymap)))");
         Assert.assertEquals(LispSymbol.ourT, evaluateString("(consp (cdr k))"));
     }
-    
+
     @Test
     public void testLengthAppended() {
         evaluateString("(setq l1 (list 1 2 3))");
@@ -485,5 +479,3 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.fail();
     }
 }
-
-

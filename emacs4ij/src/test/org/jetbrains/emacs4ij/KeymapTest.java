@@ -27,7 +27,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new EmacsKeymapManagerImpl(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
@@ -140,7 +140,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         r = evaluateString("(keymap-parent k)");
         Assert.assertEquals(LispList.list(new LispSymbol("keymap")), r);
     }
-    
+
     @Test
     public void testSetKeymapParent() throws Exception {
         evaluateString("(setq k (make-keymap))");
@@ -165,29 +165,13 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
-    public void testSetKeymapParentNil() {
-        evaluateString("(setq k (make-sparse-keymap))");
-        evaluateString("(set-keymap-parent k nil)");
-        LispObject keymap = evaluateString("k");
-        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), keymap);
-    }
-
-    @Test
-    public void testDefineSlashCtrlKey() {
-        evaluateString("(setq p (make-sparse-keymap))");
-        evaluateString("(define-key p \"\\\\C-d\" 'forward-char)");
-        LispObject keymap = evaluateString("p");
-        Assert.assertEquals("(keymap (92 keymap (67 keymap (45 keymap (100 . forward-char)))))", keymap.toString());
-    }
-
-    @Test
     public void testDefineCtrlKey() {
         evaluateString("(setq p (make-sparse-keymap))");
         evaluateString("(define-key p \"\\C-d\" 'forward-char)");
         LispObject keymap = evaluateString("p");
         Assert.assertEquals("(keymap (4 . forward-char))", keymap.toString());
     }
-    
+
     @Test
     public void testParentWithParent () {
         evaluateString("(setq k (make-sparse-keymap))");
@@ -247,31 +231,31 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    
-//    @Test
-//    public void testClLoopLet() {
-//        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
-//        evaluateString("(setq arg0 (nreverse loop-for-sets))");
-//        evaluateString("(setq arg1 '(quote setq))");
-//        evaluateString("(setq arg2 nil)");
-//        GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
-//        LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
-//        Assert.assertEquals("(let* ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
-//    }
 
-//    @Ignore
-//    @Test
-//    public void testKbdMacro() {
-//        LispObject r = evaluateString("(kbd \"C-x\")");
-//        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"\\C-x\")");
-//        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"\\C-x\\t\")");
-//        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"^x\")");
-//        Assert.assertEquals(new LispString("^X"), r);
-//        Assert.assertEquals(1, ((LispSequence)r).length());
-//    }
+// @Test
+// public void testClLoopLet() {
+// evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
+// evaluateString("(setq arg0 (nreverse loop-for-sets))");
+// evaluateString("(setq arg1 '(quote setq))");
+// evaluateString("(setq arg2 nil)");
+// GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm("cl-loop-let", "/lisp/emacs-lisp/cl.el", GlobalEnvironment.SymbolType.FUN);
+// LispObject r = evaluateString("(cl-loop-let arg0 arg1 arg2)");
+// Assert.assertEquals("(let* ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
+// }
+
+// @Ignore
+// @Test
+// public void testKbdMacro() {
+// LispObject r = evaluateString("(kbd \"C-x\")");
+// Assert.assertEquals(new LispString("^X"), r);
+// r = evaluateString("(kbd \"\\C-x\")");
+// Assert.assertEquals(new LispString("^X"), r);
+// r = evaluateString("(kbd \"\\C-x\\t\")");
+// Assert.assertEquals(new LispString("^X"), r);
+// r = evaluateString("(kbd \"^x\")");
+// Assert.assertEquals(new LispString("^X"), r);
+// Assert.assertEquals(1, ((LispSequence)r).length());
+// }
 
     @Test
     public void testCurrentGlobalKeyMap() {

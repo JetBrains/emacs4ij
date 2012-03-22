@@ -23,10 +23,10 @@ public abstract class BuiltinsList {
     public static LispSymbol consp (LispObject object) {
         return LispSymbol.bool(isCons(object));
     }
-    
+
     private static boolean isList (LispObject object) {
-        return object instanceof LispList || object.equals(LispSymbol.ourNil);    
-    } 
+        return object instanceof LispList || object.equals(LispSymbol.ourNil);
+    }
 
     @Subroutine("listp")
     public static LispSymbol listp (LispObject object) {
@@ -57,7 +57,7 @@ public abstract class BuiltinsList {
             return ((LispList)arg).car();
         return LispSymbol.ourNil;
     }
-    
+
     @Subroutine("cdr-safe")
     public static LispObject cdrSafe (LispObject arg) {
         if (isCons(arg))
@@ -74,7 +74,7 @@ public abstract class BuiltinsList {
     public static LispObject memq (LispObject element, LispList list) {
         return list.memq(element, "eq");
     }
-    
+
     @Subroutine("list")
     public static LispObject list (@Optional LispObject... args) {
         if (args == null)
@@ -86,7 +86,7 @@ public abstract class BuiltinsList {
     public static LispObject cons (LispObject car, LispObject cdr) {
         return LispList.cons(car, cdr);
     }
-    
+
     @Subroutine("nreverse")
     public static LispObject nReverse (LispList list) {
         return list.nReverse();
@@ -109,7 +109,7 @@ public abstract class BuiltinsList {
         }
         return lists[0];
     }
-    
+
     @Subroutine("nth")
     public static LispObject nthElement (LispInteger n, LispList list) {
         List<LispObject> elements = list.toLispObjectList();
@@ -120,7 +120,7 @@ public abstract class BuiltinsList {
             return elements.get(0);
         return elements.get(index);
     }
-    
+
     @Subroutine("assoc")
     public static LispList assoc (LispObject key, LispObject list) {
         if (!isList(list))
@@ -135,7 +135,7 @@ public abstract class BuiltinsList {
         }
         return LispList.list();
     }
-    
+
     @Subroutine("setcdr")
     public static LispObject setCdr (LispObject cell, LispObject newCdr) {
         if (!isCons(cell))
@@ -159,7 +159,7 @@ public abstract class BuiltinsList {
             throw new WrongTypeArgumentException("listp", list);
         return BuiltinsCore.thisOrNil(((LispList)list).nthCdr(n.getData()));
     }
-    
+
     @Subroutine("assq")
     public static LispObject assq (LispObject key, LispObject list) {
         if (!isList(list))

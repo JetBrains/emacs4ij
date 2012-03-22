@@ -110,7 +110,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
-    
+
     @Test
     public void testNilEqual() {
         LispObject r = evaluateString("(equal nil (cons nil nil))");
@@ -142,7 +142,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         LispObject result = evaluateString("(funcall '+ 1 2)");
         Assert.assertEquals(new LispInteger(3), result);
     }
-    
+
     @Test
     public void testEvalLambda() {
         LispObject result = evaluateString("((lambda (a) (+ 1 a)) 2)");
@@ -219,7 +219,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
         evaluateString("(defmacro inc2 (var1 var2) (list 'progn (list 'inc var1) (list 'inc var2)))");
         LispObject expansion = evaluateString("(macroexpand '(inc2 r s))");
-        //(progn (inc r) (inc s))  ; inc not expanded here.
+        //(progn (inc r) (inc s)) ; inc not expanded here.
         Assert.assertEquals(LispList.list(new LispSymbol("progn"),
                 LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
                 LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
@@ -253,7 +253,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         try {
             evaluateString("(fset 5 10)");
         } catch (WrongTypeArgumentException e) {
-            // todo:  (wrong-type-argument symbolp 5)
+            // todo: (wrong-type-argument symbolp 5)
             Assert.assertEquals("'(wrong-type-argument LispSymbol 5)", e.getMessage());
             return;
         }
@@ -282,7 +282,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         evaluateString("(fset 'g 'f)");
         try {
             evaluateString("(indirect-function 'g)");
-        } catch (Exception e) {            
+        } catch (Exception e) {
             Assert.assertEquals("'(void-function g)", TestSetup.getCause(e));
             return;
         }
@@ -384,7 +384,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testAsetArefString() {
         evaluateString("(defvar s \"hello\")");
@@ -498,7 +498,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         r = evaluateString("(documentation 'f)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
-    
+
     @Test
     public void testDefAliasExec() {
         evaluateString("(defalias 'a 'identity)");
@@ -580,7 +580,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
 
     @Test
     public void testBackQuoteComma() {
-        LispObject expected = evaluateString("(list 'a 'list 'of (+ 2 3) 'elements)");  //(a list of 5 elements)
+        LispObject expected = evaluateString("(list 'a 'list 'of (+ 2 3) 'elements)"); //(a list of 5 elements)
         LispObject result = evaluateString("`(a list of ,(+ 2 3) elements)");
         Assert.assertEquals(expected, result);
     }
@@ -588,8 +588,8 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     @Test
     public void testBackQuoteCommaDeep() {
         evaluateString("(defmacro t-becomes-nil (variable)\n" +
-                "       `(if (eq ,variable t)\n" +
-                "            (setq ,variable nil)))");
+                " `(if (eq ,variable t)\n" +
+                " (setq ,variable nil)))");
         evaluateString("(setq foo t)");
         LispObject r = evaluateString("(t-becomes-nil foo)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -660,7 +660,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         LispObject r = evaluateString("`((,@some-list))");
         Assert.assertEquals("((2 3))", r.toString());
     }
-    
+
     @Test (expected = LispThrow.class)
     public void testThrowNoCatch() {
         evaluateString("(throw 'a nil)");
@@ -732,7 +732,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
                 new LispInteger(4), new LispInteger(5)), r);
     }
-    
+
     @Test
     public void testInteractiveInBody() {
         evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
