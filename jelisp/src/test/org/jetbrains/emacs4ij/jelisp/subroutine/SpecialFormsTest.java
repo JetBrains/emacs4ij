@@ -93,7 +93,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(cond (nil 10 15) 5)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument)", TestSetup.getCause(e));
+            Assert.assertEquals("'(wrong-type-argument listp 5)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -104,7 +104,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(cond 5)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument)", TestSetup.getCause(e));
+            Assert.assertEquals("'(wrong-type-argument listp 5)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -128,18 +128,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         try {
             evaluateString("(if t)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-number-of-arguments)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testIfNil () {
-        try {
-            evaluateString("(if nil)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(wrong-number-of-arguments)", TestSetup.getCause(e));
+            Assert.assertEquals("'(wrong-number-of-arguments if 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

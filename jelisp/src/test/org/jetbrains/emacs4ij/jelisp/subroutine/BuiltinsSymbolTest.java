@@ -81,7 +81,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
         try {
             evaluateString("(symbol-value 'a)");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-function a)", TestSetup.getCause(e));
+            Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

@@ -109,7 +109,7 @@ public abstract class SpecialForms {
             if (!(clause instanceof LispList)) {
                 if (clause.equals(LispSymbol.ourNil))
                     continue;
-                throw new WrongTypeArgumentException("listp", clause.getClass().toString());
+                throw new WrongTypeArgumentException("listp", clause);
             }
             if (((LispList) clause).isEmpty())
                 continue;

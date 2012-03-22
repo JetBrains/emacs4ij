@@ -201,36 +201,19 @@ public class LispList extends LispKeymapImpl implements LispSequence {
 
     @Override
     public String toString() {
-        return toString(true);
-    }
-
-    private String toString (boolean drawBrackets) {
-        List<LispObject> objectList = toLispObjectList();
-        if (objectList.isEmpty())
+        if (isEmpty())
             return "nil";
-        String list = drawBrackets ? "(" : "";
-        String closingBracket = drawBrackets ? ")" : "";
-        if (isTrueList) {
-            for (int i = 0, objectListSize = objectList.size(); i < objectListSize; i++) {
-                LispObject item = objectList.get(i);
-//                if (i == objectListSize - 1 && item instanceof LispList && !((LispList)item).isTrueList())
-//                    list += ((LispList)item).toString(false) + " ";
-//                else
-                    list += item.toString() + " ";
-            }
-            return list.trim() + closingBracket;
-        } else {
-            if (myCdr == null)
-                list += myCar.toString() + closingBracket;
-            else {
-                list += myCar.toString();
-                if (myCdr instanceof LispList)
-                    list += " " + ((LispList)myCdr).toString(false) + closingBracket;
-                else
-                    list += " . " + myCdr.toString() + closingBracket;
-            }
-            return list;
+        String string = "(" + car().toString();
+        for (LispObject cdr = myCdr; cdr != null; /*todo*/ ) {
+            if (cdr instanceof LispList) {
+                string += ' ' + ((LispList) cdr).car().toString();
+                cdr = ((LispList) cdr).realCdr();
+                continue;
+            } 
+            string += " . " + cdr.toString();
+            break;
         }
+        return string + ')';
     }
 
     public LispObject car () {

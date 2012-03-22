@@ -181,7 +181,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
             evaluateString("(set 'hook1 5)");
             evaluateString("(run-hooks 'hook1)");
         } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function hook1)", TestSetup.getCause(e));
+            Assert.assertEquals("'(invalid-function 5)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

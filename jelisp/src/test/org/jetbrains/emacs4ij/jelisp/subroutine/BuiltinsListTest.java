@@ -134,6 +134,12 @@ public class BuiltinsListTest extends BaseSubroutineTest {
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), evaluateString("b"));
     }
+    
+    @Test
+    public void testListWithCons() {
+        LispObject list = evaluateString("(list 1 (cons 2 3) 4)");
+        Assert.assertEquals("(1 (2 . 3) 4)", list.toString());
+    }
 
     @Test
     public void testCons() {
