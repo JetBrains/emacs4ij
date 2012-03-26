@@ -1,17 +1,15 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.actionSystem.KeyboardShortcut;
+import com.intellij.openapi.actionSystem.Shortcut;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +24,7 @@ import java.util.regex.Pattern;
  */
 public class LispString implements LispAtom, LispSequence, LispArray, LispStringOrVector {
     private String myData;
+    private final List<String> modifiers = Arrays.asList("meta", "ctrl", "shift", "alt");
 
     public LispString (String data) {
         if (data == null) {
@@ -154,34 +153,18 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         char c = myData.charAt(position);
         return new LispInteger(c);
     }
-    
-    public int lengthInBytes() {
-        try {
-            return myData.getBytes("UTF-8").length;
-        } catch (UnsupportedEncodingException e) {
-            return myData.length();
-        }
-    }
-    
-    public char charAt (int position) {
-        return myData.charAt(position);
-    }
-    
-    public boolean isMultibyte () {
-        //todo
-        return false;
-    }
 
-    @Override
-    public String toShortcutString() {
+    //todo: it's public only for test
+    public String toShortcutString () {
         String data = myData;
         Map<String, String> replaceMap = new HashMap<>();
-        replaceMap.put("\\\\{0,2}M-", "meta ");
-        replaceMap.put("\\\\{0,2}C-", "ctrl ");
+
+        replaceMap.put("\\\\{0,2}M-", " meta ");
+        replaceMap.put("\\\\{0,2}C-", " ctrl ");
 //        replaceMap.put("H-", "hyper ");
-        replaceMap.put("\\\\{0,2}S-", "shift ");
+        replaceMap.put("\\\\{0,2}S-", " shift ");
 //        replaceMap.put("s-", "super ");
-        replaceMap.put("\\\\{0,2}A-", "alt ");
+        replaceMap.put("\\\\{0,2}A-", " alt ");
 
         for (Map.Entry<String, String> entry: replaceMap.entrySet()) {
             data = data.replaceAll(entry.getKey(), entry.getValue());
@@ -196,19 +179,39 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         m.appendTail(sb);
         return sb.toString();
     }
-
+    
     @Override
-    public boolean isInteractive() {
-        throw new NotImplementedException("LispString.isInteractive()");
+    public List<Shortcut> toKeyboardShortcutList() {
+        String[] keystrokeContent = toShortcutString().trim().split(" ");
+        List<Shortcut> keystrokes = new ArrayList<>();
+        int sequenceStart = 0;
+        for (int i = 0, keystrokeContentLength = keystrokeContent.length; i < keystrokeContentLength; i++) {
+            String item = keystrokeContent[i];
+            if (StringUtil.isEmptyOrSpaces(item))
+                continue;
+            if (!modifiers.contains(item)) {
+                StringBuilder keystrokeBuilder = new StringBuilder();
+                for (int j = sequenceStart; j <= i; ++j)
+                    keystrokeBuilder.append(keystrokeContent[j]).append(" ");
+                sequenceStart = i + 1;
+                keystrokes.add(KeyboardShortcut.fromString(keystrokeBuilder.toString()));
+            }
+        }
+        return keystrokes;        
     }
 
-    @Override
-    public String getInteractiveString() {
-        throw new NotImplementedException("LispString.getInteractiveString()");
-    }
-
-    @Override
-    public LispList getInteractiveForm() {
-        throw new NotImplementedException("LispString.getInteractiveForm()");
-    }
+//    @Override
+//    public boolean isInteractive() {
+//        throw new NotImplementedException("LispString.isInteractive()");
+//    }
+//
+//    @Override
+//    public String getInteractiveString() {
+//        throw new NotImplementedException("LispString.getInteractiveString()");
+//    }
+//
+//    @Override
+//    public LispList getInteractiveForm() {
+//        throw new NotImplementedException("LispString.getInteractiveForm()");
+//    }
 }

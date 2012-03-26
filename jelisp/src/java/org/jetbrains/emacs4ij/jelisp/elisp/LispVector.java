@@ -89,6 +89,11 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
     }
 
     @Override
+    public List<Shortcut> toKeyboardShortcutList() {
+        throw new NotImplementedException("LispVector.toKeyboardShortcutList()");
+    }
+
+    @Override
     public int length() {
         return myData.size();
     }
@@ -151,23 +156,18 @@ public class LispVector implements LispObject, LispSequence, LispArray, LispStri
         return new LispVector(myData.subList(from, to).toArray(new LispObject[to - from]));
     }
 
-    @Override
-    public String toShortcutString() {
-        throw new NotImplementedException("LispVector.toShortcutString()");
-    }
-
-    @Override
-    public boolean isInteractive() {
-        throw new NotImplementedException("LispVector.isInteractive()");
-    }
-
-    @Override
-    public String getInteractiveString() {
-        throw new NotImplementedException("LispVector.getInteractiveString()");
-    }
-
-    @Override
-    public LispList getInteractiveForm() {
-        throw new NotImplementedException("LispVector.getInteractiveForm()");
-    }
+//    @Override
+//    public boolean isInteractive() {
+//        throw new NotImplementedException("LispVector.isInteractive()");
+//    }
+//
+//    @Override
+//    public String getInteractiveString() {
+//        throw new NotImplementedException("LispVector.getInteractiveString()");
+//    }
+//
+//    @Override
+//    public LispList getInteractiveForm() {
+//        throw new NotImplementedException("LispVector.getInteractiveForm()");
+//    }
 }

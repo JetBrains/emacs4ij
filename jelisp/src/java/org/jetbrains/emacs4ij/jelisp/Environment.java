@@ -71,10 +71,8 @@ public abstract class Environment {
                     LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
                     if (local.getValue() != null)
                         symbol = local;
-                } catch (NoOpenedBufferException e1) {
-                    //return null;
-                } catch (VoidVariableException e2) {
-                    //return null;
+                } catch (NoOpenedBufferException | VoidVariableException e1) {
+                    return null;
                 }
             }
             return symbol;
@@ -88,11 +86,8 @@ public abstract class Environment {
     public void startRecording() {
         isRecording = true;
         myRecordedSymbols.clear();
-        ourBufferManager.startRecording();
-    }
-
-    public void stopRecording() {
-        isRecording = false;
+//        ourBufferManager.startRecording();
+//        ourKeymapManager.startRecording();
     }
 
     public void clearRecorded() {
@@ -100,7 +95,8 @@ public abstract class Environment {
             mySymbols.remove(name);
         }
         myRecordedSymbols.clear();
-        ourBufferManager.clearRecorded();
+//        ourBufferManager.clearRecorded();
+//        ourKeymapManager.clearRecorded();
     }
 
     public void defineSymbol (LispSymbol symbol) {
@@ -243,9 +239,9 @@ public abstract class Environment {
         return ourKeymapManager.createKeymap(name);
     }
 
-    public LispKeymap createSparseKeymap (@Nullable LispObject name) {
-        return ourKeymapManager.createKeymap(name);
-    }
+//    public LispKeymap createSparseKeymap (@Nullable LispObject name) {
+//        return ourKeymapManager.createKeymap(name);
+//    }
     
     public LispKeymap getActiveKeymap() {
         return ourKeymapManager.getActiveKeymap();

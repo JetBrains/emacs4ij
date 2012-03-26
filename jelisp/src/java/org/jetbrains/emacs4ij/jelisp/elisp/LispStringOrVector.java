@@ -1,5 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.actionSystem.Shortcut;
+
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -7,7 +11,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * Time: 4:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispStringOrVector extends LispCommand {
-    String toShortcutString();
+public interface LispStringOrVector extends LispObject { //} LispCommand {
+    List<Shortcut> toKeyboardShortcutList();
     int length();
 }

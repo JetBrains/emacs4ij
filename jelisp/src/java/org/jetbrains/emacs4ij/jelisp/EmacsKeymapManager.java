@@ -8,7 +8,6 @@ import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -29,6 +28,7 @@ import java.util.List;
  */
 public class EmacsKeymapManager {
     private List<LispKeymap> myKeymaps = new ArrayList<>();
+    private List<LispKeymap> myRecordedKeymaps = new ArrayList<>();
     private LispKeymap myCurrentKeyMap = null;
     private LispKeymapFactory myKeymapFactory;
     private int myNoNameKeymapCounter = 0;
@@ -71,9 +71,7 @@ public class EmacsKeymapManager {
     public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
         if (myKeymapFactory == null) //todo: this is only for test!
             return null;
-        if (BuiltinPredicates.isNil(name))
-            name = new LispInteger(myNoNameKeymapCounter++);
-        else if (!isUniqueKeymapName(name.toString()))
+        else if (!BuiltinPredicates.isNil(name) && !isUniqueKeymapName(name.toString()))
             throw new DoubleKeymapNameException(name);
         LispKeymap keymap = myKeymapFactory.createKeymap(name, parent);
         myKeymaps.add(keymap);
@@ -82,8 +80,8 @@ public class EmacsKeymapManager {
         return keymap;
     }
 
-    public void setActiveKeymap (LispKeymap keymap) {
-        if (!myKeymaps.contains(keymap))
+    public void setActiveKeymap (@Nullable LispKeymap keymap) {
+        if (keymap != null && !myKeymaps.contains(keymap))
             throw new UnregisteredKeymapException(keymap);
         myCurrentKeyMap = keymap;
         assignMyBindingsToIdeaActiveKeymap();
@@ -91,7 +89,21 @@ public class EmacsKeymapManager {
 
     private void assignMyBindingsToIdeaActiveKeymap() {
         ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(myIdeaEmacsKeymap);
-        myCurrentKeyMap.bindActions();
+        if (myCurrentKeyMap != null)
+            myCurrentKeyMap.bindActions();
     }
-
+    
+    public void clearRecorded() {
+        for (LispKeymap keymap: myRecordedKeymaps) {
+            myKeymaps.remove(keymap);
+        }
+        myRecordedKeymaps.clear();
+        if (myCurrentKeyMap == null && !myKeymaps.isEmpty())
+            myCurrentKeyMap = myKeymaps.get(0);
+        GlobalEnvironment.INSTANCE.setActiveKeymap(myCurrentKeyMap);
+    }
+    
+    public void startRecording() {
+        myRecordedKeymaps.clear();
+    }
 }

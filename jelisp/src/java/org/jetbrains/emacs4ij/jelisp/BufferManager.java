@@ -21,7 +21,7 @@ public class BufferManager {
     private List<LispBuffer> myBuffers = new ArrayList<>();
     private List<LispBuffer> myDeadBuffers = new ArrayList<>();
     private List<LispBuffer> myServiceBuffers = new ArrayList<>();
-    private List<String> myRecordedBuffers = new ArrayList<>();
+//    private List<String> myRecordedBuffers = new ArrayList<>();
     private LispBufferFactory myBufferFactory = null;
 
     public BufferManager(LispBufferFactory bufferFactory) {
@@ -185,16 +185,16 @@ public class BufferManager {
         return false;
     }
     
-    public void clearRecorded() {
-        for (String name: myRecordedBuffers) {
-            GlobalEnvironment.INSTANCE.removeBuffer(name);
-        }
-        myRecordedBuffers.clear();
-    }
-    
-    public void startRecording() {
-        myRecordedBuffers.clear();
-    }
+//    public void clearRecorded() {
+//        for (String name: myRecordedBuffers) {
+//            GlobalEnvironment.INSTANCE.removeBuffer(name);
+//        }
+//        myRecordedBuffers.clear();
+//    }
+//
+//    public void startRecording() {
+//        myRecordedBuffers.clear();
+//    }
     
     public void defineBufferLocalVariable (LispSymbol symbol) {
         for (LispBuffer buffer: myBuffers) {

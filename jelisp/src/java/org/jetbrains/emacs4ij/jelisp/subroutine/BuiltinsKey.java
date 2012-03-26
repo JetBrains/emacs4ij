@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -15,14 +16,9 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class BuiltinsKey {
+    private static LispSymbol ourKeyMapSymbol = new LispSymbol("keymap");
+
     private BuiltinsKey() {}
-
-    public static LispKeymap globalMap;
-    private static LispSymbol myKeyMapSymbol = new LispSymbol("keymap");
-
-    private static boolean isListKeymap (LispObject object) {
-        return (object instanceof LispList && ((LispList) object).car().equals(myKeyMapSymbol));
-    }
 
     private static boolean isKeymapItself(LispObject object) {
         return object instanceof LispKeymap;
@@ -105,12 +101,19 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("key-binding")
-    public static LispObject keyBinding (LispStringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
-        throw new NotImplementedException("key-binding");
+    public static LispObject keyBinding (Environment environment, LispStringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
+        //note: optional parameters are ignored ignored
+        return environment.getActiveKeymap().getKeyBinding(key);
+    }
+    
+    @Subroutine("lookup-key")
+    public static LispObject lookupKey (LispKeymap keymap, LispStringOrVector key, @Optional LispObject acceptDefault) {
+        //note: acceptDefault is ignored, implemented for compatibility
+        return keymap.getKeyBinding(key);
     }
 
     @Subroutine("define-key")
-    public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, LispSymbol function) {
+    public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, KeymapCell function) {
         check(keymapObject);
         LispKeymap keymap = getKeymap(keymapObject);
         keymap.defineKey(function, key);
@@ -138,10 +141,10 @@ public abstract class BuiltinsKey {
     }
 
     public static void defineKeyMaps () {
-        myKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
+        ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
 //        GlobalEnvironment g = GlobalEnvironment.INSTANCE;
-        GlobalEnvironment.INSTANCE.defineSymbol(myKeyMapSymbol);
-        globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
+        GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
+        LispKeymap globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(GlobalEnvironment.INSTANCE, new LispSymbol("global-map"), globalMap);
 
         LispObject meta_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);

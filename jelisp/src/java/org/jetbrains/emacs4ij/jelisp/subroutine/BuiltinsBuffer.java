@@ -248,7 +248,7 @@ public abstract class BuiltinsBuffer {
     }
 
     //todo: interactive, bound to C-x k
-    @Subroutine(value="kill-buffer", isCmd = true, interactive = "bKill buffer")
+    @Subroutine(value = "kill-buffer", isCmd = true, interactive = "bKill buffer")
     public static LispObject killBuffer (Environment environment, @Optional LispObject bufferOrName) {
         replaceBufferInWindows(environment, bufferOrName);
 
