@@ -25,7 +25,7 @@ public abstract class Environment {
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
     protected static BufferManager ourBufferManager;
-    protected static KeymapManager ourKeymapManager;
+    protected static EmacsKeymapManager ourKeymapManager;
 
     public boolean isMainOrGlobal() {
         return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);

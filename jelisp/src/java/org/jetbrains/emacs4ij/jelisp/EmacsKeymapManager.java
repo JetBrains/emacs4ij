@@ -1,16 +1,23 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.keymap.Keymap;
+import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.openapi.keymap.impl.DefaultKeymap;
+import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleKeymapNameException;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,13 +27,21 @@ import java.util.List;
  * Time: 11:58 AM
  * To change this template use File | Settings | File Templates.
  */
-public class KeymapManager {
+public class EmacsKeymapManager {
     private List<LispKeymap> myKeymaps = new ArrayList<>();
     private LispKeymap myCurrentKeyMap = null;
     private LispKeymapFactory myKeymapFactory;
     private int myNoNameKeymapCounter = 0;
+    private final Keymap myIdeaEmacsKeymap = (Keymap) CollectionUtils.find(
+            Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
+            new Predicate() {
+                @Override
+                public boolean evaluate(Object o) {
+                    return KeymapUtil.isEmacsKeymap((Keymap) o);
+                }
+            });
 
-    public KeymapManager (LispKeymapFactory keymapFactory) {
+    public EmacsKeymapManager(LispKeymapFactory keymapFactory) {
         myKeymapFactory = keymapFactory;
     }
 
@@ -46,20 +61,17 @@ public class KeymapManager {
         return true;
     }
 
-    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
-        //todo: this hack is only for test!
-        if (myKeymapFactory == null)
-            return null;
-
+    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {        
+        if (myKeymapFactory == null) //todo: this is only for test!
+            return null;        
         if (BuiltinPredicates.isNil(name))
             name = new LispInteger(myNoNameKeymapCounter++);
         else if (!isUniqueKeymapName(name.toString()))
             throw new DoubleKeymapNameException(name);
         LispKeymap keymap = myKeymapFactory.createKeymap(name, parent);
-
-        if (myCurrentKeyMap == null)
-            myCurrentKeyMap = keymap;
         myKeymaps.add(keymap);
+        if (myCurrentKeyMap == null)
+            setActiveKeymap(keymap);
         return keymap;
     }
 
@@ -71,7 +83,8 @@ public class KeymapManager {
     }
 
     private void assignMyBindingsToIdeaActiveKeymap() {
-        throw new NotImplementedException("assignMyBindingsToIdeaActiveKeymap");
+        ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(myIdeaEmacsKeymap);
+        myCurrentKeyMap.bindActions();
     }
 
 }

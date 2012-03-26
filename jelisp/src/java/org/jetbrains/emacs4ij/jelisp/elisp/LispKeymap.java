@@ -13,16 +13,14 @@ import org.jetbrains.emacs4ij.jelisp.KeymapCell;
  */
 public interface LispKeymap extends LispObject {
     void defineKey(KeymapCell action, LispStringOrVector key);
-    void defineKey(String actionId, LispStringOrVector key);
-    void defineKey(String actionId, Shortcut shortcut);
     void defineKey(KeymapCell action, Shortcut shortcut);
-//    LispObject defineKey(Environment environment, LispObject function, LispStringOrVector key);
+    //for my KeymapManager
+    void bindActions();
+
     KeymapCell getKeyBinding(LispStringOrVector key);
     LispSymbol getKeyBinding(Shortcut shortcut);
     void definePrefixCommand();
 
-//    LispSymbol getKeyDefinition (Shortcut key);
-//    LispObject getKeyDefinition (LispStringOrVector key, @Nullable @Optional LispObject acceptDefault);
 
     LispKeymap getParent();
     void setParent(@Nullable LispKeymap parent);

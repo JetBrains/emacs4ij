@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ArrayUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,7 +32,7 @@ public class IdeaKeymap implements LispKeymap {
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
     protected static KeymapManager ourKeymapManager = KeymapManager.getInstance();
-
+    
     public IdeaKeymap(@NotNull LispObject name, @Nullable LispKeymap parent) {
         myParent = parent;
         myName = name instanceof LispInteger
@@ -50,18 +51,8 @@ public class IdeaKeymap implements LispKeymap {
         defineKey(action, toShortcut(key));
     }
 
-    @Override
-    public void defineKey(String actionId, LispStringOrVector key) {
-        defineKey(new LispSymbol(actionId), key);
-    }
-
-    @Override
-    public void defineKey(String actionId, Shortcut shortcut) {
-        defineKey(new LispSymbol(actionId), shortcut);
-    }
-
     private String generateActionId (String binding) {
-        return "emacs4ij.action."+ myName + "." + binding;
+        return Emacs4ijBundle.message("emacs4ij") + ' ' + StringUtil.capitalizeWords(binding, "-", true, false);   //"emacs4ij.action."+ myName + "." +
     }
 
     private void unregisterShortcut (Shortcut shortcut) {
@@ -77,22 +68,27 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public void defineKey(KeymapCell action, Shortcut shortcut) {
         myKeyBindings.put(shortcut, action);
+        registerAction(action, shortcut);
+    }
+
+    private void registerAction (KeymapCell action, Shortcut shortcut) {
         if (action instanceof LispSymbol) {
             ActionManager actionManager = ActionManager.getInstance();
             String id = generateActionId(action.toString());
-
             if (actionManager.getActionIds(id).length != 0)
                 actionManager.unregisterAction(id);
-
-            Map<String, PluginId> registeredIds = PluginId.getRegisteredIds();
-            actionManager.registerAction(id, new EmacsAction((LispSymbol) action));
-
-
+            actionManager.registerAction(id, new EmacsAction((LispSymbol) action), PluginId.getId(Emacs4ijBundle.message("emacs4ij")));
             unregisterShortcut(shortcut);
             ourKeymapManager.getActiveKeymap().addShortcut(id, shortcut);
         }
     }
 
+    @Override
+    public void bindActions () {
+        for (Map.Entry<Shortcut, KeymapCell> entry: myKeyBindings.entrySet()) {
+            registerAction(entry.getValue(), entry.getKey());
+        }
+    }
 
     @Override
     public LispKeymap getParent() {
@@ -130,7 +126,7 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public KeymapCell getKeyBinding(LispStringOrVector key) {
         KeymapCell function = getKeyBinding(toShortcut(key));
-        return function == null ? LispSymbol.ourNil : function;
+        return (KeymapCell) BuiltinsCore.thisOrNil(function);
     }
 
     @Override
@@ -146,7 +142,6 @@ public class IdeaKeymap implements LispKeymap {
         }
         if (myParent != null)
             return myParent.getKeyBinding(shortcut);
-
         String[] actions = ourKeymapManager.getActiveKeymap().getActionIds(shortcut);
         if (actions == ArrayUtil.EMPTY_STRING_ARRAY)
             return null;

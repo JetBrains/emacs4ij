@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
 import java.util.List;
@@ -17,17 +18,6 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class AutoComplete extends AnAction {
-    private String largestCommonPrefix (String s1, String s2) {
-        String lcp = "";
-        for (int i = 0; i != Math.min(s1.length(), s2.length()); ++i) {
-            if (s1.charAt(i) == s2.charAt(i))
-                lcp += s1.charAt(i);
-            else
-                break;
-        }
-        return lcp;
-    }
-
     @Override
     public void actionPerformed(AnActionEvent e) {
         if (!EnvironmentInitializer.isGlobalInitialized())
@@ -45,7 +35,7 @@ public class AutoComplete extends AnAction {
                 if (completions.size() == 1) {
                     parameter = completions.get(0);
                 } else {
-                    parameter = largestCommonPrefix(completions.get(0), completions.get(completions.size()-1));
+                    parameter = StringUtil.commonPrefix(completions.get(0), completions.get(completions.size()-1));
                 }
                 miniBuffer.setInputStartValue(parameter);
                 miniBuffer.updateEditorText();
