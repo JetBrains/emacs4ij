@@ -51,7 +51,9 @@ public class MyProjectComponent implements ProjectComponent {
                 if (myEnvironment == null)
                     return;
                 try {
-                    new IdeaBuffer(myEnvironment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
+                    new IdeaBuffer(myEnvironment, virtualFile.getName(),
+                            virtualFile.getParent().getPath() + '/',
+                            fileEditorManager.getSelectedTextEditor());
                 } catch (DoubleBufferException e) {
                     System.err.println(e.getMessage());
                 }
@@ -79,7 +81,8 @@ public class MyProjectComponent implements ProjectComponent {
                 try {
                     if (!(myEnvironment.isSelectionManagedBySubroutine()))
                         myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
-                    else myEnvironment.setSelectionManagedBySubroutine(false);
+                    else
+                        myEnvironment.setSelectionManagedBySubroutine(false);
                 } catch (EnvironmentException e) {
                     //ignore
                 }

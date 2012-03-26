@@ -17,6 +17,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,7 +30,7 @@ public class IdeaBuffer implements LispBuffer {
     protected String myName;
     protected Editor myEditor;
     protected Environment myEnvironment;
-    protected ArrayList<LispMarker> myMarkers = new ArrayList<>();
+    protected List<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
     private LispMarker myMark = new LispMarker();
 

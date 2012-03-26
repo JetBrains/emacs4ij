@@ -93,7 +93,9 @@ public class BufferManager {
             myBuffers.add(buffer);
             return true;
         }
-        myDeadBuffers.remove(getIndexByName(myDeadBuffers, buffer.getName()));
+        LispBuffer buried = myDeadBuffers.get(getIndexByName(myDeadBuffers, buffer.getName()));
+        myBuffers.add(buried);
+        myDeadBuffers.remove(buried);
         return false;
     }
 
@@ -124,9 +126,7 @@ public class BufferManager {
 
     public LispList getBufferList() {
         ArrayList<LispObject> bufferList = new ArrayList<>();
-        for (LispBuffer buffer: myBuffers) {
-            bufferList.add(buffer);
-        }
+        bufferList.addAll(myBuffers);
         return LispList.list(bufferList);
     }
     
