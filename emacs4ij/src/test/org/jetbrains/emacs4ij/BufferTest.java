@@ -8,7 +8,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,12 +46,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     private LispObject evaluateString(String lispCode) {
         return myForwardParser.parseLine(lispCode).evaluate(myEnvironment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -100,8 +93,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             evaluateString("(get-buffer nil)");
             Assert.assertEquals(0, 1);
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertEquals("'(wrong-type-argument stringp nil)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -110,8 +105,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             evaluateString("(set-buffer 5)");
             Assert.assertEquals(0, 1);
         } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
+            Assert.assertEquals("'(wrong-type-argument stringp 5)", TestSetup.getCause(e));
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -157,7 +154,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(other-buffer)");
         } catch (RuntimeException e) {
-            Assert.assertEquals(new NoOpenedBufferException().getMessage(), getCause(e).getMessage());
+            Assert.assertEquals(new NoOpenedBufferException().getMessage(), TestSetup.getCause(e));
             return;
         }
         Assert.assertEquals(1, 0);
@@ -257,16 +254,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         evaluateString("(set-buffer \"" + myTestFiles[0] + "\")");
         buffer = evaluateString("(buffer-name)");
         Assert.assertEquals(new LispString(myTestFiles[myTestFiles.length-1]), buffer);
-    }
-
-    @Test
-    public void testSetBuffer_WrongParameter () {
-        try {
-            evaluateString("(set-buffer 5)");
-            Assert.assertEquals(0, 1);
-        } catch (Exception e) {
-            Assert.assertTrue(getCause(e) instanceof WrongTypeArgumentException);
-        }
     }
 
     @Test
@@ -482,13 +469,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testLastBuffer () {
-        try {
-            LispObject lastBuffer = evaluateString("(last-buffer)");
-            Assert.assertTrue(lastBuffer instanceof LispBuffer);
-            Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
-        } catch (Exception e) {
-            System.out.println(getCause(e).getMessage());
-        }
+        LispObject lastBuffer = evaluateString("(last-buffer)");
+        Assert.assertTrue(lastBuffer instanceof LispBuffer);
+        Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
     @Test
@@ -554,7 +537,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             evaluateString("(generate-new-buffer \"1.txt\")");
             myEnvironment.createBuffer("1.txt<2>");
         } catch (Exception e) {
-            Assert.assertEquals("Double 1.txt<2>", getCause(e).getMessage());
+            Assert.assertEquals("Double 1.txt<2>", TestSetup.getCause(e));
         }
     }
 
@@ -604,12 +587,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(buffer-end 'a)");
         } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", getCause(e).getMessage());
+            Assert.assertEquals("'(wrong-type-argument number-or-marker-p a)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testDefaultValueGlobals() {
         LispObject r = evaluateString("(default-value 'default-directory)");
@@ -630,7 +613,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(default-value 'is-alive)");
         } catch (Exception e) {
-            Assert.assertEquals("'(void-variable is-alive)", getCause(e).getMessage());
+            Assert.assertEquals("'(void-variable is-alive)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

@@ -11,7 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -184,12 +183,10 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         try {
             myMiniBuffer.onReadInput();
         } catch (Exception e) {
-            if (getCause(e) instanceof WrongNumberOfArgumentsException) {
-                Assert.assertTrue(true);
-                return;
-            }
+            Assert.assertEquals("'(wrong-number-of-arguments (lambda (n) (interactive \"nNumber: \") (+ n 5)) 0)", TestSetup.getCause(e));
+            return;
         }
-        Assert.assertTrue(false);
+        Assert.fail();
     }
 
     @Test

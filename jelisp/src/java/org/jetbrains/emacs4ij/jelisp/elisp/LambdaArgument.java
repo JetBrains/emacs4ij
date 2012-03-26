@@ -123,12 +123,6 @@ public class LambdaArgument {
 
     @Override
     public String toString() {
-        return "LambdaArgument{" +
-                "myKeyword=" + myKeyword +
-                ", myVar=" + myVar +
-                ", myInitForm=" + myInitForm +
-                ", mySetVar=" + mySetVar +
-                ", myType=" + myType +
-                '}';
+        return myVar.toString();
     }
 }

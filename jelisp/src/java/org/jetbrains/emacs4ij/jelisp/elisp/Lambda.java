@@ -96,15 +96,24 @@ public class Lambda implements FunctionCell, LispCommand {
                 nKeywords++;
         }
     }
+    
+    private String argumentListString () {
+        if (myArgumentList.isEmpty())
+            return "nil";
+        StringBuilder sb = new StringBuilder("(");
+        for (LambdaArgument arg: myArgumentList) {
+            sb.append(arg.toString()).append(" ");
+        }
+        return sb.toString().trim() + ')';
+    }
 
     @Override
     public String toString() {
-        String s = "(lambda " + (myArgumentList.isEmpty() ? "nil" : myArgumentList.toString());
+        StringBuilder sb = new StringBuilder("(lambda " + argumentListString());
         for (LispObject bodyForm: myBody) {
-            s += " " + bodyForm.toString();
+            sb.append(" ").append(bodyForm.toString());
         }
-        s += ")";
-        return s;
+        return sb.toString() + ')';
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,7 +25,7 @@ public class ExecuteCommand extends AnAction {
             LispObject result = miniBuffer.onReadInput();
             if (result != null && miniBuffer.wasInteractiveFormResult())
                 Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
-        } catch (RuntimeException exc) {
+        } catch (LispException exc) {
             Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }
     }

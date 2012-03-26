@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -118,8 +119,8 @@ public class LispList implements LispSequence {
                 System.out.println("FUN " + fun.getName());
                 try {
                     symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
-                } catch (RuntimeException e) {
-                    System.err.println(e.getMessage());
+                } catch (LispException e) {
+//                    System.err.println(e.getMessage());
                     throw new VoidFunctionException(fun.getName());
                 }
                 if (symbol == null || !symbol.isFunction())

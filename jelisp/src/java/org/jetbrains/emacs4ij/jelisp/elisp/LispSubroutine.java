@@ -2,9 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
 import java.lang.annotation.Annotation;
@@ -76,7 +74,7 @@ public abstract class LispSubroutine {
         Type[] parametersTypes = m.getGenericParameterTypes();
         Annotation[][] parametersAnnotations = m.getParameterAnnotations();
         if (parametersAnnotations.length != parametersTypes.length) {
-            throw new RuntimeException("Parameters types and annotations lengths do not match!");
+            throw new InternalException("Parameters types and annotations lengths do not match!");
         }
         ArgumentsList arguments = new ArgumentsList();
         setOptional(arguments, parametersAnnotations, parametersTypes);
@@ -95,7 +93,8 @@ public abstract class LispSubroutine {
         return arguments;
     }
 
-    private static int checkParameterizedType (ParameterizedType expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
+    private static int checkParameterizedType (String subroutineName, ParameterizedType expectedType,
+                                               ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
         Type rawType = expectedType.getRawType();
         Type expectedTypeArguments = expectedType.getActualTypeArguments()[0];
         try {
@@ -114,7 +113,7 @@ public abstract class LispSubroutine {
         } catch (IndexOutOfBoundsException e) {
             if (arguments.isOptional(i))
                 return -1;
-            throw new RuntimeException("wrong arg N check!");
+            throw new WrongNumberOfArgumentsException(subroutineName, i);
         }
     }
 
@@ -135,7 +134,8 @@ public abstract class LispSubroutine {
         return argsCounter;
     }
 
-    private static int checkSingleArgument (Class expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
+    private static int checkSingleArgument (String subroutineName, Class expectedType, ArgumentsList arguments,
+                                            List<LispObject> args, int argsCounter, int i) {
         try {
             if (!(expectedType.isInstance(args.get(argsCounter)))) {
                 if (expectedType.equals(LispList.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
@@ -148,7 +148,6 @@ public abstract class LispSubroutine {
                 }
                 if (arguments.isOptional(i))
                     return -1;
-
                 throw new WrongTypeArgumentException(expectedType.getSimpleName(), args.get(argsCounter));
             }
             arguments.setValue(i, args.get(argsCounter));
@@ -156,23 +155,23 @@ public abstract class LispSubroutine {
         } catch (IndexOutOfBoundsException e) {
             if (arguments.isOptional(i))
                 return -1;
-            throw new RuntimeException("wrong arg N check!");
+            throw new WrongNumberOfArgumentsException(subroutineName, i);
         }
     }
 
-    private static void checkArguments (ArgumentsList arguments, List<LispObject> args) {
+    private static void checkArguments (String subroutineName, ArgumentsList arguments, List<LispObject> args) {
         int argsCounter = 0;
         for (int i=0; i != arguments.getSize(); ++i) {
             Type expectedType = arguments.getType(i);
             if (i==0 && expectedType.equals(Environment.class))
                 continue;
             if (ParameterizedType.class.isInstance(expectedType)) {
-                argsCounter = checkParameterizedType((ParameterizedType) expectedType, arguments, args, argsCounter, i);
+                argsCounter = checkParameterizedType(subroutineName, (ParameterizedType) expectedType, arguments, args, argsCounter, i);
             } else if (((Class)expectedType).isArray()) {
                 argsCounter = checkArray((Class) expectedType, arguments, args, argsCounter, i);
             }
             else {
-                argsCounter = checkSingleArgument((Class) expectedType, arguments, args, argsCounter, i);
+                argsCounter = checkSingleArgument(subroutineName, (Class) expectedType, arguments, args, argsCounter, i);
             }
             if (argsCounter == -1)
                 break;
@@ -203,21 +202,19 @@ public abstract class LispSubroutine {
                         }
                     }
                     ArgumentsList arguments = parseArguments(m, environment, args);
-                    checkArguments(arguments, args);
+                    checkArguments(m.getAnnotation(Subroutine.class).value(), arguments, args);
                     try {
                         return (LispObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException e) {
-                        System.err.println(e.getCause().getMessage());
-                        throw new RuntimeException(e.getCause());
+                        throw new LispException(e.getCause().getMessage());
                     } catch (InvocationTargetException e) {
                         if (getCause(e) instanceof LispThrow)
                             throw (LispThrow)getCause(e);
-                        System.err.println(e.getCause().getMessage());
-                        throw new RuntimeException(e.getCause());
+                        throw new LispException(e.getCause().getMessage());
                     }
                 }
             }
         }
-        throw new RuntimeException("unknown subroutine " + f.getName());
+        throw new InternalException("Unknown subroutine " + f.getName());
     }
 }

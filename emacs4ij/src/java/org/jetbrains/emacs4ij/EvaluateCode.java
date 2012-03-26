@@ -9,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,7 +40,7 @@ public class EvaluateCode extends AnAction {
             LispObject result = buffer.evaluateLastForm();
             if (result != null)
                 Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
-        } catch (RuntimeException exc) {
+        } catch (LispException exc) {
             Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
         }
     }

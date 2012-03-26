@@ -17,8 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -50,13 +48,9 @@ public class MyProjectComponent implements ProjectComponent {
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
-                try {
-                    new IdeaBuffer(myEnvironment, virtualFile.getName(),
-                            virtualFile.getParent().getPath() + '/',
-                            fileEditorManager.getSelectedTextEditor());
-                } catch (DoubleBufferException e) {
-                    System.err.println(e.getMessage());
-                }
+                new IdeaBuffer(myEnvironment, virtualFile.getName(),
+                        virtualFile.getParent().getPath() + '/',
+                        fileEditorManager.getSelectedTextEditor());
             }
 
             @Override
@@ -72,20 +66,15 @@ public class MyProjectComponent implements ProjectComponent {
             public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) {
                 if (myEnvironment == null)
                     return;
-
                 if (fileEditorManagerEvent.getNewFile() == null) {
                     if (myEnvironment.getBuffersSize() != 1)
-                        throw new Emacs4ijFatalException("The number of opened buffers doesn't correspond to number of opened files!");
+                        throw new Emacs4ijFatalException(Emacs4ijBundle.message("error.n.opened.files"));
                     return;
                 }
-                try {
-                    if (!(myEnvironment.isSelectionManagedBySubroutine()))
-                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
-                    else
-                        myEnvironment.setSelectionManagedBySubroutine(false);
-                } catch (EnvironmentException e) {
-                    //ignore
-                }
+                if (!(myEnvironment.isSelectionManagedBySubroutine()))
+                    myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
+                else
+                    myEnvironment.setSelectionManagedBySubroutine(false);
             }
         });
 

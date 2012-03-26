@@ -16,6 +16,7 @@ public interface LispBuffer extends LispObject {
     String getName();
     int getSize();
     int point();
+    void setPoint(int position);
     int pointMin();
     int pointMax();
     String gotoChar(int position);
@@ -30,4 +31,5 @@ public interface LispBuffer extends LispObject {
     void removeMarker (LispMarker marker);
     boolean hasMarkersAt (int position);
     LispMarker getMark();
+    void setMark (LispMarker mark);
 }

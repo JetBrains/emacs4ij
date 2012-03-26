@@ -26,7 +26,7 @@ public abstract class BuiltinsBuffer {
         }
         if (bufferOrName instanceof LispBuffer)
             return (LispBuffer) bufferOrName;
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
+        throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
     @Subroutine(value = "current-buffer")
@@ -63,7 +63,7 @@ public abstract class BuiltinsBuffer {
         if (bufferOrName instanceof LispBuffer) {
             return bufferOrName;
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
+        throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
     @Subroutine("get-buffer-create")
@@ -76,7 +76,7 @@ public abstract class BuiltinsBuffer {
                 return buffer;
             return environment.createBuffer(((LispString) bufferOrName).getData());
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
+        throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
     // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
@@ -137,11 +137,11 @@ public abstract class BuiltinsBuffer {
             }
             return bufferOrName;
         }
-        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
+        throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
     @Subroutine("point")
-    public static LispObject point (Environment environment) {
+    public static LispInteger point (Environment environment) {
         return new LispInteger(environment.getBufferCurrentForEditing().point());
     }
 
@@ -279,5 +279,22 @@ public abstract class BuiltinsBuffer {
     @Subroutine("minibuffer-depth")
     public static LispInteger minibufferDepth (Environment environment) {
         return new LispInteger(environment.getMiniBufferActivationsDepth());
+    }
+    
+    public static boolean isSyntaxTable (LispObject object) {
+        //todo: true if char-table
+        return false;
+    }
+    
+    @Subroutine("syntax-table-p")
+    public static LispSymbol syntaxTableP (LispObject object) {
+        return LispSymbol.bool(isSyntaxTable(object));    
+    }
+    
+    @Subroutine("set-syntax-table")
+    public static void setSyntaxTable (LispObject syntaxTable) {
+        if (!isSyntaxTable(syntaxTable))
+            throw new WrongTypeArgumentException("syntax-table-p", syntaxTable.toString());
+        //todo
     }
 }

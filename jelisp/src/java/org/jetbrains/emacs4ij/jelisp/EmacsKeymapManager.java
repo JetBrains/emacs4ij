@@ -32,17 +32,24 @@ public class EmacsKeymapManager {
     private LispKeymap myCurrentKeyMap = null;
     private LispKeymapFactory myKeymapFactory;
     private int myNoNameKeymapCounter = 0;
-    private final Keymap myIdeaEmacsKeymap = (Keymap) CollectionUtils.find(
-            Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
-            new Predicate() {
-                @Override
-                public boolean evaluate(Object o) {
-                    return KeymapUtil.isEmacsKeymap((Keymap) o);
-                }
-            });
+    private final Keymap myIdeaEmacsKeymap;
 
     public EmacsKeymapManager(LispKeymapFactory keymapFactory) {
         myKeymapFactory = keymapFactory;
+        Keymap tmp;
+        try {     
+            tmp = (Keymap) CollectionUtils.find(
+                Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
+                new Predicate() {
+                    @Override
+                    public boolean evaluate(Object o) {
+                        return KeymapUtil.isEmacsKeymap((Keymap) o);
+                    }
+                });
+        } catch (NullPointerException e) {
+            tmp = null;
+        }
+        myIdeaEmacsKeymap = tmp;
     }
 
     LispKeymap getActiveKeymap() {
@@ -61,9 +68,9 @@ public class EmacsKeymapManager {
         return true;
     }
 
-    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {        
+    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
         if (myKeymapFactory == null) //todo: this is only for test!
-            return null;        
+            return null;
         if (BuiltinPredicates.isNil(name))
             name = new LispInteger(myNoNameKeymapCounter++);
         else if (!isUniqueKeymapName(name.toString()))

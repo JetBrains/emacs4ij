@@ -158,6 +158,11 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
+    public void setPoint(int position) {
+        myEditor.getCaretModel().moveToOffset(position);
+    }
+
+    @Override
     public int pointMin() {
         return 1;
     }
@@ -299,4 +304,11 @@ public class IdeaBuffer implements LispBuffer {
     public LispMarker getMark() {
         return myMark;
     }
+
+    @Override
+    public void setMark(LispMarker mark) {
+        myMark = mark;
+    }
+
+
 }

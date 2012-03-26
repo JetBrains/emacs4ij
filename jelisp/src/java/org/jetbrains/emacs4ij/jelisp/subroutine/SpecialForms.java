@@ -422,5 +422,19 @@ public abstract class SpecialForms {
         //note: In byte compilation, `function' causes its argument to be compiled.=)
         return quote(environment, arg);
     }
+
+    @Subroutine("save-excursion")
+    public static LispObject saveExcursion (Environment environment, @Optional LispObject... body) {
+        LispBuffer current = environment.getBufferCurrentForEditing();
+        int point = current.point();
+        LispMarker mark = current.getMark();
+        try {
+            return progn(environment, body);
+        } finally {
+            current.setPoint(point);
+            current.setMark(mark);
+            environment.setBufferCurrentForEditing(current);
+        }        
+    }
     
 }

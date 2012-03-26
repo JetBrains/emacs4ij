@@ -303,8 +303,7 @@ public class GlobalEnvironment extends Environment {
         try {
             reader = new BufferedReader(new FileReader(fullName));
         } catch (FileNotFoundException e) {
-            System.err.println(e.getMessage());
-            return;
+            throw new EnvironmentException(e.getMessage());
         }
         String line;
         int index = 0;
@@ -327,8 +326,7 @@ public class GlobalEnvironment extends Environment {
             try {
                 parsed.evaluate(this);
             } catch (LispException e) {
-                System.err.println(fullName + ", line " + index + ": " + e.getMessage());
-                throw e;
+                throw new EnvironmentException("Parser error at " + fullName + ", line " + index + ": " + e.getMessage());
             }
         }
     }

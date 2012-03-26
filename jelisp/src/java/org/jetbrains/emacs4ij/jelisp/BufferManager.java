@@ -53,7 +53,7 @@ public class BufferManager {
             return null;
         int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
-            throw new EnvironmentException("this buffer is not opened");
+            throw new EnvironmentException("Buffer " + bufferName + " is not opened");
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
         return myBuffers.get(myBuffers.size() - 1);
     }
@@ -94,6 +94,7 @@ public class BufferManager {
             return true;
         }
         LispBuffer buried = myDeadBuffers.get(getIndexByName(myDeadBuffers, buffer.getName()));
+        buried.setEditor(buffer.getEditor());
         myBuffers.add(buried);
         myDeadBuffers.remove(buried);
         return false;
