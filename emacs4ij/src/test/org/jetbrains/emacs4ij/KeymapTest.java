@@ -55,11 +55,20 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispSymbol k1 = (LispSymbol) evaluateString("(defvar k1 (make-keymap))");
         LispSymbol k2 = (LispSymbol) evaluateString("(defvar k2 (copy-keymap k1))");
         Assert.assertEquals(k1.getValue(), k2.getValue());
-        evaluateString("(set-keymap-parent k1 '(keymap))");
+        evaluateString("(set-keymap-parent k1 (make-sparse-keymap))");
         LispObject parent = evaluateString("(keymap-parent k1)");
-        Assert.assertEquals(LispList.list(new LispSymbol("keymap")), parent);
+        Assert.assertEquals(BuiltinsKey.makeSparseKeymap(null), parent);
         parent = evaluateString("(keymap-parent k2)");
         Assert.assertEquals(LispSymbol.ourNil, parent);
+    }
+
+    @Test
+    public void testCopyKeymapAsSymbolFunction() throws Exception {
+        evaluateString("(defvar k1 1)");
+        evaluateString("(fset 'k1 (make-keymap))");
+        LispSymbol k1 = (LispSymbol) evaluateString("'k1");
+        LispSymbol k2 = (LispSymbol) evaluateString("(defvar k2 (copy-keymap 'k1))");
+        Assert.assertEquals(k1.getFunction(), k2.getValue());
     }
 
     @Test

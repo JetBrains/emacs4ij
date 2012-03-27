@@ -28,10 +28,8 @@ import java.util.List;
  */
 public class EmacsKeymapManager {
     private List<LispKeymap> myKeymaps = new ArrayList<>();
-    private List<LispKeymap> myRecordedKeymaps = new ArrayList<>();
     private LispKeymap myCurrentKeyMap = null;
     private LispKeymapFactory myKeymapFactory;
-    private int myNoNameKeymapCounter = 0;
     private final Keymap myIdeaEmacsKeymap;
 
     public EmacsKeymapManager(LispKeymapFactory keymapFactory) {
@@ -91,19 +89,5 @@ public class EmacsKeymapManager {
         ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(myIdeaEmacsKeymap);
         if (myCurrentKeyMap != null)
             myCurrentKeyMap.bindActions();
-    }
-    
-    public void clearRecorded() {
-        for (LispKeymap keymap: myRecordedKeymaps) {
-            myKeymaps.remove(keymap);
-        }
-        myRecordedKeymaps.clear();
-        if (myCurrentKeyMap == null && !myKeymaps.isEmpty())
-            myCurrentKeyMap = myKeymaps.get(0);
-        GlobalEnvironment.INSTANCE.setActiveKeymap(myCurrentKeyMap);
-    }
-    
-    public void startRecording() {
-        myRecordedKeymaps.clear();
     }
 }

@@ -638,7 +638,6 @@ public class GlobalEnvironment extends Environment {
 
     //==============
 
-
     @Override
     public void clearRecorded() {
         super.clearRecorded();
@@ -656,13 +655,5 @@ public class GlobalEnvironment extends Environment {
         } catch (NoSuchElementException e) {
             return null;
         }
-    }
-    
-    public LispKeymap makeKeymap (@Nullable LispObject name) {
-        return ourKeymapManager.createKeymap(name);
-    }
-
-    public LispKeymap makeSparseKeymap (@Nullable LispObject name) {
-        return ourKeymapManager.createKeymap(name);
     }
 }

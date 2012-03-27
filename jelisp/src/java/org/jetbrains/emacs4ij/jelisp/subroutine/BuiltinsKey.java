@@ -54,15 +54,19 @@ public abstract class BuiltinsKey {
         return makeKeymap(prompt);
     }
 
+    private static LispKeymap makeSparseKeymap (String prompt) {
+        return makeKeymap(new LispString(prompt));
+    }
+
     @Subroutine("make-keymap")
     public static LispKeymap makeKeymap (@Nullable @Optional LispObject prompt) {
         return GlobalEnvironment.INSTANCE.createKeymap(prompt);
     }
 
     @Subroutine("copy-keymap")
-    public static LispList copyKeymap (LispObject object) {
+    public static LispKeymap copyKeymap (LispObject object) {
         check(object);
-        throw new NotImplementedException("copy-keymap");
+        return getKeymap(object).copy();
     }
 
     @Subroutine("keymap-parent")
@@ -142,7 +146,6 @@ public abstract class BuiltinsKey {
 
     public static void defineKeyMaps () {
         ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
-//        GlobalEnvironment g = GlobalEnvironment.INSTANCE;
         GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
         LispKeymap globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
         BuiltinsCore.set(GlobalEnvironment.INSTANCE, new LispSymbol("global-map"), globalMap);
@@ -156,12 +159,12 @@ public abstract class BuiltinsKey {
         BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("Control-X-prefix"), control_x_map);
 
         GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
-        LispSymbol mblMap = makeKeyMap("minibuffer-local-map");
-        LispSymbol mblNsMap = makeKeyMap("minibuffer-local-ns-map", mblMap);
-        LispSymbol mblCompletionMap = makeKeyMap("minibuffer-local-completion-map", mblMap);
-        LispSymbol mblFileNameCompletionMap = makeKeyMap("minibuffer-local-filename-completion-map", mblCompletionMap);
-        LispSymbol mblMustMatchMap = makeKeyMap("minibuffer-local-must-match-map", mblCompletionMap);
-        LispSymbol mblFileNameMustMatchMap = makeKeyMap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
+        LispSymbol mblMap = makeKeymap("minibuffer-local-map");
+        LispSymbol mblNsMap = makeKeymap("minibuffer-local-ns-map", mblMap);
+        LispSymbol mblCompletionMap = makeKeymap("minibuffer-local-completion-map", mblMap);
+        LispSymbol mblFileNameCompletionMap = makeKeymap("minibuffer-local-filename-completion-map", mblCompletionMap);
+        LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
+        LispSymbol mblFileNameMustMatchMap = makeKeymap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
 
         GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-map-alist");
         GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-overriding-map-alist");
@@ -174,8 +177,8 @@ public abstract class BuiltinsKey {
 // initial_define_key (globalMap, CharUtil.Ctl('X'), "Control-X-prefix");
     }
 
-    private static LispSymbol makeKeyMap(String name, LispSymbol parentSymbol) {
-        LispKeymap keymap = BuiltinsKey.makeSparseKeymap(null);
+    private static LispSymbol makeKeymap(String name, LispSymbol parentSymbol) {
+        LispKeymap keymap = makeSparseKeymap(name);
         try {
             LispObject value = parentSymbol.getValue();
             LispKeymap parent = value.equals(LispSymbol.ourNil) ? null : (LispKeymap) value;
@@ -189,7 +192,7 @@ public abstract class BuiltinsKey {
         }
     }
 
-    private static LispSymbol makeKeyMap(String name) {
-        return GlobalEnvironment.INSTANCE.defineSymbol(name, BuiltinsKey.makeSparseKeymap(LispSymbol.ourNil));
+    private static LispSymbol makeKeymap(String name) {
+        return GlobalEnvironment.INSTANCE.defineSymbol(name, makeSparseKeymap(name));
     }
 }

@@ -7,6 +7,7 @@ import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ArrayUtil;
+import com.rits.cloning.Cloner;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -15,7 +16,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import javax.swing.*;
@@ -77,7 +77,7 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
     }
 
     private String generateActionId (String binding) {
-        return Emacs4ijBundle.message("emacs4ij") + ' ' + StringUtil.capitalizeWords(binding, "-", true, false);   //"emacs4ij.action."+ myName + "." +
+        return Emacs4ijBundle.message("emacs4ij") + ' ' + StringUtil.capitalizeWords(binding, "-", true, false);
     }
 
     private void unregisterShortcut (Shortcut shortcut) {
@@ -134,7 +134,8 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
 
     @Override
     public LispKeymap copy() {
-        throw new NotImplementedException("LispKeymap copy");
+        IdeaKeymap keymap = new Cloner().deepClone(this);
+        return keymap;
     }
 
     @Override
