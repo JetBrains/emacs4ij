@@ -2,10 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.junit.Test;
 
 /**
@@ -164,8 +161,8 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispInteger(65), r);
         r = evaluateString("(capitalize 5)");
         Assert.assertEquals(new LispInteger(5), r);
-        r = evaluateString("(capitalize \"EVERY day\")");
-        Assert.assertEquals(new LispString("Every Day"), r);
+        r = evaluateString("(capitalize \"EVERY day and\")");
+        Assert.assertEquals(new LispString("Every Day And"), r);
     }
     
     @Test
@@ -299,5 +296,19 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispString("ick"), r);
         r = evaluateString("(match-string 3 \"The quick fox jumped quickly.\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+    
+    @Test
+    public void testToNumber() {
+        LispObject n = evaluateString("(string-to-number \"0.0110101\" 10)");
+        Assert.assertEquals(new LispFloat(0.0110101), n);
+        n = evaluateString("(string-to-number \"0.0110101\")");
+        Assert.assertEquals(new LispFloat(0.0110101), n);
+        n = evaluateString("(string-to-number \"0.0110101\" nil)");
+        Assert.assertEquals(new LispFloat(0.0110101), n);
+        n = evaluateString("(string-to-number \"0.0110101\" 2)");
+        Assert.assertEquals(new LispInteger(0), n);
+        n = evaluateString("(string-to-number \"110101\" 2)");
+        Assert.assertEquals(new LispInteger(53), n);
     }
 }

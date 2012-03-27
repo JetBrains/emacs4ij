@@ -176,7 +176,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
 
 
-//    @Test
+    //    @Test
 //    public void testClLoopLet() {
 //        evaluateString("(setq loop-for-sets '((ch (aref --cl-vec-- --cl-idx--))))");
 //        evaluateString("(setq arg0 (nreverse loop-for-sets))");
@@ -187,18 +187,41 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 //        Assert.assertEquals("(let* ((ch (aref --cl-vec-- --cl-idx--))) quote setq)", r.toString());
 //    }
 //
-//    @Test
-//    public void testKbdMacro() {
-//        LispObject r = evaluateString("(kbd \"C-x\")");
+    @Test
+    public void testKbdMacro() {
+        LispObject r = evaluateString("(kbd \"C-x\")");
+        System.out.println(r.toString());
 //        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"\\C-x\")");
+        r = evaluateString("(kbd \"\\C-x\")");
+        System.out.println(r.toString());
 //        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"\\C-x\\t\")");
+        r = evaluateString("(kbd \"\\C-x\\t\")"); //
+        System.out.println(r.toString());
 //        Assert.assertEquals(new LispString("^X"), r);
-//        r = evaluateString("(kbd \"^x\")");
+        r = evaluateString("(kbd \"^x\")");
+        System.out.println(r.toString());
 //        Assert.assertEquals(new LispString("^X"), r);
 //        Assert.assertEquals(1, ((LispSequence)r).length());
-//    }
+
+
+        r = evaluateString("(kbd \"C-x\")"); // ⇒ "\C-x"
+        System.out.println("\\C-x" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"C-x C-f\")"); // ⇒ "\C-x\C-f"
+        System.out.println("\\C-x\\C-f" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"C-x 4 C-f\")"); // ⇒ "\C-x4\C-f"
+        System.out.println("\\C-x4\\C-f" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"X\")"); // ⇒ "X"
+        System.out.println("X" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"RET\")"); // ⇒ "\^M"
+        System.out.println("\\^M" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"C-c SPC\")"); // ⇒ "\C-c "
+        System.out.println("\\C-c " + " =?= " + r.toString());
+        r = evaluateString("(kbd \"<f1> SPC\")"); // ⇒ [f1 32]
+        System.out.println("[f1 32]" + " =?= " + r.toString());
+        r = evaluateString("(kbd \"C-M-<down>\")"); // ⇒ [C-M-down]
+        System.out.println("[C-M-down]" + " =?= " + r.toString());
+
+    }
 
     @Test
     public void testCurrentGlobalKeyMap() {

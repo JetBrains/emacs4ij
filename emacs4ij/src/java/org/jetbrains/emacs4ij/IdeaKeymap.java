@@ -134,8 +134,7 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
 
     @Override
     public LispKeymap copy() {
-        IdeaKeymap keymap = new Cloner().deepClone(this);
-        return keymap;
+        return new Cloner().deepClone(this);
     }
 
     @Override

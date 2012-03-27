@@ -159,7 +159,15 @@ public abstract class BuiltinsString {
         return new LispInteger(m.end(index));
     }
 
-
+    private static int getIntegerData (LispObject object) {
+        if (object instanceof LispInteger)
+            return ((LispInteger) object).getData();
+        throw new WrongTypeArgumentException("integerp", object.toString());
+    }
     
-
+    @Subroutine("string-to-number")
+    public static LispNumber stringToNumber (LispString string, @Optional LispObject baseObject) {
+        int base = BuiltinPredicates.isNil(baseObject) ? 10 : getIntegerData(baseObject);
+        return string.toNumber(base);
+    }    
 }

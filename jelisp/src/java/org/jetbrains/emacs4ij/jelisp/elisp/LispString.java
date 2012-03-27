@@ -24,7 +24,8 @@ import java.util.regex.Pattern;
  */
 public class LispString implements LispAtom, LispSequence, LispArray, LispStringOrVector {
     private String myData;
-    private final List<String> modifiers = Arrays.asList("meta", "ctrl", "shift", "alt");
+    private final List<String> myModifiers = Arrays.asList("meta", "ctrl", "shift", "alt");
+    private final List<String> myPunctuation = Arrays.asList("SPACE");
 
     public LispString (String data) {
         if (data == null) {
@@ -99,27 +100,9 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
     public String toCharString() {
         return myData;
     }
-    
-    private boolean isDelimiter(int c) {
-        return c < 48 || (c > 57 && c < 65) || (c > 90 && c < 97) || c > 122;
-    }
-    
+
     public LispString capitalize() {
-        boolean firstAfterDelimiter = true;
-        char[] s = myData.toCharArray();
-        for (int c = 0; c < s.length; ++c) {            
-            if (isDelimiter(s[c])) {
-                firstAfterDelimiter = true;
-                continue;
-            }
-            if (firstAfterDelimiter) {
-                s[c] = Character.toUpperCase(s[c]);
-                firstAfterDelimiter = false;
-                continue;
-            }            
-            s[c] = Character.toLowerCase(s[c]);
-        }        
-        return new LispString(new String(s));
+        return new LispString(StringUtil.capitalizeWords(myData.toLowerCase(), true));
     }
     
     public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
@@ -154,42 +137,54 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         return new LispInteger(c);
     }
 
+    private String reg (char modifier) {
+        return "\\s?\\\\" + modifier + "-";
+    }
+    
     //todo: it's public only for test
     public String toShortcutString () {
         String data = myData;
-        Map<String, String> replaceMap = new HashMap<>();
-
-        replaceMap.put("\\\\{0,2}M-", " meta ");
-        replaceMap.put("\\\\{0,2}C-", " ctrl ");
+        Map<String, String> replaceMap = new LinkedHashMap<>();
+        replaceMap.put(" ", " SPACE ");
+        replaceMap.put(reg('M'), " meta ");
+        replaceMap.put(reg('C'), " ctrl ");
 //        replaceMap.put("H-", "hyper ");
-        replaceMap.put("\\\\{0,2}S-", " shift ");
+        replaceMap.put(reg('S'), " shift ");
 //        replaceMap.put("s-", "super ");
-        replaceMap.put("\\\\{0,2}A-", " alt ");
+        replaceMap.put(reg('A'), " alt ");
 
         for (Map.Entry<String, String> entry: replaceMap.entrySet()) {
             data = data.replaceAll(entry.getKey(), entry.getValue());
         }
-        Pattern p = Pattern.compile("(^|\\s)\\w(\\s|$)");
-        Matcher m = p.matcher(data);
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            String replacement = m.group().toUpperCase();
-            m.appendReplacement(sb, replacement);
+
+        String[] split = data.trim().split(" ");
+        Pattern p = Pattern.compile(".");
+        for (int i = 0, splitLength = split.length; i < splitLength; i++) {
+            String item = split[i];
+            if (!myModifiers.contains(item) && !myPunctuation.contains(item)) {
+                Matcher m = p.matcher(item);
+                StringBuffer sb = new StringBuffer();
+                while (m.find()) {
+                    String replacement = " " + m.group().toUpperCase();
+                    m.appendReplacement(sb, replacement);
+                }
+                m.appendTail(sb);
+                data = data.replaceAll("(^|\\s)" + item + "(\\s|$)" , sb.toString()+ " ");
+            }
         }
-        m.appendTail(sb);
-        return sb.toString();
+        return data.trim();
     }
     
     @Override
     public List<Shortcut> toKeyboardShortcutList() {
-        String[] keystrokeContent = toShortcutString().trim().split(" ");
+        String[] keystrokeContent = toShortcutString().split(" ");
         List<Shortcut> keystrokes = new ArrayList<>();
         int sequenceStart = 0;
         for (int i = 0, keystrokeContentLength = keystrokeContent.length; i < keystrokeContentLength; i++) {
             String item = keystrokeContent[i];
             if (StringUtil.isEmptyOrSpaces(item))
                 continue;
-            if (!modifiers.contains(item)) {
+            if (!myModifiers.contains(item)) {
                 StringBuilder keystrokeBuilder = new StringBuilder();
                 for (int j = sequenceStart; j <= i; ++j)
                     keystrokeBuilder.append(keystrokeContent[j]).append(" ");
@@ -199,19 +194,19 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         }
         return keystrokes;        
     }
+    
+    public LispNumber toNumber (int base) {
+        try {
+            return new LispInteger(Integer.valueOf(myData, base));
+        } catch (NumberFormatException e) {
+            try {
+                if (base != 10)
+                    return new LispInteger(0);
+                return new LispFloat(Double.valueOf(myData));
+            } catch (NumberFormatException e2) {
+                return new LispInteger(0);
+            }
+        }
+    }
 
-//    @Override
-//    public boolean isInteractive() {
-//        throw new NotImplementedException("LispString.isInteractive()");
-//    }
-//
-//    @Override
-//    public String getInteractiveString() {
-//        throw new NotImplementedException("LispString.getInteractiveString()");
-//    }
-//
-//    @Override
-//    public LispList getInteractiveForm() {
-//        throw new NotImplementedException("LispString.getInteractiveForm()");
-//    }
 }

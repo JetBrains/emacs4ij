@@ -19,8 +19,9 @@ public class LispStringTest {
     @Test
     public void testToShortcutString() throws Exception {
         LispString s = new LispString("C-x");
-        Assert.assertEquals("ctrl X", s.toShortcutString());
+        Assert.assertEquals("C - X", s.toShortcutString());
     }
+
     @Test
     public void testToShortcutString1() throws Exception {
         LispString s = new LispString("\\C-x");
@@ -29,8 +30,8 @@ public class LispStringTest {
 
     @Test
     public void testToShortcutString2() throws Exception {
-        LispString s = new LispString("C-x ");
-        Assert.assertEquals("ctrl X ", s.toShortcutString());
+        LispString s = new LispString("\\C-x ");
+        Assert.assertEquals("ctrl X SPACE", s.toShortcutString());
     }
     @Test
     public void testToShortcutString3() throws Exception {
@@ -40,8 +41,20 @@ public class LispStringTest {
 
     @Test
     public void testToShortcutStringTwo() throws Exception {
-        LispString s = new LispString("\\C-a\\M-b");
-        Assert.assertEquals("ctrl A meta B", s.toShortcutString());
+        LispString s = new LispString(" \\C-c\\M-a");
+        Assert.assertEquals("SPACE ctrl C meta A", s.toShortcutString());
+    }
+
+    @Test
+    public void testToShortcutStringManySingle() throws Exception {
+        LispString s = new LispString("\\C-xf");
+        Assert.assertEquals("ctrl X F", s.toShortcutString());
+    }
+
+    @Test
+    public void testToShortcutStringWord() throws Exception {
+        LispString s = new LispString("ivan");
+        Assert.assertEquals("I V A N", s.toShortcutString());
     }
 
     @Test
@@ -55,10 +68,11 @@ public class LispStringTest {
     
     @Test
     public void testToShortcutList() {
-        LispString s = new LispString("\\C-a\\C-b");
+        LispString s = new LispString("\\C-a\\C-b ");
         List<Shortcut> list = new ArrayList<>();
         list.add(KeyboardShortcut.fromString("ctrl A"));
         list.add(KeyboardShortcut.fromString("ctrl B"));
+        list.add(KeyboardShortcut.fromString("SPACE"));
         Assert.assertEquals(list, s.toKeyboardShortcutList());
     }
 }
