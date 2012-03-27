@@ -246,6 +246,25 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispString("C-f C-g C-a C-b C-c"), r);
     }
 
+    //todo
+    /*
+     (single-key-description ?\C-x)
+               ⇒ "C-x"
+          (key-description "\C-x \M-y \n \t \r \f123")
+               ⇒ "C-x SPC M-y SPC C-j SPC TAB SPC RET SPC C-l 1 2 3"
+          (single-key-description 'delete)
+               ⇒ "<delete>"
+          (single-key-description 'C-mouse-1)
+               ⇒ "<C-mouse-1>"
+          (single-key-description 'C-mouse-1 t)
+               ⇒ "C-mouse-1"
+
+          (key-description [?\M-3 delete])
+               ⇒ "M-3 <delete>"
+          (key-description [delete] "\M-3")
+               ⇒ "M-3 <delete>"
+     */
+
     @Test
     public void testDefineKeySimple() {
         evaluateString("(defvar km (make-sparse-keymap))");

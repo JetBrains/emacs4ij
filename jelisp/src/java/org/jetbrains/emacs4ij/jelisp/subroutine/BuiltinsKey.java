@@ -126,13 +126,18 @@ public abstract class BuiltinsKey {
 
     @Subroutine("key-description")
     public static LispString keyDescription (Environment environment, LispObject keys, @Optional LispObject prefix) {
-        String first = (prefix == null || prefix.equals(LispSymbol.ourNil))
+        String first = BuiltinPredicates.isNil(prefix)
                 ? ""
                 : BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), prefix, new LispString(" ")).getData();
         String second = BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), keys, new LispString(" ")).getData();
         return new LispString(first + " " + second);
     }
 
+    @Subroutine("single-key-description")
+    public static LispString singleKeyDescription (LispObject key, @Optional LispObject noAngles) {
+        throw new NotImplementedException("single-key-description");
+    }
+    
     @Subroutine("current-global-map")
     public static LispKeymap currentGlobalMap (Environment environment) {
         return environment.getActiveKeymap();
