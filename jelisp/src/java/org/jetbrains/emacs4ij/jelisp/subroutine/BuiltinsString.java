@@ -7,8 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
@@ -21,74 +20,43 @@ import java.util.regex.Matcher;
 public abstract class BuiltinsString {
     private BuiltinsString () {}
 
+    private static void checkFormatCharacters (String format) {
+        List<Character> emacsFormatChars = Arrays.asList('s', 'S', 'd', 'o', 'x', 'X', 'e', 'f', 'g', 'c');
+        boolean wait = false;
+        for (int i = 0; i < format.length(); ++i) {
+            char c = format.charAt(i);
+            if (!wait && c == '%') {
+                wait = true;
+                continue;
+            }
+            if (wait && Character.isLetter(c)) {
+                if (!emacsFormatChars.contains(c))
+                    throw new LispException("Invalid format operation %" + c);
+                wait = false;
+            }
+        }
+    }
+
     @Subroutine(value = "format")
     public static LispString format (LispString formatString, @Optional LispObject... objects) {
-        String s = formatString.getData();
-        int k = s.indexOf('%');
-        String result = s.substring(0, (k == -1 ? s.length() : k));
-        char p = '%';
-        int index = 0;
-        Character[] formatCharsArray = new Character[] {'s', 'S', 'd', 'o', 'x', 'X', 'e', 'f', 'g', 'c'};
-        List<Character> formatChars = Arrays.asList(formatCharsArray);
-
-        while (k != -1) {
-            k++;
-            while (k < s.length() && s.charAt(k) < 'A' && s.charAt(k) != '%') { //skip flags,width,precision: %<flags><width><precision>character
-                k++;
+        checkFormatCharacters(formatString.getData());
+        try {
+            Object[] data = new Object[objects.length];
+            for (int i = 0; i != objects.length; i++) {
+                LispObject object = objects[i];
+                data[i] = object instanceof LispNumber ? ((LispNumber)object).getData() : object.toString();
             }
-            if (k == s.length())
+            return new LispString(String.format(formatString.getData(), data));
+        } catch (MissingFormatArgumentException e1) {
+            throw new LispException("Not enough arguments for format string");
+        } catch (UnknownFormatConversionException e2) {
+            char c = e2.getMessage().charAt(e2.getMessage().length() - 2);
+            if (c < 'A')
                 throw new LispException("Format string ends in middle of format specifier");
-            if (s.charAt(k) == '%') {
-                result += '%';
-            } else {
-                if (index >= objects.length)
-                    throw new LispException("Not enough arguments for format string");
-                if (!(formatChars.contains(s.charAt(k))))
-                    throw new LispException("Invalid format operation %" + s.charAt(k));
-                
-                result += objects[index] instanceof LispString ?
-                        ((LispString)objects[index]).getData()
-                        : objects[index].toString();
-
-                index++;
-            }
-            /* switch (s.charAt(k)) {
-               case 's': //print a string argument.  Actually, prints any object, with `princ'.
-                   break;
-               case 'S': //print any object as an s-expression (using `prin1').
-                   break;
-               case '%':
-                   break;
-
-               //todo: The argument used for %d, %o, %x, %e, %f, %g or %c must be a number.
-
-               case 'd': //print as number in decimal (%o octal, %x hex)
-                   break;
-               case 'o': //print as number in octal
-                   break;
-               case 'x': //print as number in hex
-                   break;
-               case 'X': //is like %x, but uses upper case.
-                   break;
-               case 'e': //print a number in exponential notation.
-                   break;
-               case 'f': //print a number in decimal-point notation.
-                   break;
-               case 'g': //print a number in exponential notation or decimal-point notation, whichever uses fewer characters.
-                   break;
-               case 'c': //print a number as a single character.
-                   break;
-
-
-               default:
-                   throw new LispException("Invalid format operation %" + s.charAt(k));
-           } */
-            k++;
-            int nextPercent = s.indexOf('%', k);
-            result += s.substring(k, (nextPercent == -1 ? s.length() : nextPercent));
-            k = nextPercent;
+            throw new LispException("Invalid format operation %" + c);
+        } catch (IllegalFormatConversionException e3) {
+            throw new LispException("Format specifier doesn't match argument type");
         }
-        return new LispString(result);
     }
 
     @Subroutine(value = "string-match")
@@ -128,7 +96,7 @@ public abstract class BuiltinsString {
         }
         throw new WrongTypeArgumentException("char-or-string-p", object);
     }
-    
+
     @Subroutine("match-beginning")
     public static LispObject matchBeginning (LispInteger subExp) {
         int index = subExp.getData();
@@ -164,10 +132,10 @@ public abstract class BuiltinsString {
             return ((LispInteger) object).getData();
         throw new WrongTypeArgumentException("integerp", object.toString());
     }
-    
+
     @Subroutine("string-to-number")
     public static LispNumber stringToNumber (LispString string, @Optional LispObject baseObject) {
         int base = BuiltinPredicates.isNil(baseObject) ? 10 : getIntegerData(baseObject);
         return string.toNumber(base);
-    }    
+    }
 }

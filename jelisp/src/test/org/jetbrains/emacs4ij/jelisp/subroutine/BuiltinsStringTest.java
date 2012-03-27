@@ -60,8 +60,33 @@ public class BuiltinsStringTest extends BaseSubroutineTest {
 
     @Test
     public void testFormatSimple() {
-        LispObject s = evaluateString("(format \"%1234d\" 1 2 3)");
-        Assert.assertEquals(new LispString("1"), s);
+        LispObject s = evaluateString("(format \"%12d\" 1 2 3)");
+        Assert.assertEquals(new LispString("           1"), s);
+    }
+
+    @Test
+    public void testFormatO() {
+        LispObject s = evaluateString("(format \"%o\" 123)");
+        Assert.assertEquals(new LispString("173"), s);
+    }
+
+    @Test
+    public void testFormatX() {
+        LispObject s = evaluateString("(format \"%x\" 123)");
+        Assert.assertEquals(new LispString("7b"), s);
+        s = evaluateString("(format \"%X\" 123)");
+        Assert.assertEquals(new LispString("7B"), s);
+    }
+
+    @Test
+    public void testFormatH() {
+        try {
+            evaluateString("(format \"%h\" 123)");
+        } catch (Exception e) {
+            Assert.assertEquals("Invalid format operation %h", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
     }
 
     @Test
