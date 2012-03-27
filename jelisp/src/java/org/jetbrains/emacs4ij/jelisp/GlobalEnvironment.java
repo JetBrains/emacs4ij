@@ -6,6 +6,7 @@ import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
@@ -160,10 +161,7 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
 
-        BuiltinsKey.defineKeyMaps();
-        BuiltinsKey.keys_of_keymap();
-        KeyBoardUtil.defineKbdSymbols(INSTANCE);
-        KeyBoardUtil.keys_of_keyboard();
+        BuiltinsKey.init();
 
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
@@ -371,7 +369,7 @@ public class GlobalEnvironment extends Environment {
             myUploadHistory.put(name, file);
             return (LispList) parsed;
         }
-        throw new RuntimeException("Parsed object is not a LispList!");
+        throw new InternalException("Parsed object is not a LispList!");
     }
 
     private static LispList getDefFromInvokersSrc(String name, SymbolType type) {

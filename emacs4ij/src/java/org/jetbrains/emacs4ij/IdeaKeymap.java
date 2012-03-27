@@ -60,13 +60,14 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
             return;
         Shortcut firstKeystroke = shortcuts.get(0);
         if (shortcuts.size() == 1) {
+            if (action instanceof LispSymbol && ((LispSymbol) action).isFunction() && ((LispSymbol) action).getFunction() instanceof LispKeymap)
+                action = (KeymapCell) ((LispSymbol) action).getFunction();
             myKeyBindings.put(firstKeystroke, action);
             registerAction(action, firstKeystroke);
             return;
         }
         if (isPrefixKey(firstKeystroke)) {
-            IdeaKeymap subMap = (IdeaKeymap) myKeyBindings.get(firstKeystroke);
-            subMap.defineKey(action, shortcuts.subList(1, shortcuts.size()));
+            ((IdeaKeymap)myKeyBindings.get(firstKeystroke)).defineKey(action, shortcuts.subList(1, shortcuts.size()));
             return;
         }
         BuiltinsCore.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
@@ -160,8 +161,7 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
         if (shortcuts.size() == 1)
             return getKeyBinding(firstKeystroke);
         if (isPrefixKey(firstKeystroke)) {
-            IdeaKeymap subMap = (IdeaKeymap) myKeyBindings.get(firstKeystroke);
-            return subMap.getKeyBinding(shortcuts.subList(1, shortcuts.size()));
+            return ((IdeaKeymap)myKeyBindings.get(firstKeystroke)).getKeyBinding(shortcuts.subList(1, shortcuts.size()));
         }
         return null;
     }

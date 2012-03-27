@@ -155,11 +155,12 @@ public abstract class BuiltinsBuffer {
         return new LispInteger(environment.getBufferCurrentForEditing().pointMax());
     }
 
-    //todo: accepts integer OR MARKER
-    //todo:  bound to <menu-bar> <edit> <goto> <go-to-pos>
     @Subroutine(value = "goto-char", isCmd = true, interactive = "nGoto char: ")
-    public static LispObject gotoChar (Environment environment, LispInteger pos) {
-        environment.getBufferCurrentForEditing().gotoChar(pos.getData());
+    public static LispObject gotoChar (Environment environment, LispObject pos) {
+        if (!BuiltinPredicates.isIntegerOrMarker(pos))
+            throw new WrongTypeArgumentException("integer-or-marker-p", pos.toString());
+        int data = (Integer)BuiltinArithmetic.numberOrMarkerToNumber(pos).getData();
+        environment.getBufferCurrentForEditing().gotoChar(data);
         return pos;
     }
 
@@ -295,6 +296,6 @@ public abstract class BuiltinsBuffer {
     public static void setSyntaxTable (LispObject syntaxTable) {
         if (!isSyntaxTable(syntaxTable))
             throw new WrongTypeArgumentException("syntax-table-p", syntaxTable.toString());
-        //todo
+        //todo ?
     }
 }

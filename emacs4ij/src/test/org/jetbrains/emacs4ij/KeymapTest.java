@@ -299,8 +299,8 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     @Test
     public void testDefineKeyInKeyMap() {
         evaluateString("(defvar km (make-keymap))");
-        evaluateString("(define-key km \"C-d\" 'a)");
-        LispObject a = evaluateString("(lookup-key km \"C-d\")");
+        evaluateString("(define-key km \"\\C-d\" 'a)");
+        LispObject a = evaluateString("(lookup-key km \"\\C-d\")");
         Assert.assertEquals(new LispSymbol("a"), a);
     }
 
@@ -362,6 +362,37 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(define-key km \"\\C-q\" p)");
         LispObject a = evaluateString("(lookup-key km \"\\C-q\\M-g\")");
         Assert.assertEquals(a, new LispSymbol("a"));
+    }
+
+    @Test
+    public void testPrefixKeymapSymbol() {
+        evaluateString("(setq km (make-sparse-keymap))");
+        evaluateString("(fset 'p (make-sparse-keymap))");
+        evaluateString("(define-key 'p \"\\M-g\" 'a)");
+        evaluateString("(define-key km \"\\C-q\" 'p)");
+        LispObject a = evaluateString("(lookup-key km \"\\C-q\\M-g\")");
+        Assert.assertEquals(a, new LispSymbol("a"));
+    }
+    
+    @Test
+    public void testBuiltinKeymaps() {
+        LispObject global = evaluateString("global-map");
+        Assert.assertEquals(LispSymbol.ourT, BuiltinsKey.keymapP(global));
+
+        try {
+            evaluateString("(symbol-value (key-binding \"\\C-x\"))");
+        } catch (Exception e) {
+            //ok
+        }
+        LispObject v = evaluateString("(symbol-function (key-binding \"\\C-x\"))");
+        Assert.assertEquals(evaluateString("ctl-x-map"), v);
+
+//        evaluateString("symbol-function 'Control-X-prefix)");
+
+        v = evaluateString("(symbol-value 'Control-X-prefix)");
+        Assert.assertEquals(evaluateString("ctl-x-map"), v);
+
+
     }
 
 }

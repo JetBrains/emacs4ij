@@ -165,9 +165,13 @@ public abstract class BuiltinPredicates {
         return LispSymbol.bool (object instanceof LispNumber || object instanceof LispMarker);
     }
 
+    public static boolean isIntegerOrMarker (LispObject object) {
+        return object instanceof LispInteger || object instanceof LispMarker;
+    }
+
     @Subroutine("integer-or-marker-p")
     public static LispSymbol integerOrMarkerP (LispObject object) {
-        return LispSymbol.bool (object instanceof LispInteger || object instanceof LispMarker);
+        return LispSymbol.bool (isIntegerOrMarker(object));
     }
 
     @Subroutine("markerp")

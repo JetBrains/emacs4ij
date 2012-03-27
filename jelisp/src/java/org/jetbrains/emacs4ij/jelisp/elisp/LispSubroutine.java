@@ -202,7 +202,7 @@ public abstract class LispSubroutine {
                         }
                     }
                     ArgumentsList arguments = parseArguments(m, environment, args);
-                    checkArguments(m.getAnnotation(Subroutine.class).value(), arguments, args);
+                    checkArguments(f.getName(), arguments, args);
                     try {
                         return (LispObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException | InvocationTargetException e) {

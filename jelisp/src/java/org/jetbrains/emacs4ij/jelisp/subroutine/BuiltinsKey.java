@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -120,7 +121,7 @@ public abstract class BuiltinsKey {
     public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, KeymapCell function) {
         check(keymapObject);
         LispKeymap keymap = getKeymap(keymapObject);
-        keymap.defineKey(function, key);
+//        keymap.defineKey(function, key);
         return function;
     }
 
@@ -149,19 +150,19 @@ public abstract class BuiltinsKey {
         return LispSymbol.ourNil;
     }
 
-    public static void defineKeyMaps () {
+    public static void init() {
         ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
         GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
-        LispKeymap globalMap = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
-        BuiltinsCore.set(GlobalEnvironment.INSTANCE, new LispSymbol("global-map"), globalMap);
+        GlobalEnvironment.INSTANCE.defineSymbol("deactivate-mark");
 
-        LispObject meta_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
-        BuiltinsCore.set(GlobalEnvironment.INSTANCE, new LispSymbol("esc-map"), meta_map);
-        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("ESC-prefix"), meta_map);
+        LispSymbol globalMap = makeKeymap("global-map");
+        LispSymbol escMap = BuiltinsKey.makeKeymap("esc-map");
+        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("ESC-prefix"), escMap.getValue());
+        LispSymbol controlXMap = BuiltinsKey.makeKeymap("ctl-x-map");
+        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("Control-X-prefix"), controlXMap.getValue());
 
-        LispObject control_x_map = BuiltinsKey.makeKeymap(LispSymbol.ourNil);
-        BuiltinsCore.set(GlobalEnvironment.INSTANCE, new LispSymbol("ctl-x-map"), control_x_map);
-        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("Control-X-prefix"), control_x_map);
+        setKey(globalMap, "ESC-prefix", "ESC");
+        setKey(globalMap, "Control-X-prefix", "\\C-x");
 
         GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
         LispSymbol mblMap = makeKeymap("minibuffer-local-map");
@@ -171,15 +172,27 @@ public abstract class BuiltinsKey {
         LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
         LispSymbol mblFileNameMustMatchMap = makeKeymap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
 
-        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-map-alist");
-        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-overriding-map-alist");
-        GlobalEnvironment.INSTANCE.defineSymbol("emulation-mode-map-alists");
-        GlobalEnvironment.INSTANCE.defineSymbol("where-is-preferred-modifier");
+//        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-map-alist");
+//        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-overriding-map-alist");
+//        GlobalEnvironment.INSTANCE.defineSymbol("emulation-mode-map-alists");
+//        GlobalEnvironment.INSTANCE.defineSymbol("where-is-preferred-modifier");
+//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initial_define_key (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
+//        BuiltinsKey.initial_define_key (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
+//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
+//        BuiltinsKey.initial_define_key (meta_map, 'x', "execute-extended-command");
+//
     }
 
-    public static void keys_of_keymap () {
-// initial_define_key (globalMap, 27, "ESC-prefix");
-// initial_define_key (globalMap, CharUtil.Ctl('X'), "Control-X-prefix");
+    private static void setKey (LispSymbol keymap, String name, String key) {
+        LispSymbol action = GlobalEnvironment.INSTANCE.find(name);
+        if (action == null)
+            throw new InternalException("BuiltinsKey.globalSetKey");
+        setKey(keymap, action, key);
+    }
+
+    private static void setKey (LispSymbol keymap, LispSymbol action, String key) {
+        ((LispKeymap)keymap.getValue()).defineKey(action, new LispString(key));
     }
 
     private static LispSymbol makeKeymap(String name, LispSymbol parentSymbol) {

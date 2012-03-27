@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -14,7 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 public abstract class BuiltinArithmetic {
     private BuiltinArithmetic() {}
 
-    private static LispNumber numberOrMarkerToNumber (LispObject lispObject) {
+    public static LispNumber numberOrMarkerToNumber (LispObject lispObject) {
         if (BuiltinPredicates.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
         LispNumber n;
@@ -22,8 +21,10 @@ public abstract class BuiltinArithmetic {
             LispObject pos = ((LispMarker)lispObject).getPosition();
             if (!pos.equals(LispSymbol.ourNil)) {
                 n = (LispInteger)pos;
-            } else
-                throw new LispException("'(error \"Marker does not point anywhere\")");
+            } else {
+                BuiltinsCore.error("Marker does not point anywhere");
+                return null;
+            }
         } else {
             n = (LispNumber) lispObject;
         }
