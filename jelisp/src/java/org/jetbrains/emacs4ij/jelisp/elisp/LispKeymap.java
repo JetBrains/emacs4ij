@@ -10,7 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.KeymapCell;
  * Time: 3:19 AM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispKeymap extends LispObject {
+public interface LispKeymap extends KeymapCell {
     void defineKey(KeymapCell action, LispStringOrVector key);
     void bindActions(); //for my KeymapManager
     KeymapCell getKeyBinding(LispStringOrVector key);

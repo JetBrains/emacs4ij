@@ -17,47 +17,6 @@ import java.util.List;
  */
 public class LispStringTest {
     @Test
-    public void testToShortcutString() throws Exception {
-        LispString s = new LispString("C-x");
-        Assert.assertEquals("C MINUS X", s.toShortcutString());
-    }
-
-    @Test
-    public void testToShortcutString1() throws Exception {
-        LispString s = new LispString("\\C-x");
-        Assert.assertEquals("ctrl X", s.toShortcutString());
-    }
-
-    @Test
-    public void testToShortcutString2() throws Exception {
-        LispString s = new LispString("\\C-x ");
-        Assert.assertEquals("ctrl X SPACE", s.toShortcutString());
-    }
-    @Test
-    public void testToShortcutString3() throws Exception {
-        LispString s = new LispString("a");
-        Assert.assertEquals("A", s.toShortcutString());
-    }
-
-    @Test
-    public void testToShortcutStringTwo() throws Exception {
-        LispString s = new LispString(" \\C-c\\M-a");
-        Assert.assertEquals("SPACE ctrl C meta A", s.toShortcutString());
-    }
-
-    @Test
-    public void testToShortcutStringManySingle() throws Exception {
-        LispString s = new LispString("\\C-xf");
-        Assert.assertEquals("ctrl X F", s.toShortcutString());
-    }
-
-    @Test
-    public void testToShortcutStringWord() throws Exception {
-        LispString s = new LispString("ivan");
-        Assert.assertEquals("I V A N", s.toShortcutString());
-    }
-
-    @Test
     public void testToShortcutListManySingle() throws Exception {
         LispString s = new LispString("\\C-xf");
         List<Shortcut> list = new ArrayList<>();

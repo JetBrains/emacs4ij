@@ -99,8 +99,7 @@ public abstract class BuiltinsBuffer {
         return lispObject;
     }
 
-    //todo: bound to C-x b, <menu-bar> <buffer> <select-named-buffer>
-    @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer")
+    @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer", key = "\\C-xb")
     public static LispObject switchToBuffer (Environment environment, LispObject bufferOrName, @Optional LispObject noRecordObject) {
         boolean noRecord = false;
         if (noRecordObject != null) {
@@ -164,8 +163,7 @@ public abstract class BuiltinsBuffer {
         return pos;
     }
 
-    //todo: bound to C-f, <right>
-    @Subroutine(value = "forward-char", isCmd = true, interactive = "")
+    @Subroutine(value = "forward-char", isCmd = true, key = "\\C-f")
     public static LispObject forwardChar (Environment environment, @Optional LispObject shift) {
         if (isNil(shift))
             shift = new LispInteger(1);
@@ -177,8 +175,7 @@ public abstract class BuiltinsBuffer {
         return new LispSymbol(message);
     }
 
-    //todo: bound to C-b, <left>
-    @Subroutine(value = "backward-char", isCmd = true, interactive = "")//, key = "\\C-b")
+    @Subroutine(value = "backward-char", isCmd = true, key = "\\C-b")
     public static LispObject backwardChar (Environment environment, @Optional LispObject shift) {
         if (isNil(shift))
             shift = new LispInteger(1);
@@ -206,7 +203,7 @@ public abstract class BuiltinsBuffer {
         return environment.getBufferList();
     }
 
-    @Subroutine(value = "bury-buffer", isCmd = true, interactive = "")
+    @Subroutine(value = "bury-buffer", isCmd = true)
     public static LispObject buryBuffer (Environment environment, @Optional LispObject bufferOrName) {
         LispBuffer buffer;
         if (isNil(bufferOrName)) {
@@ -248,8 +245,7 @@ public abstract class BuiltinsBuffer {
         return LispSymbol.ourNil;
     }
 
-    //todo: interactive, bound to C-x k
-    @Subroutine(value = "kill-buffer", isCmd = true, interactive = "bKill buffer")
+    @Subroutine(value = "kill-buffer", isCmd = true, interactive = "bKill buffer", key = "\\C-xk")
     public static LispObject killBuffer (Environment environment, @Optional LispObject bufferOrName) {
         replaceBufferInWindows(environment, bufferOrName);
 

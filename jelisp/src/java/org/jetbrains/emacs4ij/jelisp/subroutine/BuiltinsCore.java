@@ -108,7 +108,6 @@ public abstract class BuiltinsCore {
             return;
         }
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-//        miniBuffer.open(environment.getBufferCurrentForEditing().getEditor());
         miniBuffer.onInteractiveCall(environment, function);
     }
 

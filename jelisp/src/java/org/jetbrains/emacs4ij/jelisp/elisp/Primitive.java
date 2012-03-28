@@ -14,20 +14,19 @@ import java.lang.reflect.Method;
  * To change this template use File | Settings | File Templates.
  */
 public class Primitive implements FunctionCell, LispCommand {
-    private String myName;
+    private final String myName;
     private LispObject myDocumentation;
-    private boolean isInteractive;
-    private String myInteractiveString;
-    private Type myType;
+    private final boolean isInteractive;
+    private final String myInteractiveString;
+    private final Type myType;
     
     private int myMinNumArgs = -1;
     private LispObject myMaxNumArgs = null;
 
     @Override
     public LispList getInteractiveForm() {
-        if (isInteractive()) {
-            return LispList.list(new LispSymbol("interactive"), new LispString(myInteractiveString));
-        }
+        if (isInteractive())
+            return LispList.list(new LispSymbol("interactive"), new LispString(getInteractiveString()));
         return LispList.list();
     }
 
@@ -68,7 +67,7 @@ public class Primitive implements FunctionCell, LispCommand {
 
     @Override
     public String getInteractiveString() {
-        return myInteractiveString;
+        return isInteractive ? myInteractiveString : null;
     }
 
     @Override

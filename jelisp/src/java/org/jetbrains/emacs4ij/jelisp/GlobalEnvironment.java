@@ -30,7 +30,6 @@ public class GlobalEnvironment extends Environment {
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
     public static final String ourMiniBufferName = " *Minibuf-0*";
-    public static final String ourUnsetInteractiveString = "0";
     public static GlobalEnvironment INSTANCE = null;
     public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
     private static Ide myIde = null;
@@ -150,7 +149,8 @@ public class GlobalEnvironment extends Environment {
             INSTANCE.mySymbols.clear();
             throw new EnvironmentException("Emacs home directory is invalid!");
         }
-
+        BuiltinsKey.init();
+        
         INSTANCE.setConstants();
         INSTANCE.defineBufferLocalVariables();
         INSTANCE.defineGlobalVariables();
@@ -160,12 +160,8 @@ public class GlobalEnvironment extends Environment {
         //note: it's important to load backquote before defsubst
         INSTANCE.loadFile(myFilesToLoad.get(0));
         INSTANCE.defineDefForms();
-
-        BuiltinsKey.init();
-
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             INSTANCE.loadFile(myFilesToLoad.get(i));
-
     }
 
     private GlobalEnvironment () {
@@ -232,10 +228,11 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("load-file-name"); //lread.c
         defineSymbol("overlay-arrow-variable-list");//xdisp.c
         defineSymbol("case-fold-search");
-        defineSymbol("obarray", new LispVector()); //lread.c      //todo: obarray or mySymbols?
+        defineSymbol("obarray", new LispVector()); //lread.c
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
+        LispKeymap activeKeymap = getActiveKeymap();
         for (Class subroutineContainer: subroutineContainers) {
             Method[] methods = subroutineContainer.getMethods();
             for (Method m: methods) {
@@ -244,13 +241,12 @@ public class GlobalEnvironment extends Environment {
                     continue;
                 String name = annotation.value();
                 if (mySymbols.containsKey(name))
-                    throw new LispException("Duplicate symbol: " + name + '!');
-                if (annotation.isCmd() && annotation.interactive().equals(ourUnsetInteractiveString))
-                    throw new LispException("Interactive string not set! Subroutine " + name);
-
+                    throw new InternalException("Duplicate symbol: " + name + '!');
                 LispSymbol subroutine = new LispSymbol(name);
                 subroutine.setFunction(new Primitive(annotation, myDocumentationExtractor.getSubroutineDoc(name), type));
-
+                if (activeKeymap != null && !StringUtil.isEmptyOrSpaces(annotation.key())) {
+                    activeKeymap.defineKey(subroutine, new LispString(annotation.key()));
+                }
                 mySymbols.put(name, subroutine);
                 //System.out.print(name + ' ');
             }

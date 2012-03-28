@@ -1,15 +1,16 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,9 +24,7 @@ import java.util.regex.Pattern;
  * elisp string = "anything between double quotation marks"
  */
 public class LispString implements LispAtom, LispSequence, LispArray, LispStringOrVector {
-    private String myData;
-    private final List<String> myModifiers = Arrays.asList("meta", "ctrl", "shift", "alt");
-    private final List<String> myPunctuation = Arrays.asList("SPACE", "ESCAPE", "MINUS");
+    private String myData;    
 
     public LispString (String data) {
         if (data == null) {
@@ -137,64 +136,9 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
         return new LispInteger(c);
     }
 
-    private String reg (char modifier) {
-        return "\\s?\\\\" + modifier + "-";
-    }
-    
-    //todo: it's public only for test
-    public String toShortcutString () {
-        String data = myData;
-        Map<String, String> replaceMap = new LinkedHashMap<>();
-        replaceMap.put(" ", " SPACE ");
-        replaceMap.put("ESC", " ESCAPE ");
-        replaceMap.put(reg('M'), " meta ");
-        replaceMap.put(reg('C'), " ctrl ");
-//        replaceMap.put("H-", "hyper ");
-        replaceMap.put(reg('S'), " shift ");
-//        replaceMap.put("s-", "super ");
-        replaceMap.put(reg('A'), " alt ");
-        replaceMap.put("-", " MINUS ");
-
-        for (Map.Entry<String, String> entry: replaceMap.entrySet()) {
-            data = data.replaceAll(entry.getKey(), entry.getValue());
-        }
-
-        String[] split = data.trim().split(" ");
-        Pattern p = Pattern.compile(".");
-        for (int i = 0, splitLength = split.length; i < splitLength; i++) {
-            String item = split[i];
-            if (!myModifiers.contains(item) && !myPunctuation.contains(item)) {
-                Matcher m = p.matcher(item);
-                StringBuffer sb = new StringBuffer();
-                while (m.find()) {
-                    String replacement = " " + m.group().toUpperCase();
-                    m.appendReplacement(sb, replacement);
-                }
-                m.appendTail(sb);
-                data = data.replaceAll("(^|\\s)" + item + "(\\s|$)" , sb.toString()+ " ");
-            }
-        }
-        return data.trim();
-    }
-    
     @Override
     public List<Shortcut> toKeyboardShortcutList() {
-        String[] keystrokeContent = toShortcutString().split(" ");
-        List<Shortcut> keystrokes = new ArrayList<>();
-        int sequenceStart = 0;
-        for (int i = 0, keystrokeContentLength = keystrokeContent.length; i < keystrokeContentLength; i++) {
-            String item = keystrokeContent[i];
-            if (StringUtil.isEmptyOrSpaces(item))
-                continue;
-            if (!myModifiers.contains(item)) {
-                StringBuilder keystrokeBuilder = new StringBuilder();
-                for (int j = sequenceStart; j <= i; ++j)
-                    keystrokeBuilder.append(keystrokeContent[j]).append(" ");
-                sequenceStart = i + 1;
-                keystrokes.add(KeyboardShortcut.fromString(keystrokeBuilder.toString()));
-            }
-        }
-        return keystrokes;        
+        return ShortcutStringUtil.toKeyboardShortcutList(this);
     }
     
     public LispNumber toNumber (int base) {

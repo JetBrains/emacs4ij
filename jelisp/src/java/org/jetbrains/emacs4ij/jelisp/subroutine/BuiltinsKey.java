@@ -154,8 +154,10 @@ public abstract class BuiltinsKey {
         ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
         GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
         GlobalEnvironment.INSTANCE.defineSymbol("deactivate-mark");
-
-//        LispSymbol globalMap = makeKeymap("global-map");
+        LispSymbol globalMap = makeKeymap("global-map");
+        if (globalMap.getValue().equals(LispSymbol.ourNil))
+            return;
+        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("ctl-x-map"), new LispString("\\C-x"));
 //        LispSymbol escMap = BuiltinsKey.makeKeymap("esc-map");
 //        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("ESC-prefix"), escMap.getValue());
 //        LispSymbol controlXMap = BuiltinsKey.makeKeymap("ctl-x-map");

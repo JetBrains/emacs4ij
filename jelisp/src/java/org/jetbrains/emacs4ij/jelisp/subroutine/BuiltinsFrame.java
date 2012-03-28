@@ -68,7 +68,7 @@ public abstract class BuiltinsFrame {
         return LispSymbol.ourNil;
     }
 
-    @Subroutine(value = "make-frame-visible", isCmd = true, interactive = "")
+    @Subroutine(value = "make-frame-visible", isCmd = true)
     public static LispObject makeFrameVisible(@Optional LispObject frame) {
         if (isNil(frame)) {
             frame = selectedFrame();
@@ -80,7 +80,7 @@ public abstract class BuiltinsFrame {
         return frame;
     }
 
-    @Subroutine(value = "make-frame-invisible", isCmd = true, interactive = "")
+    @Subroutine(value = "make-frame-invisible", isCmd = true)
     public static LispObject makeFrameInvisible(@Optional LispObject frame, @Optional LispObject force) {
         if (isNil(frame)) {
             frame = selectedFrame();
@@ -99,7 +99,7 @@ public abstract class BuiltinsFrame {
         return LispSymbol.ourNil;
     }
 
-    @Subroutine(value = "iconify-frame", isCmd = true, interactive = "")
+    @Subroutine(value = "iconify-frame", isCmd = true)
     public static LispObject iconifyFrame(@Optional LispObject frame) {
         if (isNil(frame)) {
             frame = selectedFrame();

@@ -29,7 +29,7 @@ import java.util.Map;
  * Time: 3:24 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaKeymap implements LispKeymap, KeymapCell {
+public class IdeaKeymap implements LispKeymap {
     private String myName;
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
@@ -89,6 +89,8 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
     }
 
     private void registerAction (KeymapCell action, Shortcut shortcut) {
+        if (action.getKeymap() != null)
+            return;
         ActionManager actionManager = ActionManager.getInstance();
         String id = generateActionId(action.toString());
         if (actionManager.getActionIds(id).length != 0)

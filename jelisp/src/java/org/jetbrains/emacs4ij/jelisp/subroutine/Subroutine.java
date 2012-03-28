@@ -1,7 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,6 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Subroutine {
     String value();
-    boolean isCmd () default false;
-    String interactive () default GlobalEnvironment.ourUnsetInteractiveString;
+    boolean isCmd() default false;
+    String interactive() default "";
+    String key() default "";
 }
