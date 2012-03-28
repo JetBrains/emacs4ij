@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.Error;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -17,19 +16,19 @@ import java.util.List;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
 
 /**
-* Created by IntelliJ IDEA.
-* User: Kate
-* Date: 7/16/11
-* Time: 2:47 PM
-* To change this template use File | Settings | File Templates.
-*
-* in fact it is a kind of builtin function
-*/
+ * Created by IntelliJ IDEA.
+ * User: Kate
+ * Date: 7/16/11
+ * Time: 2:47 PM
+ * To change this template use File | Settings | File Templates.
+ *
+ * in fact it is a kind of builtin function
+ */
 public abstract class SpecialForms {
 
     private SpecialForms() {}
 
-    private static void bindLetVariables (boolean isStar, CustomEnvironment inner, LispList varList) {
+    private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
         ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
         for (LispObject var: varList.toLispObjectList()) {
             if (var instanceof LispList) {
@@ -51,7 +50,7 @@ public abstract class SpecialForms {
             }
             if (var instanceof LispSymbol) {
                 LispSymbol symbol = new LispSymbol (((LispSymbol) var).getName(), LispSymbol.ourNil);
-               // ((LispSymbol) var).setValue(LispSymbol.ourNil);
+                // ((LispSymbol) var).setValue(LispSymbol.ourNil);
                 if (isStar)
                     inner.defineSymbol(symbol);
                 else
@@ -69,7 +68,7 @@ public abstract class SpecialForms {
     }
 
     private static LispObject executeLet (boolean isStar, Environment environment, LispList varList, LispObject... body) {
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         bindLetVariables(isStar, inner, varList);
         LispObject result = LispSymbol.ourNil;
         for (LispObject bodyForm: body) {
@@ -127,7 +126,7 @@ public abstract class SpecialForms {
     }
     @Subroutine("while")
     public static LispObject lispWhile(Environment environment, LispObject cond, @Optional LispObject... body) {
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         LispObject condition = cond.evaluate(inner);
         while (!condition.equals(LispSymbol.ourNil)) {
             if (body != null)
@@ -202,7 +201,7 @@ public abstract class SpecialForms {
         GlobalEnvironment.INSTANCE.defineSymbol(variable);
         return variable;
     }
-    
+
     @Subroutine("defvar")
     public static LispObject defineVariable(Environment environment, LispSymbol name, @Optional LispObject initValue, @Optional LispObject docString) {
         return defSymbol(environment, name, initValue, false, docString);
@@ -247,7 +246,7 @@ public abstract class SpecialForms {
     public static LispObject progn (Environment environment, @Optional LispObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         LispObject result = LispSymbol.ourNil;
         for (LispObject arg: args) {
             result = arg.evaluate(inner);
@@ -257,7 +256,7 @@ public abstract class SpecialForms {
 
     @Subroutine("prog1")
     public static LispObject prog1 (Environment environment, LispObject p, @Optional LispObject... args) {
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         LispObject result = p.evaluate(inner);
         for (LispObject arg: args) {
             arg.evaluate(inner);
@@ -267,7 +266,7 @@ public abstract class SpecialForms {
 
     @Subroutine("prog2")
     public static LispObject prog1 (Environment environment, LispObject p1, LispObject p2, @Optional LispObject... args) {
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         p1.evaluate(inner);
         LispObject result = p2.evaluate(inner);
         for (LispObject arg: args) {
@@ -280,7 +279,7 @@ public abstract class SpecialForms {
     public static LispObject setq (Environment environment, @Optional LispObject... args) {
         if (args == null)
             return LispSymbol.ourNil;
-        CustomEnvironment inner = new CustomEnvironment(environment);
+        Environment inner = new CustomEnvironment(environment);
         int index = 0;
         LispObject value = LispSymbol.ourNil;
         while (index < args.length) {
@@ -341,7 +340,7 @@ public abstract class SpecialForms {
 
     @Subroutine("condition-case")
     public static LispObject conditionCase (Environment environment, LispSymbol var, LispObject bodyForm, @Optional LispObject... handlers) {
-        ArrayList<LispList> h = new ArrayList<LispList>();
+        ArrayList<LispList> h = new ArrayList<>();
         if (handlers != null) {
             for (LispObject element: handlers) {
                 try {
@@ -358,47 +357,47 @@ public abstract class SpecialForms {
             return bodyForm.evaluate(environment);
         } catch (RuntimeException e) {
             Throwable exc = e;
-            while (!(exc instanceof LispException)) {
+            while (exc.getCause() != null) {
                 exc = exc.getCause();
             }
             Error annotation = exc.getClass().getAnnotation(Error.class);
-            if (annotation != null) {
-                for (LispList handler: h) {
-                    LispSymbol errorSymbol = (LispSymbol) handler.car();
-                    if (errorSymbol.getName().equals(annotation.value())) {
-                        // todo: unbind all bindings; clean-ups for all unwind-protect forms
-                        ForwardParser forwardParser = new ForwardParser();
-                        LispList errorInfo = (LispList) forwardParser.parseLine(exc.getMessage());
-                        while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
-                            //todo: make full error list and store it in errorInfo
-                            // make somehow new error message
-                            // errorInfo = new LispList( <new error> errorInfo);
-                            GlobalEnvironment.ourCallStack.removeFirst();
-                        }
-                        Environment inner = new CustomEnvironment(environment);
-                        if (!var.equals(LispSymbol.ourNil)) {
-                            LispSymbol test = environment.find(var.getName());
-                            if (test == null) {
-                                //init in given environment
-                                setq(environment, var, errorInfo);
-                            } else {
-                                //create local binding
-                                var.setValue(errorInfo.evaluate(inner));
-                                inner.defineSymbol(var);
-                            }
-                        }
-                        LispObject result = LispSymbol.ourNil;
-                        for (LispObject form: ((LispList)handler.cdr()).toLispObjectList()) {
-                            result = form.evaluate(inner);
-                        }
-                        return result;
+            if (annotation == null)
+                throw e;
+            for (LispList handler: h) {
+                LispSymbol errorSymbol = (LispSymbol) handler.car();
+                if (errorSymbol.getName().equals(annotation.value())) {
+                    // todo: unbind all bindings; clean-ups for all unwind-protect forms
+                    ForwardParser forwardParser = new ForwardParser();
+                    LispList errorInfo = (LispList) forwardParser.parseLine(exc.getMessage());
+                    while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
+                        //todo: make full error list and store it in errorInfo
+                        // make somehow new error message
+                        // errorInfo = new LispList( <new error> errorInfo);
+                        GlobalEnvironment.ourCallStack.removeFirst();
                     }
+                    Environment inner = new CustomEnvironment(environment);
+                    if (!var.equals(LispSymbol.ourNil)) {
+                        LispSymbol test = environment.find(var.getName());
+                        if (test == null) {
+                            //init in given environment
+                            setq(environment, var, errorInfo);
+                        } else {
+                            //create local binding
+                            var.setValue(errorInfo.evaluate(inner));
+                            inner.defineSymbol(var);
+                        }
+                    }
+                    LispObject result = LispSymbol.ourNil;
+                    for (LispObject form: ((LispList)handler.cdr()).toLispObjectList()) {
+                        result = form.evaluate(inner);
+                    }
+                    return result;
                 }
-            } 
+            }
             throw e;
         }
     }
-    
+
     @Subroutine("catch")
     public static LispObject lispCatch (Environment environment, LispObject tagObject, @Optional LispObject... body) {
         //note: emacs man says nil cannot be tag, but signals no error though
@@ -416,10 +415,9 @@ public abstract class SpecialForms {
             throw e;
         }
     }
-    
+
     @Subroutine("function")
     public static LispObject function (Environment environment, LispObject arg) {
-        //note: In byte compilation, `function' causes its argument to be compiled.=)
         return quote(environment, arg);
     }
 
@@ -434,7 +432,7 @@ public abstract class SpecialForms {
             current.setPoint(point);
             current.setMark(mark);
             environment.setBufferCurrentForEditing(current);
-        }        
+        }
     }
-    
+
 }

@@ -375,25 +375,6 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     }
     
     @Test
-    public void testBuiltinKeymaps() {
-        LispObject global = evaluateString("global-map");
-        Assert.assertEquals(LispSymbol.ourT, BuiltinsKey.keymapP(global));
-
-        try {
-            evaluateString("(symbol-value (key-binding \"\\C-x\"))");
-        } catch (Exception e) {
-            //ok
-        }
-        LispObject v = evaluateString("(symbol-function (key-binding \"\\C-x\"))");
-        Assert.assertEquals(evaluateString("ctl-x-map"), v);
-
-//        evaluateString("symbol-function 'Control-X-prefix)");
-
-        v = evaluateString("(symbol-value 'Control-X-prefix)");
-        Assert.assertEquals(evaluateString("ctl-x-map"), v);
-    }
-    
-    @Test
     public void testSymbolFunctionSymbolKeymap() {
         evaluateString("(setq p1 1)");
         evaluateString("(fset 'p1 (make-sparse-keymap))");
@@ -414,5 +395,4 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispKeymap k = (LispKeymap) evaluateString("k");
         Assert.assertEquals(pp, k.getKeyBinding(new LispString("s")));
     }
-
 }

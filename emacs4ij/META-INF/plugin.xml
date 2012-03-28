@@ -6,14 +6,12 @@
     <idea-version since-build="8000"/>
 
     <application-components>
-        <!-- Add your application components here -->
         <component>
             <implementation-class>org.jetbrains.emacs4ij.MyApplicationComponent</implementation-class>
         </component>
     </application-components>
 
     <project-components>
-        <!-- Add your project components here -->
         <component>
             <implementation-class>org.jetbrains.emacs4ij.MyProjectComponent</implementation-class>
         </component>
@@ -27,27 +25,25 @@
                     description="Execute command in minibuffer">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
             </action>
-            <action id="org.jetbrains.emacs4ij.OpenSettings" class="org.jetbrains.emacs4ij.OpenSettings"
+            <action id="Open Settings" class="org.jetbrains.emacs4ij.OpenSettings"
                     text="Emacs4ij settings" icon="icons/options.png"
                     description="View and edit Emacs4ij settings">
             </action>
             <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
         </group>
 
-        <action id="org.jetbrains.emacs4ij.EvaluateCode" class="org.jetbrains.emacs4ij.EvaluateCode"
-                text="Evaluate elisp code">
+        <action id="Evaluate Code" class="org.jetbrains.emacs4ij.EvaluateCode"
+                text="Evaluate elisp code" icon="icons/emacs.png">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="E"/>
         </action>
 
-        <action id="org.jetbrains.emacs4ij.ExecuteCommand" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
-        <action id="org.jetbrains.emacs4ij.AutoComplete" class="org.jetbrains.emacs4ij.AutoComplete"/>
-        <action id="org.jetbrains.emacs4ij.InterruptMiniBuffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
-        <action id="EmacsAction" class="org.jetbrains.emacs4ij.EmacsAction"/>
+        <action id="Execute Command" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
+        <action id="Auto Complete" class="org.jetbrains.emacs4ij.AutoComplete"/>
+        <action id="Interrupt Mini Buffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
+        <action id="Internal Emacs Action" class="org.jetbrains.emacs4ij.EmacsAction"/>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
-        <!-- Declare the application level service -->
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
     </extensions>

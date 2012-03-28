@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
@@ -49,9 +50,14 @@ public class IdeaKeymap implements LispKeymap, KeymapCell {
             return;
         Shortcut firstKeystroke = shortcuts.get(index);
         if (shortcuts.size() - 1 == index) {
+            //while i don't support multiple shortcuts, save max 2:
+            Shortcut shortcut = shortcuts.get(0);
+            if (shortcuts.size() > 1 && shortcuts.get(0) instanceof KeyboardShortcut && shortcuts.get(1) instanceof KeyboardShortcut) {
+                shortcut = new KeyboardShortcut(((KeyboardShortcut) shortcuts.get(0)).getFirstKeyStroke(),
+                        ((KeyboardShortcut) shortcuts.get(1)).getFirstKeyStroke());
+            }
             myKeyBindings.put(firstKeystroke, action);
-            //while i don't support multiple shortcuts, skip all after
-            registerAction(action, firstKeystroke);
+            registerAction(action, shortcut);
             return;
         }
         LispKeymap prefix = getPrefixKeymap(firstKeystroke);

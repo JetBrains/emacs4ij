@@ -19,7 +19,7 @@ public class LispStringTest {
     @Test
     public void testToShortcutString() throws Exception {
         LispString s = new LispString("C-x");
-        Assert.assertEquals("C - X", s.toShortcutString());
+        Assert.assertEquals("C MINUS X", s.toShortcutString());
     }
 
     @Test

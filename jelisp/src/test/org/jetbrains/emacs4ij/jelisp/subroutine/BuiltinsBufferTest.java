@@ -15,12 +15,12 @@ import org.junit.Test;
 public class BuiltinsBufferTest extends BaseSubroutineTest {
     @Test (expected = NoOpenedBufferException.class)
     public void testCurrentBuffer () {
-        BuiltinsBuffer.getCurrentBuffer(environment);
+        BuiltinsBuffer.getCurrentBuffer(myEnvironment);
     }
 
     @Test (expected = NoBufferException.class)
     public void testSetBufferNoBuffer() {
-        BuiltinsBuffer.setBuffer(environment, new LispString("hello.lisp"));
+        BuiltinsBuffer.setBuffer(myEnvironment, new LispString("hello.lisp"));
     }
 
 }

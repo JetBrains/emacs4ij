@@ -11,6 +11,7 @@ import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
@@ -85,10 +86,14 @@ public class EnvironmentInitializer {
                             ApplicationManager.getApplication().runReadAction(new Runnable() {
                                 @Override
                                 public void run() {
-                                    new IdeaBuffer(environment, virtualFile.getName(), virtualFile.getParent().getPath() + '/', fileEditorManager.getSelectedTextEditor());
-                                    //System.out.print("open: ");
-                                    //setHeaders(newBuffer);
-                                    //environment.printBuffers();
+                                    try {
+                                        new IdeaBuffer(environment,
+                                                virtualFile.getName(),
+                                                virtualFile.getParent().getPath() + '/',
+                                                fileEditorManager.getSelectedTextEditor());
+                                    } catch (DoubleBufferException exc) {
+                                        //due to event handling order the buffers were already initialized => skip here
+                                    }
                                 }
                             });
                         }

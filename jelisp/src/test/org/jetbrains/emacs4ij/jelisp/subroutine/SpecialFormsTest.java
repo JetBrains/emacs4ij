@@ -196,7 +196,7 @@ public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testDefvar2() {
         evaluateString("(defvar a 5 \"doc\")");
-        LispSymbol a = environment.find("a");
+        LispSymbol a = myEnvironment.find("a");
         junit.framework.Assert.assertEquals(new LispInteger(5), a.getValue());
         LispObject varDoc = evaluateString("(get 'a 'variable-documentation)");
         junit.framework.Assert.assertEquals(new LispString("doc"), varDoc);
@@ -436,7 +436,7 @@ default-directory
 
     @Test
     public void testDirectoryCompletion() {
-        SpecialFormInteractive spi = new SpecialFormInteractive(environment, "D");
+        SpecialFormInteractive spi = new SpecialFormInteractive(myEnvironment, "D");
         List<String> completions = spi.getCompletions("~/Do");
         List<String> expected = new ArrayList<String>();
         String home = System.getProperty("user.home");
@@ -532,19 +532,13 @@ default-directory
         }
     }
 
-    // error message must be = (void-variable a)
     @Test
     public void testConditionCase_GlobalBinding () {
         LispObject result = evaluateString("(condition-case err (progn (+ a 5)) (void-variable \"message\"))");
-        //LispObject result = evaluateString("(condition-case err (+ a 5) (void-variable \"message\"))");
         Assert.assertEquals(new LispString("message"), result);
-        LispSymbol err = environment.find("err");
+        LispSymbol err = myEnvironment.find("err");
         Assert.assertNotNull(err);
-        //todo: in err must be a LispList!
-        //in this case err.value = (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a))))
         Assert.assertEquals(LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")), err.getValue());
-
-        //conditionCaseErrorChecker(err, "(void-variable a)");
     }
 
     @Test
@@ -556,17 +550,12 @@ default-directory
         }
     }
 
-    @Ignore
     @Test
     public void testConditionCase3 () {
-        // in a must be stored errror-symbol
+        evaluateString("(setq a \"hello\")");
         LispObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
-        // (wrong-type-argument number-or-marker-p (wrong-type-argument number-or-marker-p (void-variable a)))
         Assert.assertEquals(LispList.list(new LispSymbol("wrong-type-argument"),
-                new LispSymbol("number-or-marker-p"),
-                LispList.list(new LispSymbol("wrong-type-argument"),
-                        new LispSymbol("number-or-marker-p"),
-                        LispList.list(new LispSymbol("void-variable"), new LispSymbol("a")))),
+                new LispSymbol("number-or-marker-p"), new LispString("hello")),
                 r);
     }
 

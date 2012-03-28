@@ -32,7 +32,7 @@ public abstract class BuiltinsSymbol {
     @Subroutine("symbol-value")
     public static LispObject symbolValue (Environment environment, LispSymbol arg) {
         LispSymbol symbol = environment.find(arg.getName());
-        if (symbol == null || symbol.getValue() == null || symbol.getValue().equals(LispSymbol.ourVoid))
+        if (symbol == null || !symbol.hasValue() || symbol.getValue().equals(LispSymbol.ourVoid))
             throw new VoidVariableException(arg.getName());
         return symbol.getValue();
     }
@@ -121,7 +121,7 @@ public abstract class BuiltinsSymbol {
     @Subroutine(value = "default-value")
     public static LispObject defaultValue (Environment environment, LispSymbol symbol) {
         LispSymbol real = environment.find(symbol.getName());
-        if (real == null)// || !real.hasValue())
+        if (real == null)
             throw new VoidVariableException(symbol.getName());
         if (!real.isBufferLocal()) {
             if (!real.hasValue())

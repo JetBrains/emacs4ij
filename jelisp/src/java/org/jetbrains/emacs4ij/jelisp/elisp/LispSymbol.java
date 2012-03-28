@@ -191,10 +191,8 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         LispSymbol symbol = environment.find(myName);
         if (symbol == null || (!symbol.hasValue())) {
             System.out.println("VAR " + myName);
-//            if (myName.equals("cl-key"))
-//                System.out.print(1);
             symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(myName, GlobalEnvironment.SymbolType.VAR);
-            if (symbol == null || (!symbol.hasValue())) {
+            if (symbol == null || !symbol.hasValue()) {
                 throw new VoidVariableException(myName);
             }
         }

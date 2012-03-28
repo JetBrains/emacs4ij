@@ -241,9 +241,9 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testFset() {
         LispObject f = evaluateString("(fset 'f2 'f1)");
         Assert.assertEquals(new LispSymbol("f1"), f);
-        LispSymbol f1 = environment.find("f1");
+        LispSymbol f1 = myEnvironment.find("f1");
         Assert.assertNull(f1);
-        LispSymbol f2 = environment.find("f2");
+        LispSymbol f2 = myEnvironment.find("f2");
         Assert.assertNotNull(f2);
         Assert.assertEquals(new LispSymbol("f1"), f2.getFunction());
     }
@@ -306,7 +306,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testIndirectFunctionOverride() {
         evaluateString("(defun f () (+ 1 2))");
         LispObject innerF = evaluateString("(indirect-function 'f)");
-        LispSymbol f = environment.find("f");
+        LispSymbol f = myEnvironment.find("f");
         Assert.assertEquals(f.getFunction(), innerF);
         evaluateString("(fset 'f 1)");
         innerF = evaluateString("(indirect-function 'f)");
@@ -315,15 +315,15 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
 
     @Test
     public void testPrimitiveMinMaxArgsNum() {
-        LispSymbol f = environment.find("indirect-function");
+        LispSymbol f = myEnvironment.find("indirect-function");
         Assert.assertEquals(1, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispInteger(2), ((Primitive)f.getFunction()).getMaxNumArgs());
 
-        f = environment.find("run-hooks");
+        f = myEnvironment.find("run-hooks");
         Assert.assertEquals(0, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispSymbol("many"), ((Primitive) f.getFunction()).getMaxNumArgs());
 
-        f = environment.find("if");
+        f = myEnvironment.find("if");
         Assert.assertEquals(2, ((Primitive) f.getFunction()).getNRequiredArguments());
         Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive)f.getFunction()).getMaxNumArgs());
     }
@@ -385,6 +385,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         Assert.fail();
     }
 
+    @Ignore
     @Test
     public void testAsetArefString() {
         evaluateString("(defvar s \"hello\")");
