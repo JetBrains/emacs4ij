@@ -109,7 +109,7 @@ public abstract class BuiltinsBuffer {
         environment.setSelectionManagedBySubroutine(true);
         if (bufferOrName.equals(LispSymbol.ourNil)) {
             LispBuffer buffer = environment.getOtherBuffer();
-            buffer.setBufferActive();
+            buffer.setActive();
             if (!noRecord) {
                 environment.switchToBuffer(buffer.getName());
             }
@@ -122,7 +122,7 @@ public abstract class BuiltinsBuffer {
                 // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
                 //? : where to create a buffer?
             }
-            buffer.setBufferActive();
+            buffer.setActive();
             if (!noRecord) {
                 environment.switchToBuffer(buffer.getName());
             }
@@ -130,7 +130,7 @@ public abstract class BuiltinsBuffer {
         }
         if (bufferOrName instanceof LispBuffer) {
             //todo:  If the selected window is the minibuffer window or dedicated to its buffer, use `pop-to-buffer' for displaying the buffer.
-            ((LispBuffer)bufferOrName).setBufferActive();
+            ((LispBuffer)bufferOrName).setActive();
             if (!noRecord) {
                 environment.switchToBuffer(((LispBuffer) bufferOrName).getName());
             }
@@ -269,7 +269,6 @@ public abstract class BuiltinsBuffer {
 
         environment.setSelectionManagedBySubroutine(true);
         GlobalEnvironment.INSTANCE.killBuffer(buffer);
-
         return LispSymbol.ourT;
     }
 

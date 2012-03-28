@@ -71,7 +71,7 @@ public class EnvironmentInitializer {
         if (windowManager.getAllFrames().length > 0)
             GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
 
-        new IdeaMiniBuffer(0, null, environment);
+        new IdeaMiniBuffer(0, null, environment, null);
 //        String scratchDir = project.getProjectFilePath().substring(0, project.getProjectFilePath().lastIndexOf("/")+1);
 //        new IdeaBuffer(environment, GlobalEnvironment.ourScratchBufferName, scratchDir, null);
 

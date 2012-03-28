@@ -3,8 +3,8 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 
 /**
@@ -30,14 +30,9 @@ public class OpenMiniBuffer extends AnAction {
         }
         if (environment == null)
             return;
-        Editor editor = PlatformDataKeys.EDITOR.getData(e.getDataContext());
-        if (editor == null)
-            return;
-        if (editor.isOneLineMode()) {
-            //todo: open new mini buffer over old ones and increase recursion depth
-            return;
-        }
+        LispBuffer buffer = environment.getBufferCurrentForEditing();
+        buffer.setActive();
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-        miniBuffer.open(editor);
+        miniBuffer.open(buffer);
     }
 }

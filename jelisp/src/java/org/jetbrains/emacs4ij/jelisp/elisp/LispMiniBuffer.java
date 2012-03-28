@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
@@ -15,7 +14,7 @@ public interface LispMiniBuffer extends LispBuffer {
     void readParameter(SpecialFormInteractive interactive);
     void addCharListener();
     int getActivationsDepth();
-    void open(Editor parent);
+    void open(LispBuffer parent);
     boolean wasInteractiveFormResult();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.

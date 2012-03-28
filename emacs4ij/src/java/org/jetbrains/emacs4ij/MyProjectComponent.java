@@ -64,9 +64,13 @@ public class MyProjectComponent implements ProjectComponent {
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
-                if (!(myEnvironment.isSelectionManagedBySubroutine()))
-                    myEnvironment.killBuffer(virtualFile.getName());
-                else myEnvironment.setSelectionManagedBySubroutine(false);
+                if (!(myEnvironment.isSelectionManagedBySubroutine()))  {
+                    try {
+                        myEnvironment.killBuffer(virtualFile.getName());
+                    } catch (NoBufferException e) {
+                        //probably the buffer was killed from code but the "selection changed" event ate the flag :)
+                    }
+                } else myEnvironment.setSelectionManagedBySubroutine(false);
             }
 
             @Override

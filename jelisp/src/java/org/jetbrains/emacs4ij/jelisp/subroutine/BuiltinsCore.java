@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -102,8 +103,8 @@ public abstract class BuiltinsCore {
             function = symbol;
         if (!BuiltinPredicates.commandp(function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
-        FunctionCell f = (FunctionCell) function.getFunction();
-        if (f.getNRequiredArguments() == 0) {
+//        FunctionCell f = (FunctionCell) function.getFunction();
+        if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
             LispList.list(function).evaluate(environment);
             return;
         }

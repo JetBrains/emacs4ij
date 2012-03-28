@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.awt.*;
@@ -35,6 +36,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private LispSymbol myCommand;
     private Integer myCharCode = null;
     private Alarm myAlarm;
+    private LispBuffer myParent;
 
     private boolean isDocumentListenerSet = false;
 
@@ -66,10 +68,11 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }
     }
 
-    public IdeaMiniBuffer (int number, Editor editor, Environment environment) {
+    public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
         myName = " *Minibuf-" + number + '*';
         myEditor = editor;
         myEnvironment = environment;
+        myParent = parent;
         setReadCommandStatus();
         myPrompt = ourEvalPrompt;
         myAlarm = new Alarm();
@@ -172,7 +175,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
         gotoChar(cursorPosition);
         //todo unchangeable prompt
-        setBufferActive();
+        setActive();
 
         clearNoMatch();
     }
@@ -214,21 +217,18 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         return myEditor.getDocument().getText().substring(myPrompt.length(), k);
     }
 
-    public void hide() {
+    @Override
+    public void kill() {
         setReadCommandStatus();
         myPrompt = ourEvalPrompt;
         cancelNoMatchMessageUpdate();
         write(myPrompt);
         myActivationsDepth = 0;
+        myParent.closeHeader();
+        myParent = null;
+
 //        todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
 //        myActivationsDepth--;
-        kill();
-    }
-
-    @Override
-    public void setBufferActive() {
-        super.setBufferActive();    
-        myActivationsDepth++;
     }
 
     @Override
@@ -237,9 +237,10 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     @Override
-    public void open(Editor parent) {
+    public void open(LispBuffer parent) {
         EditorTextField input = new EditorTextField();
-        parent.setHeaderComponent(input);
+        parent.getEditor().setHeaderComponent(input);
+        myParent = parent;
         input.setEnabled(true);
         setEditor(input.getEditor());
         ExecuteCommand command = new ExecuteCommand();
@@ -248,7 +249,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
         AutoComplete autoComplete = new AutoComplete();
         autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
-        setBufferActive();
+        setActive();
     }
 
     @Override
@@ -278,7 +279,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                     }
                     myCommand = cmd;
                     if (interactiveString.equals("")) {
-                        hide();
+                        kill();
                         return myCommand.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
                     }
                     myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
@@ -309,9 +310,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             return runInteractive();
         } else {
             myStatus = MiniBufferStatus.READ_ARG;
-            open(myEnvironment.getBufferCurrentForEditing().getEditor());
+            open(myEnvironment.getBufferCurrentForEditing());
             if (myActivationsDepth > 1) {
-                hide();
+                kill();
                 GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
                 return null;
             }
@@ -337,7 +338,17 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         LispObject result = myCommand == null
                 ? LispList.list(myInteractive.getArguments())
                 : myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments());
-        hide();
+        kill();
         return result;
+    }
+
+    @Override
+    public void setActive() {
+        if (myEnvironment.getServiceBuffer(myName) == null)
+            throw new NoBufferException(myName);
+        if (myEditor == null)
+            throw new Emacs4ijFatalException("Null editor!");
+        myEditor.getContentComponent().grabFocus();
+        myActivationsDepth++;
     }
 }

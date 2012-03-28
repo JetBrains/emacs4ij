@@ -23,9 +23,7 @@ public class InterruptMiniBuffer extends AnAction {
             MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(event.getDataContext()).getComponent(MyProjectComponent.class);
             Environment environment = projectComponent.getEnvironment();
             IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-            miniBuffer.hide();
-            //todo: reduce minibuffer recursion depth
-//            Messages.showInfoMessage("Quit " + miniBuffer.getName(), "MiniBuffer");
+            miniBuffer.kill();
         } catch (NullPointerException e) {
             //skip
         }

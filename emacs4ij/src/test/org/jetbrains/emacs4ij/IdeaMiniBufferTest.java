@@ -30,7 +30,7 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
         GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EditorTextField t = new EditorTextField();
-        myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment);
+        myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment, null);
     }
 
     private LispObject evaluateString (String lispCode) throws LispException {

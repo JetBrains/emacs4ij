@@ -23,7 +23,7 @@ public interface LispBuffer extends LispObject {
     String forwardChar (int shift);
     void kill();
     LispObject evaluateLastForm ();
-    void setBufferActive ();
+    void setActive();
     Editor getEditor();
     void setEditor (Editor editor);
     void closeHeader();

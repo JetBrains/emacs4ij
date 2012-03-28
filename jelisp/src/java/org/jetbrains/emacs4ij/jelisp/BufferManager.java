@@ -20,7 +20,6 @@ public class BufferManager {
     private List<LispBuffer> myBuffers = new ArrayList<>();
     private List<LispBuffer> myDeadBuffers = new ArrayList<>();
     private List<LispBuffer> myServiceBuffers = new ArrayList<>();
-//    private List<String> myRecordedBuffers = new ArrayList<>();
     private LispBufferFactory myBufferFactory = null;
 
     public BufferManager(LispBufferFactory bufferFactory) {
@@ -49,7 +48,7 @@ public class BufferManager {
         if (myBuffers.size() == 0)
             return null;
         if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
-            return null;
+            return myBuffers.get(myBuffers.size() - 1);
         int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
             throw new NoBufferException(bufferName);

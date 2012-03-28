@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.impl.EditorImpl;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
@@ -12,7 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
@@ -172,11 +170,6 @@ public class IdeaBuffer implements LispBuffer {
         return getSize()+1;
     }
 
-//    @Override
-//    public int bufferEnd(double parameter) {
-//        return (parameter > 0) ? pointMax() : pointMin();
-//    }
-
     @Override
     public String gotoChar (int position) {
         String message = "";
@@ -214,26 +207,8 @@ public class IdeaBuffer implements LispBuffer {
         });
     }
 
-    protected void setHeaderBufferActive () {
-        if (myEnvironment.getServiceBuffer(myName) == null)
-            throw new NoBufferException(myName);
-        if (myEditor == null)
-            throw new Emacs4ijFatalException("Null editor!");
-//        if (!(this instanceof IdeaMiniBuffer))
-//            write("");
-        myEditor.getContentComponent().grabFocus();
-    }
-
-    private boolean isHeaderBuffer () {
-        return this instanceof LispMiniBuffer;
-    }
-
     @Override
-    public void setBufferActive () {
-        if (isHeaderBuffer()) {
-            setHeaderBufferActive();
-            return;
-        }
+    public void setActive() {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
@@ -250,12 +225,8 @@ public class IdeaBuffer implements LispBuffer {
         myEditor.setHeaderComponent(null);
     }
 
+    @Override
     public void kill () {
-        if (isHeaderBuffer()) {
-            LispBuffer displayedBuffer = myEnvironment.findBufferSafe(getDisplayedBufferName());
-            displayedBuffer.closeHeader();
-            return;
-        }
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
@@ -264,20 +235,6 @@ public class IdeaBuffer implements LispBuffer {
             }
         }
     }
-
-    public static String getDisplayedBufferName () {
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
-        try {
-            return ((EditorImpl)fileEditorManager.getSelectedTextEditor()).getVirtualFile().getName();
-        } catch (NullPointerException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-//    @Override
-//    public void showMessage(String message) {
-//        Messages.showInfoMessage(message, "Elisp message");
-//    }
 
     //--------------- mark --------------------------------
     @Override
@@ -309,6 +266,4 @@ public class IdeaBuffer implements LispBuffer {
     public void setMark(LispMarker mark) {
         myMark = mark;
     }
-
-
 }
