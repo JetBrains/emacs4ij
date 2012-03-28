@@ -44,7 +44,9 @@ public abstract class BuiltinsString {
             Object[] data = new Object[objects.length];
             for (int i = 0; i != objects.length; i++) {
                 LispObject object = objects[i];
-                data[i] = object instanceof LispNumber ? ((LispNumber)object).getData() : object.toString();
+                data[i] = object instanceof LispNumber
+                        ? ((LispNumber)object).getData()
+                        : (object instanceof LispString ? ((LispString)object).getData() : object.toString());
             }
             return new LispString(String.format(formatString.getData(), data));
         } catch (MissingFormatArgumentException e1) {

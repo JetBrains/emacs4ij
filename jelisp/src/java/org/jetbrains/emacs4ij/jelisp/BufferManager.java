@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
@@ -53,7 +52,7 @@ public class BufferManager {
             return null;
         int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
-            throw new EnvironmentException("Buffer " + bufferName + " is not opened");
+            throw new NoBufferException(bufferName);
         Collections.rotate(myBuffers.subList(newCurrentBufferIndex, myBuffers.size()), -1);
         return myBuffers.get(myBuffers.size() - 1);
     }
@@ -87,7 +86,7 @@ public class BufferManager {
 
     public boolean defineBuffer(LispBuffer buffer) {
         if (containsBuffer(buffer.getName())) {
-            throw new DoubleBufferException("Double " + buffer.getName());
+            throw new DoubleBufferException(buffer.getName());
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);

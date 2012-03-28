@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
@@ -10,4 +11,5 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
  * To change this template use File | Settings | File Templates.
  */
 public interface KeymapCell extends LispObject {
+    LispKeymap getKeymap();
 }

@@ -17,6 +17,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -48,9 +50,14 @@ public class MyProjectComponent implements ProjectComponent {
             public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
+                try {
                 new IdeaBuffer(myEnvironment, virtualFile.getName(),
                         virtualFile.getParent().getPath() + '/',
                         fileEditorManager.getSelectedTextEditor());
+                } catch (DoubleBufferException e) {
+                    //opened 1 file in 2 or more editors.
+                    //todo: change active editor in my environment
+                }
             }
 
             @Override
@@ -71,9 +78,13 @@ public class MyProjectComponent implements ProjectComponent {
                         throw new Emacs4ijFatalException(Emacs4ijBundle.message("error.n.opened.files"));
                     return;
                 }
-                if (!(myEnvironment.isSelectionManagedBySubroutine()))
-                    myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
-                else
+                if (!(myEnvironment.isSelectionManagedBySubroutine())) {
+                    try {
+                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
+                    } catch (NoBufferException e) {
+                        //probably the file will be opened by next event, so skip                            
+                    }
+                } else
                     myEnvironment.setSelectionManagedBySubroutine(false);
             }
         });

@@ -8,8 +8,8 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class DoubleBufferException extends RuntimeException {
-    public DoubleBufferException (String message) {
-        super(message);
+    public DoubleBufferException (String name) {
+        super("Double buffer " + name);
     }
 
 }

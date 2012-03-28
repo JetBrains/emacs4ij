@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -18,11 +20,11 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
  * To change this template use File | Settings | File Templates.
  */
 public class EmacsAction extends AnAction {
-    private LispSymbol myCommand = null;
+    private KeymapCell myCommand = null;
     
     public EmacsAction () {}
     
-    public EmacsAction (LispSymbol command) {
+    public EmacsAction (KeymapCell command) {
         myCommand = command;        
     }
     
@@ -41,7 +43,11 @@ public class EmacsAction extends AnAction {
             return;
         }
         try {
-            BuiltinsCore.callInteractively(environment, myCommand, null, null);
+            if (myCommand instanceof LispKeymap) {
+                Messages.showInfoMessage("Long keystrokes are not supported yet", Emacs4ijBundle.message("evaluation.result.title"));
+                return;
+            }
+            BuiltinsCore.callInteractively(environment, (LispSymbol)myCommand, null, null);
         } catch (Exception exc2) {
             Messages.showErrorDialog(exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));
         }

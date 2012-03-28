@@ -121,7 +121,7 @@ public abstract class BuiltinsKey {
     public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, KeymapCell function) {
         check(keymapObject);
         LispKeymap keymap = getKeymap(keymapObject);
-//        keymap.defineKey(function, key);
+        keymap.defineKey(function, key);
         return function;
     }
 
@@ -161,8 +161,8 @@ public abstract class BuiltinsKey {
         LispSymbol controlXMap = BuiltinsKey.makeKeymap("ctl-x-map");
         BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("Control-X-prefix"), controlXMap.getValue());
 
-        setKey(globalMap, "ESC-prefix", "ESC");
-        setKey(globalMap, "Control-X-prefix", "\\C-x");
+//        setKey(globalMap, "ESC-prefix", "ESC");
+//        setKey(globalMap, "Control-X-prefix", "\\C-x");
 
         GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
         LispSymbol mblMap = makeKeymap("minibuffer-local-map");
@@ -171,17 +171,6 @@ public abstract class BuiltinsKey {
         LispSymbol mblFileNameCompletionMap = makeKeymap("minibuffer-local-filename-completion-map", mblCompletionMap);
         LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
         LispSymbol mblFileNameMustMatchMap = makeKeymap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
-
-//        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-map-alist");
-//        GlobalEnvironment.INSTANCE.defineSymbol("minor-mode-overriding-map-alist");
-//        GlobalEnvironment.INSTANCE.defineSymbol("emulation-mode-map-alists");
-//        GlobalEnvironment.INSTANCE.defineSymbol("where-is-preferred-modifier");
-//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initial_define_key (control_x_map, CharUtil.Ctl ('Z'), "suspend-emacs");
-//        BuiltinsKey.initial_define_key (meta_map, CharUtil.Ctl ('C'), "exit-recursive-edit");
-//        BuiltinsKey.initial_define_key (BuiltinsKey.globalMap, CharUtil.Ctl (']'), "abort-recursive-edit");
-//        BuiltinsKey.initial_define_key (meta_map, 'x', "execute-extended-command");
-//
     }
 
     private static void setKey (LispSymbol keymap, String name, String key) {
@@ -200,7 +189,7 @@ public abstract class BuiltinsKey {
         try {
             LispObject value = parentSymbol.getValue();
             LispKeymap parent = value.equals(LispSymbol.ourNil) ? null : (LispKeymap) value;
-            //todo: this hack is only for test!
+            //todo: this is only for test!
             if (keymap != null)
                 keymap.setParent(parent);
 

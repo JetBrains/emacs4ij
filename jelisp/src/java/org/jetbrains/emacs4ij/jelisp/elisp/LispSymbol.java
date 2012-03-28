@@ -352,4 +352,20 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
             return ((LispCommand)myFunction).getInteractiveForm();
         return null;
     }
+
+    @Override
+    public LispKeymap getKeymap() {
+        LispSymbol symbol = this;
+        while (symbol.isFunction()) {
+            LispObject function = symbol.getFunction();
+            if (function instanceof LispKeymap)
+                return (LispKeymap) function;
+            if (function instanceof LispSymbol) {
+                symbol = (LispSymbol) function;
+                continue;
+            }
+            return null;
+        }
+        return null;
+    }
 }
