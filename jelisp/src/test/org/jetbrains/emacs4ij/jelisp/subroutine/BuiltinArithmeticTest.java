@@ -37,7 +37,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
         try {
             BuiltinArithmetic.plus(new LispMarker(), new LispMarker());
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Marker does not point anywhere\")", TestSetup.getCause(e));
+            Assert.assertEquals("Marker does not point anywhere", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -80,7 +80,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
         try {
             evaluateString("(= 1 (make-marker))");
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Marker does not point anywhere\")", TestSetup.getCause(e));
+            Assert.assertEquals("Marker does not point anywhere", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -160,7 +160,7 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
         try {
             BuiltinArithmetic.minus(new LispMarker(), new LispMarker());
         } catch (Exception e) {
-            Assert.assertEquals("(error \"Marker does not point anywhere\")", TestSetup.getCause(e));
+            Assert.assertEquals("Marker does not point anywhere", TestSetup.getCause(e));
             return;
         }
         Assert.fail();

@@ -2,15 +2,21 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
@@ -31,15 +37,40 @@ public class IdeaBuffer implements LispBuffer {
     protected List<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
     private LispMarker myMark = new LispMarker();
+    protected boolean isChangedByMe = false;
 
     private HashMap<String, LispSymbol> myLocalVariables = new HashMap<String, LispSymbol>();
 
     protected IdeaBuffer() {}
+    
+    protected final DocumentListener myDocumentListener = new DocumentListener() {
+        private int myOldPosition;
+        @Override
+        public void beforeDocumentChange(DocumentEvent documentEvent) {
+            myOldPosition = point();
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent documentEvent) {
+            if (isChangedByMe) {
+                isChangedByMe = false;
+                return;
+            }
+            int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
+            if (shift < 0) {   //delete
+                updateMarkersPositions(point(), shift, false);
+                return;
+            }
+            if (shift > 0) { //insert
+                updateMarkersPositions(myOldPosition, shift, false);
+            }
+        }
+    };
 
     public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
         myEnvironment = environment;
         myName = name;
-        myEditor = editor;
+        setEditor(editor);
         myEnvironment.defineBuffer(this);
         setLocalVariable("default-directory", new LispString(path));
     }
@@ -128,7 +159,13 @@ public class IdeaBuffer implements LispBuffer {
 
     @Override
     public void setEditor(Editor editor) {
+        if (myEditor != null) {
+            myEditor.getDocument().removeDocumentListener(myDocumentListener);
+        }
         myEditor = editor;
+        if (myEditor != null) {
+            myEditor.getDocument().addDocumentListener(myDocumentListener);
+        }
     }
 
     public String toString() {
@@ -206,6 +243,24 @@ public class IdeaBuffer implements LispBuffer {
             }
         });
     }
+    
+    private void insertAt (final int position, final String insertion) {
+        if (myEditor == null)
+            return;
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        isChangedByMe = true;
+                        myEditor.getDocument().insertString(position, insertion);                        
+                    }
+                });
+            }
+        });
+
+    }
 
     @Override
     public void setActive() {
@@ -239,7 +294,7 @@ public class IdeaBuffer implements LispBuffer {
     //--------------- mark --------------------------------
     @Override
     public void addMarker (LispMarker marker) {
-        if (!myMarkers.contains(marker))
+        if (!myMarkers.contains(marker) && myMark != marker)
             myMarkers.add(marker);
     }
 
@@ -251,10 +306,10 @@ public class IdeaBuffer implements LispBuffer {
     @Override
     public boolean hasMarkersAt (int position) {
         for (LispMarker marker: myMarkers) {
-            if (marker.getPosition() instanceof LispInteger && ((LispInteger) marker.getPosition()).getData() == position)
+            if (marker.isSet() && marker.getPosition() == position)
                 return true;
         }
-        return false;
+        return myMark.isSet() && myMark.getPosition() == position;
     }
 
     @Override
@@ -265,5 +320,53 @@ public class IdeaBuffer implements LispBuffer {
     @Override
     public void setMark(LispMarker mark) {
         myMark = mark;
+        if (myMarkers.contains(mark))
+            myMarkers.remove(mark);
+    }
+
+    @Override
+    public void insert(String insertion, int where) {
+        if (StringUtil.isEmpty(insertion))
+            return;
+        insertAt(where, insertion);
+        updateMarkersPositions(where, insertion.length(), true);
+        gotoChar(where + insertion.length());
+    }
+    
+    private void updateMarkersPositions (int point, int shift, boolean moveAnyway) {
+        for (LispMarker marker: myMarkers) {
+            if (!marker.isSet())
+                throw new Attention();
+            marker.move(shift, point, moveAnyway);
+        }
+        if (myMark.isSet())
+            myMark.move(shift, point, moveAnyway);
+    }
+
+    @Override
+    public void insert(LispObject insertion, @Nullable LispMarker where) {
+        String ins = insertion.toString();
+        if (insertion instanceof LispString) {
+            LispObject kbd = evaluateString(myEnvironment, "(kbd " + insertion.toString() + ")");
+            ins = kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString();
+        }
+        if (where != null && !where.isSet())
+            throw new MarkerPointsNowhereException();
+        int pos = where == null ? point() : where.getPosition();
+        insert(ins, pos);
+    }
+
+    @Override
+    public void insert(LispObject insertion) {
+        insert(insertion, null);
+    }
+
+    @Override
+    public void insert(String insertion) {
+        insert(insertion, point());
+    }
+
+    private LispObject evaluateString (Environment environment, String code) {
+        return new ForwardParser().parseLine(code).evaluate(environment);
     }
 }

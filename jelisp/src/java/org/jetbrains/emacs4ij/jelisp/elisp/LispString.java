@@ -31,7 +31,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, LispString
             myData = "";
             return;
         }
-        myData = data.replaceAll("\\\\\"", "\"");
+        myData = data.replaceAll("\\\\\"", "\"");//.replaceAll("\\\\", "\\");
     }
 
     public String getData() {

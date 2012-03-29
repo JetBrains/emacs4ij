@@ -1,11 +1,13 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isCharOrString;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
 
 /**
@@ -191,7 +193,7 @@ public abstract class BuiltinsBuffer {
     public static LispObject bufferList (Environment environment, @Optional LispObject frame) {
         //TODO: If frame is a frame, this returns frame's local buffer list.
         // If frame is nil or omitted, the fundamental buffer list is used: the buffers appear in order of most recent display or selection, regardless of which frames they were displayed on.
-       
+
         if (frame == null || frame.equals(LispSymbol.ourNil) || !(frame instanceof LispFrame)) {
             //use fundamental buffer list
 
@@ -264,33 +266,40 @@ public abstract class BuiltinsBuffer {
         LispBuffer buffer = getBufferByBufferNameOrNil(environment, bufferOrName);
         //todo: check if modified. If user decides not to kill the buffer, return nil
 
-       // environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
-       // environment.getMainEnvironment().killBuffer(buffer);
+        // environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
+        // environment.getMainEnvironment().killBuffer(buffer);
 
         environment.setSelectionManagedBySubroutine(true);
         GlobalEnvironment.INSTANCE.killBuffer(buffer);
         return LispSymbol.ourT;
     }
 
+
     @Subroutine("minibuffer-depth")
     public static LispInteger minibufferDepth (Environment environment) {
         return new LispInteger(environment.getMiniBufferActivationsDepth());
     }
-    
-    public static boolean isSyntaxTable (LispObject object) {
-        //todo: true if char-table
-        return false;
+
+    private static LispObject evaluateString (Environment environment, String code) {
+        return new ForwardParser().parseLine(code).evaluate(environment);
     }
-    
-    @Subroutine("syntax-table-p")
-    public static LispSymbol syntaxTableP (LispObject object) {
-        return LispSymbol.bool(isSyntaxTable(object));    
+
+    @Subroutine("insert")
+    public static LispSymbol insert (Environment environment, @Optional LispObject... args) {
+        StringBuilder toInsert = new StringBuilder();
+        for (LispObject arg: args) {
+            if (!isCharOrString(arg))
+                throw new WrongTypeArgumentException("char-or-string-p", arg);
+            if (arg instanceof LispInteger) {
+                toInsert.append(((LispInteger) arg).toCharacterString());
+                continue;
+            }
+            LispObject kbd = evaluateString(environment, "(kbd " + arg.toString() + ")");
+            toInsert.append(kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString());
+        }
+        environment.getBufferCurrentForEditing().insert(toInsert.toString());
+        return LispSymbol.ourNil;
     }
-    
-    @Subroutine("set-syntax-table")
-    public static void setSyntaxTable (LispObject syntaxTable) {
-        if (!isSyntaxTable(syntaxTable))
-            throw new WrongTypeArgumentException("syntax-table-p", syntaxTable.toString());
-        //todo ?
-    }
+
+
 }

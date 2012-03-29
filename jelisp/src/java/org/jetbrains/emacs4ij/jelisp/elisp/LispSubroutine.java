@@ -184,14 +184,14 @@ public abstract class LispSubroutine {
         return getCause(e.getCause());
     }
 
-    public static LispObject evaluate (LispSymbol f, Environment environment, List<LispObject> args) {
+    public static LispObject evaluate (String name, Environment environment, List<LispObject> args) {
         for (Class c: getSubroutineContainers()) {
             Method[] methods = c.getMethods();
             for (Method m: methods) {
                 Subroutine annotation = m.getAnnotation(Subroutine.class);
                 if (annotation == null)
                     continue;
-                if (annotation.value().equals(f.getName())) {
+                if (annotation.value().equals(name)) {
                     if (!Arrays.asList(mySpecialForms).contains(c)) {
                         if (!environment.areArgumentsEvaluated()) {
                             for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
@@ -202,7 +202,7 @@ public abstract class LispSubroutine {
                         }
                     }
                     ArgumentsList arguments = parseArguments(m, environment, args);
-                    checkArguments(f.getName(), arguments, args);
+                    checkArguments(name, arguments, args);
                     try {
                         return (LispObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException | InvocationTargetException e) {
@@ -217,6 +217,6 @@ public abstract class LispSubroutine {
                 }
             }
         }
-        throw new InternalException("Unknown subroutine " + f.getName());
+        throw new InternalException("Unknown subroutine " + name);
     }
 }

@@ -120,7 +120,6 @@ public class LispList implements LispSequence {
                 try {
                     symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
                 } catch (LispException e) {
-//                    System.err.println(e.getMessage());
                     throw new VoidFunctionException(fun.getName());
                 }
                 if (symbol == null || !symbol.isFunction())
@@ -128,8 +127,11 @@ public class LispList implements LispSequence {
             }
             List<LispObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
             return symbol.evaluateFunction(environment, data);
-        } else if (function instanceof LispList) {
-            Lambda lambda = new Lambda((LispList) function);
+        } 
+        if (function instanceof LispList) {
+            function = new Lambda((LispList) function);            
+        } 
+        if (function instanceof Lambda) {
             List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
             if (!environment.areArgumentsEvaluated()) {
                 for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
@@ -138,7 +140,11 @@ public class LispList implements LispSequence {
             } else {
                 environment.setArgumentsEvaluated(false);
             }
-            return lambda.evaluate(environment, args);
+            return ((Lambda)function).evaluate(environment, args);
+        }
+        if (function instanceof Primitive) {
+            List<LispObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
+            return LispSubroutine.evaluate(((Primitive)function).getName(), environment, data);
         }
         throw new InvalidFunctionException(function.toString());
     }

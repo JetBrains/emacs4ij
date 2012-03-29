@@ -618,6 +618,36 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
         Assert.fail();
     }
+    
+    @Test
+    public void testInsertWrongType() {
+        try {
+            evaluateString("(insert 1 2 1.2)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument char-or-string-p 1.2)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testInsertInts() {
+        evaluateString("(push-mark 3 t t)");
+        LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
+        String insertion = "^A^B^C";
+        String text = buffer.getEditor().getDocument().getText();
+        Assert.assertFalse(text.contains(insertion));
+        int point = buffer.point();
+        LispMarker mark = buffer.getMark();
+        Assert.assertEquals("3", mark.getPosition().toString());
+        LispObject result = evaluateString("(insert 1 2 3)");
+        Assert.assertEquals(LispSymbol.ourNil, result);
+        text = buffer.getEditor().getDocument().getText();
+        System.out.println(text);
+        Assert.assertTrue(text.contains(insertion));
+        Assert.assertEquals(point + insertion.length(), buffer.point());
+        Assert.assertEquals(3 + insertion.length(), (int)buffer.getMark().getPosition());
+    }
 }
 
 

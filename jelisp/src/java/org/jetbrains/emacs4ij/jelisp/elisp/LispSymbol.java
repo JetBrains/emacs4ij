@@ -49,7 +49,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
     }
-    
+
     public static LispSymbol bool (boolean value) {
         if (value)
             return LispSymbol.ourT;
@@ -215,7 +215,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         if (args == null)
             args = new ArrayList<>();
         if (isSubroutine()) {
-            result = LispSubroutine.evaluate(this, environment, args);
+            result = LispSubroutine.evaluate(myName, environment, args);
             checkCallStack();
             return result;
         }

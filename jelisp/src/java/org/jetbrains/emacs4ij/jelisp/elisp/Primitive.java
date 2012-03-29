@@ -45,6 +45,10 @@ public class Primitive implements FunctionCell, LispCommand {
     public String toString() {
         return "#<subr " + myName + ">";
     }
+    
+    public String getName() {
+        return myName;
+    }
 
     @Override
     public LispObject getDocumentation() {

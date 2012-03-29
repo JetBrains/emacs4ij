@@ -70,7 +70,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
         myName = " *Minibuf-" + number + '*';
-        myEditor = editor;
+        setEditor(editor);
         myEnvironment = environment;
         myParent = parent;
         setReadCommandStatus();

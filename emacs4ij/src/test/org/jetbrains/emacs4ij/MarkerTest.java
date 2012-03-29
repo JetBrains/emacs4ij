@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
@@ -86,7 +87,6 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, m);
         m = evaluateString("m1");
         Assert.assertEquals("#<marker at 6 in 3.txt>", m.toString());
-
         m = evaluateString("(set-marker m1 nil)");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
     }
@@ -227,5 +227,38 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testUseRegionP() {
         LispObject r = evaluateString("(use-region-p)");
         Assert.assertEquals(LispSymbol.ourNil, r);
+    }
+    
+    @Test
+    public void testInsertNil() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        evaluateString("(prin1 1 m)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals("4", m.getPosition().toString());
+
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+    }
+
+    @Test
+    public void testInsertT() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        evaluateString("(set-marker-insertion-type m t)");
+        evaluateString("(prin1 1 m)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals("4", m.getPosition().toString());
+
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+    }
+
+    @Test
+    public void testInsertKey() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        evaluateString("(prin1 \"hello\" m)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals("8", m.getPosition().toString());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
     }
 }

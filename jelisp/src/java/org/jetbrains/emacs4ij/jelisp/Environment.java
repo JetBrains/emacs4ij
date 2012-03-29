@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -18,8 +19,8 @@ import java.util.List;
  */
 public abstract class Environment {
     protected boolean isRecording = false;
-    protected ArrayList<String> myRecordedSymbols = new ArrayList<>();
-    protected HashMap<String, LispSymbol> mySymbols = new HashMap<>();
+    protected List<String> myRecordedSymbols = new ArrayList<>();
+    protected Map<String, LispSymbol> mySymbols = new HashMap<>();
     protected boolean myArgumentsEvaluated = false;
     protected Environment myOuterEnv = null;
     protected LispBuffer myBufferCurrentForEditing = null;
@@ -71,7 +72,9 @@ public abstract class Environment {
                     LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
                     if (local.getValue() != null)
                         symbol = local;
-                } catch (NoOpenedBufferException | VoidVariableException e1) {
+                } catch (NoOpenedBufferException e) {
+                    return symbol;
+                } catch (VoidVariableException e1) {
                     return null;
                 }
             }
@@ -86,8 +89,6 @@ public abstract class Environment {
     public void startRecording() {
         isRecording = true;
         myRecordedSymbols.clear();
-//        ourBufferManager.startRecording();
-//        ourKeymapManager.startRecording();
     }
 
     public void clearRecorded() {
@@ -95,8 +96,6 @@ public abstract class Environment {
             mySymbols.remove(name);
         }
         myRecordedSymbols.clear();
-//        ourBufferManager.clearRecorded();
-//        ourKeymapManager.clearRecorded();
     }
 
     public void defineSymbol (LispSymbol symbol) {
@@ -238,10 +237,6 @@ public abstract class Environment {
     public LispKeymap createKeymap (@Nullable LispObject name) {
         return ourKeymapManager.createKeymap(name);
     }
-
-//    public LispKeymap createSparseKeymap (@Nullable LispObject name) {
-//        return ourKeymapManager.createKeymap(name);
-//    }
     
     public LispKeymap getActiveKeymap() {
         return ourKeymapManager.getActiveKeymap();

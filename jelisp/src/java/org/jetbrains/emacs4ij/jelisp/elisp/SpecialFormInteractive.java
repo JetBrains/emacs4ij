@@ -152,7 +152,7 @@ public class SpecialFormInteractive {
             case 'c': // -- Character (todo no input method is used).
                 addArg(new LispInteger(Integer.parseInt(parameter)));
                 return;
-            case 'C':
+            case 'C': //command
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
                     if (BuiltinPredicates.commandp(cmd, null).equals(LispSymbol.ourT)) {

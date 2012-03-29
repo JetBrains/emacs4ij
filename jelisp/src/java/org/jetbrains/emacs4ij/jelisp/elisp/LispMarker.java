@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -11,46 +13,40 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * To change this template use File | Settings | File Templates.
  */
 public class LispMarker implements LispObject {
-    private LispObject myPosition;
+    private Integer myPosition;
     private LispBuffer myBuffer;
-    private LispSymbol myInsertionType; // t = after, nil = before inserted text
+    private boolean isAfterInsertion; // true = after, false = before inserted text
 
     public LispMarker () {
-        myPosition = LispSymbol.ourNil;
+        myPosition = null;
         myBuffer = null;
-        myInsertionType = LispSymbol.ourNil;
+        isAfterInsertion = false;
     }
 
     public LispMarker (int position, LispBuffer buffer) {
-        myBuffer = buffer;
         setPosition(position);
-        myInsertionType = LispSymbol.ourNil;
-        if (buffer != null) buffer.addMarker(this);
+        isAfterInsertion = false;
+        setBuffer(buffer);
     }
 
     public LispMarker (LispObject position, LispBuffer buffer) {
-        myBuffer = buffer;
         setPosition(position);
-        myInsertionType = LispSymbol.ourNil;
-        if (buffer != null) buffer.addMarker(this);
+        isAfterInsertion = false;
+        setBuffer(buffer);
     }
 
     public LispMarker (LispMarker marker) {
-        myBuffer = marker.myBuffer;
         myPosition = marker.myPosition;
-        myInsertionType = marker.myInsertionType;
-        if (myBuffer != null) myBuffer.addMarker(this);
+        isAfterInsertion = marker.isAfterInsertion;
+        setBuffer(marker.myBuffer);
     }
 
     public LispSymbol getInsertionType() {
-        return myInsertionType;
-    }
+        return LispSymbol.bool(isAfterInsertion);
+    }    
 
     public LispObject setInsertionType (LispObject type) {
-        if (type.equals(LispSymbol.ourNil))
-            myInsertionType = LispSymbol.ourNil;
-        else
-            myInsertionType = LispSymbol.ourT;
+        isAfterInsertion = !type.equals(LispSymbol.ourNil);
         return type;
     }
 
@@ -61,9 +57,8 @@ public class LispMarker implements LispObject {
 
         LispMarker marker = (LispMarker) o;
 
+        if (isAfterInsertion != marker.isAfterInsertion) return false;
         if (myBuffer != null ? !myBuffer.equals(marker.myBuffer) : marker.myBuffer != null) return false;
-        if (myInsertionType != null ? !myInsertionType.equals(marker.myInsertionType) : marker.myInsertionType != null)
-            return false;
         if (myPosition != null ? !myPosition.equals(marker.myPosition) : marker.myPosition != null) return false;
 
         return true;
@@ -73,7 +68,7 @@ public class LispMarker implements LispObject {
     public int hashCode() {
         int result = myPosition != null ? myPosition.hashCode() : 0;
         result = 31 * result + (myBuffer != null ? myBuffer.hashCode() : 0);
-        result = 31 * result + (myInsertionType != null ? myInsertionType.hashCode() : 0);
+        result = 31 * result + (isAfterInsertion ? 1 : 0);
         return result;
     }
 
@@ -81,10 +76,12 @@ public class LispMarker implements LispObject {
     public String toString() {
         if (myBuffer == null)
             return "#<marker in no buffer>";
-        return "#<marker at " + myPosition + " in " + myBuffer.getName() + '>';
+        return "#<marker at " + myPosition 
+                + (isAfterInsertion ? " (moves after insertion) " : "") 
+                + " in " + myBuffer.getName() + '>';
     }
-
-    public LispObject getPosition() {
+    
+    public Integer getPosition() {
         return myPosition;
     }
 
@@ -94,7 +91,9 @@ public class LispMarker implements LispObject {
 
     public void setPosition(LispObject position) {
         if (position.equals(LispSymbol.ourNil)) {
-            myPosition = position;
+            myPosition = null;
+            if (myBuffer != null) myBuffer.removeMarker(this);
+            myBuffer = null;
             return;
         }
         if (position instanceof LispMarker) {
@@ -108,7 +107,7 @@ public class LispMarker implements LispObject {
         throw new WrongTypeArgumentException("integer-or-nil", position.toString());
     }
 
-    public void setBuffer (LispBuffer buffer) {
+    public void setBuffer (@Nullable LispBuffer buffer) {
         if (myBuffer != buffer) {
             if (myBuffer != null)
                 myBuffer.removeMarker(this);
@@ -125,11 +124,29 @@ public class LispMarker implements LispObject {
         if (myBuffer != null)
             if (p > myBuffer.pointMax())
                 p = myBuffer.pointMax();
-        myPosition = new LispInteger(p);
+        myPosition = p;
     }
 
     @Override
     public LispObject evaluate(Environment environment) {
         return this;
+    }
+    
+    public void insert (LispObject insertion) {
+        if (myBuffer == null)
+            throw new MarkerPointsNowhereException();
+        myBuffer.insert(insertion, this);
+    }
+    
+    public void move (int shift, int point, boolean moveAnyway) {
+        if (myPosition == null || myPosition < point)
+            return;
+        if (shift < 0 || moveAnyway || (isAfterInsertion &&  point == myPosition) || point < myPosition) {
+            myPosition += shift;
+        }
+    }
+    
+    public boolean isSet () {
+        return myBuffer != null && myPosition != null;
     }
 }

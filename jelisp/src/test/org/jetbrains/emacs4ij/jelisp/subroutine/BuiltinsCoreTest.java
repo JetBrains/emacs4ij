@@ -82,6 +82,7 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
+    @Ignore
     @Test
     public void testEqSymbol() {
         LispObject lispObject = evaluateString("(eq (make-symbol \"foo\") 'foo)");
@@ -153,6 +154,12 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testFuncallLambda () {
         LispObject result = evaluateString("(funcall '(lambda (a) (+ 1 a)) 2)");
         Assert.assertEquals(new LispInteger(3), result);
+    }
+    
+    @Test
+    public void testFuncallSymbolFunction () {
+        LispObject r = evaluateString("(funcall (symbol-function '1+) 5)");
+        Assert.assertEquals(new LispInteger(6), r);
     }
 
     @Test
@@ -740,4 +747,10 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(f)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
+
+    @Test
+    public void testEvalExpression() {
+        evaluateString("(eval-expression '(+ 5 5))");
+    }
+
 }

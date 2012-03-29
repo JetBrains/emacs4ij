@@ -20,10 +20,11 @@
     <actions>
         <!-- Add your actions here -->
         <group id="Emacs4ijActionGroup" text="Emacs4ij Group" description="Group with Emacs4ij actions" popup="false">
+
             <action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
                     text="Execute command in minibuffer" icon="icons/execute.png"
                     description="Execute command in minibuffer">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
+                <!--keyboard-shortcut keymap="$default" first-keystroke="alt X"/-->
             </action>
             <action id="Open Settings" class="org.jetbrains.emacs4ij.OpenSettings"
                     text="Emacs4ij settings" icon="icons/options.png"

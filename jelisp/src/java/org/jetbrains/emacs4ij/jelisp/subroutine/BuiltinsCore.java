@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
 
 /**
@@ -59,13 +60,6 @@ public abstract class BuiltinsCore {
         return LispSymbol.bool(equals(one, two));
     }
 
-    /* eq returns t if object1 and object2 are integers with the same value.
-    Also, since symbol names are normally unique, if the arguments are symbols with the same name, they are eq.
-    For other types (e.g., lists, vectors, strings), two arguments with the same contents or elements are not necessarily eq to each
-    other: they are eq only if they are the same object, meaning that a change in the contents of one will be reflected by the
-    same change in the contents of the other.
-    * */
-
     public static boolean eqs (LispObject one, LispObject two) {
         if (one == two) return true;
         if (one.getClass() != two.getClass()) return false;
@@ -75,10 +69,10 @@ public abstract class BuiltinsCore {
         if (one instanceof LispSymbol) {
             return ((LispSymbol) one).getName().equals(((LispSymbol) two).getName());
         }
-        if ((one instanceof LispString) && (((LispString) one).getData().equals(""))) {
-            return ((LispString) two).getData().equals("");
-        }
-        return false;
+        return one instanceof LispString
+                && ((LispString) one).getData().equals("")
+                && ((LispString) two).getData().equals("");
+        //all other types eq by reference
     }
 
     @Subroutine("eq")
@@ -103,7 +97,6 @@ public abstract class BuiltinsCore {
             function = symbol;
         if (!BuiltinPredicates.commandp(function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
-//        FunctionCell f = (FunctionCell) function.getFunction();
         if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
             LispList.list(function).evaluate(environment);
             return;
@@ -115,7 +108,7 @@ public abstract class BuiltinsCore {
     @Subroutine("funcall")
     public static LispObject functionCall (Environment environment, LispObject function, @Optional LispObject... args) {
         environment.setArgumentsEvaluated(true);
-        ArrayList<LispObject> data = new ArrayList<LispObject>();
+        List<LispObject> data = new ArrayList<>();
         data.add(function);
         Collections.addAll(data, args);
         LispList funcall = LispList.list(data);
@@ -330,14 +323,6 @@ public abstract class BuiltinsCore {
         return LispSymbol.ourNil;
     }
 
-    public static LispObject assqNoQuit (LispObject key, LispObject list) {
-        while (list instanceof LispList &&
-                (!(((LispList) list).car() instanceof LispList)
-                  || !eqs (((LispList)((LispList) list).car()).car(), key)))
-            list = ((LispList) list).cdr();
-        return BuiltinsList.carSafe(list);
-    }
-    
     private static LispInteger getInt (LispObject object) {
         if (!(object instanceof LispInteger))
             throw new WrongTypeArgumentException("integerp", object);
@@ -364,5 +349,49 @@ public abstract class BuiltinsCore {
         } catch (IndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(string, start, end);
         }
+    }
+
+    @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "CM-x ", key = "\\A-x")
+    public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
+        LispBuffer buffer = environment.getBufferCurrentForEditing();
+        buffer.setActive();
+        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        miniBuffer.open(buffer);
+    }
+
+    public static boolean isSyntaxTable (LispObject object) {
+        //todo: true if char-table
+        return false;
+    }
+
+    @Subroutine("syntax-table-p")
+    public static LispSymbol syntaxTableP (LispObject object) {
+        return LispSymbol.bool(isSyntaxTable(object));
+    }
+
+    @Subroutine("set-syntax-table")
+    public static void setSyntaxTable (LispObject syntaxTable) {
+        if (!isSyntaxTable(syntaxTable))
+            throw new WrongTypeArgumentException("syntax-table-p", syntaxTable.toString());
+        //todo ?
+    }
+
+    @Subroutine("prin1")
+    public static LispString prin1 (Environment environment, LispObject object, @Optional LispObject printCharFun) {
+        LispString result = object instanceof LispString ? (LispString) object : new LispString(object.toString());
+        if (isNil(printCharFun))
+            printCharFun = environment.find("standard-output").getValue();
+        if (printCharFun instanceof LispBuffer) {
+            ((LispBuffer) printCharFun).insert(object);
+        } else if (printCharFun instanceof LispMarker) {
+            ((LispMarker) printCharFun).insert(object);
+        } else if (printCharFun.equals(LispSymbol.ourT)) {
+            GlobalEnvironment.showInfoMessage(object.toString());
+        } else {
+            for (LispObject character: new LispString(result.toString()).toLispObjectList()) {
+                functionCall(environment, printCharFun, character);
+            }
+        }
+        return result;
     }
 }

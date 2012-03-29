@@ -229,6 +229,9 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("overlay-arrow-variable-list");//xdisp.c
         defineSymbol("case-fold-search");
         defineSymbol("obarray", new LispVector()); //lread.c
+
+        defineSymbol("values", LispList.list());
+        defineSymbol("standard-output", LispSymbol.ourT);
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -261,13 +264,14 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void setConstants() {
-        mySymbols.put("nil", LispSymbol.ourNil);
-        mySymbols.put("t", LispSymbol.ourT);
-        mySymbols.put("void", LispSymbol.ourVoid);
+        defineSymbol("nil", LispSymbol.ourNil);
+        defineSymbol("nil", LispSymbol.ourNil);
+        defineSymbol("t", LispSymbol.ourT);
+        defineSymbol("void", LispSymbol.ourVoid);
         String docDir = ourEmacsHome + "/etc/";
         File file = new File (docDir);
         if (file.exists() && file.isDirectory()) {
-            defineSymbol("doc-directory", new LispString(docDir));     //callproc.c
+            defineSymbol("doc-directory", new LispString(docDir));
             String[] docs = file.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
@@ -276,10 +280,12 @@ public class GlobalEnvironment extends Environment {
             });
             if (docs != null && docs.length == 1) {
                 //"DOC-23.2.1"
-                defineSymbol("internal-doc-file-name", new LispString(docs[0]));  //doc.c
+                defineSymbol("internal-doc-file-name", new LispString(docs[0]));
             }
         }
     }
+
+
 
     //for test
     private ArrayList<LispSymbol> mySkipFunctions = new ArrayList<>();
@@ -439,10 +445,18 @@ public class GlobalEnvironment extends Environment {
     }
 
     public static void showErrorMessage (String message) {
+        if (myIde == null) {
+            System.out.println("Emacs4ij error: " + message);
+            return;
+        }
         myIde.showErrorMessage(message);
     }
 
     public static void showInfoMessage (String message) {
+        if (myIde == null) {
+            System.out.println("Emacs4ij message: " + message);
+            return;
+        }
         myIde.showInfoMessage(message);
     }
 

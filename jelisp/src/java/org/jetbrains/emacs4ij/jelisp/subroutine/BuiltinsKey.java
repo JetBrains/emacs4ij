@@ -158,21 +158,7 @@ public abstract class BuiltinsKey {
         if (globalMap.getValue().equals(LispSymbol.ourNil))
             return;
         ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("ctl-x-map"), new LispString("\\C-x"));
-//        LispSymbol escMap = BuiltinsKey.makeKeymap("esc-map");
-//        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("ESC-prefix"), escMap.getValue());
-//        LispSymbol controlXMap = BuiltinsKey.makeKeymap("ctl-x-map");
-//        BuiltinsCore.functionSet(GlobalEnvironment.INSTANCE, new LispSymbol("Control-X-prefix"), controlXMap.getValue());
-//
-////        setKey(globalMap, "ESC-prefix", "ESC");
-////        setKey(globalMap, "Control-X-prefix", "\\C-x");
-//
-//        GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
-//        LispSymbol mblMap = makeKeymap("minibuffer-local-map");
-//        LispSymbol mblNsMap = makeKeymap("minibuffer-local-ns-map", mblMap);
-//        LispSymbol mblCompletionMap = makeKeymap("minibuffer-local-completion-map", mblMap);
-//        LispSymbol mblFileNameCompletionMap = makeKeymap("minibuffer-local-filename-completion-map", mblCompletionMap);
-//        LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
-//        LispSymbol mblFileNameMustMatchMap = makeKeymap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
+        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("esc-map"), new LispString("ESC"));
     }
 
     private static void setKey (LispSymbol keymap, String name, String key) {

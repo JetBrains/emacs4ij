@@ -6,7 +6,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -193,16 +196,10 @@ public abstract class BuiltinsSymbol {
         if (symbol != null)
             return symbol;
         symbol = new LispSymbol(name.getData());
-        ((LispVector) objectArray).setFirst(symbol); //todo: why overwrite?
+        ((LispVector) objectArray).setFirst(symbol);
         return symbol;
     }
 
-    @Subroutine("internal-event-symbol-parse-modifiers")
-    public static LispObject internalEventSymbolParseModifiers (LispSymbol symbol) {
-        //note: for internal use
-        throw new NotImplementedException("internal-event-symbol-parse-modifiers");
-    }
-    
     @Subroutine("interactive-form")
     public static LispObject interactiveForm (LispObject command) {
         if (command instanceof LispList)

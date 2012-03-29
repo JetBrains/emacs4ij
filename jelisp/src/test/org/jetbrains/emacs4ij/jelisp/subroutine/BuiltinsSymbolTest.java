@@ -295,7 +295,7 @@ public class BuiltinsSymbolTest extends BaseSubroutineTest {
     }
 
     @Test
-    public void test1() {
+    public void testPropertyForUndefinedSymbol() {
         evaluateString("(put 'q 'prop 1)");
         LispObject r = evaluateString("(get 'q 'prop)");
         Assert.assertEquals(new LispInteger(1), r);

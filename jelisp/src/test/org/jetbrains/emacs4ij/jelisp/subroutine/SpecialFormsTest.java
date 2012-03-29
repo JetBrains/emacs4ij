@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -280,12 +279,6 @@ public class SpecialFormsTest extends BaseSubroutineTest {
         evaluateString("(defvar a 5 5)");
         LispObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
         Assert.assertEquals(LispSymbol.ourNil, doc);
-    }
-
-    @Ignore
-    @Test
-    public void testDefunVoidBody () {
-        //todo
     }
 
     @Test

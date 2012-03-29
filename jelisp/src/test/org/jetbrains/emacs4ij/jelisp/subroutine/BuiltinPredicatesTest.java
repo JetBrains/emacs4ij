@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -65,7 +64,6 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
-    @Ignore
     @Test
     public void FunctionpLambda() {
         LispObject lispObject = evaluateString("(functionp (lambda () 1))");
@@ -121,7 +119,11 @@ public class BuiltinPredicatesTest extends BaseSubroutineTest {
         evaluateString("(setq f 1)");
         result = evaluateString("(default-boundp 'f)");
         Assert.assertEquals(LispSymbol.ourT, result);
-        result = evaluateString("(default-boundp 'default-directory)");
+    }
+
+    @Test
+    public void testDefaultBoundPDefaultDir() {
+        LispObject result = evaluateString("(default-boundp 'default-directory)");
         Assert.assertEquals(LispSymbol.ourT, result);
         result = evaluateString("(default-boundp 'is-alive)");
         Assert.assertEquals(LispSymbol.ourNil, result);

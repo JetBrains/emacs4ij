@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -87,6 +88,7 @@ public class BuiltinsSequenceTest extends BaseSubroutineTest{
         Assert.assertEquals(new LispString("^@"), r);
     }
 
+    @Ignore
     @Test
     public void testConcatSpecial() {
         LispObject r = evaluateString("(concat '(127))");

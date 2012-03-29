@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,4 +33,9 @@ public interface LispBuffer extends LispObject {
     boolean hasMarkersAt (int position);
     LispMarker getMark();
     void setMark (LispMarker mark);
+
+    void insert(String insertion);
+    void insert(String insertion, int where);
+    void insert(LispObject insertion, @Nullable LispMarker where);
+    void insert(LispObject insertion);
 }
