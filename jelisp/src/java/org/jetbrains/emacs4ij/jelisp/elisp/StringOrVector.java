@@ -11,7 +11,7 @@ import java.util.List;
  * Time: 4:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispStringOrVector extends LispObject { //} LispCommand {
+public interface StringOrVector extends LispObject { //} LispCommand {
     List<Shortcut> toKeyboardShortcutList();
     int length();
 }

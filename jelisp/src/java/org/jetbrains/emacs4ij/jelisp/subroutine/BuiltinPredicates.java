@@ -166,7 +166,7 @@ public abstract class BuiltinPredicates {
     }
 
     public static boolean isIntegerOrMarker (LispObject object) {
-        return object instanceof LispInteger || object instanceof LispMarker;
+        return object instanceof MarkerOrInteger;
     }
 
     @Subroutine("integer-or-marker-p")
@@ -221,10 +221,6 @@ public abstract class BuiltinPredicates {
     @Subroutine("wholenump")
     public static LispSymbol wholeNumP (LispObject object) {
         return LispSymbol.bool(isWholeNumber(object));
-    }
-    
-    public static LispObject eventHead (LispObject event) {
-        return event instanceof LispList ? ((LispList) event).car() : event;
     }
 
     public static boolean isNil (LispObject object) {

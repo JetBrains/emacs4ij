@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
@@ -12,7 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
  *
  * elisp integer number = 13, 1355, -7979, etc
  */
-public class LispInteger extends LispNumber<Integer> {
+public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger {
     public LispInteger(int data) {
         myData = data;
     }
@@ -41,12 +42,6 @@ public class LispInteger extends LispNumber<Integer> {
         if (!BuiltinPredicates.isCharacter(this))
             throw new WrongTypeArgumentException("characterp", this);
         if (myData < 32) {
-//            String s = Integer.toBinaryString(myData);//(Character.toUpperCase(myData + 64));
-//            while (s.length() != 6) {
-//                s = '0' + s;
-//            }
-//            s = '1' + s;
-//            return Integer.valueOf(s, 2).toString();
             return "^" + (char)Character.toUpperCase(myData + 64);
         }
         if (myData > 127 && myData < 160) {
@@ -55,11 +50,13 @@ public class LispInteger extends LispNumber<Integer> {
         return Character.toString((char)(int)myData);
     }
 
-    public void setData (int value) {
-        myData = value;
+    @Override
+    public LispBuffer getBuffer(Environment environment) {
+        return environment.getBufferCurrentForEditing();
     }
 
-    public int keyToChar () {
-        return myData & ((1 << CharUtil.CHARACTERBITS) - 1);
+    @Override
+    public Integer getPosition() {
+        return myData;
     }
 }

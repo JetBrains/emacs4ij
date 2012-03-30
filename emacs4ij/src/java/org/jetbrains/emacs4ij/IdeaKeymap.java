@@ -14,8 +14,8 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispStringOrVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.StringOrVector;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
-    public void defineKey(KeymapCell action, LispStringOrVector key) {
+    public void defineKey(KeymapCell action, StringOrVector key) {
         defineKey(action, key.toKeyboardShortcutList(), 0);
     }
 
@@ -146,7 +146,7 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
-    public KeymapCell getKeyBinding(LispStringOrVector key) {
+    public KeymapCell getKeyBinding(StringOrVector key) {
         KeymapCell function = getKeyBinding(key.toKeyboardShortcutList());
         return (KeymapCell) BuiltinsCore.thisOrNil(function);
     }

@@ -1,9 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 4:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispMarker implements LispObject {
+public class LispMarker implements MarkerOrInteger {
     private Integer myPosition;
     private LispBuffer myBuffer;
     private boolean isAfterInsertion; // true = after, false = before inserted text
@@ -23,22 +23,9 @@ public class LispMarker implements LispObject {
         isAfterInsertion = false;
     }
 
-    public LispMarker (int position, LispBuffer buffer) {
-        setPosition(position);
+    public LispMarker (@Nullable Integer position, @NotNull LispBuffer buffer) {
+        set(position, buffer);
         isAfterInsertion = false;
-        setBuffer(buffer);
-    }
-
-    public LispMarker (LispObject position, LispBuffer buffer) {
-        setPosition(position);
-        isAfterInsertion = false;
-        setBuffer(buffer);
-    }
-
-    public LispMarker (LispMarker marker) {
-        myPosition = marker.myPosition;
-        isAfterInsertion = marker.isAfterInsertion;
-        setBuffer(marker.myBuffer);
     }
 
     public LispSymbol getInsertionType() {
@@ -80,7 +67,8 @@ public class LispMarker implements LispObject {
                 + (isAfterInsertion ? " (moves after insertion) " : "") 
                 + " in " + myBuffer.getName() + '>';
     }
-    
+
+    @Override
     public Integer getPosition() {
         return myPosition;
     }
@@ -89,35 +77,23 @@ public class LispMarker implements LispObject {
         return myBuffer;
     }
 
-    public void setPosition(LispObject position) {
-        if (position.equals(LispSymbol.ourNil)) {
+    @Override
+    public LispBuffer getBuffer(Environment environment) {
+        return myBuffer;
+    }
+
+    public void set(@Nullable Integer position, @Nullable LispBuffer buffer) {
+        if (position == null || buffer == null) {
             myPosition = null;
             if (myBuffer != null) myBuffer.removeMarker(this);
             myBuffer = null;
             return;
         }
-        if (position instanceof LispMarker) {
-            setPosition(((LispMarker) position).getPosition());
-            return;
-        }
-        if (position instanceof LispInteger) {
-            setPosition(((LispInteger) position).getData());
-            return;
-        }
-        throw new WrongTypeArgumentException("integer-or-nil", position.toString());
+        setBuffer(buffer);
+        setPosition(position);
     }
 
-    public void setBuffer (@Nullable LispBuffer buffer) {
-        if (myBuffer != buffer) {
-            if (myBuffer != null)
-                myBuffer.removeMarker(this);
-            if (buffer != null)
-                buffer.addMarker(this);
-        }
-        myBuffer = buffer;
-    }
-
-    public void setPosition(int position) {
+    private void setPosition(int position) {
         int p = position;
         if (p < 1)
             p = 1;
@@ -125,6 +101,16 @@ public class LispMarker implements LispObject {
             if (p > myBuffer.pointMax())
                 p = myBuffer.pointMax();
         myPosition = p;
+    }
+
+    private void setBuffer (@Nullable LispBuffer buffer) {
+        if (myBuffer != buffer) {
+            if (myBuffer != null)
+                myBuffer.removeMarker(this);
+            if (buffer != null)
+                buffer.addMarker(this);
+        }
+        myBuffer = buffer;
     }
 
     @Override
@@ -142,7 +128,7 @@ public class LispMarker implements LispObject {
         if (myPosition == null || myPosition < point)
             return;
         if (shift < 0 || moveAnyway || (isAfterInsertion &&  point == myPosition) || point < myPosition) {
-            myPosition += shift;
+            setPosition(myPosition + shift);
         }
     }
     

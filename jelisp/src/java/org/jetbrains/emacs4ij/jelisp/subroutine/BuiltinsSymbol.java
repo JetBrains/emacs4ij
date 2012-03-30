@@ -208,4 +208,9 @@ public abstract class BuiltinsSymbol {
             return LispSymbol.ourNil;
         return ((LispCommand)command).getInteractiveForm();
     }
+    
+    @Subroutine("boundp")
+    public static LispSymbol boundP (LispSymbol symbol) {
+        return LispSymbol.bool(symbol.hasValue());
+    }
 }

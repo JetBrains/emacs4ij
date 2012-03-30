@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString implements LispAtom, LispSequence, LispArray, LispStringOrVector {
+public class LispString implements LispAtom, LispSequence, LispArray, StringOrVector {
     private String myData;    
 
     public LispString (String data) {

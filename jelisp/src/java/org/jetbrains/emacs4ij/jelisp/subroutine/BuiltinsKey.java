@@ -106,19 +106,19 @@ public abstract class BuiltinsKey {
     }
 
     @Subroutine("key-binding")
-    public static LispObject keyBinding (Environment environment, LispStringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
+    public static LispObject keyBinding (Environment environment, StringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
         //note: optional parameters are ignored ignored
         return environment.getActiveKeymap().getKeyBinding(key);
     }
     
     @Subroutine("lookup-key")
-    public static LispObject lookupKey (LispKeymap keymap, LispStringOrVector key, @Optional LispObject acceptDefault) {
+    public static LispObject lookupKey (LispKeymap keymap, StringOrVector key, @Optional LispObject acceptDefault) {
         //note: acceptDefault is ignored, implemented for compatibility
         return keymap.getKeyBinding(key);
     }
 
     @Subroutine("define-key")
-    public static LispObject defineKey(LispObject keymapObject, LispStringOrVector key, KeymapCell function) {
+    public static LispObject defineKey(LispObject keymapObject, StringOrVector key, KeymapCell function) {
         check(keymapObject);
         LispKeymap keymap = getKeymap(keymapObject);
         keymap.defineKey(function, key);

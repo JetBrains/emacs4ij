@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -157,11 +158,10 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "goto-char", isCmd = true, interactive = "nGoto char: ")
-    public static LispObject gotoChar (Environment environment, LispObject pos) {
-        if (!BuiltinPredicates.isIntegerOrMarker(pos))
-            throw new WrongTypeArgumentException("integer-or-marker-p", pos.toString());
-        int data = (Integer)BuiltinArithmetic.numberOrMarkerToNumber(pos).getData();
-        environment.getBufferCurrentForEditing().gotoChar(data);
+    public static LispObject gotoChar (Environment environment, MarkerOrInteger pos) {
+        if (pos.getPosition() == null)
+            throw new MarkerPointsNowhereException();
+        environment.getBufferCurrentForEditing().gotoChar(pos.getPosition());
         return pos;
     }
 

@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -47,39 +46,25 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("copy-marker")
-    public static LispMarker copyMarker (Environment environment, LispObject markerOrInteger, @Optional LispObject insertionType) {
-        if (markerOrInteger instanceof LispMarker) {
-            LispMarker marker = new LispMarker((LispMarker) markerOrInteger);
-            if (insertionType != null)
-                marker.setInsertionType(insertionType);
-            return marker;
-        }
-        LispBuffer buffer = environment.getBufferCurrentForEditing();
-        LispMarker marker = new LispMarker(markerOrInteger, buffer);
-        if (insertionType != null) {
+    public static LispMarker copyMarker (Environment environment, MarkerOrInteger markerOrInteger, @Optional LispObject insertionType) {
+        LispMarker marker = new LispMarker();
+        marker.set(markerOrInteger.getPosition(), markerOrInteger.getBuffer(environment));
+        if (insertionType != null)
             marker.setInsertionType(insertionType);
-        }
         return marker;
     }
 
     @Subroutine("set-marker")
-    public static LispMarker setMarker (LispMarker marker, LispObject position, @Optional LispBuffer buffer) {
-        if (!BuiltinPredicates.isIntegerOrMarker(position) && !position.equals(LispSymbol.ourNil))
-            throw new WrongTypeArgumentException("integer-or-marker-p", position);
-        if (position.equals(LispSymbol.ourNil)) {
-            marker.setPosition(position);
-            return marker;
-        }
+    public static LispMarker setMarker (LispMarker marker, MarkerOrInteger markerOrInteger, @Optional LispBuffer buffer) {
         if (BuiltinPredicates.isNil(buffer))
             buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
-        marker.setBuffer(buffer);
-        marker.setPosition(position);
+        marker.set(markerOrInteger.getPosition(), buffer);
         return marker;
     }
 
     @Subroutine("move-marker")
-    public static LispMarker moveMarker (LispMarker marker, LispObject position, @Optional LispBuffer buffer) {
-        return setMarker(marker, position, buffer);
+    public static LispMarker moveMarker (LispMarker marker, MarkerOrInteger markerOrInteger, @Optional LispBuffer buffer) {
+        return setMarker(marker, markerOrInteger, buffer);
     }
     
     @Subroutine("marker-position")
@@ -93,9 +78,9 @@ public abstract class BuiltinsMarker {
     }
     
     @Subroutine("buffer-has-markers-at")
-    public static LispSymbol bufferHasMarkersAt (LispObject position) {
+    public static LispSymbol bufferHasMarkersAt (Environment environment, LispObject position) {
         if (position instanceof LispInteger) 
-            return LispSymbol.bool(GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
+            return LispSymbol.bool(environment.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
         return LispSymbol.ourNil;
     }
 

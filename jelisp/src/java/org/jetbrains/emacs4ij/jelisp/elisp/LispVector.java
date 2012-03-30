@@ -19,7 +19,7 @@ import java.util.List;
  * Time: 3:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispVector implements LispObject, LispSequence, LispArray, LispStringOrVector {
+public class LispVector implements LispObject, LispSequence, LispArray, StringOrVector {
     private List<LispObject> myData = null;
 
     public LispVector() {

@@ -229,9 +229,10 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("overlay-arrow-variable-list");//xdisp.c
         defineSymbol("case-fold-search");
         defineSymbol("obarray", new LispVector()); //lread.c
-
         defineSymbol("values", LispList.list());
         defineSymbol("standard-output", LispSymbol.ourT);
+        defineSymbol("this-command");
+        defineSymbol("last-command");
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

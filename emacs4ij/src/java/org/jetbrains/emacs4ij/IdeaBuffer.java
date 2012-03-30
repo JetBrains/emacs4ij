@@ -328,7 +328,7 @@ public class IdeaBuffer implements LispBuffer {
     public void insert(String insertion, int where) {
         if (StringUtil.isEmpty(insertion))
             return;
-        insertAt(where, insertion);
+        insertAt(where - 1, insertion);
         updateMarkersPositions(where, insertion.length(), true);
         gotoChar(where + insertion.length());
     }

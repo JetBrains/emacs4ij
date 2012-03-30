@@ -411,7 +411,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         m1 = new LispMarker(buffer.pointMax(), buffer);
         Assert.assertEquals(m1, lispObject);
 
-        m1.setPosition(buffer.pointMin());
+        m1.set(buffer.pointMin(), buffer);
         m1.setInsertionType(LispSymbol.ourT);
         lispObject = evaluateString("(copy-marker -50 t)");
         Assert.assertEquals(m1, lispObject);

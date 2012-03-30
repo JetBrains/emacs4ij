@@ -337,7 +337,7 @@ public abstract class BuiltinsCore {
     public static LispObject substring (LispObject string, LispInteger from, @Optional LispObject to) {
         if (!(string instanceof LispString) && !(string instanceof LispVector))
             throw new WrongTypeArgumentException("vector-or-string-p", string);
-        int length = ((LispStringOrVector)string).length();
+        int length = ((StringOrVector)string).length();
         int start = processBound(from, length);        
         int end = BuiltinPredicates.isNil(to)
                 ? length
@@ -376,9 +376,10 @@ public abstract class BuiltinsCore {
         //todo ?
     }
 
-    @Subroutine("prin1")
-    public static LispString prin1 (Environment environment, LispObject object, @Optional LispObject printCharFun) {
+    private static LispString print (Environment environment, LispObject object,
+                                     @Optional LispObject printCharFun, boolean quoteStrings) {
         LispString result = object instanceof LispString ? (LispString) object : new LispString(object.toString());
+        
         if (isNil(printCharFun))
             printCharFun = environment.find("standard-output").getValue();
         if (printCharFun instanceof LispBuffer) {
@@ -393,5 +394,15 @@ public abstract class BuiltinsCore {
             }
         }
         return result;
+    }
+    
+    @Subroutine("prin1")
+    public static LispString prin1 (Environment environment, LispObject object, @Optional LispObject printCharFun) {
+        return print(environment, object, printCharFun, true);
+    }
+
+    @Subroutine("princ")
+    public static LispString princ (Environment environment, LispObject object, @Optional LispObject printCharFun) {
+        return print(environment, object, printCharFun, false);
     }
 }
