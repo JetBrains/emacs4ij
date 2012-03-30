@@ -254,8 +254,10 @@ public class ForwardParser extends Parser {
                 int a = Character.toUpperCase(c) - 64;
                 if (a >= 0 && a < 128)
                     return a;
-                if (asIs)
+                if (asIs || c < 33)
                     return c;
+                if (c > 32 && a < 0)
+                    throw new ScanException("Invalid modifier in string");
                 return -1;
         }
     }
@@ -448,7 +450,8 @@ public class ForwardParser extends Parser {
         if (lispObject == null) {
             lispObject = parseSymbol();
             if (lispObject == null)
-                throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex, getNextIndexOf('\n')));
+                throw new ScanException("Containing expression ends prematurely: " + myLispCode.substring(0, myCurrentIndex));
+//            UnknownCodeBlockException(myLispCode.substring(myCurrentIndex, getNextIndexOf('\n')));
         }
         return lispObject;
     }

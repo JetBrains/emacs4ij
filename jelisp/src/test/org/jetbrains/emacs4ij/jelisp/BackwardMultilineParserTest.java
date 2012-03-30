@@ -1,10 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -45,5 +42,19 @@ public class BackwardMultilineParserTest {
         LispList expected = LispList.list(new LispSymbol("quote"),
                 LispList.list(new LispSymbol("defun"), new LispSymbol("test"), LispList.list(), LispList.list(new LispSymbol("message"), new LispString("test"))));
         Assert.assertEquals(expected, lispObject);
+    }
+
+    @Test
+    public void testParseLineWithSpacesAtTheEnd() throws IOException {
+        String[] s = new String[] {"1;;; ", "\t  "};
+        LispObject lispObject = new BackwardMultilineParser(s).parse(1, 2);
+        Assert.assertEquals(new LispInteger(1), lispObject);
+    }
+
+    @Test
+    public void testParseCharacterWithSpacesAtTheEnd() throws IOException {
+        String[] s = new String[] {"?\\C-;;; ", "\t  "};
+        LispObject lispObject = new BackwardMultilineParser(s).parse(1, 2);
+        Assert.assertEquals(new LispInteger(67108896), lispObject);
     }
 }

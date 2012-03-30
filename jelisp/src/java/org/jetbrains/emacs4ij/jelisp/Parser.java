@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 
@@ -19,7 +20,6 @@ public abstract class Parser extends Observable {
     protected String myLispCode;
     protected final List<Character> mySeparators = Arrays.asList(']', ')', '"', ' ', ';', '\n', '\t', '(', '[');
     protected final List<Character> myInnerSeparators = Arrays.asList('\n', ' ', '\t');
-
     protected abstract void advance();
     protected abstract int getMyCurrentIndex();
     protected abstract char getNextChar();
@@ -73,7 +73,7 @@ public abstract class Parser extends Observable {
         int nextSeparatorIndex = getNextSeparatorIndex();
         String symbol = extractForm(nextSeparatorIndex);
         advanceTo(nextSeparatorIndex);
-        if (symbol.equals(""))
+        if (StringUtil.isEmptyOrSpaces(symbol) || symbol.equals(""))
             return null;
         return new LispSymbol(symbol);
     }

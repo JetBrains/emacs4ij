@@ -15,7 +15,7 @@ import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -122,7 +122,7 @@ public class IdeaBuffer implements LispBuffer {
         if (code.length-1 < line) {
             line = code.length - 1;
             if (line < 0)
-                throw new LispException("End of file during parsing");
+                throw new EndOfFileException();
             column = code[line].length() - 1;
         }
         if (code[line].length() - 1 < column) {

@@ -184,11 +184,9 @@ public class BackwardParserTest {
         Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
     }
 
-    @Test
+    @Test (expected = ScanException.class)
     public void testQuotedSpace() throws LispException {
-        LispObject lispObject = p.parseLine("' ");
-        //todo: preceding-sexp: End of file during parsing
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+        p.parseLine("' ");
     }
 
     @Test
@@ -635,6 +633,4 @@ public class BackwardParserTest {
     public void testParseSpecialCharWrong4() {
         p.parseLine("?\\^\\\\\"");
     }
-
-
 }

@@ -17,7 +17,7 @@ import org.junit.Test;
 public class BuiltinsMarkerTest extends BaseSubroutineTest {
     @Test
     public void testMarkerInsertionType() throws Exception {
-        LispMarker marker = new LispMarker(10, null);
+        LispMarker marker = new LispMarker();
         Assert.assertEquals(LispSymbol.ourNil, BuiltinsMarker.markerInsertionType(marker));
     }
 

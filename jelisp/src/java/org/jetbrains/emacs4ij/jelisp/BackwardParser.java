@@ -1,12 +1,15 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -89,12 +92,14 @@ public class BackwardParser extends Parser {
 
     @Override
     protected int getNextIndexOf (char what) {
-        return (what == '"') ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.lastIndexOf(what, getMyCurrentIndex());
+        return what == '"'
+                ? getNextDoubleQuoteIndex(getMyCurrentIndex())
+                : myLispCode.lastIndexOf(what, getMyCurrentIndex());
     }
 
     @Override
     protected int getNextSeparatorIndex()  {
-        ArrayList<Integer> nextSeparatorIndex = new ArrayList<Integer>();
+        ArrayList<Integer> nextSeparatorIndex = new ArrayList<>();
         for (char separator : mySeparators) {
             nextSeparatorIndex.add(getNextIndexOf(separator));
         }
@@ -103,7 +108,7 @@ public class BackwardParser extends Parser {
 
     @Override
     protected String extractForm(int nextSeparatorIndex) {
-        return myLispCode.substring(nextSeparatorIndex+1, getMyCurrentIndex()+1);
+        return myLispCode.substring(nextSeparatorIndex + 1, getMyCurrentIndex() + 1);
     }
 
     @Override
@@ -120,12 +125,39 @@ public class BackwardParser extends Parser {
         return lispObject;
     }
 
+    private void skipSpacesAndEmptyComments () {
+        char last = 0;
+        List<Character> skipChars = new ArrayList<>(myInnerSeparators);
+        skipChars.add(';');
+        while (skipChars.contains(getCurrentChar())) {
+            int i = myCurrentIndex;
+            for (; i > -1 && skipChars.contains(myLispCode.charAt(i)); i--) {
+                if (myLispCode.charAt(i) != ';')
+                    last = myLispCode.charAt(i);
+            }
+            String data = i == -1 ? "" : myLispCode.substring(0, i + 1);
+            if (StringUtil.isEmpty(data)) {
+                if (countObservers() == 0)
+                    throw new EndOfFileException();
+                setChanged();
+                notifyObservers(new EndOfFileException());
+                clearChanged();
+            } else {
+                myLispCode = last == 0
+                        ? data
+                        : data + last;
+                myCurrentIndex = myLispCode.length() - 1;
+                break;
+            }
+        }
+    }
+
     @Override
     protected LispObject tryToParse(boolean isBackQuote) {
-        char end = getCurrentChar();
+        skipSpacesAndEmptyComments();
+        char end = myInnerSeparators.contains(getCurrentChar()) ? getNextChar() : getCurrentChar();
         char start = '0';
-
-        switch (getCurrentChar()) {
+        switch (end) {
             case '"':
                 start = '"';
                 break;
@@ -139,13 +171,18 @@ public class BackwardParser extends Parser {
                 throw new ScanException("Containing expression ends prematurely");
         }
         if (start != '0') {
+            if (end != getCurrentChar()) advance();
             String form = extractSymmetricForm(start, end);
             return myForwardParser.parseLine(form);
         }
+        if (end != getCurrentChar()) {
+            end = getCurrentChar();
+            advance();
+        } else end = 0;
         int nextSeparatorIndex = getNextSeparatorIndex();
         String form = extractForm(nextSeparatorIndex);
         advanceTo(getMyCurrentIndex() - form.length());
-        return myForwardParser.parseLine(form);
+        return myForwardParser.parseLine(end == 0 ? form : form + end);
     }
 
     @Override

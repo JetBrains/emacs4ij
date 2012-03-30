@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.junit.Assert;
@@ -577,10 +578,9 @@ default-directory
     }
 
 
-    @Test
+    @Test (expected = ScanException.class)
     public void testNilChar() {
-        LispObject r = evaluateString("(setq b ?\\^( )");
-        Assert.assertEquals(LispSymbol.ourNil, r);
+        evaluateString("(setq b ?\\^( )");
     }
 
     @Test

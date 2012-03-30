@@ -2,7 +2,10 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
+import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
+import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -72,7 +75,7 @@ public class ForwardParserTest {
         p.parseLine("(5 \"la la");
     }
 
-    @Test (expected = UnknownCodeBlockException.class)
+    @Test (expected = ScanException.class)
     public void testQuotedList () throws LispException {
         LispObject lispObject = p.parseLine("'    (5 \"la la\")");
         Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispList.list(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
@@ -563,6 +566,7 @@ public class ForwardParserTest {
         Assert.assertEquals(new LispInteger(67108904), c);
     }
 
+    @Ignore
     @Test
     public void testParseCharNil() {
         LispObject c = p.parseLine("?\\C-(");
@@ -796,6 +800,18 @@ public class ForwardParserTest {
             return;
         }
         Assert.fail();
+    }
+    
+    @Test
+    public void testParseSpace () {
+        LispObject r = p.parseLine("? ");
+        Assert.assertEquals(new LispInteger(32), r);
+    }
+
+    @Test
+    public void testParseCtrlSpace () {
+        LispObject r = p.parseLine("?\\C- ");
+        Assert.assertEquals(new LispInteger(67108896), r);
     }
 }
 

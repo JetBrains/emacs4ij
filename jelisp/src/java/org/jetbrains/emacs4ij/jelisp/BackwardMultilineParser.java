@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 import java.util.Arrays;
@@ -37,7 +38,7 @@ public class BackwardMultilineParser implements Observer {
             System.out.println(e.getMessage());
             return null;
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new LispException("preceding-sexp: End of file during parsing");
+            throw new EndOfFileException();
         }
     }
 
@@ -52,7 +53,7 @@ public class BackwardMultilineParser implements Observer {
             if (arg instanceof LispException)
                 throw (LispException) arg;
             else
-                throw new LispException("preceding-sexp: End of file during parsing");
+                throw new EndOfFileException();
         myBackwardParser.append(nextLine);
     }
 }
