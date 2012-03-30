@@ -378,18 +378,20 @@ public abstract class BuiltinsCore {
 
     private static LispString print (Environment environment, LispObject object,
                                      @Optional LispObject printCharFun, boolean quoteStrings) {
-        LispString result = object instanceof LispString ? (LispString) object : new LispString(object.toString());
-        
+        LispString result = quoteStrings 
+                ? new LispString(object.toString()) 
+                : object instanceof LispString ? (LispString) object : new LispString(object.toString());
+        LispObject toInsert = object instanceof LispString ? result : object;
         if (isNil(printCharFun))
             printCharFun = environment.find("standard-output").getValue();
         if (printCharFun instanceof LispBuffer) {
-            ((LispBuffer) printCharFun).insert(object);
+            ((LispBuffer) printCharFun).insert(toInsert);
         } else if (printCharFun instanceof LispMarker) {
-            ((LispMarker) printCharFun).insert(object);
+            ((LispMarker) printCharFun).insert(toInsert);
         } else if (printCharFun.equals(LispSymbol.ourT)) {
             GlobalEnvironment.showInfoMessage(object.toString());
         } else {
-            for (LispObject character: new LispString(result.toString()).toLispObjectList()) {
+            for (LispObject character: result.toLispObjectList()) {
                 functionCall(environment, printCharFun, character);
             }
         }

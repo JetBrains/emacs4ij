@@ -13,7 +13,6 @@ import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
@@ -347,7 +346,7 @@ public class IdeaBuffer implements LispBuffer {
     public void insert(LispObject insertion, @Nullable LispMarker where) {
         String ins = insertion.toString();
         if (insertion instanceof LispString) {
-            LispObject kbd = evaluateString(myEnvironment, "(kbd " + insertion.toString() + ")");
+            LispObject kbd = kbd(myEnvironment, (LispString) insertion);
             ins = kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString();
         }
         if (where != null && !where.isSet())
@@ -366,7 +365,8 @@ public class IdeaBuffer implements LispBuffer {
         insert(insertion, point());
     }
 
-    private LispObject evaluateString (Environment environment, String code) {
-        return new ForwardParser().parseLine(code).evaluate(environment);
+    private LispObject kbd (Environment environment, LispString keys) {
+        return LispList.list(new LispSymbol("kbd"), keys).evaluate(environment);
+//        return new ForwardParser().parseLine(code).evaluate(environment);
     }
 }
