@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
@@ -117,6 +118,12 @@ public abstract class Environment {
         return ourBufferManager.createBuffer(bufferName);
     }
 
+    public void onTabSwitch (String bufferName, Editor editor) {
+        LispBuffer buffer = ourBufferManager.switchToEditor(bufferName, editor);
+        if (buffer != null)
+            setBufferCurrentForEditing(buffer);
+    }
+    
     public void switchToBuffer(String bufferName) {
         LispBuffer buffer = ourBufferManager.switchToBuffer(bufferName);
         if (buffer != null)

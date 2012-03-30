@@ -32,7 +32,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private MiniBufferStatus myStatus;
     private int myActivationsDepth = 0;
     private SpecialFormInteractive myInteractive;
-    private String myPrompt;
+    private String myPrompt = ourEvalPrompt;
     private LispSymbol myCommand;
     private Integer myCharCode = null;
     private Alarm myAlarm;
@@ -59,11 +59,11 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             }
         }
     };
-
+    
     private void cancelNoMatchMessageUpdate() {
         myAlarm.cancelAllRequests();
         if (isDocumentListenerSet) {
-            myEditor.getDocument().removeDocumentListener(myMiniBufferChangedListener);
+            getDocument().removeDocumentListener(myMiniBufferChangedListener);
             isDocumentListenerSet = false;
         }
     }
@@ -74,10 +74,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myEnvironment = environment;
         myParent = parent;
         setReadCommandStatus();
-        myPrompt = ourEvalPrompt;
         myAlarm = new Alarm();
         myEnvironment.defineServiceBuffer(this);
-       // write(myPrompt);
     }
 
     private void setDefaultInteractive () {
@@ -130,12 +128,12 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     private void clearNoMatch () {
-        myEditor.getDocument().addDocumentListener(myMiniBufferChangedListener);
+        getDocument().addDocumentListener(myMiniBufferChangedListener);
         isDocumentListenerSet = true;
         myAlarm.addRequest(new Runnable() {
             @Override
             public void run() {
-                myEditor.getDocument().removeDocumentListener(myMiniBufferChangedListener);
+                getDocument().removeDocumentListener(myMiniBufferChangedListener);
                 isDocumentListenerSet = false;
                 write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
             }
@@ -211,10 +209,13 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             myCharCode = null;
             return code;
         }
-        int k = myInteractive.isNoMatch() ? myEditor.getDocument().getText().lastIndexOf(myInteractive.getNoMatchMessage()) : myEditor.getDocument().getText().length();
+        String text = getDocument().getText();
+        int k = myInteractive.isNoMatch()
+                ? text.lastIndexOf(myInteractive.getNoMatchMessage())
+                : text.length();
         if (k < 0)
-            k = myEditor.getDocument().getText().length();
-        return myEditor.getDocument().getText().substring(myPrompt.length(), k);
+            k = text.length();
+        return text.substring(myPrompt.length(), k);
     }
 
     @Override
@@ -224,9 +225,10 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         cancelNoMatchMessageUpdate();
         write(myPrompt);
         myActivationsDepth = 0;
-        myParent.closeHeader();
-        myParent = null;
-
+        if (myParent != null) {
+            myParent.closeHeader();
+            myParent = null;
+        }
 //        todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
 //        myActivationsDepth--;
     }
@@ -259,7 +261,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     //for test
     public void appendText (String text) {
-        write (myEditor.getDocument().getText() + text);
+        write (getDocument().getText() + text);
     }
 
     public void setNoMatch(String input) {
@@ -346,9 +348,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void setActive() {
         if (myEnvironment.getServiceBuffer(myName) == null)
             throw new NoBufferException(myName);
-        if (myEditor == null)
+        if (!myEditorManager.getActiveEditor().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
-        myEditor.getContentComponent().grabFocus();
+        myEditorManager.getActiveEditor().getEditor().getContentComponent().grabFocus();
         myActivationsDepth++;
     }
 }

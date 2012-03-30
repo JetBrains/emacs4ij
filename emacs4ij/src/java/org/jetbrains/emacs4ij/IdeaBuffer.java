@@ -1,15 +1,12 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -30,41 +27,15 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaBuffer implements LispBuffer {
-    protected String myName;
-    protected Editor myEditor;
-    protected Environment myEnvironment;
-    protected List<LispMarker> myMarkers = new ArrayList<>();
     private static Project ourProject;
+    protected String myName;    
+    protected Environment myEnvironment;
+    private HashMap<String, LispSymbol> myLocalVariables = new HashMap<>();
+    protected List<LispMarker> myMarkers = new ArrayList<>();
     private LispMarker myMark = new LispMarker();
-    protected boolean isChangedByMe = false;
-
-    private HashMap<String, LispSymbol> myLocalVariables = new HashMap<String, LispSymbol>();
+    protected EditorManager myEditorManager = new EditorManager();
 
     protected IdeaBuffer() {}
-    
-    protected final DocumentListener myDocumentListener = new DocumentListener() {
-        private int myOldPosition;
-        @Override
-        public void beforeDocumentChange(DocumentEvent documentEvent) {
-            myOldPosition = point();
-        }
-
-        @Override
-        public void documentChanged(DocumentEvent documentEvent) {
-            if (isChangedByMe) {
-                isChangedByMe = false;
-                return;
-            }
-            int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
-            if (shift < 0) {   //delete
-                updateMarkersPositions(point(), shift, false);
-                return;
-            }
-            if (shift > 0) { //insert
-                updateMarkersPositions(myOldPosition, shift, false);
-            }
-        }
-    };
 
     public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
         myEnvironment = environment;
@@ -113,11 +84,15 @@ public class IdeaBuffer implements LispBuffer {
         myLocalVariables.put(variable.getName(), new LispSymbol(variable, null));
     }
 
+    protected Document getDocument() {
+        return getEditor().getDocument();
+    }
+
     @Override
     public LispObject evaluateLastForm() {
-        String[] code = myEditor.getDocument().getText().split("\n");
-        int line = myEditor.getCaretModel().getVisualPosition().getLine();
-        int column = myEditor.getCaretModel().getVisualPosition().getColumn() - 1;
+        String[] code = getDocument().getText().split("\n");
+        int line = getEditor().getCaretModel().getVisualPosition().getLine();
+        int column = getEditor().getCaretModel().getVisualPosition().getColumn() - 1;
         if (code.length-1 < line) {
             line = code.length - 1;
             if (line < 0)
@@ -133,38 +108,13 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        IdeaBuffer that = (IdeaBuffer) o;
-
-        if (myEditor != null ? !myEditor.equals(that.myEditor) : that.myEditor != null) return false;
-        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = myName != null ? myName.hashCode() : 0;
-        result = 31 * result + (myEditor != null ? myEditor.hashCode() : 0);
-        return result;
-    }
-
     public Editor getEditor() {
-        return myEditor;
+        return myEditorManager.getActiveEditor().getEditor();
     }
 
     @Override
     public void setEditor(Editor editor) {
-        if (myEditor != null) {
-            myEditor.getDocument().removeDocumentListener(myDocumentListener);
-        }
-        myEditor = editor;
-        if (myEditor != null) {
-            myEditor.getDocument().addDocumentListener(myDocumentListener);
-        }
+        myEditorManager.setActiveEditor(editor);
     }
 
     public String toString() {
@@ -183,42 +133,32 @@ public class IdeaBuffer implements LispBuffer {
 
     @Override
     public int getSize() {
-        return myEditor.getDocument().getTextLength();
+        return myEditorManager.getActiveEditor().getSize();
     }
 
     @Override
     public int point() {
-        return myEditor.logicalPositionToOffset(myEditor.getCaretModel().getLogicalPosition()) + 1;
+        return myEditorManager.getActiveEditor().point();
     }
 
     @Override
     public void setPoint(int position) {
-        myEditor.getCaretModel().moveToOffset(position);
+        myEditorManager.getActiveEditor().setPoint(position);
     }
 
     @Override
     public int pointMin() {
-        return 1;
+        return myEditorManager.getActiveEditor().pointMin();
     }
 
     @Override
     public int pointMax() {
-        return getSize()+1;
+        return myEditorManager.getActiveEditor().pointMax();
     }
 
     @Override
     public String gotoChar (int position) {
-        String message = "";
-        if (position < pointMin()) {
-            position = pointMin();
-            message = "Beginning of buffer";
-        }
-        else if (position > pointMax()) {
-            position = pointMax();
-            message = "End of buffer";
-        }
-        myEditor.getCaretModel().moveToOffset(position-1);
-        return message;
+        return myEditorManager.getActiveEditor().gotoChar(position);
     }
 
     @Override
@@ -227,38 +167,11 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     protected void write (final String text) {
-        if (myEditor == null)
-            return;
-        UIUtil.invokeLaterIfNeeded(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        myEditor.getDocument().setText(text);
-                        gotoChar(pointMax());
-                    }
-                });
-            }
-        });
+        myEditorManager.getActiveEditor().write(text);
     }
     
     private void insertAt (final int position, final String insertion) {
-        if (myEditor == null)
-            return;
-        UIUtil.invokeLaterIfNeeded(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        isChangedByMe = true;
-                        myEditor.getDocument().insertString(position, insertion);                        
-                    }
-                });
-            }
-        });
-
+        myEditorManager.getActiveEditor().insertAt(position, insertion);
     }
 
     @Override
@@ -273,13 +186,6 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public void closeHeader () {
-        if (myEditor.getHeaderComponent() == null)
-            return;
-        myEditor.setHeaderComponent(null);
-    }
-
-    @Override
     public void kill () {
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
@@ -288,6 +194,11 @@ public class IdeaBuffer implements LispBuffer {
                 fileEditorManager.closeFile(file);
             }
         }
+    }
+
+    @Override
+    public void closeHeader () {
+        myEditorManager.getActiveEditor().closeHeader();
     }
 
     //--------------- mark --------------------------------
@@ -361,12 +272,21 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
+    public void addEditor(Editor editor) {
+        myEditorManager.add(editor);
+    }
+
+    @Override
+    public void switchToEditor(Editor editor) {
+        myEditorManager.switchToEditor(editor);
+    }
+
+    @Override
     public void insert(String insertion) {
         insert(insertion, point());
     }
 
     private LispObject kbd (Environment environment, LispString keys) {
         return LispList.list(new LispSymbol("kbd"), keys).evaluate(environment);
-//        return new ForwardParser().parseLine(code).evaluate(environment);
     }
 }

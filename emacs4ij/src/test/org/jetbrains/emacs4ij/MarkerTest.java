@@ -258,7 +258,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         evaluateString("(set-marker m 3)");
         evaluateString("(prin1 \"hello\" m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        Assert.assertEquals("8", m.getPosition().toString());
+        Assert.assertEquals("10", m.getPosition().toString());
         System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
     }
 }

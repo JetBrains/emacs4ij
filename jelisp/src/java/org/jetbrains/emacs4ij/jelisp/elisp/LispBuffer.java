@@ -38,4 +38,8 @@ public interface LispBuffer extends LispObject {
     void insert(String insertion, int where);
     void insert(LispObject insertion, @Nullable LispMarker where);
     void insert(LispObject insertion);
+
+    void addEditor(Editor editor);
+    void switchToEditor (Editor editor);
+
 }

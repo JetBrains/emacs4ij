@@ -84,7 +84,10 @@ public class MyProjectComponent implements ProjectComponent {
                 }
                 if (!(myEnvironment.isSelectionManagedBySubroutine())) {
                     try {
-                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
+                        myEnvironment.onTabSwitch(fileEditorManagerEvent.getNewFile().getName(),
+                                FileEditorManager.getInstance(myProject).getSelectedTextEditor());
+//                                fileEditorManagerEvent.getNewEditor().);
+//                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
                     } catch (NoBufferException e) {
                         //probably the file will be opened by next event, so skip                            
                     }

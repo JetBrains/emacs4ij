@@ -1,7 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
@@ -43,12 +45,20 @@ public class BufferManager {
         }
         return -1;
     }
+    
+    public LispBuffer switchToEditor (String bufferName, Editor editor) {
+        LispBuffer current = switchToBuffer(bufferName);
+        if (current != null)
+            current.switchToEditor(editor);
+        return current;
+    }
 
     public LispBuffer switchToBuffer(String bufferName) {
         if (myBuffers.size() == 0)
             return null;
-        if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName))
+        if (myBuffers.get(myBuffers.size() - 1).getName().equals(bufferName)) {
             return myBuffers.get(myBuffers.size() - 1);
+        }
         int newCurrentBufferIndex = getIndexByName(myBuffers, bufferName);
         if (newCurrentBufferIndex == -1)
             throw new NoBufferException(bufferName);
@@ -85,7 +95,14 @@ public class BufferManager {
 
     public boolean defineBuffer(LispBuffer buffer) {
         if (containsBuffer(buffer.getName())) {
-            throw new DoubleBufferException(buffer.getName());
+            LispBuffer existing = findBuffer(buffer.getName());
+            if (existing.getEditor() == buffer.getEditor()) {
+                throw new DoubleBufferException(buffer.getName());
+            }
+            if (existing.getEditor().getDocument() != buffer.getEditor().getDocument()) {
+                throw new InternalException("Attempt to create two different buffers with one name!");
+            }
+
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);

@@ -56,12 +56,6 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
         return forwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
-     private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
-    }
-
     @Test
     public void testArgument_a () {
         evaluateString("(defun g () (+ 5 5))");
