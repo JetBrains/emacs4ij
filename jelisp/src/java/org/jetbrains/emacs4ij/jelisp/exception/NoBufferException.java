@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -9,6 +11,6 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 public class NoBufferException extends LispException {
     public NoBufferException (String bufferName) {
-        super("No buffer named " + bufferName);
+        super(JelispBundle.message("no.buffer", bufferName));
     }
 }

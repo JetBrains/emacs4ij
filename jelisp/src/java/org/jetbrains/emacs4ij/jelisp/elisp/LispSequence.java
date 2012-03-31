@@ -16,5 +16,5 @@ public interface LispSequence extends LispObject {
     List<LispObject> toLispObjectList();
     List<LispObject> mapCar (Environment environment, LispObject method);
     LispObject copy();
-    String toCharString(); //for List, Vector and String only
+    String toCharString();
 }

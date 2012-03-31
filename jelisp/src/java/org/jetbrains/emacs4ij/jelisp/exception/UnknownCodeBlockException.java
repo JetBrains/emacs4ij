@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -9,6 +11,6 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 public class UnknownCodeBlockException extends LispException {
     public UnknownCodeBlockException(String block) {
-        super("Unknown code block: " + block);
+        super(JelispBundle.message("unknown.code", block));
     }
 }

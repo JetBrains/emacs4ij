@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.exception.DirectEvaluationException;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class Macro implements FunctionCell {
     public Macro (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
-            throw new InternalError("Wrong macro definition");
+            throw new InternalError(JelispBundle.message("wrong.def.form", "macro", def.toString()));
         myLambda = new Lambda(LispList.list(data.subList(1, data.size())));
     }
 
@@ -35,16 +37,6 @@ public class Macro implements FunctionCell {
         myLambda.setDocumentation(doc);
     }
 
-//    @Override
-//    public boolean isInteractive() {
-//        return false;
-//    }
-//
-//    @Override
-//    public String getInteractiveString() {
-//        return null;
-//    }
-
     @Override
     public int getNRequiredArguments() {
         return myLambda.getNRequiredArguments();
@@ -52,6 +44,6 @@ public class Macro implements FunctionCell {
 
     @Override
     public LispObject evaluate(Environment environment) {
-        throw new InternalError("We can't come to macro evaluation: it is used as function or throws void-variable exc");
+        throw new DirectEvaluationException("macro");
     }
 }

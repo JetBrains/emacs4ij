@@ -13,24 +13,17 @@ public class LispException extends RuntimeException {
     //TODO: store the position where the exception raised
 
     protected StringBuilder myStackTrace;
-   // protected int myPosition;
-
     public LispException () {
         super ("Unknown exception");
     }
 
-    public LispException (String message) { //}, int position) {
+    public LispException (String message) {
         super(message);
-        //myPosition = position;
     }
 
     public LispException(String message, StringBuilder stackTrace) {
         super(message);
         myStackTrace = stackTrace;
-    }
-
-    public StringBuilder getMyStackTrace () {
-        return myStackTrace;
     }
 
     @Override

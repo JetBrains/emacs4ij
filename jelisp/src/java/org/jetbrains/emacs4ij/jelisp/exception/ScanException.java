@@ -7,14 +7,10 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 22:59
  * To change this template use File | Settings | File Templates.
  */
-public class ScanException extends LispException {
-//    TODO
-//    public ScanException (String message, int line, int column) {
-//        super("'(scan-error " + message + ' ' + line + ' ' + column + ')');
-//    }
 
+@Error("scan-error")
+public class ScanException extends LispException {
     public ScanException (String message) {
         super("'(scan-error " + message + ')');
     }
-    
 }

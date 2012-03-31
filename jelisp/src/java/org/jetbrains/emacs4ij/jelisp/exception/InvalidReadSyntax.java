@@ -7,6 +7,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * Time: 11:18 AM
  * To change this template use File | Settings | File Templates.
  */
+@Error("invalid-read-syntax")
 public class InvalidReadSyntax extends LispException {
     public InvalidReadSyntax (String message) {
         super("'(invalid-read-syntax \"" + message + "\")");

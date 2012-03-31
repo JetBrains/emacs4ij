@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -8,11 +10,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 public class MissingClosingDoubleQuoteException extends LispException {
-    /*public MissingClosingDoubleQuoteException (int position) {
-        super("Missing closing double quote", position);
-    }*/
-
     public MissingClosingDoubleQuoteException () {
-        super("Missing closing double quote");
+        super(JelispBundle.message("missing.double.quote"));
     }
 }

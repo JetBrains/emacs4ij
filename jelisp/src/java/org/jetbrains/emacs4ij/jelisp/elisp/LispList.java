@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
@@ -54,7 +55,7 @@ public class LispList implements LispSequence {
             return;
         }
         if (data.get(0) == null) {
-            throw new InternalError("Null element in LispList!");
+            throw new InternalError(JelispBundle.message("null.element"));
         }
         myCar = data.get(0);
         if (data.size() == 2) {
@@ -77,7 +78,7 @@ public class LispList implements LispSequence {
             return;
         }
         if (data.get(0) == null) {
-            throw new InternalError("Null element in LispList!");
+            throw new InternalError(JelispBundle.message("null.element"));
         }
         myCar = data.get(0);
         if (data.size() == 1) {
@@ -209,7 +210,7 @@ public class LispList implements LispSequence {
         if (isEmpty())
             return "nil";
         String string = "(" + car().toString();
-        for (LispObject cdr = myCdr; cdr != null; /*todo*/ ) {
+        for (LispObject cdr = myCdr; cdr != null; ) {
             if (cdr instanceof LispList) {
                 string += ' ' + ((LispList) cdr).car().toString();
                 cdr = ((LispList) cdr).realCdr();
@@ -277,7 +278,8 @@ public class LispList implements LispSequence {
                 }
                 return LispList.list();
             }
-            throw new InternalError("Wrong usage of LispList.memq()!");
+
+            throw new InternalError(JelispBundle.message("unsupported.equality.function", equalityFunctionName));
         } catch (ClassCastException e) {
             throw new WrongTypeArgumentException("listp", cdr);
         }

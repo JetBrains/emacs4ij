@@ -31,7 +31,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
             myData = "";
             return;
         }
-        myData = data.replaceAll("\\\\\"", "\"");//.replaceAll("\\\\", "\\");
+        myData = data.replaceAll("\\\\\"", "\"");
     }
 
     public String getData() {
@@ -70,6 +70,11 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
     @Override
     public int length() {
         return myData.length();
+    }
+
+    @Override
+    public LispString substring(int from, int to) {
+        return new LispString(myData.substring(from, to));
     }
 
     @Override
@@ -154,5 +159,4 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
             }
         }
     }
-
 }

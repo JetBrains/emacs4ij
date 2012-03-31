@@ -2,7 +2,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -19,7 +21,7 @@ public class Lambda implements FunctionCell, LispCommand {
     private List<LambdaArgument> myArgumentList = new LinkedList<>();
     private LispObject myDocumentation = null;
     private LispList myInteractive = null;
-    private List<LispObject> myBody = new ArrayList<LispObject>();
+    private List<LispObject> myBody = new ArrayList<>();
     private int nRequiredArguments = 0;
     private boolean infiniteArgs = false;
     private int nKeywords = 0;
@@ -27,7 +29,7 @@ public class Lambda implements FunctionCell, LispCommand {
     public Lambda (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
-            throw new InternalException("Wrong lambda definition");
+            throw new InternalException(JelispBundle.message("wrong.def.form", "lambda", def.toString()));
         try {
             if (!data.get(1).equals(LispSymbol.ourNil))
                 parseArgumentsList((LispList) data.get(1));
@@ -35,22 +37,17 @@ public class Lambda implements FunctionCell, LispCommand {
             throw new InvalidFunctionException(def.toString());
         }
         if (data.size() > 2) {
-//            int index = 2;
             try {
                 //todo: if those instructions have some side effects, this is wrong behaviour
                 //LispObject docString = data.get(2).evaluate(environment);
                 LispObject docString = data.get(2);
                 if (docString instanceof LispString) {
                     myDocumentation = docString;
-//                    index = 3;
                 }
             } catch (LispException e) {
                 myDocumentation = null;
             }
-
-
             myBody = data.subList(2, data.size());
-
             for (LispObject bodyForm: myBody) {
                 if (bodyForm instanceof LispList && !((LispList)bodyForm).isEmpty()) {
                     if (((LispList)bodyForm).car().equals(new LispSymbol("interactive")) && myInteractive == null) {
@@ -118,10 +115,10 @@ public class Lambda implements FunctionCell, LispCommand {
 
     @Override
     public LispObject evaluate(Environment environment) {
-        throw new RuntimeException("wrong usage");
+        throw new DirectEvaluationException("lambda");
     }
 
-    private LispObject evaluateBody (CustomEnvironment inner) {
+    private LispObject evaluateBody (Environment inner) {
         LispObject result = LispSymbol.ourNil;
         for (LispObject bodyForm: myBody) {
             result = bodyForm.evaluate(inner);
@@ -160,7 +157,7 @@ public class Lambda implements FunctionCell, LispCommand {
                         throw new WrongTypeArgumentException(argument.getKeyword().getName(), ((LispSymbol) keyword).getName());
                     }
                     if (i+1 >= argsSize) {
-                        throw new InternalException("Keyword with no value: " + keyword);
+                        throw new InternalException(JelispBundle.message("keyword.no.value", keyword));
                     }
                     argument.setValue(inner, args.get(i+1));
                     i++;
@@ -179,7 +176,7 @@ public class Lambda implements FunctionCell, LispCommand {
 
     @Override
     public LispObject getDocumentation() {
-        return myDocumentation == null ? LispSymbol.ourNil : myDocumentation;
+        return BuiltinsCore.thisOrNil(myDocumentation);
     }
 
     @Override

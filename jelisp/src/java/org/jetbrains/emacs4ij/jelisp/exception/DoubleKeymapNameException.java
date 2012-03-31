@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
@@ -11,6 +12,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
  */
 public class DoubleKeymapNameException extends LispException {
     public DoubleKeymapNameException(LispObject name) {
-        super("Keymap with name " + name.toString() + " already exists!");
+        super(JelispBundle.message("double.keymap", name.toString()));
     }
 }

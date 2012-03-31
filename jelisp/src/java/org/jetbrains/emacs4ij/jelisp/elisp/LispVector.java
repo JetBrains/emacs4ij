@@ -27,7 +27,7 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     }
     
     public LispVector(Shortcut shortcut) {
-        //todo
+        throw new NotImplementedException("LispVector.constructor(Shortcut)");
     }
 
     public LispVector (LispObject ... objects) {
@@ -35,8 +35,7 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     }
     
     public LispVector (List<LispObject> list) {
-        myData = list; //rem: don't copy for LispSequence.copy to share data 
-        //myData = Lists.newArrayList(list);
+        myData = list; //rem: don't copy for LispSequence.copy to share data
     }
 
     @Override
@@ -151,23 +150,9 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     public LispObject getItem(int position) {
         return myData.get(position);
     }
-    
-    public LispVector subString (int from, int to) {
+
+    @Override
+    public LispVector substring (int from, int to) {
         return new LispVector(myData.subList(from, to).toArray(new LispObject[to - from]));
     }
-
-//    @Override
-//    public boolean isInteractive() {
-//        throw new NotImplementedException("LispVector.isInteractive()");
-//    }
-//
-//    @Override
-//    public String getInteractiveString() {
-//        throw new NotImplementedException("LispVector.getInteractiveString()");
-//    }
-//
-//    @Override
-//    public LispList getInteractiveForm() {
-//        throw new NotImplementedException("LispVector.getInteractiveForm()");
-//    }
 }

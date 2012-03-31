@@ -2,7 +2,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 import java.io.File;
@@ -19,7 +21,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class SpecialFormInteractive {
-    private final static String ourStandardNoMatchMessage = " [No Match]";
+    private final static String ourStandardNoMatchMessage = JelispBundle.message("standard.no.match.msg");
     private final static String ourEmptyMessage = "";
     private char myInteractiveChar;
     private Environment myEnvironment;
@@ -77,7 +79,7 @@ public class SpecialFormInteractive {
     }
 
     public boolean toShowNoMatchMessage() {
-        return (!myNoMatchMessage.equals(ourEmptyMessage) && !myNoMatchMessage.equals(ourStandardNoMatchMessage));
+        return !myNoMatchMessage.equals(ourEmptyMessage) && !myNoMatchMessage.equals(ourStandardNoMatchMessage);
     }
 
     public void setParameterStartValue (String parameterStartValue) {
@@ -250,7 +252,7 @@ public class SpecialFormInteractive {
                         return;
                     } catch (NumberFormatException e2) {
                         //todo: don't show prompt
-                        myNoMatchMessage = "Please, enter a number.";
+                        myNoMatchMessage = JelispBundle.message("number.no.match.msg");
                         myParameterStartValue = null;
                         putArgument();
                         return;
@@ -314,7 +316,7 @@ public class SpecialFormInteractive {
                 // This skips events that are integers or symbols.
                 //if no event: (error "command must be bound to an event with parameters")
                 //todo: notifyMiniBuffer(); return;
-                throw new RuntimeException("e character not implemented");
+                throw new NotImplementedException("e character not implemented");
             case 'f': // -- Existing file name.
                 myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
                 break;
@@ -330,9 +332,9 @@ public class SpecialFormInteractive {
                 return;
 
             case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
-                throw new RuntimeException("k character not implemented");
+                throw new NotImplementedException("k character not implemented");
             case 'K': // -- Key sequence to be redefined (do not downcase the last event).
-                throw new RuntimeException("K character not implemented");
+                throw new NotImplementedException("K character not implemented");
 
             case 'm': // -- Value of mark as number. Does not do I/O.
                 notifyMiniBuffer();
@@ -452,7 +454,4 @@ public class SpecialFormInteractive {
             Collections.sort(completions);
         return completions;
     }
-
-
-
 }

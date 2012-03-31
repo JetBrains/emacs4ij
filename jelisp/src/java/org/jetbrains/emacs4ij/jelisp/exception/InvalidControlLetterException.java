@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -9,6 +11,6 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 public class InvalidControlLetterException extends LispException {
     public InvalidControlLetterException (char letter) {
-        super("Invalid control letter: " + letter);
+        super(JelispBundle.message("control.letter.error", letter));
     }
 }

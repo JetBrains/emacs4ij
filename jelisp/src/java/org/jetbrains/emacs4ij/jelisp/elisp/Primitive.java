@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.lang.annotation.Annotation;
@@ -106,9 +108,8 @@ public class Primitive implements FunctionCell, LispCommand {
                     java.lang.reflect.Type[] parametersTypes = m.getGenericParameterTypes();
                     Annotation[][] parametersAnnotations = m.getParameterAnnotations();
                     if (parametersAnnotations.length != parametersTypes.length) {
-                        throw new RuntimeException("Parameters types and annotations lengths do not match!");
+                        throw new InternalException(JelispBundle.message("subroutine.args.properties.mismatch"));
                     }
-
                     if (parametersTypes.length == 0) {
                         myMinNumArgs = 0;
                         if (myMaxNumArgs == null)
@@ -116,7 +117,7 @@ public class Primitive implements FunctionCell, LispCommand {
                         return;
                     }
 
-                    int correction = (parametersTypes[0].equals(Environment.class)) ? -1 : 0;
+                    int correction = parametersTypes[0].equals(Environment.class) ? -1 : 0;
 
                     boolean optional = false;
                     for (int i = 0; i != parametersTypes.length; ++i) {
@@ -140,11 +141,10 @@ public class Primitive implements FunctionCell, LispCommand {
                 }
             }
         }
-        throw new RuntimeException("Cannot count min and max number of arguments for primitive " + myName);
+        throw new InternalException(JelispBundle.message("count.primitive.args.error", myName));
     }
 
     public LispObject getMaxNumArgs() {
         return myMaxNumArgs;
     }
-
 }

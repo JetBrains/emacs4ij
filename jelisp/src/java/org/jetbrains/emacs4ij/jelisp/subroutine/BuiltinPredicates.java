@@ -18,10 +18,7 @@ public abstract class BuiltinPredicates {
     private BuiltinPredicates() {}
 
     public static boolean isCharacter(LispObject object) {
-        if (!isWholeNumber(object))
-            return false;
-        Integer data = ((LispInteger) object).getData();
-        return data <= CharUtil.MAX_CHAR;
+        return object instanceof LispInteger && ((LispInteger) object).isCharacter();
     }
 
     public static boolean isString (LispObject object) {
@@ -226,6 +223,4 @@ public abstract class BuiltinPredicates {
     public static boolean isNil (LispObject object) {
         return object == null || object.equals(LispSymbol.ourNil);
     }
-
-
 }

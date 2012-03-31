@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
@@ -74,7 +75,7 @@ public abstract class LispSubroutine {
         Type[] parametersTypes = m.getGenericParameterTypes();
         Annotation[][] parametersAnnotations = m.getParameterAnnotations();
         if (parametersAnnotations.length != parametersTypes.length) {
-            throw new InternalException("Parameters types and annotations lengths do not match!");
+            throw new InternalException(JelispBundle.message("subroutine.args.properties.mismatch"));
         }
         ArgumentsList arguments = new ArgumentsList();
         setOptional(arguments, parametersAnnotations, parametersTypes);
@@ -217,6 +218,6 @@ public abstract class LispSubroutine {
                 }
             }
         }
-        throw new InternalException("Unknown subroutine " + name);
+        throw new InternalException(JelispBundle.message("unknown.subroutine", name));
     }
 }

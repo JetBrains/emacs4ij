@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -9,10 +11,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 
 public class MissingClosingBracketException extends LispException {
-    /*public MissingClosingBracketException(int position) {
-         super("Missing closing bracket", position);
-    } */
     public MissingClosingBracketException() {
-         super("Missing closing bracket");
+         super(JelispBundle.message("missing.closing.bracket"));
     }
 }

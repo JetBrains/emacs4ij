@@ -12,15 +12,4 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  */
 public interface LispObject {
     LispObject evaluate(Environment environment);
-
-//    @Override
-//    public LispObject invokeMethod(String methodName, Class[] parameterTypes, Object... methodParameters) {
-//        try {
-//            Method m = this.getClass().getMethod(methodName, parameterTypes);
-//            LispObject result = (LispObject) m.invoke(this, methodParameters);
-//            return result == null ? this : result;
-//        } catch (Exception e) {
-//            return this;
-//        }
-//    }
 }

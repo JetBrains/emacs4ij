@@ -3,12 +3,15 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,7 +31,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     private LispObject myValue = null;
     private LispObject myFunction = null;
     private boolean isBufferLocal = false;
-    private HashMap<LispSymbol, LispObject> myProperties = new HashMap<>();
+    private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
 
     public LispSymbol(String myName) {
         this.myName = myName;
@@ -119,10 +122,6 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     @Override
     public String toString() {
         return myName;
-//        if (myFunction == null) {
-//            return myName;
-//        }
-//        return myFunction.toString();
     }
 
     public boolean isSubroutine () {
@@ -150,8 +149,6 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     public boolean isAlias() {
         return myFunction instanceof LispSymbol && ((LispSymbol) myFunction).isFunction();
     }
-
-//
 
     @Override
     public boolean equals(Object o) {
@@ -205,7 +202,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
         if (!q.equals(myName)) {
-            throw new InternalError("Bug in call stack!");
+            throw new InternalException(JelispBundle.message("callstack.error"));
         }
     }
 
@@ -239,7 +236,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         try {
             return ((Macro)myFunction).expand(environment, args);
         } catch (ClassCastException e) {
-            throw new RuntimeException("Wrong cast to macro: " + myName);
+            throw new InternalException(JelispBundle.message("wrong.macro", myName));
         }
     }
 
@@ -298,14 +295,14 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
 
     public LispObject getDocumentation () {
         if (myFunction == null)
-            return getProperty("variable-documentation");
+            return getProperty(JelispBundle.message("var.doc"));
         castFunctionCell();
         return ((FunctionCell)myFunction).getDocumentation();
     }
 
     public void setVariableDocumentation (LispObject value) {
         if (value instanceof LispString)
-            setProperty("variable-documentation", value);
+            setProperty(JelispBundle.message("var.doc"), value);
     }
     
     public void setFunctionDocumentation (LispObject doc) {
@@ -316,7 +313,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     }
 
     public void setGlobalVariableDocumentation (LispObject value) {
-        setProperty("variable-documentation", value);
+        setProperty(JelispBundle.message("var.doc"), value);
     }
 
     public boolean isKeyword () {

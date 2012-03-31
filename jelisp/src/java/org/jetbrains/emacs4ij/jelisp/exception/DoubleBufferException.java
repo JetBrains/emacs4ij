@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -9,7 +11,6 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 public class DoubleBufferException extends RuntimeException {
     public DoubleBufferException (String name) {
-        super("Double buffer " + name);
+        super(JelispBundle.message("double.buffer", name));
     }
-
 }

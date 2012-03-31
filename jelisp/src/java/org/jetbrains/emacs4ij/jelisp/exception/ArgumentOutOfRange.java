@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -12,7 +14,7 @@ package org.jetbrains.emacs4ij.jelisp.exception;
 public class ArgumentOutOfRange extends LispException {
     private static String fromArray (Object... arguments) {
         if (arguments.length < 1)
-            throw new RuntimeException("You must specify arguments for args-out-of-range error!");
+            throw new InternalException(JelispBundle.message("no.args", "args-out-of-range"));
         StringBuilder builder = new StringBuilder(arguments[0].toString());
         for (int i = 1, argumentsLength = arguments.length; i < argumentsLength; i++) {
             builder.append(' ').append(arguments[i].toString());

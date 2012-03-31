@@ -334,20 +334,16 @@ public abstract class BuiltinsCore {
     }
 
     @Subroutine("substring")
-    public static LispObject substring (LispObject string, LispInteger from, @Optional LispObject to) {
-        if (!(string instanceof LispString) && !(string instanceof LispVector))
-            throw new WrongTypeArgumentException("vector-or-string-p", string);
-        int length = ((StringOrVector)string).length();
+    public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
+        int length = stringOrVector.length();
         int start = processBound(from, length);        
         int end = BuiltinPredicates.isNil(to)
                 ? length
                 : processBound(getInt(to), length);
         try {
-            if (string instanceof LispString)
-                return new LispString(((LispString)string).getData().substring(start, end));
-            return ((LispVector)string).subString(start, end);
+            return stringOrVector.substring(start, end);
         } catch (IndexOutOfBoundsException e) {
-            throw new ArgumentOutOfRange(string, start, end);
+            throw new ArgumentOutOfRange(stringOrVector, start, end);
         }
     }
 

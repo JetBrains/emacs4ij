@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,6 +13,8 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
  * elisp integer number = 13, 1355, -7979, etc
  */
 public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger {
+    private static final int MAX_CHAR   = 0x3FFFFF;
+
     public LispInteger(int data) {
         myData = data;
     }
@@ -27,9 +28,7 @@ public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger 
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         LispInteger that = (LispInteger) o;
-
         return myData.equals(that.myData);
     }
 
@@ -39,7 +38,7 @@ public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger 
     }
     
     public String toCharacterString () {        
-        if (!BuiltinPredicates.isCharacter(this))
+        if (!isCharacter())
             throw new WrongTypeArgumentException("characterp", this);
         if (myData < 32) {
             return "^" + (char)Character.toUpperCase(myData + 64);
@@ -58,5 +57,9 @@ public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger 
     @Override
     public Integer getPosition() {
         return myData;
+    }
+    
+    public boolean isCharacter () {
+        return myData <= MAX_CHAR && myData > -1;
     }
 }

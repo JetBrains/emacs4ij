@@ -14,11 +14,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * That returns nil for a NaN, and t for any other floating point value.
  */
 public class LispFloat extends LispNumber<Double> {
-
     public static final LispFloat ourPositiveInfinity = new LispFloat(Double.POSITIVE_INFINITY);
     public static final LispFloat ourNegativeInfinity = new LispFloat(Double.NEGATIVE_INFINITY);
     public static final LispFloat ourNaN = new LispFloat(Double.NaN);
-
 
     public LispFloat(double data) {
         myData = data;
@@ -36,11 +34,8 @@ public class LispFloat extends LispNumber<Double> {
             //return this != ourNaN;
         }
         if (o == null || getClass() != o.getClass()) return false;
-
         LispFloat lispFloat = (LispFloat) o;
-
         return Double.compare(lispFloat.myData, myData) == 0;
-
     }
 
     @Override

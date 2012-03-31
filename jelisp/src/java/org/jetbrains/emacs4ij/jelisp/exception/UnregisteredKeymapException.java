@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 
 /**
@@ -11,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
  */
 public class UnregisteredKeymapException extends LispException {
     public UnregisteredKeymapException (LispKeymap keymap) {
-        super("Keymap " + keymap.toString() + " is not registered in KeymapManager. Probably it was created in wrong way.");
+        super(JelispBundle.message("unregistered.keymap", keymap.toString()));
     }
 
 }
