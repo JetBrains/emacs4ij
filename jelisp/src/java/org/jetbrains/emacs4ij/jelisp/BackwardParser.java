@@ -71,10 +71,10 @@ public class BackwardParser extends Parser {
                 }
             } catch (EndOfLineException e) {
                 if (countObservers() == 0)
-                    throw new ScanException("Unbalanced parentheses");
+                    throw new ScanException(JelispBundle.message("unbalanced.parentheses"));
                 form = myLispCode.substring(0, end) + form;
                 setChanged();
-                notifyObservers(new ScanException("Unbalanced parentheses"));
+                notifyObservers(JelispBundle.message("unbalanced.parentheses"));
                 clearChanged();
                 end = myCurrentIndex + 1;
             }
@@ -168,7 +168,7 @@ public class BackwardParser extends Parser {
                 start = '[';
                 break;
             case '(': case '[':
-                throw new ScanException("Containing expression ends prematurely");
+                throw new ScanException(JelispBundle.message("unexpected.expression.end"));
         }
         if (start != '0') {
             if (end != getCurrentChar()) advance();

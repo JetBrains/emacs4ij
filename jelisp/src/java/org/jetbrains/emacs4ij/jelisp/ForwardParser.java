@@ -63,7 +63,7 @@ public class ForwardParser extends Parser {
                     if (getCurrentChar() == ')')
                         break;
                     if (!makeList)
-                        throw new InvalidReadSyntax(". in wrong context");
+                        throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
                     if (getCurrentChar() == '.') {
                         if (!hasNextChar())
                             throw new InvalidReadSyntax(".");
@@ -91,7 +91,7 @@ public class ForwardParser extends Parser {
                             wasCons = true;
                             skipListSeparators();
                             if (getCurrentChar() != ')')
-                                throw new InvalidReadSyntax(". in wrong context");
+                                throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
                             break;
                         }
                     }
@@ -159,15 +159,15 @@ public class ForwardParser extends Parser {
     protected int getNextIndexOf (char what) {
         if (myCurrentIndex == myLispCode.length())
             return myLispCode.length();
-        int i = (what == '"') ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
-        return ((i == -1) ? myLispCode.length() : i);
+        int i = what == '"' ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
+        return i == -1 ? myLispCode.length() : i;
     }
 
     @Override
     protected String extractForm(int nextSeparatorIndex) {
-        if (myCurrentIndex < 0 || myCurrentIndex >= myLispCode.length())
-            return "";
-        return myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex);
+        return myCurrentIndex < 0 || myCurrentIndex >= myLispCode.length()
+                ? ""
+                : myLispCode.substring(getMyCurrentIndex(), nextSeparatorIndex);
     }
 
     private LispString parseString() {
@@ -257,7 +257,7 @@ public class ForwardParser extends Parser {
                 if (asIs || c < 33)
                     return c;
                 if (c > 32 && a < 0)
-                    throw new ScanException("Invalid modifier in string");
+                    throw new ScanException(JelispBundle.message("invaild.modifier.in.string"));
                 return -1;
         }
     }
@@ -337,7 +337,7 @@ public class ForwardParser extends Parser {
             try {
                 m = Char.Modifier.valueOf(Character.toString(getCurrentChar()));
                 if (next != '-' && getCurrentChar() != 's')
-                    throw new ScanException("Invalid escape character syntax");
+                    throw new ScanException(JelispBundle.message("invalid.esc.char.syntax"));
             } catch (IllegalArgumentException e) {
                 m = null;
             }
@@ -450,8 +450,7 @@ public class ForwardParser extends Parser {
         if (lispObject == null) {
             lispObject = parseSymbol();
             if (lispObject == null)
-                throw new ScanException("Containing expression ends prematurely: " + myLispCode.substring(0, myCurrentIndex));
-//            UnknownCodeBlockException(myLispCode.substring(myCurrentIndex, getNextIndexOf('\n')));
+                throw new ScanException(JelispBundle.message("unexpected.expression.end"));
         }
         return lispObject;
     }

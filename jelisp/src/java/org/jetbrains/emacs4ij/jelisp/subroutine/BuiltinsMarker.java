@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -55,10 +56,15 @@ public abstract class BuiltinsMarker {
     }
 
     @Subroutine("set-marker")
-    public static LispMarker setMarker (LispMarker marker, MarkerOrInteger markerOrInteger, @Optional LispBuffer buffer) {
+    public static LispMarker setMarker (LispMarker marker, LispObject markerOrInteger, @Optional LispBuffer buffer) {
         if (BuiltinPredicates.isNil(buffer))
             buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
-        marker.set(markerOrInteger.getPosition(), buffer);
+        if (!markerOrInteger.equals(LispSymbol.ourNil) && !(markerOrInteger instanceof MarkerOrInteger))
+            throw new WrongTypeArgumentException("integer-or-marker-p", markerOrInteger);
+        Integer position = markerOrInteger instanceof MarkerOrInteger
+                ? ((MarkerOrInteger) markerOrInteger).getPosition()
+                : null;
+        marker.set(position, buffer);
         return marker;
     }
 

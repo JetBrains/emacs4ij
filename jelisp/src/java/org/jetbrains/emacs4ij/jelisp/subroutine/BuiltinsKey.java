@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
@@ -107,7 +108,7 @@ public abstract class BuiltinsKey {
 
     @Subroutine("key-binding")
     public static LispObject keyBinding (Environment environment, StringOrVector key, @Optional LispObject acceptDefault, LispObject noReMap, LispObject position) {
-        //note: optional parameters are ignored ignored
+        //note: optional parameters are ignored
         return environment.getActiveKeymap().getKeyBinding(key);
     }
     
@@ -183,7 +184,7 @@ public abstract class BuiltinsKey {
 
             return GlobalEnvironment.INSTANCE.defineSymbol(name, keymap);
         } catch (ClassCastException e) {
-            throw new InternalError("makeKeyMap: parent symbol value is not instance of LispKeymap");
+            throw new InternalError(JelispBundle.message("parent.isnt.keymap.error"));
         }
     }
 

@@ -254,10 +254,9 @@ public abstract class BuiltinsCore {
     public static LispObject apply (Environment environment, LispObject function, LispObject... args) {
         if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
                 || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
-            throw new InvalidFunctionException((function instanceof LispSymbol ?
-                    ((LispSymbol) function).getName() : function.toString()));
+            throw new InvalidFunctionException(function.toString());
 
-        if (!(args[args.length-1] instanceof LispList) && args[args.length-1] != LispSymbol.ourNil)
+        if (!(args[args.length-1] instanceof LispList) && !args[args.length-1].equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("listp", args[args.length-1]);
         ArrayList<LispObject> list = new ArrayList<>();
         list.addAll(Arrays.asList(args).subList(0, args.length - 1));
@@ -272,9 +271,6 @@ public abstract class BuiltinsCore {
 
     @Subroutine(value = "purecopy")
     public static LispObject pureCopy (LispObject object) {
-        /*
-        TODO: ?
-         */
         return object;
     }
 

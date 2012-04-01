@@ -100,9 +100,8 @@ public class BufferManager {
                 throw new DoubleBufferException(buffer.getName());
             }
             if (existing.getEditor().getDocument() != buffer.getEditor().getDocument()) {
-                throw new InternalException("Attempt to create two different buffers with one name!");
+                throw new InternalException(JelispBundle.message("two.buffers.one.name"));
             }
-
         }
         if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);
@@ -199,17 +198,6 @@ public class BufferManager {
         }
         return false;
     }
-    
-//    public void clearRecorded() {
-//        for (String name: myRecordedBuffers) {
-//            GlobalEnvironment.INSTANCE.removeBuffer(name);
-//        }
-//        myRecordedBuffers.clear();
-//    }
-//
-//    public void startRecording() {
-//        myRecordedBuffers.clear();
-//    }
     
     public void defineBufferLocalVariable (LispSymbol symbol) {
         for (LispBuffer buffer: myBuffers) {

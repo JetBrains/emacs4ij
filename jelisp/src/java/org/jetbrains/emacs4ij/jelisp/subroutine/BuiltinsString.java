@@ -2,8 +2,10 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFormatOperationException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -31,7 +33,7 @@ public abstract class BuiltinsString {
             }
             if (wait && Character.isLetter(c)) {
                 if (!emacsFormatChars.contains(c))
-                    throw new LispException("Invalid format operation %" + c);
+                    throw new InvalidFormatOperationException(c);
                 wait = false;
             }
         }
@@ -50,14 +52,15 @@ public abstract class BuiltinsString {
             }
             return new LispString(String.format(formatString.getData(), data));
         } catch (MissingFormatArgumentException e1) {
-            throw new LispException("Not enough arguments for format string");
+            throw new LispException(JelispBundle.message("few.args.for.format.string"));
         } catch (UnknownFormatConversionException e2) {
             char c = e2.getMessage().charAt(e2.getMessage().length() - 2);
             if (c < 'A')
-                throw new LispException("Format string ends in middle of format specifier");
-            throw new LispException("Invalid format operation %" + c);
+                throw new LispException(JelispBundle.message("unexpected.format.string.end"));
+            throw new InvalidFormatOperationException(c);
         } catch (IllegalFormatConversionException e3) {
-            throw new LispException("Format specifier doesn't match argument type");
+            throw new LispException(JelispBundle.message("format.arg.types.mismatch"));
+
         }
     }
 

@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSubroutine;
 import org.jetbrains.emacs4ij.jelisp.exception.DocumentationExtractorException;
+import org.jetbrains.emacs4ij.jelisp.exception.ReadException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.*;
@@ -119,7 +120,7 @@ public class DocumentationExtractor {
             end = line.indexOf(' ', start);
             VarType type = VarType.valueOf(line.substring(start, end).toUpperCase());
             if (type == null)
-                throw new DocumentationExtractorException("Unknown variable definition: " + myVarDef + line.substring(start, end).toUpperCase());
+                throw new DocumentationExtractorException(JelispBundle.message("unknown.var.def", myVarDef, line.substring(start, end).toUpperCase()));
             Variable var = new Variable(name, type);
             myVar.put(name, var);
             return var;
@@ -141,7 +142,7 @@ public class DocumentationExtractor {
         try {
             return reader.readLine();
         } catch (IOException e) {
-            throw new RuntimeException("Error while reading " + fileName);
+            throw new ReadException(fileName);
         }
     }
 
@@ -152,7 +153,6 @@ public class DocumentationExtractor {
         } catch (FileNotFoundException e) {
             throw new DocumentationExtractorException(e.getMessage());
         }
-
         String line = readLine(reader, file.getName());
         ObjectToDocument object;
         final String myDocStartFlag = "doc: /*";
@@ -162,7 +162,7 @@ public class DocumentationExtractor {
                 while (!line.contains(myDocStartFlag)) {
                     line = readLine(reader, file.getName());
                     if (line == null)
-                        throw new RuntimeException("Object definition found, but no documentation! File = " + file.getName() + ", object = " + object.getName());
+                        throw new DocumentationExtractorException(JelispBundle.message("object.def.no.doc", file.getName(), object.getName()));
                 }
                 if (line.contains(myDocEndFlag)) {
                     int start = line.indexOf(myDocStartFlag) + myDocStartFlag.length();
@@ -174,7 +174,7 @@ public class DocumentationExtractor {
                     while (true) {
                         line = readLine(reader, file.getName());
                         if (line == null)
-                            throw new DocumentationExtractorException("function definition&documentation found, but documentation is not finished! File = " + file.getName() + ", function = " + object);
+                            throw new DocumentationExtractorException(JelispBundle.message("unexpected.doc.end", file.getName(), object.getName()));
                         if (line.contains(myDocEndFlag)) {
                             doc += '\n' + line.substring(0, line.indexOf(myDocEndFlag)-1);
                             object.setDoc(doc.trim());

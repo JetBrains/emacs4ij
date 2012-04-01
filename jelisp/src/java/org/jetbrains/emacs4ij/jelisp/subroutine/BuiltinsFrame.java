@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -82,9 +83,8 @@ public abstract class BuiltinsFrame {
 
     @Subroutine(value = "make-frame-invisible", isCmd = true)
     public static LispObject makeFrameInvisible(@Optional LispObject frame, @Optional LispObject force) {
-        if (isNil(frame)) {
+        if (isNil(frame))
             frame = selectedFrame();
-        }
         LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
@@ -92,7 +92,7 @@ public abstract class BuiltinsFrame {
             //check that exists one more visible frame than that we want to hide
             int k = ((LispFrame)frame).isVisible() ? 1 : 0;
             if (GlobalEnvironment.getVisibleAndIconifiedFrames().size() - k <= 0) {
-                BuiltinsCore.error("Attempt to make invisible the sole visible or iconified frame");
+                BuiltinsCore.error(JelispBundle.message("make.invisible.error"));
             }
         }
         ((LispFrame)frame).setVisible(false);
@@ -101,9 +101,8 @@ public abstract class BuiltinsFrame {
 
     @Subroutine(value = "iconify-frame", isCmd = true)
     public static LispObject iconifyFrame(@Optional LispObject frame) {
-        if (isNil(frame)) {
+        if (isNil(frame))
             frame = selectedFrame();
-        }
         LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);

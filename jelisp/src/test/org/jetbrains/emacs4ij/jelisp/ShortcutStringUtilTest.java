@@ -43,7 +43,7 @@ public class ShortcutStringUtilTest {
     @Test
     public void testToShortcutStringTwo() throws Exception {
         LispString s = new LispString(" \\C-c\\M-a");
-        Assert.assertEquals("SPACE ctrl C meta A", ShortcutStringUtil.toShortcutString(s));
+        Assert.assertEquals("SPACE ctrl C alt A", ShortcutStringUtil.toShortcutString(s));
     }
 
     @Test

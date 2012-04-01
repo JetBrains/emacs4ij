@@ -5,6 +5,7 @@ import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
@@ -172,7 +173,7 @@ public abstract class BuiltinsSymbol {
             @Override
             public boolean evaluate(Object o) {
                 if (!(o instanceof LispSymbol)) {
-                    BuiltinsCore.error("Bad data in guts of obarray");
+                    BuiltinsCore.error(JelispBundle.message("wrong.obarray"));
                 }
                 return ((LispSymbol) o).getName().equals(name);
             }

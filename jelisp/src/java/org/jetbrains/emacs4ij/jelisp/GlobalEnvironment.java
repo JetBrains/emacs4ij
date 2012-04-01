@@ -5,9 +5,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
@@ -141,13 +139,13 @@ public class GlobalEnvironment extends Environment {
         }
         if (!testProperty(PropertyType.SOURCE)) {
             INSTANCE.mySymbols.clear();
-            throw new EnvironmentException("Emacs source directory is invalid!");
+            throw new EnvironmentException(JelispBundle.message("invalid.emacs.dir", "source"));
         }
         myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
         myDocumentationExtractor.scanAll();
         if (!testProperty(PropertyType.HOME)) {
             INSTANCE.mySymbols.clear();
-            throw new EnvironmentException("Emacs home directory is invalid!");
+            throw new EnvironmentException(JelispBundle.message("invalid.emacs.dir", "home"));
         }
         BuiltinsKey.init();
         
@@ -314,7 +312,7 @@ public class GlobalEnvironment extends Environment {
                 line = reader.readLine();
                 index++;
             } catch (IOException e) {
-                throw new RuntimeException("Error while reading " + fullName + ", line " + index);
+                throw new ReadException(fullName +  ", line " + index);
             }
             if (line == null)
                 break;
@@ -327,7 +325,7 @@ public class GlobalEnvironment extends Environment {
             try {
                 parsed.evaluate(this);
             } catch (LispException e) {
-                throw new EnvironmentException("Parser error at " + fullName + ", line " + index + ": " + e.getMessage());
+                throw new EnvironmentException(JelispBundle.message("parser.error", fullName, index, e.getMessage()));
             }
         }
     }
@@ -352,14 +350,14 @@ public class GlobalEnvironment extends Environment {
         try {
             reader = new BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("File not found: " + file.getName());
+            throw new ReadException(JelispBundle.message("no.file", file.getName()));
         }
         String line;
         while (true) {
             try {
                 line = reader.readLine();
             } catch (IOException e) {
-                throw new RuntimeException("Error while reading " + file.getName());
+                throw new ReadException(file.getName());
             }
             if (line == null)
                 return null;
@@ -372,7 +370,7 @@ public class GlobalEnvironment extends Environment {
             myUploadHistory.put(name, file);
             return (LispList) parsed;
         }
-        throw new InternalException("Parsed object is not a LispList!");
+        throw new InternalException(JelispBundle.message("unexpected.object.type"));
     }
 
     private static LispList getDefFromInvokersSrc(String name, SymbolType type) {
@@ -421,7 +419,7 @@ public class GlobalEnvironment extends Environment {
             return null;
         LispObject evaluated = definition.evaluate(this);
         if (!(evaluated instanceof LispSymbol))
-            throw new RuntimeException("findAndRegisterEmacsForm FAILED : " + name);
+            throw new InternalException(JelispBundle.message("function.failed", "find and register emacs form", name));
         LispSymbol value = find(((LispSymbol) evaluated).getName());
         if (value == null) {
             value = findAndRegisterEmacsForm((LispSymbol) evaluated, type);
@@ -447,7 +445,7 @@ public class GlobalEnvironment extends Environment {
 
     public static void showErrorMessage (String message) {
         if (myIde == null) {
-            System.out.println("Emacs4ij error: " + message);
+            System.out.println(JelispBundle.message("emacs4ij.error", message));
             return;
         }
         myIde.showErrorMessage(message);
@@ -455,7 +453,7 @@ public class GlobalEnvironment extends Environment {
 
     public static void showInfoMessage (String message) {
         if (myIde == null) {
-            System.out.println("Emacs4ij message: " + message);
+            System.out.println(JelispBundle.message("emacs4ij.message", message));
             return;
         }
         myIde.showInfoMessage(message);
@@ -580,9 +578,8 @@ public class GlobalEnvironment extends Environment {
 
     public void setSelectedFrame (LispFrame frame) {
         int k = frameIndex(frame);
-        if (k < 0) {
-            System.out.println("fail");
-        }
+        if (k < 0)
+            throw new UnregisteredFrameException(frame);
         myCurrentFrame = myFrames.get(k);
     }
 

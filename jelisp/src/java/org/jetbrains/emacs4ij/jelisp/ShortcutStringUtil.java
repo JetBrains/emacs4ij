@@ -98,5 +98,4 @@ public abstract class ShortcutStringUtil {
     public static String fromShortcutList (List<Shortcut> list) {
         return null;
     }
-
 }

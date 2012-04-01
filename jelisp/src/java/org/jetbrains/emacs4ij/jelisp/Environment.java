@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
@@ -228,7 +229,7 @@ public abstract class Environment {
     public LispMiniBuffer getMiniBuffer () {
         LispMiniBuffer miniBuffer = (LispMiniBuffer)ourBufferManager.getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
         if (miniBuffer == null)
-            throw new RuntimeException("mini buffer does not exist!");
+            throw new NoBufferException("minibuffer");
         return miniBuffer;
     }
 

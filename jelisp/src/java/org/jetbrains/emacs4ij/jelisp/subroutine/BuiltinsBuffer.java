@@ -1,8 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -103,7 +105,7 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer", key = "\\C-xb")
-    public static LispObject switchToBuffer (Environment environment, LispObject bufferOrName, @Optional LispObject noRecordObject) {
+    public static LispObject switchToBuffer (Environment environment, LispObject bufferOrName, @Nullable @Optional LispObject noRecordObject) {
         boolean noRecord = false;
         if (noRecordObject != null) {
             if (!(noRecordObject.equals(LispSymbol.ourNil)))
@@ -121,8 +123,9 @@ public abstract class BuiltinsBuffer {
         if (bufferOrName instanceof LispString) {
             LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
             if (buffer == null) {
-                return new LispString("It is not allowed to create files this way.");
-                // todo: create a new buffer with that name.  Interactively, if`confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
+                return new LispString(JelispBundle.message("cannot.create.buffer"));
+                // todo: create a new buffer with that name.
+                // Interactively, if `confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
                 //? : where to create a buffer?
             }
             buffer.setActive();
@@ -250,14 +253,13 @@ public abstract class BuiltinsBuffer {
     @Subroutine(value = "kill-buffer", isCmd = true, interactive = "bKill buffer", key = "\\C-xk")
     public static LispObject killBuffer (Environment environment, @Optional LispObject bufferOrName) {
         replaceBufferInWindows(environment, bufferOrName);
-
         LispSymbol killBufferQueryFunctions = environment.find("kill-buffer-query-functions");
         if (killBufferQueryFunctions != null) {
             LispObject functions = killBufferQueryFunctions.getValue();
             if (functions != null && functions != LispSymbol.ourVoid) {
                 LispObject evaluationResult = functions.evaluate(environment);
                 if (evaluationResult.equals(LispSymbol.ourNil))
-                    return new LispString("The buffer " + bufferOrName + " was not killed due to kill-buffer-query-functions.");
+                    return new LispString(JelispBundle.message("buffer.not.killed", bufferOrName.toString()));
             }
         }
         //todo: run hooks
@@ -295,11 +297,12 @@ public abstract class BuiltinsBuffer {
                 continue;
             }
             LispObject kbd = evaluateString(environment, "(kbd " + arg.toString() + ")");
-            toInsert.append(kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString());
+            String converted = kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString();
+//            if (!converted.equals(((LispString)arg).getData()))
+            toInsert.append(converted);//.append(" ");
         }
+//        toInsert.deleteCharAt(toInsert.length() - 1);
         environment.getBufferCurrentForEditing().insert(toInsert.toString());
         return LispSymbol.ourNil;
     }
-
-
 }

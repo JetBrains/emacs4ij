@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.ReadException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,16 +44,13 @@ public class BufferedReaderParser implements Observer {
             if (nextLine == null)
                 if (arg instanceof LispException)
                     throw (LispException) arg;
-                else
-                    throw new EndOfLineException();
-
+                else throw new EndOfLineException();
             myForwardParser.append(nextLine);
-
         } catch (IOException e) {
             if (arg instanceof LispException) {
                 throw (LispException) arg;
             }
-            throw new RuntimeException("Error while reading " + myReader.toString());
+            throw new ReadException(myReader.toString());
         }
     }
     

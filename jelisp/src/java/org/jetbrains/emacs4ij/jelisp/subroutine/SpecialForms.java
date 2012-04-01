@@ -1,11 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.*;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.Error;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -25,11 +23,10 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
  * in fact it is a kind of builtin function
  */
 public abstract class SpecialForms {
-
     private SpecialForms() {}
 
     private static void bindLetVariables (boolean isStar, Environment inner, LispList varList) {
-        ArrayList<LispSymbol> vars = new ArrayList<LispSymbol>();
+        ArrayList<LispSymbol> vars = new ArrayList<>();
         for (LispObject var: varList.toLispObjectList()) {
             if (var instanceof LispList) {
                 LispSymbol symbol = new LispSymbol(((LispSymbol) ((LispList) var).car()).getName());
@@ -40,27 +37,20 @@ public abstract class SpecialForms {
                 } else {
                     symbol.setValue(valueForm.evaluate(inner));
                 }
-
                 if (isStar)
                     inner.defineSymbol(symbol);
-                else
-                    vars.add(symbol);
-
+                else vars.add(symbol);
                 continue;
             }
             if (var instanceof LispSymbol) {
                 LispSymbol symbol = new LispSymbol (((LispSymbol) var).getName(), LispSymbol.ourNil);
-                // ((LispSymbol) var).setValue(LispSymbol.ourNil);
                 if (isStar)
                     inner.defineSymbol(symbol);
-                else
-                    vars.add(symbol);
-
+                else vars.add(symbol);
                 continue;
             }
-            throw new RuntimeException("wrong variable " + var.toString());
+            throw new InternalException(JelispBundle.message("wrong.variable", var.toString()));
         }
-
         if (!isStar)
             for (LispSymbol symbol : vars) {
                 inner.defineSymbol(symbol);
@@ -180,7 +170,7 @@ public abstract class SpecialForms {
     private static LispSymbol defSymbol (Environment environment, LispSymbol name, LispObject initValue, boolean overwrite, LispObject docString) {
         LispSymbol variable = GlobalEnvironment.INSTANCE.find(name.getName());
         if (variable == null) {
-            LispObject value = (initValue == null) ? null : initValue.evaluate(environment);
+            LispObject value = initValue == null ? null : initValue.evaluate(environment);
             LispSymbol symbol = new LispSymbol(name.getName());
             symbol.setValue(value);
             if (docString != null) {
@@ -191,7 +181,7 @@ public abstract class SpecialForms {
         }
         if (overwrite || (!variable.hasValue() && initValue != null)) {
             if (initValue == null)
-                throw new InternalError("defSymbol: null init value!");
+                throw new InternalException(JelispBundle.message("null.init.value"));
             LispObject value = initValue.evaluate(environment);
             variable.setValue(value);
         }
@@ -349,7 +339,7 @@ public abstract class SpecialForms {
                         throw new ClassCastException();
                     h.add(handler);
                 } catch (ClassCastException e) {
-                    BuiltinsCore.error("Invalid condition handler");
+                    BuiltinsCore.error(JelispBundle.message("invalid.condition.handler"));
                 }
             }
         }
