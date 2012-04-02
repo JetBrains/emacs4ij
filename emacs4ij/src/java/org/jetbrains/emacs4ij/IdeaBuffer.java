@@ -18,6 +18,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,13 +28,13 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaBuffer implements LispBuffer {
-    private static Project ourProject;
-    protected String myName;    
+    protected String myName;
     protected Environment myEnvironment;
-    private HashMap<String, LispSymbol> myLocalVariables = new HashMap<>();
     protected List<LispMarker> myMarkers = new ArrayList<>();
-    private LispMarker myMark = new LispMarker();
     protected EditorManager myEditorManager = new EditorManager();
+    private static Project ourProject;
+    private LispMarker myMark = new LispMarker();
+    private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
 
     protected IdeaBuffer() {}
 
@@ -44,10 +45,14 @@ public class IdeaBuffer implements LispBuffer {
         myEnvironment.defineBuffer(this);
         setLocalVariable("default-directory", new LispString(path));
     }
-    
-//    private void addLocalVar (String name, LispObject value) {
-//        myLocalVariables.put(name, new LispSymbol(name, value, true));
-//    }
+
+    public IdeaBuffer(Environment environment, FileEditorManager fileEditorManager, VirtualFile file) {
+        myEnvironment = environment;
+        myName = file.getName();
+        myEditorManager.add(fileEditorManager, file);
+        myEnvironment.defineBuffer(this);
+        setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
+    }
 
     public static void setProject(Project project) {
         ourProject = project;
@@ -73,11 +78,6 @@ public class IdeaBuffer implements LispBuffer {
             throw new VoidVariableException(name);
         return var;
     }
-
-//    @Override
-//    public void defineLocalVariable(LispSymbol variable) {
-//        myLocalVariables.put(variable.getName(), new LispSymbol(variable));
-//    }
 
     @Override
     public void defineLocalVariable(LispSymbol variable, boolean noValue) {
@@ -110,6 +110,16 @@ public class IdeaBuffer implements LispBuffer {
     @Override
     public Editor getEditor() {
         return myEditorManager.getActiveEditor().getEditor();
+    }
+
+    @Override
+    public boolean containsEditor(Editor editor) {
+        return myEditorManager.contains(editor);
+    }
+
+    @Override
+    public void addEditor(Editor editor) {
+        myEditorManager.add(editor);
     }
 
     @Override
@@ -194,6 +204,7 @@ public class IdeaBuffer implements LispBuffer {
                 fileEditorManager.closeFile(file);
             }
         }
+        myEditorManager.closeAll();
     }
 
     @Override
@@ -269,11 +280,6 @@ public class IdeaBuffer implements LispBuffer {
     @Override
     public void insert(LispObject insertion) {
         insert(insertion, null);
-    }
-
-    @Override
-    public void addEditor(Editor editor) {
-        myEditorManager.add(editor);
     }
 
     @Override

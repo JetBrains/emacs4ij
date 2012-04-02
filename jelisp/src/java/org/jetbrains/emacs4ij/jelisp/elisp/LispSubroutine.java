@@ -118,13 +118,13 @@ public abstract class LispSubroutine {
         }
     }
 
-    private static <T> T[] customizeArrayList(Class<T> type, ArrayList array) {
-        return (T[]) array.toArray((LispObject[]) Array.newInstance(type, 0));
+    private static <T> T[] customizeArrayList(Class<T> type, ArrayList<LispObject> array) {
+        return array.toArray((T[]) Array.newInstance(type, array.size()));
     }
 
     private static int checkArray (Class expectedType, ArgumentsList arguments, List<LispObject> args, int argsCounter, int i) {
         Class componentType = expectedType.getComponentType();
-        ArrayList array = new ArrayList();
+        ArrayList<LispObject> array = new ArrayList<>();
         while (argsCounter != args.size()) {
             if (!componentType.isInstance(args.get(argsCounter)))
                 throw new WrongTypeArgumentException(componentType.toString(), args.get(argsCounter));

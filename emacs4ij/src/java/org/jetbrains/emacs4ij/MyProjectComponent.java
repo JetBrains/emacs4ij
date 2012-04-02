@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -19,6 +20,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -53,7 +55,7 @@ public class MyProjectComponent implements ProjectComponent {
                 try {
                 new IdeaBuffer(myEnvironment, virtualFile.getName(),
                         virtualFile.getParent().getPath() + '/',
-                        fileEditorManager.getSelectedTextEditor());
+                        ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor());
                 } catch (DoubleBufferException e) {
                     //opened 1 file in 2 or more editors.
                     //todo: change active editor in my environment
@@ -64,7 +66,7 @@ public class MyProjectComponent implements ProjectComponent {
             public void fileClosed(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
                 if (myEnvironment == null)
                     return;
-                if (!(myEnvironment.isSelectionManagedBySubroutine()))  {
+                if (!myEnvironment.isSelectionManagedBySubroutine())  {
                     try {
                         myEnvironment.killBuffer(virtualFile.getName());
                     } catch (NoBufferException e) {
@@ -86,10 +88,8 @@ public class MyProjectComponent implements ProjectComponent {
                     try {
                         myEnvironment.onTabSwitch(fileEditorManagerEvent.getNewFile().getName(),
                                 FileEditorManager.getInstance(myProject).getSelectedTextEditor());
-//                                fileEditorManagerEvent.getNewEditor().);
-//                        myEnvironment.switchToBuffer(fileEditorManagerEvent.getNewFile().getName());
-                    } catch (NoBufferException e) {
-                        //probably the file will be opened by next event, so skip                            
+                    } catch (NoBufferException | UnregisteredEditorException e) {
+                        //the file/editor will be opened by next event, so skip
                     }
                 } else
                     myEnvironment.setSelectionManagedBySubroutine(false);

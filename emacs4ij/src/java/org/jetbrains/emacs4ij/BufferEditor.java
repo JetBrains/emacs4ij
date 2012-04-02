@@ -48,13 +48,11 @@ public class BufferEditor {
     };
     
     public void set (Editor editor) {
-        if (myEditor != null) {
+        if (myEditor != null)
             myEditor.getDocument().removeDocumentListener(myDocumentListener);
-        }
         myEditor = editor;
-        if (myEditor != null) {
+        if (myEditor != null)
             myEditor.getDocument().addDocumentListener(myDocumentListener);
-        }
     }
 
     public Editor getEditor() {

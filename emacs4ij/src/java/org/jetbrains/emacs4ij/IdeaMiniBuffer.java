@@ -95,7 +95,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void setEditor(Editor editor) {
         super.setEditor(editor);
         //todo: on hide save state of interactive input and restore here.
-        write(myPrompt);
+        if (editor != null)
+            write(myPrompt);
     }
 
     @Override
@@ -224,6 +225,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
         cancelNoMatchMessageUpdate();
         write(myPrompt);
+        myEditorManager.closeAll();
         myActivationsDepth = 0;
         if (myParent != null) {
             myParent.closeHeader();

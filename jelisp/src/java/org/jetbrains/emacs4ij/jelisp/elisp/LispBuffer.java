@@ -14,7 +14,9 @@ public interface LispBuffer extends LispObject {
     LispObject getLocalVariableValue (String name);
     LispSymbol getLocalVariable (String name);
     void defineLocalVariable (LispSymbol variable, boolean noValue);
+
     String getName();
+
     int getSize();
     int point();
     void setPoint(int position);
@@ -22,12 +24,12 @@ public interface LispBuffer extends LispObject {
     int pointMax();
     String gotoChar(int position);
     String forwardChar (int shift);
+
     void kill();
     LispObject evaluateLastForm ();
     void setActive();
-    Editor getEditor();
-    void setEditor (Editor editor);
     void closeHeader();
+
     void addMarker (LispMarker marker);
     void removeMarker (LispMarker marker);
     boolean hasMarkersAt (int position);
@@ -40,6 +42,10 @@ public interface LispBuffer extends LispObject {
     void insert(LispObject insertion);
 
     void addEditor(Editor editor);
+    void setEditor(Editor editor);
     void switchToEditor (Editor editor);
+    Editor getEditor();
+    boolean containsEditor (Editor editor);
+
 
 }
