@@ -2,6 +2,8 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.event.DocumentEvent;
+import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
@@ -32,16 +34,44 @@ public class IdeaBuffer implements LispBuffer {
     protected Environment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
     protected EditorManager myEditorManager = new EditorManager();
+    protected boolean isChangedByMe = false;
     private static Project ourProject;
     private LispMarker myMark = new LispMarker();
     private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
 
     protected IdeaBuffer() {}
 
+    protected final DocumentListener myDocumentListener = new DocumentListener() {
+        private int myOldPosition;
+        @Override
+        public void beforeDocumentChange(DocumentEvent documentEvent) {
+            myOldPosition = point();
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent documentEvent) {
+            if (isChangedByMe) {
+                isChangedByMe = false;
+                return;
+            }
+            int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
+            if (shift < 0) {   //delete
+                updateMarkersPositions(point(), shift, false);
+                return;
+            }
+            if (shift > 0) { //insert
+                updateMarkersPositions(myOldPosition, shift, false);
+            }
+        }
+    };
+
     public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
         myEnvironment = environment;
         myName = name;
         setEditor(editor);
+        Document document = getDocument();
+        if (document != null)
+            document.addDocumentListener(myDocumentListener);
         myEnvironment.defineBuffer(this);
         setLocalVariable("default-directory", new LispString(path));
     }
@@ -50,6 +80,9 @@ public class IdeaBuffer implements LispBuffer {
         myEnvironment = environment;
         myName = file.getName();
         myEditorManager.add(fileEditorManager, file);
+        Document document = getDocument();
+        if (document != null)
+            document.addDocumentListener(myDocumentListener);
         myEnvironment.defineBuffer(this);
         setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
     }
@@ -82,10 +115,6 @@ public class IdeaBuffer implements LispBuffer {
     @Override
     public void defineLocalVariable(LispSymbol variable, boolean noValue) {
         myLocalVariables.put(variable.getName(), new LispSymbol(variable, null));
-    }
-
-    protected Document getDocument() {
-        return getEditor().getDocument();
     }
 
     @Override
@@ -181,6 +210,7 @@ public class IdeaBuffer implements LispBuffer {
     }
     
     private void insertAt (final int position, final String insertion) {
+        isChangedByMe = true;
         myEditorManager.getActiveEditor().insertAt(position, insertion);
     }
 
@@ -204,6 +234,7 @@ public class IdeaBuffer implements LispBuffer {
                 fileEditorManager.closeFile(file);
             }
         }
+        getDocument().removeDocumentListener(myDocumentListener);
         myEditorManager.closeAll();
     }
 
@@ -294,5 +325,15 @@ public class IdeaBuffer implements LispBuffer {
 
     private LispObject kbd (Environment environment, LispString keys) {
         return LispList.list(new LispSymbol("kbd"), keys).evaluate(environment);
+    }
+
+    @Override
+    public Document getDocument() {
+        return myEditorManager.getDocument();
+    }
+
+    @Override
+    public boolean hasEditors() {
+        return !myEditorManager.isEmpty();
     }
 }

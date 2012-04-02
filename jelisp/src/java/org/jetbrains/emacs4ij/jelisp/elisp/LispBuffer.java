@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,6 +47,6 @@ public interface LispBuffer extends LispObject {
     void switchToEditor (Editor editor);
     Editor getEditor();
     boolean containsEditor (Editor editor);
-
-
+    boolean hasEditors();
+    Document getDocument();
 }

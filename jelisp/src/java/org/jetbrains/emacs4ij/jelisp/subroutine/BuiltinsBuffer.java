@@ -105,7 +105,9 @@ public abstract class BuiltinsBuffer {
     }
 
     @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer", key = "\\C-xb")
-    public static LispObject switchToBuffer (Environment environment, LispObject bufferOrName, @Nullable @Optional LispObject noRecordObject) {
+    public static LispObject switchToBuffer (Environment environment,
+                                             LispObject bufferOrName,
+                                             @Nullable @Optional LispObject noRecordObject) {
         boolean noRecord = false;
         if (noRecordObject != null) {
             if (!(noRecordObject.equals(LispSymbol.ourNil)))

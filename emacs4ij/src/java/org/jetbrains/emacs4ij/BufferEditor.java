@@ -2,10 +2,7 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,43 +13,13 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
  */
 public class BufferEditor {
     private Editor myEditor = null;
-    private boolean isChangedByMe = false;
-    private LispBuffer myBuffer;
     
     public BufferEditor (Editor editor) {
         set(editor);
     }
-    
-    protected final DocumentListener myDocumentListener = new DocumentListener() {
-        private int myOldPosition;
-        @Override
-        public void beforeDocumentChange(DocumentEvent documentEvent) {
-            myOldPosition = point();
-        }
 
-        @Override
-        public void documentChanged(DocumentEvent documentEvent) {
-            if (isChangedByMe) {
-                isChangedByMe = false;
-                return;
-            }
-            int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
-            if (shift < 0) {   //delete
-//                myBuffer.updateMarkersPositions(point(), shift, false);
-                return;
-            }
-            if (shift > 0) { //insert
-//                myBuffer.updateMarkersPositions(myOldPosition, shift, false);
-            }
-        }
-    };
-    
     public void set (Editor editor) {
-        if (myEditor != null)
-            myEditor.getDocument().removeDocumentListener(myDocumentListener);
         myEditor = editor;
-        if (myEditor != null)
-            myEditor.getDocument().addDocumentListener(myDocumentListener);
     }
 
     public Editor getEditor() {
@@ -119,7 +86,6 @@ public class BufferEditor {
                 ApplicationManager.getApplication().runWriteAction(new Runnable() {
                     @Override
                     public void run() {
-                        isChangedByMe = true;
                         myEditor.getDocument().insertString(position, insertion);
                     }
                 });

@@ -1,11 +1,13 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
 
 import java.util.ArrayList;
@@ -34,6 +36,12 @@ public class EditorManager {
             throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
         myCurrentEditor.set(editor);
     }
+
+    public Document getDocument () {
+        if (myEditors.isEmpty())
+            return null;
+        return myEditors.get(0).getEditor().getDocument();
+    }
     
     public void switchToEditor (Editor editor) {
         BufferEditor my = getByEditor(editor);
@@ -52,7 +60,7 @@ public class EditorManager {
     
     public BufferEditor getActiveEditor () {
         if (myCurrentEditor == null)
-            throw new InternalException(Emacs4ijBundle.message("no.editor.for.buffer"));
+            throw new NoEditorException();
         return myCurrentEditor;
     }
     
@@ -83,5 +91,11 @@ public class EditorManager {
             if (file == selected)
                 myCurrentEditor = bufferEditor;
         }
+        if (myEditors.isEmpty())
+            throw new InternalException(Emacs4ijBundle.message("file.with.no.editors", file.getName()));
+    }
+
+    public boolean isEmpty() {
+        return myEditors.isEmpty();
     }
 }
