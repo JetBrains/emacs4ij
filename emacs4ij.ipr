@@ -198,6 +198,7 @@
         <w>iconified</w>
         <w>jelisp</w>
         <w>keymap</w>
+        <w>minibuffer</w>
         <w>multiline</w>
         <w>unregister</w>
       </words>

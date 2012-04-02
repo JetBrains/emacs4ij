@@ -58,6 +58,10 @@ public class SpecialFormInteractive {
         return myPrompt;
     }
 
+    public Environment getEnvironment() {
+        return myEnvironment;
+    }
+
     public String getParameterStartValue() {
         return myParameterStartValue;
     }
@@ -349,6 +353,7 @@ public class SpecialFormInteractive {
                 notifyMiniBuffer();
                 return;
             case 'P': // -- Prefix arg in raw form. Does not do I/O.
+                addArg(myEnvironment.find("current-prefix-arg").getValue());
                 notifyMiniBuffer();
                 return;
             case 'r': // -- Region: point and mark as 2 numeric args, smallest first. Does no I/O.

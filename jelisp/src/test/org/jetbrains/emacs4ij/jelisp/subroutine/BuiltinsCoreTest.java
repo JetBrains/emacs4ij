@@ -753,4 +753,9 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         evaluateString("(eval-expression '(+ 5 5))");
     }
 
+    @Test
+    public void testKbdEscQuit() {
+        evaluateString("(keyboard-escape-quit)");
+    }
+
 }

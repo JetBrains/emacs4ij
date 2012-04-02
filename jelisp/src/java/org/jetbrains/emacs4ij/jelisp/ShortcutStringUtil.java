@@ -26,7 +26,7 @@ public abstract class ShortcutStringUtil {
     static {
         myReplaceMap = new LinkedHashMap<>();
         myReplaceMap.put(" ", " SPACE ");
-        myReplaceMap.put("ESC", " ESCAPE ");
+        myReplaceMap.put("<ESC>", " ESCAPE ");
         myReplaceMap.put(regModifier('M'), " alt "); // :)
         myReplaceMap.put(regModifier('C'), " ctrl ");
         myReplaceMap.put(regModifier('S'), " shift ");

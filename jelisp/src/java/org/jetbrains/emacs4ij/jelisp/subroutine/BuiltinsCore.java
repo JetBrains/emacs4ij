@@ -345,6 +345,7 @@ public abstract class BuiltinsCore {
 
     @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "CM-x ", key = "\\M-x")
     public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
+        environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
         LispBuffer buffer = environment.getBufferCurrentForEditing();
         buffer.setActive();
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
@@ -398,5 +399,11 @@ public abstract class BuiltinsCore {
     @Subroutine("princ")
     public static LispString princ (Environment environment, LispObject object, @Optional LispObject printCharFun) {
         return print(environment, object, printCharFun, false);
+    }
+
+    @Subroutine("abort-recursive-edit")
+    public static void abortRecursiveEdit (Environment environment) {
+        if (environment.getMiniBufferActivationsDepth() > 0)
+            environment.getMiniBuffer().kill();
     }
 }

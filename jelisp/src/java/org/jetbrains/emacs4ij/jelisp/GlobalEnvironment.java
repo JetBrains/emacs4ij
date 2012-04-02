@@ -231,6 +231,9 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("standard-output", LispSymbol.ourT);
         defineSymbol("this-command");
         defineSymbol("last-command");
+        defineSymbol("current-prefix-arg");
+        defineSymbol("prefix-arg");
+        defineSymbol("last-prefix-arg");
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

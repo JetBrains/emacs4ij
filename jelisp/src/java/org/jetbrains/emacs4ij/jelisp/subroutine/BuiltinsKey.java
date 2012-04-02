@@ -159,7 +159,14 @@ public abstract class BuiltinsKey {
         if (globalMap.getValue().equals(LispSymbol.ourNil))
             return;
         ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("ctl-x-map"), new LispString("\\C-x"));
-        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("esc-map"), new LispString("ESC"));
+        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("esc-map"), new LispString("<ESC>"));
+
+        new LispSymbol("keyboard-escape-quit", new LispString("<ESC><ESC>"));
+
+        //init minibuffer keymap
+        LispKeymap miniBufferKeymap = makeSparseKeymap("minibuffer-keymap");
+        miniBufferKeymap.defineKey(new LispSymbol("eval-expression"), new LispString("") );
+
     }
 
     private static void setKey (LispSymbol keymap, String name, String key) {

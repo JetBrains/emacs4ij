@@ -2,9 +2,7 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.PlatformDataKeys;
-import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,18 +12,12 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public class InterruptMiniBuffer extends AnAction {
+    public void update(AnActionEvent event) {
+        event.getPresentation().setEnabled(EnvironmentInitializer.isGlobalInitialized());
+    }
+
     @Override
     public void actionPerformed(AnActionEvent event) {
-        Editor editor = PlatformDataKeys.EDITOR.getData(event.getDataContext());
-        if (editor == null)
-            return;
-        try {
-            MyProjectComponent projectComponent = PlatformDataKeys.PROJECT.getData(event.getDataContext()).getComponent(MyProjectComponent.class);
-            Environment environment = projectComponent.getEnvironment();
-            IdeaMiniBuffer miniBuffer = (IdeaMiniBuffer) environment.getMiniBuffer();
-            miniBuffer.kill();
-        } catch (NullPointerException e) {
-            //skip
-        }
+        GlobalEnvironment.INSTANCE.getMiniBuffer().kill();
     }
 }

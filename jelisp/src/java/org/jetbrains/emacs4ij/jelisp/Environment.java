@@ -236,7 +236,7 @@ public abstract class Environment {
     public int getMiniBufferActivationsDepth() {
         try {
             return getMiniBuffer().getActivationsDepth();
-        } catch (RuntimeException e) {
+        } catch (NoBufferException e) {
             return 0;
         }
     }

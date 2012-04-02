@@ -16,6 +16,7 @@ public interface LispMiniBuffer extends LispBuffer {
     int getActivationsDepth();
     void open(LispBuffer parent);
     boolean wasInteractiveFormResult();
+    void setReadCommandStatus();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
     LispObject onReadInput();

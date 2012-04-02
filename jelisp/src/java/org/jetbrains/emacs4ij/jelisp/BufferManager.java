@@ -96,9 +96,10 @@ public class BufferManager {
     public boolean defineBuffer(LispBuffer buffer) {
         if (containsBuffer(buffer.getName())) {
             LispBuffer existing = findBuffer(buffer.getName());
-            if (!buffer.hasEditors() || existing.containsEditor(buffer.getEditor())) {
+            if (!buffer.hasEditors())
                 throw new DoubleBufferException(buffer.getName());
-            }
+            if (existing.containsEditor(buffer.getEditor()))
+                throw new DoubleBufferException(buffer.getName());
             if (existing.getDocument() != buffer.getDocument()) {
                 throw new InternalException(JelispBundle.message("two.buffers.one.name"));
             }

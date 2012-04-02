@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.ide.IdeEventQueue;
+import com.intellij.openapi.actionSystem.CustomShortcutSet;
+import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
@@ -14,6 +16,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -82,7 +85,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myInteractive = new SpecialFormInteractive(myEnvironment, 'C'+ourEvalPrompt);
     }
 
-    private void setReadCommandStatus () {
+    @Override
+    public void setReadCommandStatus () {
         myStatus = MiniBufferStatus.READ_COMMAND;
         setDefaultInteractive();
     }
@@ -247,12 +251,18 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myParent = parent;
         input.setEnabled(true);
         setEditor(input.getEditor());
-        ExecuteCommand command = new ExecuteCommand();
-        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input);
+
+
         InterruptMiniBuffer imb = new InterruptMiniBuffer();
-        imb.registerCustomShortcutSet(KeyEvent.VK_ESCAPE, 0, input);
+        imb.registerCustomShortcutSet(new CustomShortcutSet
+                (new KeyboardShortcut(KeyStroke.getKeyStroke("ESCAPE"), KeyStroke.getKeyStroke("ESCAPE"))),
+                input.getComponent());
+
+        ExecuteCommand command = new ExecuteCommand();
+        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input.getComponent());
+
         AutoComplete autoComplete = new AutoComplete();
-        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input);
+        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input.getComponent());
         setActive();
     }
 
@@ -320,7 +330,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                 GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
                 return null;
             }
-
             myInteractive.readNextArgument();
         }
         return null;        
@@ -331,6 +340,22 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         return onInteractiveNoIoInput(null, interactive);    
     }
 
+    private void shiftPrefixArgs() {
+        myEnvironment.setVariable(new LispSymbol("last-prefix-arg",
+                myEnvironment.find("current-prefix-arg").getValue()));
+        myEnvironment.setVariable(new LispSymbol("current-prefix-arg",
+                myEnvironment.find("prefix-arg").getValue()));
+        myEnvironment.setVariable(new LispSymbol("prefix-arg",
+                LispSymbol.ourNil));
+    }
+
+    private void clearPrefixArgs() {
+        myEnvironment.setVariable(new LispSymbol("last-prefix-arg",
+                myEnvironment.find("current-prefix-arg").getValue()));
+        myEnvironment.setVariable(new LispSymbol("current-prefix-arg",
+                LispSymbol.ourNil));
+    }
+
     @Override
     public LispObject onInteractiveCall(Environment environment, LispSymbol command) {
         return onInteractiveNoIoInput(command,
@@ -339,6 +364,26 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     private LispObject runInteractive() {
         myEnvironment.setArgumentsEvaluated(true);
+        if (myCommand != null && myCommand.getName().equals("execute-extended-command")) {
+            LispSymbol cmd = (LispSymbol) myInteractive.getArguments().get(0);
+            String interactiveString = cmd.getInteractiveString();
+            if (interactiveString == null) {
+                throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.string.error", cmd.getName()));
+            }
+            myCommand = cmd;
+
+            shiftPrefixArgs();
+
+            if (interactiveString.equals("")) {
+                kill();
+                return myCommand.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
+            }
+            myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
+            setReadArgumentStatus();
+            myInteractive.readNextArgument();
+            return null;
+        }
+        clearPrefixArgs();
         LispObject result = myCommand == null
                 ? LispList.list(myInteractive.getArguments())
                 : myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments());
