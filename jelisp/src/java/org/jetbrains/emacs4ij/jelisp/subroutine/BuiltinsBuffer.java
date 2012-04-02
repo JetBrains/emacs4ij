@@ -126,9 +126,6 @@ public abstract class BuiltinsBuffer {
             LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
             if (buffer == null) {
                 return new LispString(JelispBundle.message("cannot.create.buffer"));
-                // todo: create a new buffer with that name.
-                // Interactively, if `confirm-nonexistent-file-or-buffer' is non-nil, request confirmation before creating a new buffer
-                //? : where to create a buffer?
             }
             buffer.setActive();
             if (!noRecord) {

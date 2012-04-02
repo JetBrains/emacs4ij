@@ -221,6 +221,7 @@ public class IdeaBuffer implements LispBuffer {
         for (VirtualFile file: openedFiles) {
             if (file.getName().equals(myName)) {
                 fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true);
+                myEditorManager.switchToEditor(fileEditorManager.getSelectedTextEditor());
             }
         }
     }
