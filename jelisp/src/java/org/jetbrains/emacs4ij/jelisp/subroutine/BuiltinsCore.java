@@ -406,4 +406,9 @@ public abstract class BuiltinsCore {
         if (environment.getMiniBufferActivationsDepth() > 0)
             environment.getMiniBuffer().kill();
     }
+
+    @Subroutine("recursion-depth")
+    public static LispInteger recursionDepth (Environment environment) {
+        return new LispInteger(environment.getMiniBufferActivationsDepth());
+    }
 }

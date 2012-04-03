@@ -397,7 +397,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             throw new NoBufferException(myName);
         if (!myEditorManager.getActiveEditor().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
-        myEditorManager.getActiveEditor().getEditor().getContentComponent().grabFocus();
+        getEditor().getContentComponent().grabFocus();
         myActivationsDepth++;
     }
 }

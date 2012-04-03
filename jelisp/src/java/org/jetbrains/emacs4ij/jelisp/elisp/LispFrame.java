@@ -20,6 +20,7 @@ public interface LispFrame extends LispObject {
     boolean areIdeFramesEqual (LispFrame frame);
 
     void openWindow (LispBuffer buffer);
+    LispWindow getSelectedWindow();
     LispWindow containsBuffer (LispBuffer buffer);
     void closeWindow (LispBuffer buffer);
     List<LispBuffer> getBufferList();

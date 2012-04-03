@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -20,8 +21,8 @@ import java.util.List;
 public class IdeaFrame implements LispFrame {
     private String myId;
     protected IdeFrameImpl myFrame;
-    private HashMap<String, LispObject> myParameters = new HashMap<>();
-    private ArrayList<LispWindow> myWindows = new ArrayList<>();
+    private Map<String, LispObject> myParameters = new HashMap<>();
+    private List<LispWindow> myWindows = new ArrayList<>();
     
     public IdeaFrame(IdeFrameImpl frame) {
         //IdeFrame[] allFrames = WindowManager.getInstance().getAllFrames();
@@ -90,6 +91,12 @@ public class IdeaFrame implements LispFrame {
     @Override
     public void openWindow (LispBuffer buffer) {
         myWindows.add(new IdeaWindow(myWindows.size(), buffer));
+    }
+
+    @Override
+    public LispWindow getSelectedWindow() {
+
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override

@@ -63,13 +63,15 @@ public class EnvironmentInitializer {
     public static void initProjectEnv (final Project project, final Environment environment) {
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
-            GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
+            IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) frame);
+            GlobalEnvironment.INSTANCE.onFrameOpened(ideaFrame);
             if (((IdeFrameImpl) frame).hasFocus())
-                GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) frame));
+                GlobalEnvironment.INSTANCE.setSelectedFrame(ideaFrame);
         }
 
-        if (windowManager.getAllFrames().length > 0)
+        if (GlobalEnvironment.INSTANCE.getSelectedFrame() == null && windowManager.getAllFrames().length > 0)
             GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+
         new IdeaMiniBuffer(0, null, environment, null);
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
