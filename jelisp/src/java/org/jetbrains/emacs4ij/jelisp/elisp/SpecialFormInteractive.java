@@ -423,7 +423,7 @@ public class SpecialFormInteractive {
     }
 
     public List<String> getCompletions (String parameter) {
-        ArrayList<String> completions = new ArrayList<>();
+        List<String> completions = new ArrayList<>();
         switch (myInteractiveChar) {
             case 'a':
                 completions = GlobalEnvironment.INSTANCE.getFunctionList(parameter);

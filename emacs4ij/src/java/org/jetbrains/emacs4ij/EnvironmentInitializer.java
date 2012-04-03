@@ -39,7 +39,7 @@ public class EnvironmentInitializer {
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
             try {
-                GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+                GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new FrameManagerImpl());
                 isGlobalInitialized = true;
             } catch (LispException e) {
                 //skip
@@ -52,7 +52,7 @@ public class EnvironmentInitializer {
         if (isGlobalInitialized)
             return true;
         try {
-            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+            GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(),new FrameManagerImpl());
             isGlobalInitialized = true;
         } catch (LispException e) {
             GlobalEnvironment.showErrorMessage(e.getMessage());
@@ -65,7 +65,7 @@ public class EnvironmentInitializer {
         for (IdeFrame frame: windowManager.getAllFrames()) {
             IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) frame);
             GlobalEnvironment.INSTANCE.onFrameOpened(ideaFrame);
-            if (((IdeFrameImpl) frame).hasFocus())
+            if (((IdeFrameImpl) frame).isFocused())
                 GlobalEnvironment.INSTANCE.setSelectedFrame(ideaFrame);
         }
 

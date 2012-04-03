@@ -5,7 +5,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.ReadException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
@@ -23,17 +26,15 @@ import java.util.regex.Matcher;
  * To change this template use File | Settings | File Templates.
  */
 public class GlobalEnvironment extends Environment {
-    private List<LispFrame> myFrames = new ArrayList<>();
-    private LispFrame myCurrentFrame = null;
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
-    public static final String ourMiniBufferName = " *Minibuf-0*";
-    public static GlobalEnvironment INSTANCE = null;
-    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
-    private static Ide myIde = null;
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
-    private static DocumentationExtractor myDocumentationExtractor;
+
+    private final Ide myIde;
+
+    private final DocumentationExtractor myDocumentationExtractor;
+
     private List<String> myBufferLocals = new ArrayList<>();
     
     //for debug & extract definition on th fly
@@ -41,6 +42,10 @@ public class GlobalEnvironment extends Environment {
 
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
+    public static final String ourMiniBufferName = " *Minibuf-0*";
+    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+
+    public static GlobalEnvironment INSTANCE = null;
 
     private class SearchItem {
         private LispObject mySource; //may be a LispString or LispBuffer
@@ -128,41 +133,42 @@ public class GlobalEnvironment extends Environment {
     }
 
     //input parameters are nullable only for test!!!
-    public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory, @Nullable Ide ide) {
-        INSTANCE = new GlobalEnvironment();
+    public static void initialize (@Nullable LispKeymapFactory keymapFactory,
+                                   @Nullable Ide ide, @Nullable FrameManager frameManager) {
         ourKeymapManager = new EmacsKeymapManager(keymapFactory);
-        ourBufferManager = new BufferManager(bufferFactory);
+        INSTANCE = new GlobalEnvironment(frameManager, ide);
+        BuiltinsKey.init();
+        INSTANCE.init();
+    }
 
+    private void init() {
+        setConstants();
+        defineBufferLocalVariables();
+        defineGlobalVariables();
+        defineUserOptions();
+        setSubroutines();
+
+        //note: it's important to load backquote before defsubst
+        loadFile(myFilesToLoad.get(0));
+        defineDefForms();
+        for (int i = 1; i < myFilesToLoad.size(); ++i)
+            loadFile(myFilesToLoad.get(i));
+
+    }
+
+    private GlobalEnvironment (FrameManager frameManager, Ide ide) {
+        myFrameManager = frameManager;
         myIde = ide;
-        if (INSTANCE.myCurrentFrame != null) {
-            INSTANCE.onFrameOpened(INSTANCE.myCurrentFrame);
-        }
         if (!testProperty(PropertyType.SOURCE)) {
-            INSTANCE.mySymbols.clear();
+            mySymbols.clear();
             throw new EnvironmentException(JelispBundle.message("invalid.emacs.dir", "source"));
         }
         myDocumentationExtractor = new DocumentationExtractor(ourEmacsSource + "/src");
         myDocumentationExtractor.scanAll();
         if (!testProperty(PropertyType.HOME)) {
-            INSTANCE.mySymbols.clear();
+            mySymbols.clear();
             throw new EnvironmentException(JelispBundle.message("invalid.emacs.dir", "home"));
         }
-        BuiltinsKey.init();
-        
-        INSTANCE.setConstants();
-        INSTANCE.defineBufferLocalVariables();
-        INSTANCE.defineGlobalVariables();
-        INSTANCE.defineUserOptions();
-        INSTANCE.setSubroutines();
-
-        //note: it's important to load backquote before defsubst
-        INSTANCE.loadFile(myFilesToLoad.get(0));
-        INSTANCE.defineDefForms();
-        for (int i = 1; i < myFilesToLoad.size(); ++i)
-            INSTANCE.loadFile(myFilesToLoad.get(i));
-    }
-
-    private GlobalEnvironment () {
     }
 
     //-------- loading ------------------
@@ -194,6 +200,13 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put(name, symbol);
     }
 
+    private void addBufferLocalVariable(String name, LispObject value) {
+        LispSymbol symbol = new LispSymbol(name, value, true);
+        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
+        myBufferLocals.add(name);
+        mySymbols.put(name, symbol);
+    }
+
     public static enum SymbolType {VAR, FUN}
     private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
     private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
@@ -215,11 +228,12 @@ public class GlobalEnvironment extends Environment {
         addBufferLocalVariable("mark-active"); //buffer.c
         addBufferLocalVariable("default-directory");  //BUFFER.C
         addBufferLocalVariable("enable-multibyte-characters");
+        addBufferLocalVariable("major-mode", new LispSymbol("fundamental-mode"));
     }
 
     private void defineGlobalVariables() {
         defineSymbol("load-history");   //lread.c
-//        defineSymbol("deactivate-mark");  //keyboard.c    => moved to KeyBoardUtil
+        defineSymbol("deactivate-mark");  //keyboard.c
         defineSymbol("purify-flag");   //alloc.c
         defineSymbol("current-load-list");//lread.c
         defineSymbol("executing-kbd-macro"); //macros.c
@@ -281,13 +295,10 @@ public class GlobalEnvironment extends Environment {
                 }
             });
             if (docs != null && docs.length == 1) {
-                //"DOC-23.2.1"
                 defineSymbol("internal-doc-file-name", new LispString(docs[0]));
             }
         }
     }
-
-
 
     //for test
     private ArrayList<LispSymbol> mySkipFunctions = new ArrayList<>();
@@ -447,19 +458,19 @@ public class GlobalEnvironment extends Environment {
     }
 
     public static void showErrorMessage (String message) {
-        if (myIde == null) {
+        if (INSTANCE == null || INSTANCE.myIde == null) {
             System.out.println(JelispBundle.message("emacs4ij.error", message));
             return;
         }
-        myIde.showErrorMessage(message);
+        INSTANCE.myIde.showErrorMessage(message);
     }
 
     public static void showInfoMessage (String message) {
-        if (myIde == null) {
+        if (INSTANCE == null || INSTANCE.myIde == null) {
             System.out.println(JelispBundle.message("emacs4ij.message", message));
             return;
         }
-        myIde.showInfoMessage(message);
+        INSTANCE.myIde.showInfoMessage(message);
     }
 
     public LispObject getBufferLocalSymbolValue (LispSymbol symbol) {
@@ -470,22 +481,12 @@ public class GlobalEnvironment extends Environment {
     }
 
     //============================= buffer processing =====================================
-
-    @Override
-    public void defineServiceBuffer (LispBuffer buffer) {
-        ourBufferManager.defineServiceBuffer(buffer);
-        if (myCurrentFrame != null)
-            myCurrentFrame.openWindow(buffer);
-    }
-
     @Override
     public void defineBuffer (LispBuffer buffer) {
         for (String local: myBufferLocals) {
             buffer.defineLocalVariable(mySymbols.get(local), true);
         }
-        if (ourBufferManager.defineBuffer(buffer) && myCurrentFrame != null) {
-            myCurrentFrame.openWindow(buffer);
-        }
+        getFrameManager().openBuffer(buffer);
     }
 
     public void defineBufferLocalVariable (LispSymbol symbol) {
@@ -494,40 +495,18 @@ public class GlobalEnvironment extends Environment {
         symbol.setBufferLocal(true);
         myBufferLocals.add(symbol.getName());
         defineSymbol(symbol);
-        ourBufferManager.defineBufferLocalVariable(symbol);
-    }
-
-    @Override
-    public void closeCurrentBuffer () {
-        LispBuffer b = ourBufferManager.getCurrentBuffer();
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(b);
-        ourBufferManager.removeBuffer(b);
+        getFrameManager().defineBufferLocalVariable(symbol);
     }
 
     // for test
     public void removeBuffer(String name) {
         LispBuffer buffer = findBufferSafe(name);
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(buffer);
-        ourBufferManager.removeBuffer(buffer);
+        getFrameManager().getSelectedFrame().closeWindow(buffer);
     }
 
-    @Override
-    public void killBuffer (LispBuffer buffer) {
-        super.killBuffer(buffer);
-        if (myCurrentFrame != null)
-            myCurrentFrame.closeWindow(buffer);
-    }
-
-    @Override
-    public void killBuffer (String bufferName) {
-        killBuffer(findBufferSafe(bufferName));
-    }
-
-    public ArrayList<String> getCommandList (String begin) {
+    public List<String> getCommandList (String begin) {
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
-        ArrayList<String> commandList = new ArrayList<>();
+        List<String> commandList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
             if (BuiltinPredicates.commandp(symbol, null).equals(LispSymbol.ourT)) {
@@ -540,9 +519,9 @@ public class GlobalEnvironment extends Environment {
         return commandList;
     }
 
-    public ArrayList<String> getFunctionList (String begin) {
+    public List<String> getFunctionList (String begin) {
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
-        ArrayList<String> functionList = new ArrayList<>();
+        List<String> functionList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
             if (BuiltinPredicates.fboundp(this, symbol).equals(LispSymbol.ourT)) {
@@ -553,96 +532,6 @@ public class GlobalEnvironment extends Environment {
             }
         }
         return functionList;
-    }
-
-    public ArrayList<String> getBufferNamesList (String begin) {
-        ArrayList<String> bufferNamesList = new ArrayList<>();
-        for (String bufferName: ourBufferManager.getBuffersNames()) {
-            if (bufferName.length() >= begin.length()) {
-                if (bufferName.substring(0, begin.length()).equals(begin)) {
-                    bufferNamesList.add(bufferName);
-                }
-            }
-        }
-        return bufferNamesList;
-    }
-
-    //------------------------------------------- FRAMES ------------------------------------------------------
-
-    public void onFrameOpened (LispFrame newFrame) {
-        if (frameIndex(newFrame) != -1)
-            return;
-        myFrames.add(newFrame);
-    }
-
-    public void onFrameReleased (LispFrame frame) {
-        myFrames.remove(frame);
-    }
-
-    public void setSelectedFrame (LispFrame frame) {
-        int k = frameIndex(frame);
-        if (k < 0)
-            throw new UnregisteredFrameException(frame);
-        myCurrentFrame = myFrames.get(k);
-    }
-
-    public LispFrame getSelectedFrame() {
-        return myCurrentFrame;
-    }
-
-    private int frameIndex (LispFrame frame) {
-        for (int i = 0; i != myFrames.size(); ++i) {
-            if (myFrames.get(i).areIdeFramesEqual(frame))
-                return i;
-        }
-        return -1;
-    }
-
-    public static void setFrameVisible (LispFrame frame, boolean status) {
-        if (INSTANCE == null)
-            return;
-        int k = INSTANCE.frameIndex(frame);
-        INSTANCE.myFrames.get(k).setVisible(status);
-    }
-
-    public static void setFrameIconified (LispFrame frame, boolean status) {
-        if (INSTANCE == null)
-            return;
-        int k = INSTANCE.frameIndex(frame);
-        INSTANCE.myFrames.get(k).setIconified(status);
-    }
-
-    public static boolean isFrameAlive (LispFrame frame) {
-        return INSTANCE != null && INSTANCE.frameIndex(frame) >= 0;
-    }
-
-    public static ArrayList<LispFrame> getVisibleFrames () {
-        ArrayList<LispFrame> visibleFrames = new ArrayList<>();
-        if (INSTANCE == null)
-            return visibleFrames;
-        for (LispFrame frame: INSTANCE.myFrames) {
-            if (BuiltinPredicates.frameVisibleP(frame).equals(LispSymbol.ourT))
-                visibleFrames.add(frame);
-        }
-        return visibleFrames;
-    }
-
-    public static ArrayList<LispFrame> getVisibleAndIconifiedFrames () {
-        ArrayList<LispFrame> frames = new ArrayList<>();
-        if (INSTANCE == null)
-            return frames;
-        for (LispFrame frame: INSTANCE.myFrames) {
-            LispSymbol predicate = BuiltinPredicates.frameVisibleP(frame);
-            if (predicate.equals(LispSymbol.ourT) || predicate.equals(new LispSymbol("icon")))
-                frames.add(frame);
-        }
-        return frames;
-    }
-
-    public static List<LispFrame> getAllFrames () {
-        if (INSTANCE == null)
-            return new ArrayList<>();
-        return INSTANCE.myFrames;
     }
 
     //==============

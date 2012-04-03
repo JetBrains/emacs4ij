@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -131,18 +130,18 @@ public abstract class BuiltinPredicates {
     }
 
     @Subroutine("frame-live-p")
-    public static LispSymbol frameLiveP (LispObject object) {
+    public static LispSymbol frameLiveP (Environment environment, LispObject object) {
         LispSymbol frameP = framep(object);
         if (frameP.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
-        if (GlobalEnvironment.isFrameAlive((LispFrame) object))
+        if (environment.isFrameAlive((LispFrame) object))
             return frameP;
         return LispSymbol.ourNil;
     }
 
     @Subroutine("frame-visible-p")
-    public static LispSymbol frameVisibleP (LispObject object) {
-        LispSymbol frameLiveP = frameLiveP(object);
+    public static LispSymbol frameVisibleP (Environment environment, LispObject object) {
+        LispSymbol frameLiveP = frameLiveP(environment, object);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", object);
         if (((LispFrame) object).isIconified())

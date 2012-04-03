@@ -1,14 +1,15 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
+import org.jetbrains.emacs4ij.jelisp.BufferManager;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import javax.swing.*;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,20 +20,28 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaFrame implements LispFrame {
-    private String myId;
-    protected IdeFrameImpl myFrame;
+    private final IdeFrameImpl myFrame;
+    private final FileEditorManager myFileEditorManager;
+    private final BufferManager myBufferManager = new BufferManagerImpl();
     private Map<String, LispObject> myParameters = new HashMap<>();
-    private List<LispWindow> myWindows = new ArrayList<>();
-    
+
     public IdeaFrame(IdeFrameImpl frame) {
-        //IdeFrame[] allFrames = WindowManager.getInstance().getAllFrames();
-        //myFrame = WindowManager.getInstance().getIdeFrame(project);
         myFrame = frame;
         myParameters.put("visibility", LispSymbol.ourT);
-      //  height, width, name, title, menu-bar-lines, buffer-list, buffer-predicate foreground-color, background-color,
-      // background-mode, display-type, alpha (transparency) ...
+        myFileEditorManager = FileEditorManager.getInstance(frame.getProject());
+        initParameters();
     }
 
+    //for test
+    IdeaFrame () {
+        myFrame = null;
+        myFileEditorManager = null;
+        initParameters();
+    }
+
+    private void initParameters() {
+        setParameter("buffer-predicate", LispSymbol.ourNil);
+    }
 
     @Override
     public String toString() {
@@ -50,6 +59,11 @@ public class IdeaFrame implements LispFrame {
         if (value == null)
             throw new VoidVariableException(parameter);
         return value;
+    }
+
+    @Override
+    public void setParameter(String name, LispObject value) {
+        myParameters.put(name, value);
     }
 
     @Override
@@ -89,73 +103,108 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
+    public void openServiceWindow (LispBuffer buffer) {
+        myBufferManager.defineServiceBuffer(buffer);
+    }
+
+    @Override
     public void openWindow (LispBuffer buffer) {
-        myWindows.add(new IdeaWindow(myWindows.size(), buffer));
+        myBufferManager.defineBuffer(buffer);
     }
 
     @Override
     public LispWindow getSelectedWindow() {
-
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        //todo: if focus not in editor?
+        Editor e = myFileEditorManager.getSelectedTextEditor();
+        return myBufferManager.findBuffer(myFileEditorManager.getSelectedTextEditor()).getSelectedWindow();
     }
 
     @Override
     public void closeWindow(LispBuffer buffer) {
-        int i = 0;
-        for (; i != myWindows.size(); ++i) {
-            if (myWindows.get(i).containsBuffer(buffer))
-                break;
-        }
-        if (i < myWindows.size())
-            myWindows.remove(i);
+        myBufferManager.removeBuffer(buffer);
     }
 
     @Override
-    public List<LispBuffer> getBufferList() {
-        ArrayList<LispBuffer> buffers = new ArrayList<>();
-        for (LispWindow window: myWindows) {
-            if (window.getBuffer() != null)
-                buffers.add(window.getBuffer());
-        }
-        return buffers;
+    public BufferManager getBufferManager() {
+        return myBufferManager;
     }
 
-    @Override
-    public LispWindow containsBuffer (LispBuffer buffer) {
-        for (LispWindow window: myWindows) {
-            if (window.containsBuffer(buffer))
-                return window;
-        }
-        return null;
-    }
+//    @Override
+//    public List<LispBuffer> getBuffers() {
+//        return myBufferManager.getBuffers();
+//    }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof IdeaFrame)) return false;
-
-        IdeaFrame ideaFrame = (IdeaFrame) o;
-
-        if (myFrame != null ? !myFrame.equals(ideaFrame.myFrame) : ideaFrame.myFrame != null) return false;
-        if (myId != null ? !myId.equals(ideaFrame.myId) : ideaFrame.myId != null) return false;
-        if (myParameters != null ? !myParameters.equals(ideaFrame.myParameters) : ideaFrame.myParameters != null)
-            return false;
-        if (myWindows != null ? !myWindows.equals(ideaFrame.myWindows) : ideaFrame.myWindows != null) return false;
-        
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = myId != null ? myId.hashCode() : 0;
-        result = 31 * result + (myFrame != null ? myFrame.hashCode() : 0);
-        result = 31 * result + (myParameters != null ? myParameters.hashCode() : 0);
-        result = 31 * result + (myWindows != null ? myWindows.hashCode() : 0);
-        return result;
+    public LispWindow getBufferWindow (LispBuffer buffer) {
+        LispBuffer my = myBufferManager.findBuffer(buffer.getName());
+        if (my == null)
+            return null;
+        return my.getSelectedWindow();
     }
 
     @Override
     public JComponent getComponent() {
         return myFrame.getComponent();
     }
+
+//    @Override
+//    public List<String> getBuffersNamesList(String begin) {
+//        return myBufferManager.getBuffersNames(begin);
+//    }
+//
+//    @Override
+//    public List<String> getBuffersNamesList() {
+//        return myBufferManager.getBuffersNames();
+//    }
+//
+//
+//    @Override
+//    public void defineBufferLocalVariable(LispSymbol var) {
+//        myBufferManager.defineBufferLocalVariable(var);
+//    }
+//
+//    @Override
+//    public void closeCurrentBuffer() {
+//        closeWindow(myBufferManager.getCurrentBuffer());
+//    }
+//
+//    @Override
+//    public void closeBuffer(@NotNull LispBuffer buffer) {
+//        closeWindow(buffer);
+//    }
+//
+//    @Override
+//    public void killBuffer(@NotNull LispBuffer buffer) {
+//        myBufferManager.killBuffer(buffer);
+//    }
+//
+//    @Override
+//    public LispBuffer getCurrentBuffer() {
+//        return myBufferManager.getCurrentBuffer();
+//    }
+//
+//    @Override
+//    public LispBuffer getOtherBuffer(String bufferName) {
+//        return myBufferManager.getOtherBuffer(bufferName);
+//    }
+//
+//    @Override
+//    public LispBuffer createBuffer(String name) {
+//        return myBufferManager.createBuffer(name);
+//    }
+//
+//    @Override
+//    public LispBuffer getServiceBuffer(String name) {
+//        return myBufferManager.getServiceBuffer(name);
+//    }
+//
+//    @Override
+//    public LispBuffer switchToWindow(String bufferName, Editor editor) {
+//        return myBufferManager.switchToWindow(bufferName, editor);
+//    }
+//
+//    @Override
+//    public LispBuffer switchToBuffer(String bufferName) {
+//        return myBufferManager.switchToBuffer(bufferName);
+//    }
 }

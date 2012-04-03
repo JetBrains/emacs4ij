@@ -29,19 +29,21 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     String myTestsPath;
     HashMap<String, IdeaBuffer> myTests = new HashMap<>();
     String[]  myTestFiles;
+    private FileEditorManager myFileEditorManager;
 
     @Before
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
             myTests.put(fileName, buffer);
         }
+        myFileEditorManager = FileEditorManager.getInstance(getProject());
     }
 
     private LispObject evaluateString(String lispCode) {
@@ -199,40 +201,35 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void testSwitchToBuffer_Nil() {
         LispObject lispObject = evaluateString("(switch-to-buffer nil)");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , fileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     @Test
     public void testSwitchToBuffer_ExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\")");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , fileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     @Test
     public void testSwitchToBuffer_NonExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"test.txt\")");
         Assert.assertEquals(new LispString("It is not allowed to create files this way."), lispObject);
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , fileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     @Test
     public void testSwitchToBuffer_Buffer() {
         LispObject lispObject = evaluateString("(switch-to-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , fileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     @Test
     public void testSwitchToBuffer_ExistentString_NoRecord() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\" 5)");
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , fileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     @Test
@@ -259,8 +256,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testPoint() {
         LispObject lispObject = evaluateString("(point)");
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        int point = fileEditorManager.getSelectedTextEditor().logicalPositionToOffset(fileEditorManager.getSelectedTextEditor().getCaretModel().getLogicalPosition()) + 1;
+        int point = myFileEditorManager.getSelectedTextEditor().logicalPositionToOffset(myFileEditorManager.getSelectedTextEditor().getCaretModel().getLogicalPosition()) + 1;
         Assert.assertEquals(new LispInteger(point), lispObject);
     }
 
@@ -273,8 +269,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testPointMax() {
         LispObject lispObject = evaluateString("(point-max)");
-        FileEditorManager fileEditorManager = FileEditorManager.getInstance(myFixture.getProject());
-        int pointMax = fileEditorManager.getSelectedTextEditor().getDocument().getTextLength()+1;
+        int pointMax = myFileEditorManager.getSelectedTextEditor().getDocument().getTextLength()+1;
         Assert.assertEquals(new LispInteger(pointMax), lispObject);
     }
 

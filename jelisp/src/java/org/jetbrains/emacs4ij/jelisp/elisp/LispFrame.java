@@ -1,7 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.BufferManager;
+
 import javax.swing.*;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,17 +13,20 @@ import java.util.List;
  */
 public interface LispFrame extends LispObject {
     LispObject getParameter (String parameter);
+    void setParameter(String name, LispObject value);
     void setVisible (boolean visible);
     boolean isVisible ();
     void setIconified (boolean iconified);
     boolean isIconified ();
-
     boolean areIdeFramesEqual (LispFrame frame);
 
     void openWindow (LispBuffer buffer);
+    void openServiceWindow (LispBuffer buffer);
     LispWindow getSelectedWindow();
-    LispWindow containsBuffer (LispBuffer buffer);
+    LispWindow getBufferWindow (LispBuffer buffer);
     void closeWindow (LispBuffer buffer);
-    List<LispBuffer> getBufferList();
+
+    BufferManager getBufferManager();
+
     JComponent getComponent();
 }

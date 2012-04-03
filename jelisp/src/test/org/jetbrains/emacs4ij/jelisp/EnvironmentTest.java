@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -73,7 +73,7 @@ public class EnvironmentTest {
     
     @Test
     public void testCommandList() {
-        ArrayList<String> commandList = GlobalEnvironment.INSTANCE.getCommandList("f");
+        List<String> commandList = GlobalEnvironment.INSTANCE.getCommandList("f");
         Assert.assertFalse(commandList.isEmpty());
     }
 }

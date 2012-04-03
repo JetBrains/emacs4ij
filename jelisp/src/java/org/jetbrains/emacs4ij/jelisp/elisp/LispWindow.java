@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.editor.Editor;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -8,6 +10,19 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispWindow extends LispObject {
-    boolean containsBuffer (LispBuffer buffer);
-    LispBuffer getBuffer();
+//    boolean containsBuffer (LispBuffer buffer);
+//    LispBuffer getBuffer();
+    void set (Editor editor);
+    Editor getEditor();
+
+    void closeHeader();
+    int getSize();
+    int point();
+    int pointMax();
+    int pointMin();
+    void setPoint(int position);
+    String gotoChar (int position);
+    void write(String text);
+    void insertAt(int position, String text);
+    boolean hasEditor();
 }

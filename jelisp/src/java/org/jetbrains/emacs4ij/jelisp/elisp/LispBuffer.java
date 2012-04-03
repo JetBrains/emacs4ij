@@ -46,6 +46,7 @@ public interface LispBuffer extends LispObject {
     void setEditor(Editor editor);
     void switchToEditor (Editor editor);
     Editor getEditor();
+    LispWindow getSelectedWindow();
     boolean containsEditor (Editor editor);
     boolean hasEditors();
     Document getDocument();

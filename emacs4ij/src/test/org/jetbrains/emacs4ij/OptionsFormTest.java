@@ -28,7 +28,7 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
         super.setUp();
         myTestFiles = (new File(myTestsPath)).list();
         myTests = new HashMap<>();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         for (String fileName: myTestFiles) {
             myFixture.configureByFile(myTestsPath + fileName);

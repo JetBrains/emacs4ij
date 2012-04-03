@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 
@@ -16,18 +15,19 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaWindow implements LispWindow {
-    private int myId;
-    private LispBuffer myBuffer;
-
-    public IdeaWindow (int id, LispBuffer buffer) {
-        myId = id;
-        myBuffer = buffer;
-        set(editor);
-    }
-
+//    private int myId;
+//    private LispBuffer myBuffer;
     private Editor myEditor = null;
+    private final String myString;
 
-    public BufferEditor (Editor editor) {
+//    public IdeaWindow (int id, LispBuffer buffer, Editor editor) {
+//        myId = id;
+//        myBuffer = buffer;
+//        set(editor);
+//    }
+
+    public IdeaWindow (int id, String bufferName, Editor editor) {
+        myString = "#<window " + id + " on " + bufferName + '>';
         set(editor);
     }
 
@@ -39,27 +39,26 @@ public class IdeaWindow implements LispWindow {
         return myEditor;
     }
     
-    @Override
-    public boolean containsBuffer(LispBuffer buffer) {
-        return myBuffer == buffer;
-    }
-
-    @Override
-    public LispBuffer getBuffer() {
-        return myBuffer;
-    }
+//    @Override
+//    public boolean containsBuffer(LispBuffer buffer) {
+//        return myBuffer == buffer;
+//    }
+//
+//    @Override
+//    public LispBuffer getBuffer() {
+//        return myBuffer;
+//    }
 
     @Override
     public String toString() {
-        return "#<window " + myId + " on " + myBuffer.getName() + '>';
+        return myString;
+//        return "#<window " + myId + " on " + myBuffer.getName() + '>';
     }
 
     @Override
     public LispObject evaluate(Environment environment) {
         return this;
     }
-
-
 
     public int getSize() {
         return myEditor.getDocument().getTextLength();

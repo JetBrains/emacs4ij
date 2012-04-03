@@ -304,4 +304,11 @@ public abstract class BuiltinsBuffer {
         environment.getBufferCurrentForEditing().insert(toInsert.toString());
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("set-buffer-major-mode")
+    public static LispObject setBufferMajorMode (Environment environment, LispBuffer buffer) {
+        //if buffer == scratch => set value from "initial-major-mode". But I have no scratch :)
+        LispSymbol mode = environment.find("major-mode");
+        return BuiltinsCore.functionCall(environment, mode.getValue());
+    }
 }

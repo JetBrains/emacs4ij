@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
@@ -20,64 +21,64 @@ import java.util.List;
  * Time: 4:10 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EditorManager {
-    private List<BufferEditor> myEditors = new ArrayList<>();
-    private BufferEditor myCurrentEditor = null;
+public class WindowManager {
+    private List<LispWindow> myWindows = new ArrayList<>();
+    private LispWindow mySelectedWindow = null;
 
-    public EditorManager() {}
+    public WindowManager() {}
 
-    public void setActiveEditor (Editor editor) {
-        if (myCurrentEditor == null) {
+    public void setActiveEditor (Editor editor, String bufferName) {
+        if (mySelectedWindow == null) {
             if (editor != null)
-                add(editor);
+                add(editor, bufferName);
             return;
         }
-        if (myEditors.size() != 1)
+        if (myWindows.size() != 1)
             throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
-        myCurrentEditor.set(editor);
+        mySelectedWindow.set(editor);
     }
 
     public Document getDocument () {
-        if (myEditors.isEmpty())
+        if (myWindows.isEmpty())
             return null;
-        return myEditors.get(0).getEditor().getDocument();
+        return myWindows.get(0).getEditor().getDocument();
     }
     
     public void switchToEditor (Editor editor) {
-        BufferEditor my = getByEditor(editor);
+        LispWindow my = getByEditor(editor);
         if (my == null)
             throw new UnregisteredEditorException();
-        myCurrentEditor = my;
+        mySelectedWindow = my;
     }
 
-    private BufferEditor getByEditor (Editor editor) {
-        for (BufferEditor bufferEditor: myEditors) {
-            if (bufferEditor.getEditor() == editor)
-                return bufferEditor;            
+    private LispWindow getByEditor (Editor editor) {
+        for (LispWindow window: myWindows) {
+            if (window.getEditor() == editor)
+                return window;
         }
         return null;
     }
     
-    public BufferEditor getActiveEditor () {
-        if (myCurrentEditor == null)
+    public LispWindow getSelectedWindow() {
+        if (mySelectedWindow == null)
             throw new NoEditorException();
-        return myCurrentEditor;
+        return mySelectedWindow;
     }
     
-    public void add (Editor editor) {
-        BufferEditor bufferEditor = new BufferEditor(editor);
-        myEditors.add(bufferEditor);
-        myCurrentEditor = bufferEditor;
+    public void add (Editor editor, String bufferName) {
+        LispWindow bufferEditor = new IdeaWindow(myWindows.size(), bufferName, editor);
+        myWindows.add(bufferEditor);
+        mySelectedWindow = bufferEditor;
     }
 
     public void closeAll() {
-        myCurrentEditor = null;
-        myEditors.clear();
+        mySelectedWindow = null;
+        myWindows.clear();
     }
 
     public boolean contains (Editor editor) {
-        for (BufferEditor bufferEditor: myEditors) {
-            if (bufferEditor.getEditor() == editor)
+        for (LispWindow window: myWindows) {
+            if (window.getEditor() == editor)
                 return true;
         }
         return false;
@@ -86,16 +87,16 @@ public class EditorManager {
     public void add (FileEditorManager fileEditorManager, VirtualFile file) {
         FileEditor selected = fileEditorManager.getSelectedEditor(file);
         for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
-            BufferEditor bufferEditor = new BufferEditor(((TextEditor)fileEditor).getEditor());
-            myEditors.add(bufferEditor);
+            LispWindow window = new IdeaWindow(myWindows.size(), file.getName(), ((TextEditor)fileEditor).getEditor());
+            myWindows.add(window);
             if (file == selected)
-                myCurrentEditor = bufferEditor;
+                mySelectedWindow = window;
         }
-        if (myEditors.isEmpty())
+        if (myWindows.isEmpty())
             throw new InternalException(Emacs4ijBundle.message("file.with.no.editors", file.getName()));
     }
 
     public boolean isEmpty() {
-        return myEditors.isEmpty();
+        return myWindows.isEmpty();
     }
 }

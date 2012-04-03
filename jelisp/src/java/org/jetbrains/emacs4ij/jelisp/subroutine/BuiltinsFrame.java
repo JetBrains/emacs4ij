@@ -40,18 +40,19 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine("get-buffer-window")
-    public static LispObject getBufferWindow(Environment environment, @Optional LispObject bufferOrName, @Optional LispObject frame) {
+    public static LispObject getBufferWindow(Environment environment,
+                                             @Optional LispObject bufferOrName, @Optional LispObject frame) {
         LispBuffer buffer = BuiltinsBuffer.getBufferByBufferNameOrNil(environment, bufferOrName);
         List<LispFrame> frames = new ArrayList<>();
         if (isNil(frame)) {
             frame = LispSymbol.ourNil;
         }
         if (frame.equals(new LispSymbol("visible"))) {
-            frames = GlobalEnvironment.getVisibleFrames(); //search all visible frames
+            frames = environment.getVisibleFrames(); //search all visible frames
         } else if (frame.equals(LispSymbol.ourT)) { //search all frames.
-            frames = GlobalEnvironment.getAllFrames();
+            frames = environment.getAllFrames();
         } else if (frame.equals(new LispInteger(0))) { //search visible and iconified frames.
-            frames = GlobalEnvironment.getVisibleAndIconifiedFrames();
+            frames = environment.getVisibleAndIconifiedFrames();
         } else if (frame instanceof LispFrame) { //search only that frame.
             frames.add((LispFrame) frame);
         } else {
@@ -61,7 +62,7 @@ public abstract class BuiltinsFrame {
         }
 
         for (LispFrame f: frames) {
-            LispWindow window = f.containsBuffer(buffer);
+            LispWindow window = f.getBufferWindow(buffer);
             if (window != null)
                 return window;
         }
@@ -70,11 +71,11 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "make-frame-visible", isCmd = true)
-    public static LispObject makeFrameVisible(@Optional LispObject frame) {
+    public static LispObject makeFrameVisible(Environment environment, @Optional LispObject frame) {
         if (isNil(frame)) {
             frame = selectedFrame();
         }
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
+        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         ((LispFrame)frame).setVisible(true);
@@ -82,16 +83,17 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "make-frame-invisible", isCmd = true)
-    public static LispObject makeFrameInvisible(@Optional LispObject frame, @Optional LispObject force) {
+    public static LispObject makeFrameInvisible(Environment environment,
+                                                @Optional LispObject frame, @Optional LispObject force) {
         if (isNil(frame))
             frame = selectedFrame();
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
+        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         if (isNil(force)) {
             //check that exists one more visible frame than that we want to hide
             int k = ((LispFrame)frame).isVisible() ? 1 : 0;
-            if (GlobalEnvironment.getVisibleAndIconifiedFrames().size() - k <= 0) {
+            if (environment.getVisibleAndIconifiedFrames().size() - k <= 0) {
                 BuiltinsCore.error(JelispBundle.message("make.invisible.error"));
             }
         }
@@ -100,13 +102,19 @@ public abstract class BuiltinsFrame {
     }
 
     @Subroutine(value = "iconify-frame", isCmd = true)
-    public static LispObject iconifyFrame(@Optional LispObject frame) {
+    public static LispObject iconifyFrame(Environment environment, @Optional LispObject frame) {
         if (isNil(frame))
             frame = selectedFrame();
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(frame);
+        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         ((LispFrame)frame).setIconified(true);
         return LispSymbol.ourNil;
+    }
+
+    @Subroutine("frame-list")
+    public static LispList frameList (Environment environment) {
+        List<LispFrame> frames = environment.getAllFrames();
+        return LispList.list(frames.toArray(new LispObject[frames.size()]));
     }
 }

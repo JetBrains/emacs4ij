@@ -34,14 +34,14 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void windowIconified(WindowEvent e) {
                 super.windowIconified(e);
                 if (EnvironmentInitializer.isGlobalInitialized())
-                    GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
+                    GlobalEnvironment.INSTANCE.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
                 super.windowDeiconified(e);
                 if (EnvironmentInitializer.isGlobalInitialized())
-                    GlobalEnvironment.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
+                    GlobalEnvironment.INSTANCE.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
             }
         };
     }

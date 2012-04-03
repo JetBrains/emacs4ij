@@ -229,7 +229,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myPrompt = ourEvalPrompt;
         cancelNoMatchMessageUpdate();
         write(myPrompt);
-        myEditorManager.closeAll();
+        myWindowManager.closeAll();
         myActivationsDepth = 0;
         if (myParent != null) {
             myParent.closeHeader();
@@ -395,7 +395,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void setActive() {
         if (myEnvironment.getServiceBuffer(myName) == null)
             throw new NoBufferException(myName);
-        if (!myEditorManager.getActiveEditor().hasEditor())
+        if (!myWindowManager.getSelectedWindow().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
         getEditor().getContentComponent().grabFocus();
         myActivationsDepth++;

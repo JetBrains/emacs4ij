@@ -33,7 +33,7 @@ public class InteractiveTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new IdeProvider());
+        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         myFixture.configureByFile(myTestsPath + myFileName);
         Editor editor = getEditor();

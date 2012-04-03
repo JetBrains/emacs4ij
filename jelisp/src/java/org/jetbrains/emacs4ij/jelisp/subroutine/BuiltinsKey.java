@@ -154,7 +154,6 @@ public abstract class BuiltinsKey {
     public static void init() {
         ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
         GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
-        GlobalEnvironment.INSTANCE.defineSymbol("deactivate-mark");
         LispSymbol globalMap = makeKeymap("global-map");
         if (globalMap.getValue().equals(LispSymbol.ourNil))
             return;
