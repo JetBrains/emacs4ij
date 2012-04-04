@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
@@ -84,9 +83,10 @@ public abstract class BuiltinsBuffer {
         throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
-    // todo:(other-buffer &optional BUFFER VISIBLE-OK FRAME)
     @Subroutine("other-buffer")
-    public static LispBuffer otherBuffer (Environment environment, @Optional LispObject buffer) {
+    public static LispBuffer otherBuffer (Environment environment,
+                                          @Optional LispObject buffer, LispObject visibleOk, LispFrame frame) {
+        //todo use visibleOk, frame
         if (buffer == null || !(buffer instanceof LispBuffer))
             return environment.getOtherBuffer();
         return environment.getOtherBuffer((LispBuffer)buffer);
@@ -134,7 +134,6 @@ public abstract class BuiltinsBuffer {
             return buffer;
         }
         if (bufferOrName instanceof LispBuffer) {
-            //todo:  If the selected window is the minibuffer window or dedicated to its buffer, use `pop-to-buffer' for displaying the buffer.
             ((LispBuffer)bufferOrName).setActive();
             if (!noRecord) {
                 environment.switchToBuffer(((LispBuffer) bufferOrName).getName());
@@ -193,18 +192,9 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("buffer-list")
     public static LispObject bufferList (Environment environment, @Optional LispObject frame) {
-        //TODO: If frame is a frame, this returns frame's local buffer list.
-        // If frame is nil or omitted, the fundamental buffer list is used: the buffers appear in order of most recent display or selection, regardless of which frames they were displayed on.
-
-        if (frame == null || frame.equals(LispSymbol.ourNil) || !(frame instanceof LispFrame)) {
-            //use fundamental buffer list
-
-        } else {
-
-
-        }
-
-        return environment.getBufferList();
+        return (BuiltinPredicates.isNil(frame) || !(frame instanceof LispFrame))
+                ? environment.getBufferList()
+                : environment.getBufferList((LispFrame)frame);
     }
 
     @Subroutine(value = "bury-buffer", isCmd = true)
@@ -245,7 +235,7 @@ public abstract class BuiltinsBuffer {
         //todo: replace given buffer in all windows where it is opened
         if (bufferOrName == null)
             bufferOrName = environment.getBufferCurrentForEditing();
-        switchToBuffer(environment, otherBuffer(environment, bufferOrName), null);
+        switchToBuffer(environment, otherBuffer(environment, bufferOrName, null, null), null);
         return LispSymbol.ourNil;
     }
 
@@ -271,7 +261,7 @@ public abstract class BuiltinsBuffer {
         // environment.getMainEnvironment().killBuffer(buffer);
 
         environment.setSelectionManagedBySubroutine(true);
-        GlobalEnvironment.INSTANCE.killBuffer(buffer);
+        environment.killBuffer(buffer);
         return LispSymbol.ourT;
     }
 
@@ -297,10 +287,8 @@ public abstract class BuiltinsBuffer {
             }
             LispObject kbd = evaluateString(environment, "(kbd " + arg.toString() + ")");
             String converted = kbd instanceof LispString ? ((LispString) kbd).getData() : kbd.toString();
-//            if (!converted.equals(((LispString)arg).getData()))
-            toInsert.append(converted);//.append(" ");
+            toInsert.append(converted);
         }
-//        toInsert.deleteCharAt(toInsert.length() - 1);
         environment.getBufferCurrentForEditing().insert(toInsert.toString());
         return LispSymbol.ourNil;
     }

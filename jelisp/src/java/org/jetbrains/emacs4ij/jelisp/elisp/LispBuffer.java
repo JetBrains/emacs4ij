@@ -4,6 +4,8 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -42,7 +44,6 @@ public interface LispBuffer extends LispObject {
     void insert(LispObject insertion, @Nullable LispMarker where);
     void insert(LispObject insertion);
 
-    void addEditor(Editor editor);
     void setEditor(Editor editor);
     void switchToEditor (Editor editor);
     Editor getEditor();
@@ -50,4 +51,6 @@ public interface LispBuffer extends LispObject {
     boolean containsEditor (Editor editor);
     boolean hasEditors();
     Document getDocument();
+    List<LispWindow> getWindows();
+    void mergeEditors (LispBuffer other);
 }

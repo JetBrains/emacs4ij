@@ -124,6 +124,7 @@ public class FrameManagerImpl implements FrameManager {
     //== buffers ==
     @Override
     public List getBuffers(LispFrame lispFrame) {
+
         List bufferNamesList = lispFrame.getBufferManager().getBuffers();
         for (LispFrame frame: myFrames) {
             if (frame == lispFrame)
@@ -135,6 +136,7 @@ public class FrameManagerImpl implements FrameManager {
 
     @Override
     public List getBuffers() {
+        //todo: buffers must appear in order of most recent display, no matter frames order
         List bufferNamesList = new ArrayList<String>();
         for (LispFrame frame: myFrames) {
             bufferNamesList = ListUtils.sum(bufferNamesList, frame.getBufferManager().getBuffers());

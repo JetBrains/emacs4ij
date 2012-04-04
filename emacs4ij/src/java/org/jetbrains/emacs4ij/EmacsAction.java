@@ -47,6 +47,12 @@ public class EmacsAction extends AnAction {
                 Messages.showInfoMessage("Long keystrokes are not supported yet", Emacs4ijBundle.message("evaluation.result.title"));
                 return;
             }
+            if (!((LispSymbol)myCommand).isFunction()) {
+                System.err.println("upload: " + ((LispSymbol)myCommand).getName());
+                LispSymbol realCommand = environment.find(((LispSymbol)myCommand).getName());
+                if (realCommand != null)
+                    myCommand = realCommand;
+            }
             BuiltinsCore.callInteractively(environment, (LispSymbol)myCommand, null, null);
         } catch (Exception exc2) {
             Messages.showErrorDialog(exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));

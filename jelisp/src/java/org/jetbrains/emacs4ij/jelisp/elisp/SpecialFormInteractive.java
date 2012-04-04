@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
+import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
@@ -341,8 +342,12 @@ public class SpecialFormInteractive {
                 throw new NotImplementedException("K character not implemented");
 
             case 'm': // -- Value of mark as number. Does not do I/O.
+                Integer markPosition = myEnvironment.getBufferCurrentForEditing().getMark().getPosition();
+                if (markPosition == null)
+                    throw new MarkerPointsNowhereException();
+                addArg(new LispInteger(markPosition));
                 notifyMiniBuffer();
-                break;
+                return;
             case 'M': // -- Any string. Inherits the current input method.
                 break;
             case 'n': // -- Number read using minibuffer.

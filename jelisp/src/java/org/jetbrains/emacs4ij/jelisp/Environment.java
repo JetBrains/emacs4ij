@@ -145,6 +145,10 @@ public abstract class Environment {
         return LispList.list((List<LispObject>) getFrameManager().getBuffers());
     }
 
+    public LispList getBufferList(LispFrame frame) {
+        return LispList.list((List<LispObject>) getFrameManager().getBuffers(frame));
+    }
+
     public void buryBuffer (LispBuffer buffer) {
         getBufferManager().buryBuffer(buffer);
     }
@@ -272,6 +276,14 @@ public abstract class Environment {
     
     public void setActiveKeymap(LispKeymap keymap) {
         ourKeymapManager.setActiveKeymap(keymap);
+    }
+
+    public void setActiveKeymap(String keymapName) {
+        ourKeymapManager.setActiveKeymap(keymapName);
+    }
+
+    public boolean isKeymapActive (LispKeymap keymap) {
+        return ourKeymapManager.isKeymapActive(keymap);
     }
 
     //========= frames ===================

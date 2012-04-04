@@ -343,12 +343,13 @@ public abstract class BuiltinsCore {
         }
     }
 
-    @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "CM-x ", key = "\\M-x")
+    @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "P", key = "\\M-x")
     public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
         environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
         LispBuffer buffer = environment.getBufferCurrentForEditing();
         buffer.setActive();
         LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        miniBuffer.setReadCommandStatus();
         miniBuffer.open(buffer);
     }
 

@@ -81,4 +81,19 @@ public class ShortcutStringUtilTest {
         list.add(KeyboardShortcut.fromString("2"));
         Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
     }
+
+    @Test
+    public void testQuestionToShortcutString() {
+        LispString s = new LispString("?");
+        Assert.assertEquals("shift SLASH", ShortcutStringUtil.toShortcutString(s));
+    }
+
+    @Test
+    public void testQuestionToShortcutList() {
+        LispString s = new LispString("?");
+        List<Shortcut> list = new ArrayList<>();
+        list.add(KeyboardShortcut.fromString("shift SLASH"));
+        Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
+    }
+
 }

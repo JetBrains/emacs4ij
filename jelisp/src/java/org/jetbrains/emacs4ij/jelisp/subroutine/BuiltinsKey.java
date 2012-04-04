@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -157,25 +156,44 @@ public abstract class BuiltinsKey {
         LispSymbol globalMap = makeKeymap("global-map");
         if (globalMap.getValue().equals(LispSymbol.ourNil))
             return;
-        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("ctl-x-map"), new LispString("\\C-x"));
-        ((LispKeymap)globalMap.getValue()).defineKey(makeSparseKeymap("esc-map"), new LispString("<ESC>"));
+        setKey(globalMap, makeSparseKeymap("ctl-x-map"), "\\C-x");
+        setKey(globalMap, makeSparseKeymap("esc-map"), "<ESC>");
+        setKey(globalMap, "keyboard-escape-quit", "<ESC><ESC>");
+        GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
 
-        new LispSymbol("keyboard-escape-quit", new LispString("<ESC><ESC>"));
+        LispSymbol mblMap = makeKeymap("minibuffer-local-map");
+        setKey(mblMap, "exit-minibuffer", "<RET>");
 
-        //init minibuffer keymap
-        LispKeymap miniBufferKeymap = makeSparseKeymap("minibuffer-keymap");
-        miniBufferKeymap.defineKey(new LispSymbol("eval-expression"), new LispString("") );
+        LispSymbol mblNsMap = makeKeymap("minibuffer-local-ns-map", mblMap);
+        setKey(mblNsMap, "exit-minibuffer", "<SPC>");
+        setKey(mblNsMap, "exit-minibuffer", "<TAB>");
 
+        LispSymbol mblCompletionMap = makeKeymap("minibuffer-local-completion-map", mblMap);
+        setKey(mblCompletionMap, "minibuffer-complete-word", "<SPC>");
+        setKey(mblCompletionMap, "minibuffer-complete", "<TAB>");
+        setKey(mblCompletionMap, "minibuffer-completion-help", "?");
+
+        LispSymbol mblFileNameCompletionMap = makeKeymap("minibuffer-local-filename-completion-map", mblCompletionMap);
+        setKey(mblFileNameCompletionMap, "minibuffer-complete", "<TAB>");
+        setKey(mblFileNameCompletionMap, "minibuffer-completion-help", "?");
+
+        LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
+        setKey(mblMustMatchMap, "minibuffer-completion-help", "?");
+        setKey(mblMustMatchMap, "minibuffer-complete-word", "<SPC>");
+        setKey(mblMustMatchMap, "minibuffer-complete", "<TAB>");
+        setKey(mblMustMatchMap, "minibuffer-complete-and-exit", "<RET>");
+
+        LispSymbol mblFileNameMustMatchMap = makeKeymap("minibuffer-local-filename-must-match-map", mblMustMatchMap);
+        setKey(mblFileNameMustMatchMap, "minibuffer-completion-help", "?");
+        setKey(mblFileNameMustMatchMap, "minibuffer-complete", "<TAB>");
+        setKey(mblFileNameMustMatchMap, "minibuffer-complete-and-exit", "<RET>");
     }
 
-    private static void setKey (LispSymbol keymap, String name, String key) {
-        LispSymbol action = GlobalEnvironment.INSTANCE.find(name);
-        if (action == null)
-            throw new InternalException("BuiltinsKey.globalSetKey");
-        setKey(keymap, action, key);
+    private static void setKey (LispSymbol keymap, String action, String key) {
+        ((LispKeymap)keymap.getValue()).defineKey(new LispSymbol(action), new LispString(key));
     }
 
-    private static void setKey (LispSymbol keymap, LispSymbol action, String key) {
+    private static void setKey (LispSymbol keymap, LispKeymap action, String key) {
         ((LispKeymap)keymap.getValue()).defineKey(action, new LispString(key));
     }
 

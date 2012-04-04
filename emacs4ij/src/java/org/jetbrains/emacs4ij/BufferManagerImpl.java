@@ -110,12 +110,10 @@ public class BufferManagerImpl implements BufferManager {
             LispBuffer existing = findBuffer(buffer.getName());
             if (!buffer.hasEditors())
                 throw new DoubleBufferException(buffer.getName());
-            if (existing.containsEditor(buffer.getEditor()))
-                throw new DoubleBufferException(buffer.getName());
             if (existing.getDocument() != buffer.getDocument()) {
                 throw new InternalException(JelispBundle.message("two.buffers.one.name"));
             }
-            existing.addEditor(buffer.getEditor());
+            existing.mergeEditors(buffer);
             return true;
         }
         if (!isDead(buffer.getName())) {

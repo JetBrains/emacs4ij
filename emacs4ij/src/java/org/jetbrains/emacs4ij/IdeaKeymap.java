@@ -11,16 +11,16 @@ import com.intellij.util.ArrayUtil;
 import com.rits.cloning.Cloner;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.elisp.StringOrVector;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,7 +37,9 @@ public class IdeaKeymap implements LispKeymap {
 
     public IdeaKeymap(@Nullable LispObject name, @Nullable LispKeymap parent) {
         myParent = parent;
-        myName = name == null ? Emacs4ijBundle.message("empty.keymap.name") : name.toString();
+        myName = name == null
+                ? Emacs4ijBundle.message("empty.keymap.name")
+                : name instanceof LispString ? ((LispString) name).getData() : name.toString();
     }
 
     @Override
@@ -57,7 +59,8 @@ public class IdeaKeymap implements LispKeymap {
                         ((KeyboardShortcut) shortcuts.get(1)).getFirstKeyStroke());
             }
             myKeyBindings.put(firstKeystroke, action);
-            registerAction(action, shortcut);
+            if (GlobalEnvironment.INSTANCE.isKeymapActive(this))
+                registerAction(action, shortcut);
             return;
         }
         LispKeymap prefix = getPrefixKeymap(firstKeystroke);
@@ -88,9 +91,33 @@ public class IdeaKeymap implements LispKeymap {
         }
     }
 
+    private Map<Shortcut, KeymapCell> getBindings() {
+        return myKeyBindings;
+    }
+
     private void registerAction (KeymapCell action, Shortcut shortcut) {
-        if (action.getKeymap() != null)
+        if (!(shortcut instanceof KeyboardShortcut))
             return;
+        if (action.getKeymap() == null) {
+            registerKbdAction(action, (KeyboardShortcut) shortcut);
+            return;
+        }
+        //only 2 keystrokes are supported
+        if (((KeyboardShortcut) shortcut).getSecondKeyStroke() != null)
+            return;
+        KeyStroke first = ((KeyboardShortcut) shortcut).getFirstKeyStroke();
+        IdeaKeymap inner = (IdeaKeymap) action.getKeymap();
+        for (Map.Entry<Shortcut, KeymapCell> entry: inner.getBindings().entrySet()) {
+            if (!(entry.getKey() instanceof KeyboardShortcut)
+                    || (entry.getKey() instanceof KeyboardShortcut && ((KeyboardShortcut) entry.getKey()).getSecondKeyStroke() != null)
+                    || entry.getValue().getKeymap() != null)
+                continue;
+            KeyStroke second = ((KeyboardShortcut) entry.getKey()).getFirstKeyStroke();
+            registerKbdAction(entry.getValue(), new KeyboardShortcut(first, second));
+        }
+    }
+
+    private void registerKbdAction(KeymapCell action, KeyboardShortcut shortcut) {
         ActionManager actionManager = ActionManager.getInstance();
         String id = generateActionId(action.toString());
         if (actionManager.getActionIds(id).length != 0)
@@ -100,8 +127,23 @@ public class IdeaKeymap implements LispKeymap {
         ourKeymapManager.getActiveKeymap().addShortcut(id, shortcut);
     }
 
+    private Stack<LispKeymap> getKeymapStack() {
+        Stack<LispKeymap> stack = new Stack<>();
+        stack.push(this);
+        for (LispKeymap parent = myParent; parent != null; parent = parent.getParent())
+            stack.push(parent);
+        return stack;
+    }
+
     @Override
     public void bindActions () {
+        Stack<LispKeymap> keymaps = getKeymapStack();
+        while (!keymaps.isEmpty()) {
+            ((IdeaKeymap)keymaps.pop()).bind();
+        }
+    }
+
+    private void bind() {
         for (Map.Entry<Shortcut, KeymapCell> entry: myKeyBindings.entrySet()) {
             registerAction(entry.getValue(), entry.getKey());
         }

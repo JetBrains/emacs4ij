@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
@@ -24,13 +25,32 @@ import java.util.List;
 public class WindowManager {
     private List<LispWindow> myWindows = new ArrayList<>();
     private LispWindow mySelectedWindow = null;
+    private String myBufferName;
 
-    public WindowManager() {}
+    public WindowManager(@NotNull String bufferName, Editor editor) {
+        myBufferName = bufferName;
+        add(editor);
+    }
 
-    public void setActiveEditor (Editor editor, String bufferName) {
-        if (mySelectedWindow == null) {
+    public WindowManager (FileEditorManager fileEditorManager, VirtualFile file) {
+        myBufferName = file.getName();
+        FileEditor selected = fileEditorManager.getSelectedEditor(file);
+        for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
+            LispWindow window = new IdeaWindow(myWindows.size(), myBufferName, ((TextEditor)fileEditor).getEditor());
+            myWindows.add(window);
+            if (file == selected)
+                mySelectedWindow = window;
+        }
+        if (myWindows.isEmpty())
+            throw new InternalException(Emacs4ijBundle.message("file.with.no.editors", file.getName()));
+        if (mySelectedWindow == null)
+            mySelectedWindow = myWindows.get(0);
+    }
+
+    public void setActiveEditor (Editor editor) {
+        if (isEmpty()) {
             if (editor != null)
-                add(editor, bufferName);
+                add(editor);
             return;
         }
         if (myWindows.size() != 1)
@@ -65,10 +85,18 @@ public class WindowManager {
         return mySelectedWindow;
     }
     
-    public void add (Editor editor, String bufferName) {
-        LispWindow bufferEditor = new IdeaWindow(myWindows.size(), bufferName, editor);
+    private void add (Editor editor) {
+        LispWindow bufferEditor = new IdeaWindow(myWindows.size(), myBufferName, editor);
         myWindows.add(bufferEditor);
         mySelectedWindow = bufferEditor;
+    }
+
+    public boolean tryAppend (Editor editor) {
+        if (contains(editor))
+            return false;
+        LispWindow bufferEditor = new IdeaWindow(myWindows.size(), myBufferName, editor);
+        myWindows.add(bufferEditor);
+        return true;
     }
 
     public void closeAll() {
@@ -84,19 +112,11 @@ public class WindowManager {
         return false;
     }
 
-    public void add (FileEditorManager fileEditorManager, VirtualFile file) {
-        FileEditor selected = fileEditorManager.getSelectedEditor(file);
-        for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
-            LispWindow window = new IdeaWindow(myWindows.size(), file.getName(), ((TextEditor)fileEditor).getEditor());
-            myWindows.add(window);
-            if (file == selected)
-                mySelectedWindow = window;
-        }
-        if (myWindows.isEmpty())
-            throw new InternalException(Emacs4ijBundle.message("file.with.no.editors", file.getName()));
-    }
-
     public boolean isEmpty() {
         return myWindows.isEmpty();
+    }
+
+    public List<LispWindow> getWindows() {
+        return myWindows;
     }
 }

@@ -66,7 +66,7 @@ public class EmacsKeymapManager {
         return true;
     }
 
-    public LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
+    private LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
         if (myKeymapFactory == null) //todo: this is only for test!
             return null;
         else if (!BuiltinPredicates.isNil(name) && !isUniqueKeymapName(name.toString()))
@@ -75,6 +75,7 @@ public class EmacsKeymapManager {
         myKeymaps.add(keymap);
         if (myCurrentKeyMap == null)
             setActiveKeymap(keymap);
+        System.out.println("Created keymap: " + name.toString() + "; active = "+ myCurrentKeyMap.getName());
         return keymap;
     }
 
@@ -85,9 +86,29 @@ public class EmacsKeymapManager {
         assignMyBindingsToIdeaActiveKeymap();
     }
 
+    private LispKeymap getByName (String name) {
+        for (LispKeymap keymap: myKeymaps) {
+            if (keymap.getName().equals(name))
+                return keymap;
+        }
+        return null;
+    }
+
+    public void setActiveKeymap(String name) {
+        LispKeymap keymap = getByName(name);
+        if (keymap == null)
+            throw new UnregisteredKeymapException(name);
+        myCurrentKeyMap = keymap;
+        assignMyBindingsToIdeaActiveKeymap();
+    }
+
     private void assignMyBindingsToIdeaActiveKeymap() {
         ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(myIdeaEmacsKeymap);
         if (myCurrentKeyMap != null)
             myCurrentKeyMap.bindActions();
+    }
+
+    public boolean isKeymapActive (LispKeymap keymap) {
+        return myCurrentKeyMap != null && myCurrentKeyMap == keymap;
     }
 }

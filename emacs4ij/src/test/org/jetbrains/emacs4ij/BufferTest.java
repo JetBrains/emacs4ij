@@ -643,6 +643,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(point + insertion.length(), buffer.point());
         Assert.assertEquals(3 + insertion.length(), (int)buffer.getMark().getPosition());
     }
+
+    @Test
+    public void testGetBufferWindows() {
+        LispObject windows = evaluateString("(get-buffer-window-list)");
+        System.out.println(windows.toString());
+    }
 }
 
 

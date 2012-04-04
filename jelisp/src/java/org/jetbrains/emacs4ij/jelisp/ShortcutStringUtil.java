@@ -20,17 +20,21 @@ public abstract class ShortcutStringUtil {
     private ShortcutStringUtil() {}
 
     private static final List<String> myModifiers = Arrays.asList("meta", "ctrl", "shift", "alt");
-    private static final List<String> myPunctuation = Arrays.asList("SPACE", "ESCAPE", "MINUS");
+    private static final List<String> myPunctuation = Arrays.asList("SPACE", "ESCAPE", "MINUS", "ENTER", "TAB", "SLASH");
     private static final List<String> myFunctional;
     private static final Map<String, String> myReplaceMap;
     static {
         myReplaceMap = new LinkedHashMap<>();
         myReplaceMap.put(" ", " SPACE ");
+        myReplaceMap.put("<SPC>", " SPACE ");
         myReplaceMap.put("<ESC>", " ESCAPE ");
+        myReplaceMap.put("<RET>", " ENTER ");
+        myReplaceMap.put("<TAB>", " TAB ");
         myReplaceMap.put(regModifier('M'), " alt "); // :)
         myReplaceMap.put(regModifier('C'), " ctrl ");
         myReplaceMap.put(regModifier('S'), " shift ");
         myReplaceMap.put(regModifier('A'), " alt ");
+        myReplaceMap.put("\\?", " shift SLASH ");
 
         myFunctional = new ArrayList<>();
         for (int i = 1; i < 13; ++i) {

@@ -15,4 +15,7 @@ public class UnregisteredKeymapException extends LispException {
         super(JelispBundle.message("unregistered.keymap", keymap.toString()));
     }
 
+    public UnregisteredKeymapException (String keymap) {
+        super(JelispBundle.message("unregistered.keymap", keymap));
+    }
 }

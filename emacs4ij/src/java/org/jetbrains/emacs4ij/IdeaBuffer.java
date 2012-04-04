@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -30,17 +31,15 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaBuffer implements LispBuffer {
-    protected String myName;
-    protected Environment myEnvironment;
+    protected final String myName;
+    protected final Environment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
-    protected final WindowManager myWindowManager = new WindowManager();
+    protected final WindowManager myWindowManager;
     protected boolean isChangedByMe = false;
 
     private static Project ourProject;
     private LispMarker myMark = new LispMarker();
     private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
-
-    protected IdeaBuffer() {}
 
     protected final DocumentListener myDocumentListener = new DocumentListener() {
         private int myOldPosition;
@@ -66,10 +65,16 @@ public class IdeaBuffer implements LispBuffer {
         }
     };
 
+    protected IdeaBuffer (Environment environment, String name, Editor editor) {
+        myEnvironment = environment;
+        myName = name;
+        myWindowManager = new WindowManager(myName, editor);
+    }
+
     public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
         myEnvironment = environment;
         myName = name;
-        setEditor(editor);
+        myWindowManager = new WindowManager(name, editor);
         Document document = getDocument();
         if (document != null)
             document.addDocumentListener(myDocumentListener);
@@ -80,7 +85,7 @@ public class IdeaBuffer implements LispBuffer {
     public IdeaBuffer(Environment environment, FileEditorManager fileEditorManager, VirtualFile file) {
         myEnvironment = environment;
         myName = file.getName();
-        myWindowManager.add(fileEditorManager, file);
+        myWindowManager = new WindowManager(fileEditorManager, file);
         Document document = getDocument();
         if (document != null)
             document.addDocumentListener(myDocumentListener);
@@ -153,13 +158,24 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public void addEditor(Editor editor) {
-        myWindowManager.add(editor, myName);
+    public void mergeEditors(LispBuffer other) {
+        boolean isDuplicate = true;
+        for (LispWindow window: other.getWindows()) {
+            Editor editor = window.getEditor();
+            isDuplicate = !myWindowManager.tryAppend(editor);
+        }
+        if (isDuplicate)
+            throw new DoubleBufferException(myName);
+    }
+
+    @Override
+    public List<LispWindow> getWindows() {
+        return myWindowManager.getWindows();
     }
 
     @Override
     public void setEditor(Editor editor) {
-        myWindowManager.setActiveEditor(editor, myName);
+        myWindowManager.setActiveEditor(editor);
     }
 
     public String toString() {

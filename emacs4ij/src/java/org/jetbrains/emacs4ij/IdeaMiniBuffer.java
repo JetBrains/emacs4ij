@@ -1,11 +1,11 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.ide.IdeEventQueue;
-import com.intellij.openapi.actionSystem.CustomShortcutSet;
-import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.ex.FocusChangeListener;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +16,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private Integer myCharCode = null;
     private Alarm myAlarm;
     private LispBuffer myParent;
+    private boolean isOpened = false;
 
     private boolean isDocumentListenerSet = false;
 
@@ -62,7 +62,24 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             }
         }
     };
-    
+
+    private final FocusChangeListener myFocusListener = new FocusChangeListener() {
+        private LispKeymap myOldKeymap;
+
+        @Override
+        public void focusGained(Editor editor) {
+            myOldKeymap = myEnvironment.getActiveKeymap();
+            myEnvironment.setActiveKeymap("minibuffer-local-map");
+//            System.err.println("focusGained");
+        }
+
+        @Override
+        public void focusLost(Editor editor) {
+            myEnvironment.setActiveKeymap(myOldKeymap);
+//            System.err.println("focusLost");
+        }
+    };
+
     private void cancelNoMatchMessageUpdate() {
         myAlarm.cancelAllRequests();
         if (isDocumentListenerSet) {
@@ -72,9 +89,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
-        myName = " *Minibuf-" + number + '*';
-        setEditor(editor);
-        myEnvironment = environment;
+        super(environment, " *Minibuf-" + number + '*', editor);
         myParent = parent;
         setReadCommandStatus();
         myAlarm = new Alarm();
@@ -145,9 +160,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }, 3000);
     }
 
-   /*
-     ** for outer usage plugin
-     */
+    /*
+    ** for outer usage plugin
+    */
     @Override
     public void startRead () {
         myInteractive.readNextArgument();
@@ -230,11 +245,14 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         cancelNoMatchMessageUpdate();
         write(myPrompt);
         myWindowManager.closeAll();
+//        myInput.removeFocusListener(myFocusListener);
         myActivationsDepth = 0;
         if (myParent != null) {
             myParent.closeHeader();
             myParent = null;
         }
+        isOpened = false;
+        System.out.println("kill minibuffer");
 //        todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
 //        myActivationsDepth--;
     }
@@ -247,22 +265,26 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     @Override
     public void open(LispBuffer parent) {
         EditorTextField input = new EditorTextField();
+        System.out.println("open minibuffer");
         parent.getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
+        ((EditorEx) input.getEditor()).addFocusListener(myFocusListener);
         setEditor(input.getEditor());
+        myActivationsDepth++;
 
+        isOpened = true;
 
-        InterruptMiniBuffer imb = new InterruptMiniBuffer();
-        imb.registerCustomShortcutSet(new CustomShortcutSet
-                (new KeyboardShortcut(KeyStroke.getKeyStroke("ESCAPE"), KeyStroke.getKeyStroke("ESCAPE"))),
-                input.getComponent());
-
-        ExecuteCommand command = new ExecuteCommand();
-        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input.getComponent());
-
-        AutoComplete autoComplete = new AutoComplete();
-        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input.getComponent());
+//        InterruptMiniBuffer imb = new InterruptMiniBuffer();
+//        imb.registerCustomShortcutSet(new CustomShortcutSet
+//                (new KeyboardShortcut(KeyStroke.getKeyStroke("ESCAPE"), KeyStroke.getKeyStroke("ESCAPE"))),
+//                input.getComponent());
+//
+//        ExecuteCommand command = new ExecuteCommand();
+//        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input.getComponent());
+//
+//        AutoComplete autoComplete = new AutoComplete();
+//        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input.getComponent());
         setActive();
     }
 
@@ -316,28 +338,31 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         }
         return null;
     }
-    
+
     private LispObject onInteractiveNoIoInput (@Nullable LispSymbol command, SpecialFormInteractive interactive) {
-        myCommand = command;
+        if (command != null)
+            myCommand = command;
         myInteractive = interactive;
         if (myInteractive.isFinished()) {
             return runInteractive();
         } else {
-            myStatus = MiniBufferStatus.READ_ARG;
-            open(myEnvironment.getBufferCurrentForEditing());
-            if (myActivationsDepth > 1) {
-                kill();
-                GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
-                return null;
+            if (!isOpened) {
+                myStatus = MiniBufferStatus.READ_ARG;
+                open(myEnvironment.getBufferCurrentForEditing());
+                if (myActivationsDepth > 1) {
+                    kill();
+                    GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
+                    return null;
+                }
             }
             myInteractive.readNextArgument();
         }
-        return null;        
+        return null;
     }
-    
+
     @Override
     public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
-        return onInteractiveNoIoInput(null, interactive);    
+        return onInteractiveNoIoInput(null, interactive);
     }
 
     private void shiftPrefixArgs() {
@@ -365,22 +390,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private LispObject runInteractive() {
         myEnvironment.setArgumentsEvaluated(true);
         if (myCommand != null && myCommand.getName().equals("execute-extended-command")) {
-            LispSymbol cmd = (LispSymbol) myInteractive.getArguments().get(0);
-            String interactiveString = cmd.getInteractiveString();
-            if (interactiveString == null) {
-                throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.string.error", cmd.getName()));
-            }
-            myCommand = cmd;
-
+            setReadCommandStatus();
             shiftPrefixArgs();
-
-            if (interactiveString.equals("")) {
-                kill();
-                return myCommand.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
-            }
-            myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
-            setReadArgumentStatus();
-            myInteractive.readNextArgument();
+            startRead();
             return null;
         }
         clearPrefixArgs();
@@ -398,6 +410,5 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         if (!myWindowManager.getSelectedWindow().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
         getEditor().getContentComponent().grabFocus();
-        myActivationsDepth++;
     }
 }
