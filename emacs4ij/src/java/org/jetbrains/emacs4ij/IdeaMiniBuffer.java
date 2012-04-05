@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -70,13 +71,13 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         public void focusGained(Editor editor) {
             myOldKeymap = myEnvironment.getActiveKeymap();
             myEnvironment.setActiveKeymap("minibuffer-local-map");
-//            System.err.println("focusGained");
+            System.err.println("minibuffer-local-map");
         }
 
         @Override
         public void focusLost(Editor editor) {
             myEnvironment.setActiveKeymap(myOldKeymap);
-//            System.err.println("focusLost");
+            System.err.println("global-map");
         }
     };
 
@@ -265,14 +266,15 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     @Override
     public void open(LispBuffer parent) {
         EditorTextField input = new EditorTextField();
-        System.out.println("open minibuffer");
         parent.getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
-        ((EditorEx) input.getEditor()).addFocusListener(myFocusListener);
-        setEditor(input.getEditor());
+        Editor editor = input.getEditor();
+        if (editor == null)
+            throw new InternalException("No editor for minibuffer!");
+        ((EditorEx) editor).addFocusListener(myFocusListener);
+        setEditor(editor);
         myActivationsDepth++;
-
         isOpened = true;
 
 //        InterruptMiniBuffer imb = new InterruptMiniBuffer();

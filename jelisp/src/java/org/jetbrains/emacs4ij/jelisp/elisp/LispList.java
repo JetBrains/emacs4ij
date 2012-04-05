@@ -5,10 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
@@ -55,7 +52,7 @@ public class LispList implements LispSequence {
             return;
         }
         if (data.get(0) == null) {
-            throw new InternalError(JelispBundle.message("null.element"));
+            throw new InternalException(JelispBundle.message("null.element"));
         }
         myCar = data.get(0);
         if (data.size() == 2) {
@@ -78,7 +75,7 @@ public class LispList implements LispSequence {
             return;
         }
         if (data.get(0) == null) {
-            throw new InternalError(JelispBundle.message("null.element"));
+            throw new InternalException(JelispBundle.message("null.element"));
         }
         myCar = data.get(0);
         if (data.size() == 1) {
@@ -279,7 +276,7 @@ public class LispList implements LispSequence {
                 return LispList.list();
             }
 
-            throw new InternalError(JelispBundle.message("unsupported.equality.function", equalityFunctionName));
+            throw new InternalException(JelispBundle.message("unsupported.equality.function", equalityFunctionName));
         } catch (ClassCastException e) {
             throw new WrongTypeArgumentException("listp", cdr);
         }

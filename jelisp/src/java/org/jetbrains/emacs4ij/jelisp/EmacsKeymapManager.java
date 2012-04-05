@@ -75,7 +75,7 @@ public class EmacsKeymapManager {
         myKeymaps.add(keymap);
         if (myCurrentKeyMap == null)
             setActiveKeymap(keymap);
-        System.out.println("Created keymap: " + name.toString() + "; active = "+ myCurrentKeyMap.getName());
+//        System.out.println("Created keymap: " + name.toString() + "; active = "+ myCurrentKeyMap.getName());
         return keymap;
     }
 

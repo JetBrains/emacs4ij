@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.DirectEvaluationException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class Macro implements FunctionCell {
     public Macro (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("macro")))
-            throw new InternalError(JelispBundle.message("wrong.def.form", "macro", def.toString()));
+            throw new InternalException(JelispBundle.message("wrong.def.form", "macro", def.toString()));
         myLambda = new Lambda(LispList.list(data.subList(1, data.size())));
     }
 

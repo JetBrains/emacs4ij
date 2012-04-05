@@ -9,8 +9,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
  * Time: 3:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsCompletion {
-    private BuiltinsCompletion() {}
+public abstract class BuiltinsMinibiffer {
+    private BuiltinsMinibiffer() {}
 
     @Subroutine("completing-read")
     public static LispList completingRead (LispString prompt, LispObject collection,
@@ -20,6 +20,8 @@ public abstract class BuiltinsCompletion {
         System.err.println("CALL completing-read");
         return LispList.list();
     }
+
+
 
 
 }

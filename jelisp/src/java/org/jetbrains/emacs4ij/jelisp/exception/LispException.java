@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+
 /**
  * Created by IntelliJ IDEA.
  * User: Ekaterina.Polishchuk
@@ -11,10 +13,10 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  */
 public class LispException extends RuntimeException {
     //TODO: store the position where the exception raised
-
     protected StringBuilder myStackTrace;
+
     public LispException () {
-        super ("Unknown exception");
+        super (JelispBundle.message("unknown.exception"));
     }
 
     public LispException (String message) {
@@ -24,10 +26,5 @@ public class LispException extends RuntimeException {
     public LispException(String message, StringBuilder stackTrace) {
         super(message);
         myStackTrace = stackTrace;
-    }
-
-    @Override
-    public String toString() {
-        return "LispException {}";
     }
 }

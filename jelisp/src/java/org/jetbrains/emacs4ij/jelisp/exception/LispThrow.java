@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
@@ -24,5 +25,10 @@ public class LispThrow extends LispException {
 
     public LispObject getValue() {
         return myValue;
+    }
+
+    @Override
+    public String getMessage() {
+        return JelispBundle.message("lisp.throw", myTag.toString(), myValue.toString());
     }
 }

@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
@@ -49,13 +50,15 @@ public class EmacsAction extends AnAction {
             }
             if (!((LispSymbol)myCommand).isFunction()) {
                 System.err.println("upload: " + ((LispSymbol)myCommand).getName());
-                LispSymbol realCommand = environment.find(((LispSymbol)myCommand).getName());
+                LispSymbol realCommand = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm((LispSymbol)myCommand,
+                        GlobalEnvironment.SymbolType.FUN);
                 if (realCommand != null)
                     myCommand = realCommand;
             }
             BuiltinsCore.callInteractively(environment, (LispSymbol)myCommand, null, null);
         } catch (Exception exc2) {
-            Messages.showErrorDialog(exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));
+            exc2.printStackTrace();
+            Messages.showErrorDialog("Emacs4ij action:\n" + exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));
         }
     }
 

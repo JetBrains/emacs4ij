@@ -191,13 +191,14 @@ public class Lambda implements FunctionCell, LispCommand {
 
     @Override
     public String getInteractiveString () {
-        LispList args = (LispList) myInteractive.cdr();
-        if (args.isEmpty())
+        LispObject args = myInteractive.cdr();
+        if (args.equals(LispSymbol.ourNil) || !(args instanceof LispList))
             return null;
-        if (args.toLispObjectList().get(0) instanceof LispString) {
-            return ((LispString) args.toLispObjectList().get(0)).getData();
+        LispObject first = ((LispList) args).toLispObjectList().get(0);
+        if (first instanceof LispString) {
+            return ((LispString) first).getData();
         }
-        return null;
+        throw new NotImplementedException("Not string interactive form: " + myInteractive.toString());
     }
 
     @Override

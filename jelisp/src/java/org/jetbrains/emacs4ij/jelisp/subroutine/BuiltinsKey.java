@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -208,7 +209,7 @@ public abstract class BuiltinsKey {
 
             return GlobalEnvironment.INSTANCE.defineSymbol(name, keymap);
         } catch (ClassCastException e) {
-            throw new InternalError(JelispBundle.message("parent.isnt.keymap.error"));
+            throw new InternalException(JelispBundle.message("parent.isnt.keymap.error"));
         }
     }
 

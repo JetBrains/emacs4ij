@@ -145,7 +145,7 @@ public class BufferManagerImpl implements BufferManager {
             if (!myBuffers.get(i).getName().equals(bufferName))
                 return myBuffers.get(i);
         }
-        throw new InternalError("other-buffer " + bufferName);
+        throw new InternalException("other-buffer " + bufferName);
     }
 
     public int getBuffersSize() {
