@@ -45,7 +45,7 @@ public class IdeaFrame implements LispFrame {
 
     @Override
     public String toString() {
-        return "#<frame " + myFrame.toString() + ">";
+        return "#<frame " + (myFrame == null ? "*test*" : myFrame.toString()) + '>';
     }
 
     @Override
@@ -129,11 +129,6 @@ public class IdeaFrame implements LispFrame {
         return myBufferManager;
     }
 
-//    @Override
-//    public List<LispBuffer> getBuffers() {
-//        return myBufferManager.getBuffers();
-//    }
-
     @Override
     public LispWindow getBufferWindow (LispBuffer buffer) {
         LispBuffer my = myBufferManager.findBuffer(buffer.getName());
@@ -147,6 +142,10 @@ public class IdeaFrame implements LispFrame {
         return myFrame.getComponent();
     }
 
+//    @Override
+//    public List<LispBuffer> getBuffers() {
+//        return myBufferManager.getBuffers();
+//    }
 //    @Override
 //    public List<String> getBuffersNamesList(String begin) {
 //        return myBufferManager.getBuffersNames(begin);

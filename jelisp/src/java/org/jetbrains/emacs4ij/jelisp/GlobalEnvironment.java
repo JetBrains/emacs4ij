@@ -1,19 +1,16 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.util.text.StringUtil;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.ReadException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -30,20 +27,19 @@ public class GlobalEnvironment extends Environment {
     private static String ourEmacsSource = "";
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
-
     private final Ide myIde;
-
     private final DocumentationExtractor myDocumentationExtractor;
-
     private List<String> myBufferLocals = new ArrayList<>();
     
-    //for debug & extract definition on th fly
+    //for debug & extract definition on the fly
     public static Deque<String> ourCallStack = new ArrayDeque<>();
 
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
+
     public static final String ourMiniBufferName = " *Minibuf-0*";
-    public static final LispSymbol ourFinder = new LispSymbol("find-lisp-object-file-name");
+
+    private LinkedList<SearchItem> mySearchHistory = new LinkedList<>();
 
     public static GlobalEnvironment INSTANCE = null;
 
@@ -60,8 +56,6 @@ public class GlobalEnvironment extends Environment {
             return myResult;
         }
     }
-
-    private LinkedList<SearchItem> mySearchHistory = new LinkedList<>();
 
     public static String getEmacsHome() {
         return ourEmacsHome;
@@ -149,11 +143,11 @@ public class GlobalEnvironment extends Environment {
         setSubroutines();
 
         //note: it's important to load backquote before defsubst
-        loadFile(myFilesToLoad.get(0));
+//        DefinitionLoader.init();
+        DefinitionLoader.loadFile(myFilesToLoad.get(0));
         defineDefForms();
         for (int i = 1; i < myFilesToLoad.size(); ++i)
-            loadFile(myFilesToLoad.get(i));
-
+            DefinitionLoader.loadFile(myFilesToLoad.get(i));
     }
 
     private GlobalEnvironment (FrameManager frameManager, Ide ide) {
@@ -171,7 +165,6 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    //-------- loading ------------------
     public LispSymbol defineSymbol (String name, @Nullable LispObject value) {
         LispSymbol symbol = new LispSymbol(name, value == null ? LispSymbol.ourNil : value);
         defineSymbol(symbol);
@@ -207,16 +200,11 @@ public class GlobalEnvironment extends Environment {
         mySymbols.put(name, symbol);
     }
 
-    public static enum SymbolType {VAR, FUN}
-    private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
-    private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
-    private static HashMap<String, File> myUploadHistory = new HashMap<>();
-
     private void defineDefForms () {
-        findAndRegisterEmacsForm("defcustom", "/lisp/custom.el", SymbolType.FUN); //macro
-        findAndRegisterEmacsForm("defsubst", "/lisp/emacs-lisp/byte-run.el", SymbolType.FUN); //macro
-        findAndRegisterEmacsForm("defgroup", "/lisp/custom.el", SymbolType.FUN); //macro
-        findAndRegisterEmacsForm("defface", "/lisp/custom.el", SymbolType.FUN); //macro
+        findAndRegisterEmacsFunction("defcustom");
+        findAndRegisterEmacsFunction("defsubst");
+        findAndRegisterEmacsFunction("defgroup");
+        findAndRegisterEmacsFunction("defface");
     }
 
     private void defineUserOptions() {
@@ -248,6 +236,7 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("current-prefix-arg");
         defineSymbol("prefix-arg");
         defineSymbol("last-prefix-arg");
+        defineSymbol("minibuffer-completing-file-name");
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -298,163 +287,6 @@ public class GlobalEnvironment extends Environment {
                 defineSymbol("internal-doc-file-name", new LispString(docs[0]));
             }
         }
-    }
-
-    //for test
-    private ArrayList<LispSymbol> mySkipFunctions = new ArrayList<>();
-
-    //for test
-    public void addSkipFunctions (String... names) {
-        for (String name: names)
-            mySkipFunctions.add(new LispSymbol(name));
-    }
-
-    //todo it is public only for test
-    public void loadFile (String fileName) {
-        String fullName = ourEmacsSource + "/lisp/" + fileName;
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(fullName));
-        } catch (FileNotFoundException e) {
-            throw new EnvironmentException(e.getMessage());
-        }
-        String line;
-        int index = 0;
-        BufferedReaderParser p = new BufferedReaderParser(reader);
-        while (true){
-            try {
-                line = reader.readLine();
-                index++;
-            } catch (IOException e) {
-                throw new ReadException(fullName +  ", line " + index);
-            }
-            if (line == null)
-                break;
-            LispObject parsed = p.parse(line);
-            index += p.getLine();
-            if (parsed == null || LispSymbol.ourNil.equals(parsed))
-                continue;
-            if (parsed instanceof LispList && mySkipFunctions.contains(((LispList) parsed).car()))
-                continue;
-            try {
-                parsed.evaluate(this);
-            } catch (LispException e) {
-                throw new EnvironmentException(JelispBundle.message("parser.error", fullName, index, e.getMessage()));
-            }
-        }
-    }
-
-    //TODO: its only for test
-    public static LispList getDefFromFile(String fileName, String functionName, SymbolType type) {
-        return getDefFromFile(new File(fileName), functionName, type);
-    }
-
-    private static boolean containsDef (String line, String name, List<String> defForms) {
-        for (String defForm: defForms) {
-            if (line.contains('(' + defForm + ' ' + name + ' ')
-                    || line.contains('(' + defForm + " '" + name + ' ')) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static LispList getDefFromFile(File file, String name, SymbolType type) {
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(file));
-        } catch (FileNotFoundException e) {
-            throw new ReadException(JelispBundle.message("no.file", file.getName()));
-        }
-        String line;
-        while (true) {
-            try {
-                line = reader.readLine();
-            } catch (IOException e) {
-                throw new ReadException(file.getName());
-            }
-            if (line == null)
-                return null;
-            if (containsDef(line, name, (type == SymbolType.FUN ? myDefFuns : myDefVars)))
-                break;
-        }
-        BufferedReaderParser p = new BufferedReaderParser(reader);
-        LispObject parsed = p.parse(line);
-        if (parsed instanceof LispList) {
-            myUploadHistory.put(name, file);
-            return (LispList) parsed;
-        }
-        throw new InternalException(JelispBundle.message("unexpected.object.type"));
-    }
-
-    private static LispList getDefFromInvokersSrc(String name, SymbolType type) {
-        for (String invoker: ourCallStack) {
-            if (myUploadHistory.containsKey(invoker)) {
-                LispList def = getDefFromFile(myUploadHistory.get(invoker), name, type);
-                if (def != null)
-                    return def;
-            }
-        }
-        return null;
-    }
-
-    private static LispList findEmacsDefinition(String name, File sourceDir, SymbolType type) {
-        List<File> src = Arrays.asList(sourceDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return (file.isDirectory() || file.getName().endsWith(".el"));
-            }
-        }));
-        //subr.el has priority. This is done to avoid uploading wrong defs while we are not loading code in appropriate order
-        File subr = (File) CollectionUtils.find(src, new Predicate() {
-            @Override
-            public boolean evaluate(Object o) {
-                return (((File) o).getAbsolutePath().endsWith("lisp/subr.el"));
-            }
-        });
-        LispList def = null;
-        if (subr != null) {
-            def = getDefFromFile(subr, name, type);
-        }
-        for (int i = 0, srcSize = src.size(); i < srcSize && def == null; i++) {
-            File file = src.get(i);
-            if (file.getName().endsWith("lisp/subr.el"))
-                continue;
-            if (file.isDirectory()) {
-                def = findEmacsDefinition(name, file, type);
-            } else
-                def = getDefFromFile(file, name, type);
-        }
-        return def;
-    }
-
-    private LispSymbol processDef (LispList definition, String name, SymbolType type) {
-        if (definition == null)
-            return null;
-        LispObject evaluated = definition.evaluate(this);
-        if (!(evaluated instanceof LispSymbol))
-            throw new InternalException(JelispBundle.message("function.failed", "find and register emacs form", name));
-        LispSymbol value = find(((LispSymbol) evaluated).getName());
-        if (value == null) {
-            value = findAndRegisterEmacsForm((LispSymbol) evaluated, type);
-        }
-        return value;
-    }
-
-    public LispSymbol findAndRegisterEmacsForm (String name, String file, SymbolType type) {
-        LispList definition = getDefFromFile(new File(ourEmacsSource + file), name, type);
-        return processDef(definition, name, type);
-    }
-
-    public LispSymbol findAndRegisterEmacsForm(String name, SymbolType type) {
-        LispList definition = getDefFromInvokersSrc(name, type);
-        if (definition == null)
-            definition = findEmacsDefinition(name, new File(ourEmacsSource + "/lisp"), type);
-        return processDef(definition, name, type);
-    }
-
-    public LispSymbol findAndRegisterEmacsForm(LispSymbol name, SymbolType type) {
-        return findAndRegisterEmacsForm(name.getName(), type);
     }
 
     public static void showErrorMessage (String message) {

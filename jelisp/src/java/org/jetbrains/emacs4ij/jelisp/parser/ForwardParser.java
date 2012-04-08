@@ -1,12 +1,15 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -42,6 +45,11 @@ public class ForwardParser extends Parser {
         return myCurrentIndex < myLispCode.length() - 1;
     }
 
+    @Override
+    protected int getNextIndexOfItem(List<Character> items) {
+        return Collections.min(getItemsIndexes(items));
+    }
+
     private void skipListSeparators() {
         while (true) {
             if (myInnerSeparators.contains(getCurrentChar())) {
@@ -66,9 +74,10 @@ public class ForwardParser extends Parser {
                         throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
                     if (getCurrentChar() == '.') {
                         if (!hasNextChar())
-                            throw new InvalidReadSyntax(".");
-                        if (myInnerSeparators.contains(getNextChar())) {
+                            throw new InvalidReadSyntaxDot();
+                        if (!Character.isDigit(getNextChar())) {
                             advance();
+//                        if (myInnerSeparators.contains(getCurrentChar())) {
                             skipListSeparators();
                             if (getCurrentChar() == ')')
                                 throw new InvalidReadSyntax(")");
@@ -101,11 +110,14 @@ public class ForwardParser extends Parser {
                     }
                 }
                 break;
-            } catch (EndOfLineException e) {
+            } catch (EndOfLineException | InvalidReadSyntaxDot e) {
+                LispException exception = (LispException) (e instanceof InvalidReadSyntaxDot
+                                                        ? e
+                                                        : new MissingClosingBracketException());
                 if (countObservers() == 0)
-                    throw new MissingClosingBracketException();
+                    throw exception;
                 setChanged();
-                notifyObservers(new MissingClosingBracketException());
+                notifyObservers(exception);
                 clearChanged();
             }
         }
@@ -141,17 +153,20 @@ public class ForwardParser extends Parser {
         return vector;
     }
 
-    private int getNextDoubleQuoteIndex (int from) {
-        int i = myLispCode.indexOf('"', from);
+    private int getNextIndex (char what, int from) {
+        int i = myLispCode.indexOf(what, from);
         if (i == -1)
             return myLispCode.length();
         if (i != 0)
-            if (myLispCode.charAt(i-1) == '\\')
-                if (i + 1 != myLispCode.length()) {
-                    i = getNextDoubleQuoteIndex(i + 1);
+            if (myLispCode.charAt(i - 1) == '\\') {
+                int slashCount = 1;
+                for (int j = i - 2; j > 0 && myLispCode.charAt(j) == '\\'; --j, ++slashCount) {}
+                if (slashCount % 2 == 1) {
+                    i = getNextIndex(what, i + 1);
                 } else {
-                    return myLispCode.length();
+                    return i;
                 }
+            }
         return i;
     }
 
@@ -159,7 +174,7 @@ public class ForwardParser extends Parser {
     protected int getNextIndexOf (char what) {
         if (myCurrentIndex == myLispCode.length())
             return myLispCode.length();
-        int i = what == '"' ? getNextDoubleQuoteIndex(getMyCurrentIndex()) : myLispCode.indexOf(what, getMyCurrentIndex());
+        int i = getNextIndex(what, getMyCurrentIndex());
         return i == -1 ? myLispCode.length() : i;
     }
 
@@ -174,7 +189,7 @@ public class ForwardParser extends Parser {
         int nextDoubleQuoteIndex;
         String data = "";
         while (true) {
-            nextDoubleQuoteIndex = getNextDoubleQuoteIndex(myCurrentIndex);
+            nextDoubleQuoteIndex = getNextIndex('"', myCurrentIndex);
             data += extractForm(nextDoubleQuoteIndex);
             if (nextDoubleQuoteIndex == myLispCode.length()) {
                 if (countObservers() == 0)
@@ -191,19 +206,10 @@ public class ForwardParser extends Parser {
         return new LispString(data);
     }
 
-    @Override
-    protected int getNextSeparatorIndex() {
-        ArrayList<Integer> nextSeparatorIndex = new ArrayList<>();
-        for (char separator : mySeparators) {
-            nextSeparatorIndex.add(getNextIndexOf(separator));
-        }
-        return Collections.min(nextSeparatorIndex);
-    }
-
     private static int convert(char c) {
         char ch = (Character.toLowerCase(c) == 'a') ? c : Character.toLowerCase(c);
         switch (ch) {
-            case 'a': case '7':  //control-g, C-g  == Quit
+            case 'a':case '7':  //control-g, C-g  == Quit
                 return 7;
             case 'b': case '\b'://backspace, <BS>, C-h
                 return '\b';
@@ -248,6 +254,8 @@ public class ForwardParser extends Parser {
                 return convert('r');
             case '[':
                 return convert('e');
+            case '?':
+                return 127;
             default:
                 if (c <= '9' && c >= '0')
                     return c;
@@ -304,7 +312,8 @@ public class ForwardParser extends Parser {
     }
 
     private void setCharKey (Char c, @Nullable Integer key, boolean asIs) {
-        if (myLispCode.length() != myCurrentIndex + 1 && !mySeparators.contains(getNextChar()))// && getNextChar() != ']')
+        if (myLispCode.length() > myCurrentIndex + 1 && !mySeparators.contains(getNextChar()) // && getNextChar() != ']')
+             && getCurrentChar() != ' ' && getNextChar() != '.')
             throw new InvalidReadSyntax("?");
 //        int ch = key == null ? Character.toLowerCase(getCurrentChar()) : key; //todo: not in ascii?
         int ch = key == null ? getCurrentChar() : key;
@@ -316,6 +325,14 @@ public class ForwardParser extends Parser {
         setCharKey(c, key, false);
     }
 
+    private boolean nextFourCharsAreDigits () {
+        for (int i = myCurrentIndex + 1; i < myCurrentIndex + 5; i++) {
+            if (!Character.isDigit(myLispCode.charAt(i)))
+                return false;
+        }
+        return true;
+    }
+
     private LispObject parseCharacter () {
         Char c = new Char();
         while (true) {
@@ -325,7 +342,16 @@ public class ForwardParser extends Parser {
                 break;
             }
             advance();
-            int spec = convert(getCurrentChar());
+            int spec = -1;
+            if (!(getCurrentChar() == '7' && hasNextChar() && Character.isDigit(getNextChar())))
+                spec = convert(getCurrentChar());
+            if (Character.toLowerCase(getCurrentChar()) == 'u') { //unicode
+                if (myCurrentIndex + 5 <= myLispCode.length() && nextFourCharsAreDigits()) {
+                    spec = Integer.parseInt(myLispCode.substring(myCurrentIndex + 1, myCurrentIndex + 5), 16);
+                    advanceTo(myCurrentIndex + 4);
+                } else
+                    throw new InvalidUnicodeCharacterException();
+            }
             if (spec != -1) {
                 setCharKey(c, spec, true);
                 break;
@@ -388,7 +414,7 @@ public class ForwardParser extends Parser {
             }
         }
         Integer n = c.toInteger();
-        return (n == null ? LispSymbol.ourNil : new LispInteger(n));
+        return n == null ? LispSymbol.ourNil : new LispInteger(n);
     }
 
     @Override
@@ -417,6 +443,7 @@ public class ForwardParser extends Parser {
         switch (getCurrentChar()) {
             case '\'':
                 advance();
+                skipListSeparators();
                 return parseQuote(isBackQuote);
             case '"':
                 advance();
@@ -439,11 +466,12 @@ public class ForwardParser extends Parser {
                 if (!isBackQuote)
                     break;
                 advance();
+                skipListSeparators();
                 return parseComma();
             case '.':
                 if (hasNextChar()) {
                     if (myInnerSeparators.contains(getNextChar()))
-                        throw new InvalidReadSyntax(".");
+                        throw new InvalidReadSyntaxDot();
                 }
         }
         LispObject lispObject = parseNumber();
@@ -459,5 +487,9 @@ public class ForwardParser extends Parser {
     public void append (String lispCode) {
         myLispCode = lispCode;
         myCurrentIndex = 0;
+    }
+
+    public String getCode () {
+        return myLispCode;
     }
 }

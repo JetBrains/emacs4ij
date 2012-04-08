@@ -265,6 +265,15 @@ public abstract class Environment {
         }
     }
     
+    public LispWindow getMinibufferWindow() {
+        LispMiniBuffer miniBuffer = (LispMiniBuffer)getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
+        if (miniBuffer == null)
+            return null;
+        if (!miniBuffer.hasWindows())
+            return null;
+        return miniBuffer.getWindows().get(0);
+    }
+    
     //========= keymaps ===========
     public LispKeymap createKeymap (@Nullable LispObject name) {
         return ourKeymapManager.createKeymap(name);
@@ -302,6 +311,10 @@ public abstract class Environment {
     public LispFrame getSelectedFrame() {
         return getFrameManager().getSelectedFrame();
     }
+    
+    public LispWindow getSelectedWindow() {
+        return getFrameManager().getSelectedWindow();
+    }
 
     public void setFrameVisible (LispFrame frame, boolean status) {
         getFrameManager().setFrameVisible(frame, status);
@@ -325,5 +338,14 @@ public abstract class Environment {
 
     public List<LispFrame> getAllFrames () {
         return getFrameManager().getAllFrames();
+    }
+
+    //upload
+    public LispSymbol findAndRegisterEmacsVariable (String name) {
+        return DefinitionLoader.findAndRegisterEmacsVariable(name);
+    }
+
+    public LispSymbol findAndRegisterEmacsFunction (String name) {
+        return DefinitionLoader.findAndRegisterEmacsFunction(name);
     }
 }

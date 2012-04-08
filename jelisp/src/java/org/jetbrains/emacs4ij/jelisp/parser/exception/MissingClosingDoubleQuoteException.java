@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.exception;
+package org.jetbrains.emacs4ij.jelisp.parser.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 
@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
  * Time: 3:07 PM
  * To change this template use File | Settings | File Templates.
  */
-public class MissingClosingDoubleQuoteException extends LispException {
+public class MissingClosingDoubleQuoteException extends ParserException {
     public MissingClosingDoubleQuoteException () {
         super(JelispBundle.message("missing.double.quote"));
     }

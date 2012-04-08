@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.FrameManager;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +41,11 @@ public class TestFrameManagerImpl implements FrameManager {
     @Override
     public LispFrame getSelectedFrame() {
         return myFrame;
+    }
+
+    @Override
+    public LispWindow getSelectedWindow() {
+        return myFrame.getSelectedWindow();
     }
 
     @Override

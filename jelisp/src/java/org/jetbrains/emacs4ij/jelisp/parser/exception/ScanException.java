@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.exception;
+package org.jetbrains.emacs4ij.jelisp.parser.exception;
 
 /**
  * Created by IntelliJ IDEA.
@@ -8,8 +8,8 @@ package org.jetbrains.emacs4ij.jelisp.exception;
  * To change this template use File | Settings | File Templates.
  */
 
-@Error("scan-error")
-public class ScanException extends LispException {
+@org.jetbrains.emacs4ij.jelisp.exception.Error("scan-error")
+public class ScanException extends ParserException {
     public ScanException (String message) {
         super("'(scan-error " + message + ')');
     }

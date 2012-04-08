@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.exception;
+package org.jetbrains.emacs4ij.jelisp.parser.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 
@@ -10,7 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
  * To change this template use File | Settings | File Templates.
  */
 
-public class MissingClosingBracketException extends LispException {
+public class MissingClosingBracketException extends ParserException {
     public MissingClosingBracketException() {
          super(JelispBundle.message("missing.closing.bracket"));
     }

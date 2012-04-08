@@ -2,12 +2,12 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -260,5 +260,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         LispMarker m = (LispMarker) evaluateString("m");
         Assert.assertEquals("10", m.getPosition().toString());
         System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+    }
+
+    @Test
+    public void testKbdEscQuit() {
+        evaluateString("(keyboard-escape-quit)");
     }
 }

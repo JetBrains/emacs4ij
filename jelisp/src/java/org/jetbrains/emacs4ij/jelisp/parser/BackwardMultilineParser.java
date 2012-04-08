@@ -1,8 +1,9 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +35,7 @@ public class BackwardMultilineParser implements Observer {
                 result = myBackwardParser.parseLine(myReader.get(line), column);
             }
            return result;
-        } catch (LispException e) {
+        } catch (ParserException e) {
             System.out.println(e.getMessage());
             return null;
         } catch (ArrayIndexOutOfBoundsException e) {

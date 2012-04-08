@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredFrameException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
@@ -119,6 +120,13 @@ public class FrameManagerImpl implements FrameManager {
     @Override
     public List<LispFrame> getAllFrames () {
         return myFrames;
+    }
+
+    @Override
+    public LispWindow getSelectedWindow() {
+        if (myCurrentFrame == null)
+            return null;
+        return myCurrentFrame.getSelectedWindow();
     }
 
     //== buffers ==

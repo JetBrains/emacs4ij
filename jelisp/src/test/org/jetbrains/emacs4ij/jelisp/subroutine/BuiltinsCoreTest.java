@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -722,9 +723,8 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
         Assert.assertNotNull(r);
         r = GlobalEnvironment.INSTANCE.find("defgroup");
         Assert.assertNotNull(r);
-
-        GlobalEnvironment.INSTANCE.addSkipFunctions("eval-when-compile", "declare-function");
-        GlobalEnvironment.INSTANCE.loadFile("simple.el");
+        DefinitionLoader.addSkipFunctions("eval-when-compile", "declare-function");
+        DefinitionLoader.loadFile("simple.el");
     }
 
     @Test
@@ -752,10 +752,4 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testEvalExpression() {
         evaluateString("(eval-expression '(+ 5 5))");
     }
-
-    @Test
-    public void testKbdEscQuit() {
-        evaluateString("(keyboard-escape-quit)");
-    }
-
 }

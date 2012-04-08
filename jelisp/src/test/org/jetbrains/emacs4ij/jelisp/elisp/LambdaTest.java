@@ -2,9 +2,9 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -7,10 +7,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
-import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,8 @@ public class WindowManager {
 
     public WindowManager(@NotNull String bufferName, Editor editor) {
         myBufferName = bufferName;
+        if (editor == null)
+            return;
         add(editor);
     }
 
@@ -47,27 +48,37 @@ public class WindowManager {
             mySelectedWindow = myWindows.get(0);
     }
 
-    public void setActiveEditor (Editor editor) {
-        if (isEmpty()) {
-            if (editor != null)
-                add(editor);
+    public void setActiveEditor (@Nullable Editor editor) {
+        if (editor == null) {
+            if (isEmpty())
+                return;
+            closeAll();
             return;
         }
-        if (myWindows.size() != 1)
-            throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
-        mySelectedWindow.set(editor);
+        if (isEmpty()) {
+            add(editor);
+            return;
+        }
+        myWindows.get(0).set(editor);
     }
 
     public Document getDocument () {
         if (myWindows.isEmpty())
             return null;
-        return myWindows.get(0).getEditor().getDocument();
+        for (LispWindow window: myWindows) {
+            if (window.hasEditor())
+                return window.getEditor().getDocument();
+        }
+        return null;
     }
     
     public void switchToEditor (Editor editor) {
         LispWindow my = getByEditor(editor);
-        if (my == null)
-            throw new UnregisteredEditorException();
+        if (my == null) {
+            add(editor);
+            return;
+//            throw new UnregisteredEditorException();
+        }
         mySelectedWindow = my;
     }
 
@@ -80,8 +91,8 @@ public class WindowManager {
     }
     
     public LispWindow getSelectedWindow() {
-        if (mySelectedWindow == null)
-            throw new NoEditorException();
+//        if (mySelectedWindow == null)
+//            throw new NoEditorException();
         return mySelectedWindow;
     }
     
@@ -118,5 +129,9 @@ public class WindowManager {
 
     public List<LispWindow> getWindows() {
         return myWindows;
+    }
+    
+    public int size () {
+        return myWindows.size();
     }
 }

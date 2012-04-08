@@ -3,11 +3,13 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsBuffer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +17,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,8 +30,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
     ForwardParser myForwardParser = new ForwardParser();
     String myTestsPath;
-    HashMap<String, IdeaBuffer> myTests = new HashMap<>();
-    String[]  myTestFiles;
+    Map<String, IdeaBuffer> myTests = new HashMap<>();
+    String[] myTestFiles;
     private FileEditorManager myFileEditorManager;
 
     @Before
@@ -51,6 +54,17 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testSetBufferNoBuffer() {
+        try {
+            BuiltinsBuffer.setBuffer(myEnvironment, new LispString("hello.lisp"));
+        } catch (NoBufferException e) {
+            //success
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
     public void testCurrentBuffer() {
         LispObject lispObject = evaluateString("(current-buffer)");
         Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), lispObject);
@@ -68,7 +82,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
             evaluateString("(bufferp)");
         } catch (WrongNumberOfArgumentsException e) {
             //success
+            return;
         }
+        Assert.fail();
     }
 
     @Test
@@ -463,30 +479,40 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
+    public void testGetNextValidBuffer() {
+        myTests.get(myTestFiles[1]).setEditor(null);
+        LispObject buffer = evaluateString("(get-next-valid-buffer (nreverse (buffer-list (selected-frame))) nil nil nil)");
+        Assert.assertTrue(buffer instanceof LispBuffer);
+        Assert.assertEquals(myTests.get(myTestFiles[1]), buffer);
+    }
+    
+    @Test
     public void testLastBuffer () {
+        myTests.get(myTestFiles[1]).setEditor(null);
         LispObject lastBuffer = evaluateString("(last-buffer)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
-        Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
+        Assert.assertEquals(myTests.get(myTestFiles[1]), lastBuffer);
     }
 
     @Test
     public void testLastBuffer_Integer () {
-        LispObject lastBuffer = evaluateString("(last-buffer 1)");
+        LispObject lastBuffer = evaluateString("(last-buffer 1 t)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
         Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
     @Test
     public void testLastBuffer_Other () {
-        LispObject lastBuffer = evaluateString("(last-buffer (get-buffer \"" + myTestFiles[myTestFiles.length - 1] + "\"))");
+        LispObject lastBuffer = evaluateString("(last-buffer (get-buffer \"" + myTestFiles[myTestFiles.length - 1] + "\") t)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
         Assert.assertEquals(myTestFiles[myTestFiles.length-2], ((LispBuffer) lastBuffer).getName());
-        lastBuffer = evaluateString("(last-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
+        lastBuffer = evaluateString("(last-buffer (get-buffer \"" + myTestFiles[0] + "\") t)");
         Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
     @Test
     public void testUnburyBuffer () {
+        myTests.get(myTestFiles[1]).setEditor(null);
         LispObject lastBuffer = evaluateString("(last-buffer)");
         LispObject unburiedBuffer = evaluateString("(unbury-buffer)");
         Assert.assertEquals(lastBuffer, unburiedBuffer);
@@ -523,7 +549,11 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testGenerateNewBuffer () {
-        evaluateString("(generate-new-buffer \"1.txt\")");
+        int n = myEnvironment.getSelectedFrame().getBufferManager().getBuffersSize();
+        LispObject buffer = evaluateString("(generate-new-buffer \"1.txt\")");
+        Assert.assertTrue(buffer instanceof LispBuffer);
+        Assert.assertEquals("1.txt<2>", ((LispBuffer) buffer).getName());
+        Assert.assertEquals(n + 1, myEnvironment.getSelectedFrame().getBufferManager().getBuffersSize());
     }
 
     @Test

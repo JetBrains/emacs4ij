@@ -3,9 +3,11 @@ package org.jetbrains.emacs4ij.jelisp;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingBracketException;
-import org.jetbrains.emacs4ij.jelisp.exception.MissingClosingDoubleQuoteException;
-import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.MissingClosingBracketException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.MissingClosingDoubleQuoteException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -75,10 +77,11 @@ public class ForwardParserTest {
         p.parseLine("(5 \"la la");
     }
 
-    @Test (expected = ScanException.class)
+    @Test
     public void testQuotedList () throws LispException {
         LispObject lispObject = p.parseLine("'    (5 \"la la\")");
-        Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispList.list(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
+        Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),
+                LispList.list(Arrays.<LispObject>asList(new LispInteger(5), new LispString("la la"))))), lispObject);
     }
 
     @Test
@@ -188,7 +191,7 @@ public class ForwardParserTest {
         p.parseLine("(5 10 ;); a comment");
     }
 
-    @Test
+    @Test (expected = EndOfLineException.class)
     public void testEmptyQuote() throws LispException {
         LispObject lispObject = p.parseLine("'");
         Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
@@ -813,6 +816,108 @@ public class ForwardParserTest {
         LispObject r = p.parseLine("?\\C- ");
         Assert.assertEquals(new LispInteger(67108896), r);
     }
+
+    @Test
+    public void testParseSlashes() {
+        LispObject r = p.parseLine("(insert \"\\\\C-\\\\\\\\\")");
+        Assert.assertTrue(r instanceof LispList);
+        LispObject cdr = ((LispList) r).cdr();
+        Assert.assertTrue(cdr instanceof LispList);
+        Assert.assertEquals(new LispString("\\\\C-\\\\\\\\"), ((LispList) cdr).car());
+    }
+
+    @Test
+    public void testParseStringWithSlashes() {
+        LispObject r = p.parseLine("\"\\\"(\\\"\"");
+        Assert.assertEquals(new LispString("\"(\""), r);
+    }
+
+    @Test
+    public void testParseStringWithSlashes2() {
+        String s = "hello \\\"/\\\" summer \\\"\\\\\\\\\\\".";
+        LispObject r = p.parseLine('"' + s + '"');
+        Assert.assertEquals(new LispString(s), r);
+    }
+
+    @Test
+    public void testQuoteSpaceObject() {
+        LispObject r = p.parseLine("' test");
+        Assert.assertEquals(LispList.list(new LispSymbol("quote"), new LispSymbol("test")), r);
+    }
+
+    @Test
+    public void testCharacter() {
+        LispObject list = p.parseLine("(? return)");
+        Assert.assertEquals(LispList.list(new LispInteger(32), new LispSymbol("return")), list);
+    }
+
+    @Test
+    public void testCharacter2() {
+        LispObject list = p.parseLine("?\\700");
+        Assert.assertEquals(new LispInteger(448), list);
+    }
+
+    @Test
+    public void testCharacterDel() {
+        LispObject list = p.parseLine("?\\C-?");
+        Assert.assertEquals(new LispInteger(127), list);
+    }
+
+    @Test
+    public void testCons() {
+        LispObject cons = p.parseLine("(?% . %-pos)");
+        Assert.assertEquals(LispList.cons(new LispInteger(37), new LispSymbol("%-pos")), cons);
+    }
+
+    @Test
+    public void testConsWithSemicolon() {
+        LispObject cons = p.parseLine("(?\\; . \\;-pos)");
+        Assert.assertEquals(LispList.cons(new LispInteger(59), new LispSymbol("\\;-pos")), cons);
+    }
+
+    @Test
+    public void testUnicodeCharacter() {
+        LispObject n = p.parseLine("?\\u2014");
+        Assert.assertEquals(new LispInteger(8212), n);
+    }
+
+    @Test
+    public void testUnicode() {
+        LispObject list = p.parseLine("(if (char-displayable-p ?\\u2014) ?\\u2014 ?-)");
+        Assert.assertTrue(list instanceof LispList);
+
+    }
+
+    @Test
+    public void testCharaters() {
+        LispObject list = p.parseLine("(?&.\"&amp;\")");
+        Assert.assertEquals(LispList.cons(new LispInteger(38), new LispString("&amp;")), list);
+    }
+
+    @Test
+    public void testDotFloat() {
+        LispObject n = p.parseLine(".5");
+        Assert.assertEquals(new LispFloat(0.5), n);
+    }
+
+    @Test
+    public void testDotFloatInList() {
+        LispObject n = p.parseLine("(+ .5 .5)");
+        Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispFloat(0.5), new LispFloat(0.5)), n);
+    }
+
+    @Test
+    public void test1() {
+        LispObject list = p.parseLine("(insert \"  '((\\\"\\C-?\\\" . quail-delete-last-char)\n" +
+                "   (\\\".\\\" . quail-next-translation)\n" +
+                "   (\\\">\\\" . quail-next-translation)\n" +
+                "   (\\\",\\\" . quail-prev-translation)\n" +
+                "   (\\\"<\\\" . quail-prev-translation))\n" +
+                "  nil nil nil nil)\\n\\n\")");
+        Assert.assertTrue(list instanceof LispList);
+    }
+
+
 }
 
 

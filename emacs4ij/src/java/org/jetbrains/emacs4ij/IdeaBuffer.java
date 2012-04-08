@@ -10,13 +10,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -174,7 +175,12 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public void setEditor(Editor editor) {
+    public void setEditor(@Nullable Editor editor) {
+        if (myWindowManager.size() > 1)
+            throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
+        if (editor == null && myWindowManager.size() == 1 && getDocument() != null) {
+            getDocument().removeDocumentListener(myDocumentListener);
+        }
         myWindowManager.setActiveEditor(editor);
     }
 
@@ -356,7 +362,7 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public boolean hasEditors() {
+    public boolean hasWindows() {
         return !myWindowManager.isEmpty();
     }
 }

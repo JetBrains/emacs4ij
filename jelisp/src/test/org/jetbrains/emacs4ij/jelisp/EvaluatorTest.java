@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -34,12 +35,6 @@ public class EvaluatorTest {
     private LispObject evaluateString (String lispCode) throws LispException {
         ForwardParser forwardParser = new ForwardParser();
         return forwardParser.parseLine(lispCode).evaluate(environment);
-    }
-
-    private Throwable getCause (Throwable e) {
-        if (e.getCause() == null)
-            return e;
-        return getCause(e.getCause());
     }
 
     @Test
@@ -109,23 +104,12 @@ public class EvaluatorTest {
 
     @Ignore
     @Test
-    public void testFinder () throws Throwable {
+    public void testFinder () {
         try {
             LispObject path = evaluateString("(find-lisp-object-file-name 'edit-abbrevs-map 'defvar)");
             Assert.assertEquals(new LispString("src/buffer.c"), path);
         } catch (Exception e) {
-            System.out.println(getCause(e).getMessage());
-            throw getCause(e);
-        }
-    }
-
-    @Test
-    public void testFindMark () throws Throwable {
-        try {
-            GlobalEnvironment.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/simple.el", "mark", GlobalEnvironment.SymbolType.FUN);
-        } catch (Exception e) {
-            System.out.println(getCause(e).getMessage());
-            throw getCause(e);
+            System.out.println(TestSetup.getCause(e));
         }
     }
 

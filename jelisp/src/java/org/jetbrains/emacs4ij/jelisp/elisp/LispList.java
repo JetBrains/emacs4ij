@@ -116,7 +116,7 @@ public class LispList implements LispSequence {
                 //while we are not loading all elisp code, perform search on request
                 System.out.println("FUN " + fun.getName());
                 try {
-                    symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsForm(fun, GlobalEnvironment.SymbolType.FUN);
+                    symbol = environment.findAndRegisterEmacsFunction(fun.getName());
                 } catch (LispException e) {
                     throw new VoidFunctionException(fun.getName());
                 }

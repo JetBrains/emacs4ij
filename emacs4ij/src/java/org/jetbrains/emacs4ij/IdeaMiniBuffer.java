@@ -187,7 +187,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             return;
         }
 
-        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
+        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue()
+                + (myInteractive.getParameterStartValue() == null ? "" : myInteractive.getParameterStartValue());
         int cursorPosition = text.length()+1;
         text += myInteractive.getNoMatchMessage();
         write(text);
@@ -266,15 +267,18 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     @Override
     public void open(LispBuffer parent) {
         EditorTextField input = new EditorTextField();
+        System.out.println("open minibuffer");
         parent.getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
+
         Editor editor = input.getEditor();
         if (editor == null)
             throw new InternalException("No editor for minibuffer!");
         ((EditorEx) editor).addFocusListener(myFocusListener);
         setEditor(editor);
         myActivationsDepth++;
+
         isOpened = true;
 
 //        InterruptMiniBuffer imb = new InterruptMiniBuffer();

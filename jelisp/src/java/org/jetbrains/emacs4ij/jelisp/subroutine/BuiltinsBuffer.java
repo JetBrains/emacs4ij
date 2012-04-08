@@ -2,12 +2,12 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isCharOrString;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
@@ -134,7 +134,7 @@ public abstract class BuiltinsBuffer {
             return buffer;
         }
         if (bufferOrName instanceof LispBuffer) {
-            ((LispBuffer)bufferOrName).setActive();
+             ((LispBuffer)bufferOrName).setActive();
             if (!noRecord) {
                 environment.switchToBuffer(((LispBuffer) bufferOrName).getName());
             }

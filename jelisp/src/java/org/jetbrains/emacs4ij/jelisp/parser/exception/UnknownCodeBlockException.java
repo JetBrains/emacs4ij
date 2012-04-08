@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.exception;
+package org.jetbrains.emacs4ij.jelisp.parser.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 
@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
  * Time: 3:35 PM
  * To change this template use File | Settings | File Templates.
  */
-public class UnknownCodeBlockException extends LispException {
+public class UnknownCodeBlockException extends ParserException {
     public UnknownCodeBlockException(String block) {
         super(JelispBundle.message("unknown.code", block));
     }

@@ -77,7 +77,7 @@ public abstract class BuiltinPredicates {
         //todo: autoload objects
         // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
 
-        if (forCallInteractively == null || forCallInteractively.equals(LispSymbol.ourNil)) {
+        if (isNil(forCallInteractively)) {
             // do not accept keyboard macros: string and vector
             return LispSymbol.ourNil;
         }

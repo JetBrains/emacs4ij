@@ -1,10 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.util.List;
 
@@ -44,33 +46,6 @@ public class EnvironmentTest {
         Assert.assertEquals(new LispInteger(6), (e.find("a")).getValue());
     }
 
-    @Test
-    public void testGetFunctionFromFile() {
-        String lispObjectFileNameFile = GlobalEnvironment.getEmacsSource() + "/lisp/help-fns.el";
-        String lispFunctionName = "find-lisp-object-file-name";
-        LispList functionFromFile = GlobalEnvironment.getDefFromFile(lispObjectFileNameFile, lispFunctionName, GlobalEnvironment.SymbolType.FUN);
-        Assert.assertEquals(new LispSymbol(lispFunctionName), ((LispList)functionFromFile.cdr()).car());
-    }
-
-    @Ignore
-    @Test
-    public void testFindEmacsFinder() {
-        LispSymbol finder = e.find(GlobalEnvironment.ourFinder.getName());
-        Assert.assertEquals(GlobalEnvironment.ourFinder, finder);
-    }
-    
-    @Test
-    public void testGetDef() {
-        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/edmacro.el", "edmacro-parse-keys", GlobalEnvironment.SymbolType.FUN);
-        Assert.assertNotNull(def);
-    }
-    
-    @Test
-    public void testGetDef1() {
-        LispList def = GlobalEnvironment.getDefFromFile("/home/kate/Downloads/emacs-23.4/lisp/simple.el", "region-active-p", GlobalEnvironment.SymbolType.FUN);
-        Assert.assertNotNull(def);
-    }
-    
     @Test
     public void testCommandList() {
         List<String> commandList = GlobalEnvironment.INSTANCE.getCommandList("f");

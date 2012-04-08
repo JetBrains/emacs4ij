@@ -1,12 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.keymap.Keymap;
-import com.intellij.openapi.keymap.KeymapManager;
-import com.intellij.openapi.keymap.KeymapUtil;
-import com.intellij.openapi.keymap.impl.DefaultKeymap;
-import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
@@ -16,7 +10,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,25 +22,10 @@ import java.util.List;
 public class EmacsKeymapManager {
     private List<LispKeymap> myKeymaps = new ArrayList<>();
     private LispKeymap myCurrentKeyMap = null;
-    private LispKeymapFactory myKeymapFactory;
-    private final Keymap myIdeaEmacsKeymap;
+    private final LispKeymapFactory myKeymapFactory;
 
-    public EmacsKeymapManager(LispKeymapFactory keymapFactory) {
+    public EmacsKeymapManager (LispKeymapFactory keymapFactory) {
         myKeymapFactory = keymapFactory;
-        Keymap tmp;
-        try {     
-            tmp = (Keymap) CollectionUtils.find(
-                Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
-                new Predicate() {
-                    @Override
-                    public boolean evaluate(Object o) {
-                        return KeymapUtil.isEmacsKeymap((Keymap) o);
-                    }
-                });
-        } catch (NullPointerException e) {
-            tmp = null;
-        }
-        myIdeaEmacsKeymap = tmp;
     }
 
     LispKeymap getActiveKeymap() {
@@ -75,15 +53,31 @@ public class EmacsKeymapManager {
         myKeymaps.add(keymap);
         if (myCurrentKeyMap == null)
             setActiveKeymap(keymap);
-//        System.out.println("Created keymap: " + name.toString() + "; active = "+ myCurrentKeyMap.getName());
         return keymap;
     }
 
-    public void setActiveKeymap (@Nullable LispKeymap keymap) {
-        if (keymap != null && !myKeymaps.contains(keymap))
+    public void setActiveKeymap (@NotNull LispKeymap keymap) {
+        if (!myKeymaps.contains(keymap))
             throw new UnregisteredKeymapException(keymap);
-        myCurrentKeyMap = keymap;
-        assignMyBindingsToIdeaActiveKeymap();
+        assignBindingsToIdeaActiveKeymap(keymap);
+    }
+
+    public void setActiveKeymap(String name) {
+        LispKeymap keymap = getByName(name);
+        if (keymap == null)
+            throw new UnregisteredKeymapException(name);
+        assignBindingsToIdeaActiveKeymap(keymap);
+    }
+
+    private void assignBindingsToIdeaActiveKeymap(@NotNull LispKeymap newCurrent) {
+        if (myCurrentKeyMap == newCurrent)
+            return;
+        newCurrent.bindActions(myCurrentKeyMap);
+        myCurrentKeyMap = newCurrent;
+    }
+
+    public boolean isKeymapActive (LispKeymap keymap) {
+        return myCurrentKeyMap != null && myCurrentKeyMap == keymap;
     }
 
     private LispKeymap getByName (String name) {
@@ -92,23 +86,5 @@ public class EmacsKeymapManager {
                 return keymap;
         }
         return null;
-    }
-
-    public void setActiveKeymap(String name) {
-        LispKeymap keymap = getByName(name);
-        if (keymap == null)
-            throw new UnregisteredKeymapException(name);
-        myCurrentKeyMap = keymap;
-        assignMyBindingsToIdeaActiveKeymap();
-    }
-
-    private void assignMyBindingsToIdeaActiveKeymap() {
-        ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(myIdeaEmacsKeymap);
-        if (myCurrentKeyMap != null)
-            myCurrentKeyMap.bindActions();
-    }
-
-    public boolean isKeymapActive (LispKeymap keymap) {
-        return myCurrentKeyMap != null && myCurrentKeyMap == keymap;
     }
 }

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +13,7 @@ import com.intellij.openapi.editor.Editor;
 public interface LispWindow extends LispObject {
 //    boolean containsBuffer (LispBuffer buffer);
 //    LispBuffer getBuffer();
-    void set (Editor editor);
+    void set (@Nullable Editor editor);
     Editor getEditor();
 
     void closeHeader();

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
@@ -31,7 +32,7 @@ public class IdeaWindow implements LispWindow {
         set(editor);
     }
 
-    public void set (Editor editor) {
+    public void set (@Nullable Editor editor) {
         myEditor = editor;
     }
 

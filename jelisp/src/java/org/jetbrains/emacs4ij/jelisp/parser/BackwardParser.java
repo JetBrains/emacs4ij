@@ -1,11 +1,12 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.exception.EndOfFileException;
-import org.jetbrains.emacs4ij.jelisp.exception.EndOfLineException;
-import org.jetbrains.emacs4ij.jelisp.exception.ScanException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +20,6 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class BackwardParser extends Parser {
-
     private ForwardParser myForwardParser = new ForwardParser();
 
     @Override
@@ -44,6 +44,11 @@ public class BackwardParser extends Parser {
     @Override
     protected boolean hasNextChar() {
         return myCurrentIndex > 0;
+    }
+
+    @Override
+    protected int getNextIndexOfItem(List<Character> items) {
+        return Collections.max(getItemsIndexes(items));
     }
 
     private String extractSymmetricForm(char formStart, char formEnd) {
@@ -81,29 +86,24 @@ public class BackwardParser extends Parser {
         }
     }
 
-    private int getNextDoubleQuoteIndex (int from) {
-        int i = myLispCode.lastIndexOf('"', from);
-        if (i == -1)
-            return i;
-        if (i != 0 && myLispCode.charAt(i - 1) == '\\')
-            i = getNextDoubleQuoteIndex(i - 1);
-        return i;
-    }
-
     @Override
     protected int getNextIndexOf (char what) {
-        return what == '"'
-                ? getNextDoubleQuoteIndex(getMyCurrentIndex())
-                : myLispCode.lastIndexOf(what, getMyCurrentIndex());
+        return getNextIndex(what, getMyCurrentIndex());
     }
 
-    @Override
-    protected int getNextSeparatorIndex()  {
-        ArrayList<Integer> nextSeparatorIndex = new ArrayList<>();
-        for (char separator : mySeparators) {
-            nextSeparatorIndex.add(getNextIndexOf(separator));
-        }
-        return Collections.max(nextSeparatorIndex);
+    private int getNextIndex (char what, int from) {
+        int i = myLispCode.lastIndexOf(what, from);
+        if (i > 0)
+            if (myLispCode.charAt(i - 1) == '\\') {
+                int slashCount = 1;
+                for (int j = i - 2; j > 0 && myLispCode.charAt(j) == '\\'; --j, ++slashCount) {}
+                if (slashCount % 2 == 1) {
+                    i = getNextIndex(what, i + 1);
+                } else {
+                    return i;
+                }
+            }
+        return i;
     }
 
     @Override

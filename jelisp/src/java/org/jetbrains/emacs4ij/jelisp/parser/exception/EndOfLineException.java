@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.exception;
+package org.jetbrains.emacs4ij.jelisp.parser.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 
@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
  * Time: 9:14 AM
  * To change this template use File | Settings | File Templates.
  */
-public class EndOfLineException extends LispException {
+public class EndOfLineException extends ParserException {
     public EndOfLineException () {
         super(JelispBundle.message("line.ended"));
     }

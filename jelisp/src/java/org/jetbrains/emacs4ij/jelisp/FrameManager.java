@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 
 import java.util.List;
 
@@ -36,4 +37,6 @@ public interface FrameManager {
     void killBuffer (@NotNull LispBuffer buffer);
 
     BufferManager getCurrentBufferManager();
+
+    LispWindow getSelectedWindow();
 }

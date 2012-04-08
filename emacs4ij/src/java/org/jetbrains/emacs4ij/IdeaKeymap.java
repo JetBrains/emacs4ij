@@ -6,9 +6,14 @@ import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.KeymapUtil;
+import com.intellij.openapi.keymap.impl.DefaultKeymap;
+import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ArrayUtil;
 import com.rits.cloning.Cloner;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -17,10 +22,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
 
 import javax.swing.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,10 +32,27 @@ import java.util.Stack;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaKeymap implements LispKeymap {
-    private String myName;
+    private final String myName;
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
-    protected static KeymapManager ourKeymapManager = KeymapManager.getInstance();
+    private static final KeymapManagerImpl ourKeymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
+    private static final Keymap ourIdeaEmacsKeymap;
+    static {
+        Keymap tmp;
+        try {
+            tmp = (Keymap) CollectionUtils.find(
+                    Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
+                    new Predicate() {
+                        @Override
+                        public boolean evaluate(Object o) {
+                            return KeymapUtil.isEmacsKeymap((Keymap) o);
+                        }
+                    });
+        } catch (NullPointerException e) {
+            tmp = null;
+        }
+        ourIdeaEmacsKeymap = tmp;
+    }
 
     public IdeaKeymap(@Nullable LispObject name, @Nullable LispKeymap parent) {
         myParent = parent;
@@ -136,7 +155,12 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
-    public void bindActions () {
+    public void bindActions (@Nullable LispKeymap current) {
+        if (current != null && myParent == current) {
+            bind();
+            return;
+        }
+        ourKeymapManager.setActiveKeymap(ourIdeaEmacsKeymap);
         Stack<LispKeymap> keymaps = getKeymapStack();
         while (!keymaps.isEmpty()) {
             ((IdeaKeymap)keymaps.pop()).bind();

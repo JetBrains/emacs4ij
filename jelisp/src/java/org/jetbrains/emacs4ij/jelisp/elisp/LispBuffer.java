@@ -44,12 +44,12 @@ public interface LispBuffer extends LispObject {
     void insert(LispObject insertion, @Nullable LispMarker where);
     void insert(LispObject insertion);
 
-    void setEditor(Editor editor);
+    void setEditor(@Nullable Editor editor);
     void switchToEditor (Editor editor);
     Editor getEditor();
     LispWindow getSelectedWindow();
     boolean containsEditor (Editor editor);
-    boolean hasEditors();
+    boolean hasWindows();
     Document getDocument();
     List<LispWindow> getWindows();
     void mergeEditors (LispBuffer other);
