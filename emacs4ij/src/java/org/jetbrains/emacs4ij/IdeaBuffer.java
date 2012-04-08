@@ -365,4 +365,9 @@ public class IdeaBuffer implements LispBuffer {
     public boolean hasWindows() {
         return !myWindowManager.isEmpty();
     }
+
+    @Override
+    public boolean containsWindow(LispWindow window) {
+        return myWindowManager.containsWindow(window);
+    }
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.emacs4ij.jelisp.BufferManager;
 
 import javax.swing.*;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,6 +28,11 @@ public interface LispFrame extends LispObject {
     void closeWindow (LispBuffer buffer);
 
     BufferManager getBufferManager();
+
+    boolean containsWindow (LispWindow window);
+
+    LispMiniBuffer getMinibuffer();
+    List<LispWindow> getWindows();
 
     JComponent getComponent();
 }

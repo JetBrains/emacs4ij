@@ -49,6 +49,7 @@ public interface LispBuffer extends LispObject {
     Editor getEditor();
     LispWindow getSelectedWindow();
     boolean containsEditor (Editor editor);
+    boolean containsWindow (LispWindow window);
     boolean hasWindows();
     Document getDocument();
     List<LispWindow> getWindows();

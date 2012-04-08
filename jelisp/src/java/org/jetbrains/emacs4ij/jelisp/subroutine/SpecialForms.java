@@ -429,4 +429,27 @@ public abstract class SpecialForms {
         }
     }
 
+    @Subroutine("save-current-buffer")
+    public static LispObject saveCurrentBuffer (Environment environment, @Optional LispObject... body) {
+        String oldCurrentBufferName = environment.getBufferCurrentForEditing().getName();
+        try {
+            return progn(environment, body);
+        } finally {
+            LispBuffer old = environment.findBuffer(oldCurrentBufferName);
+            if (old != null) {
+                environment.setBufferCurrentForEditing(old);
+            }
+        }
+    }
+    
+    @Subroutine("unwind-protect")
+    public static LispObject unwindProtect (Environment environment, LispObject body, @Optional LispObject... protectForms) {
+        try {
+            return body.evaluate(environment);
+        } finally {
+            for (LispObject protectForm: protectForms) {
+                protectForm.evaluate(environment);
+            }
+        }
+    }
 }

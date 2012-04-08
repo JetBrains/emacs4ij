@@ -2,7 +2,9 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 
 import java.util.List;
 
@@ -35,10 +37,14 @@ public interface BufferManager {
     LispBuffer getBufferByIndex(int index);
     boolean isDead(String bufferName);
     boolean containsBuffer (String bufferName);
+    boolean containsWindow(LispWindow window);
     LispBuffer findBufferSafe(String bufferName);
     LispBuffer findBuffer(String bufferName);
     LispBuffer findBuffer(Editor editor);
     LispBuffer lastBuffer (String bufferName);
     void buryBuffer (LispBuffer buffer);
     void removeBuffer (LispBuffer buffer);
+
+    LispMiniBuffer getMinibuffer();
+    List<LispWindow> getWindows();
 }

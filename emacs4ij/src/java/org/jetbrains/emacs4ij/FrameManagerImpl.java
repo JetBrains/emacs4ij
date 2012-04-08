@@ -132,7 +132,6 @@ public class FrameManagerImpl implements FrameManager {
     //== buffers ==
     @Override
     public List getBuffers(LispFrame lispFrame) {
-
         List bufferNamesList = lispFrame.getBufferManager().getBuffers();
         for (LispFrame frame: myFrames) {
             if (frame == lispFrame)
@@ -164,5 +163,24 @@ public class FrameManagerImpl implements FrameManager {
         for (LispFrame frame: myFrames) {
             frame.getBufferManager().killBuffer(buffer);
         }
+    }
+    
+    @Override
+    public LispFrame getFrameByWindow (LispWindow window) {
+        for (LispFrame frame: myFrames) {
+            if (frame.containsWindow(window))
+                return frame;
+        }
+        return null;
+    }
+
+    @Override
+    public List<LispFrame> getFramesByBuffer(LispBuffer buffer) {
+        List<LispFrame> frames = new ArrayList<>();
+        for (LispFrame frame: myFrames) {
+            if (frame.getBufferManager().containsBuffer(buffer.getName()))
+                frames.add(frame);
+        }
+        return frames;
     }
 }

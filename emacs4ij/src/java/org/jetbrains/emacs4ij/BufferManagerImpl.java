@@ -4,9 +4,7 @@ import com.intellij.openapi.editor.Editor;
 import org.jetbrains.emacs4ij.jelisp.BufferManager;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -25,7 +23,6 @@ import java.util.List;
  */
 public class BufferManagerImpl implements BufferManager {
     private List<LispBuffer> myBuffers = new ArrayList<>();
-    private List<LispBuffer> myDeadBuffers = new ArrayList<>();
     private List<LispBuffer> myServiceBuffers = new ArrayList<>();
 
     public BufferManagerImpl() {}
@@ -116,15 +113,15 @@ public class BufferManagerImpl implements BufferManager {
             existing.mergeEditors(buffer);
             return true;
         }
-        if (!isDead(buffer.getName())) {
+//        if (!isDead(buffer.getName())) {
             myBuffers.add(buffer);
             return true;
-        }
-        LispBuffer buried = myDeadBuffers.get(getIndexByName(myDeadBuffers, buffer.getName()));
-        buried.setEditor(buffer.getEditor());
-        myBuffers.add(buried);
-        myDeadBuffers.remove(buried);
-        return false;
+//        }
+//        LispBuffer buried = myDeadBuffers.get(getIndexByName(myDeadBuffers, buffer.getName()));
+//        buried.setEditor(buffer.getEditor());
+//        myBuffers.add(buried);
+//        myDeadBuffers.remove(buried);
+//        return false;
     }
 
     public void defineServiceBuffer (LispBuffer buffer) {
@@ -158,7 +155,7 @@ public class BufferManagerImpl implements BufferManager {
 
     public void killBuffer (LispBuffer buffer) {
         buffer.kill();
-        myDeadBuffers.add(buffer);
+//        myDeadBuffers.add(buffer);
         myBuffers.remove(buffer);
     }
 
@@ -213,11 +210,7 @@ public class BufferManagerImpl implements BufferManager {
 
     @Override
     public boolean isDead (String bufferName) {
-        for (LispBuffer buffer: myDeadBuffers) {
-            if (buffer.getName().equals(bufferName))
-                return true;
-        }
-        return false;
+        return !containsBuffer(bufferName);
     }
 
     public void defineBufferLocalVariable (LispSymbol symbol) {
@@ -229,6 +222,41 @@ public class BufferManagerImpl implements BufferManager {
     @Override
     public void closeCurrentBuffer() {
         removeBuffer(getCurrentBuffer());
+    }
+
+    @Override
+    public boolean containsWindow(LispWindow window) {
+        for (LispBuffer buffer: myBuffers) {
+            if (buffer.containsWindow(window))
+                return true;
+        }
+        for (LispBuffer buffer: myServiceBuffers) {
+            if (buffer.containsWindow(window))
+                return true;
+        }
+        return false;
+    }
+
+    @Override
+    public LispMiniBuffer getMinibuffer() {
+        for (LispBuffer buffer: myServiceBuffers) {
+            if (buffer instanceof LispMiniBuffer)
+                return (LispMiniBuffer) buffer;
+        }
+        return null;        
+    }
+
+    @Override
+    public List<LispWindow> getWindows() {
+        //todo: windows must go in window "cyclic order"
+        List<LispWindow> windows = new ArrayList<>();
+        for (LispBuffer buffer: myBuffers) {
+            windows.addAll(buffer.getWindows());
+        }
+        for (LispBuffer buffer: myServiceBuffers) {
+            windows.addAll(buffer.getWindows());
+        }
+        return windows;
     }
 }
 

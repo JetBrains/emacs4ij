@@ -4,6 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -116,5 +117,74 @@ public abstract class BuiltinsFrame {
     public static LispList frameList (Environment environment) {
         List<LispFrame> frames = environment.getAllFrames();
         return LispList.list(frames.toArray(new LispObject[frames.size()]));
+    }
+    
+    @Subroutine("selected-window")
+    public static LispObject selectedWindow (Environment environment) {
+        return BuiltinsCore.thisOrNil(environment.getSelectedWindow());
+    }
+
+    @Subroutine("frame-selected-window")
+    public static LispObject frameSelectedWindow (Environment environment, @Optional LispObject frame) {
+        if (!BuiltinPredicates.isNil(frame) && !(frame instanceof LispFrame))
+            throw new WrongTypeArgumentException("frame-live-p", frame);
+        if (BuiltinPredicates.isNil(frame))
+            frame = environment.getSelectedFrame();
+        if (frame == null)
+            return LispSymbol.ourNil;
+        return ((LispFrame)frame).getSelectedWindow();
+    }
+
+    @Subroutine("next-window")
+    public static LispObject nextWindow(Environment environment, 
+                                        @Optional LispObject window, LispObject considerMinibuffer, LispObject allFrames) {
+        if (BuiltinPredicates.isNil(window))
+            window = environment.getSelectedWindow();
+        if (!(window instanceof LispWindow))
+            throw new WrongTypeArgumentException("window-live-p", window);
+        if (considerMinibuffer == null)
+            considerMinibuffer = LispSymbol.ourNil;
+        if (allFrames == null) {
+            allFrames = LispSymbol.ourNil;
+        }
+        
+        List<LispFrame> frames = new ArrayList<>();
+        if (allFrames.equals(LispSymbol.ourNil)) {
+            LispFrame frame = environment.getFrameByWindow((LispWindow) window);
+            frames.add(frame);
+            boolean considerMinibuf = false;
+            if ((considerMinibuffer.equals(LispSymbol.ourNil) && environment.getMiniBufferActivationsDepth() > 0)
+                    || considerMinibuffer.equals(LispSymbol.ourT))
+                considerMinibuf = true;
+            if (considerMinibuf) {
+                LispMiniBuffer miniBuffer = frame.getMinibuffer();
+                for (LispFrame otherFrame: environment.getFramesByBuffer(miniBuffer)) {
+                    if (otherFrame != frame)
+                        frames.add(otherFrame);
+                }
+            }
+        } else if (allFrames.equals(new LispSymbol("visible"))) {
+            frames = environment.getVisibleFrames(); //search all visible frames
+        } else if (allFrames.equals(LispSymbol.ourT)) { //search all frames.
+            frames = environment.getAllFrames();
+        } else if (allFrames.equals(new LispInteger(0))) { //search visible and iconified frames.
+            frames = environment.getVisibleAndIconifiedFrames();
+        } else if (allFrames instanceof LispFrame) { //search only that frame.
+            frames.add((LispFrame) allFrames);
+        } else {
+            frames.add(environment.getFrameByWindow((LispWindow) window));
+        }
+
+        //make frames list
+        List<LispWindow> windows = new ArrayList<>();
+        for (LispFrame frame: frames) {
+            windows.addAll(frame.getWindows());
+        }
+        int index = windows.indexOf((LispWindow)window);
+        if (index == -1)
+            throw new InternalException("next-window error");
+        if (index == windows.size())
+            return windows.get(0);
+        return windows.get(index + 1);
     }
 }

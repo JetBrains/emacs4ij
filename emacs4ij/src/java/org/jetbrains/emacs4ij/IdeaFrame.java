@@ -10,6 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import javax.swing.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -115,6 +116,8 @@ public class IdeaFrame implements LispFrame {
     @Override
     public LispWindow getSelectedWindow() {
         //todo: if focus not in editor?
+        if (myFileEditorManager == null)
+            return myBufferManager.getCurrentBuffer().getSelectedWindow();
         Editor e = myFileEditorManager.getSelectedTextEditor();
         return myBufferManager.findBuffer(myFileEditorManager.getSelectedTextEditor()).getSelectedWindow();
     }
@@ -142,7 +145,22 @@ public class IdeaFrame implements LispFrame {
         return myFrame.getComponent();
     }
 
-//    @Override
+    @Override
+    public boolean containsWindow(LispWindow window) {
+        return myBufferManager.containsWindow(window);
+    }
+
+    @Override
+    public LispMiniBuffer getMinibuffer() {
+        return myBufferManager.getMinibuffer();
+    }
+
+    @Override
+    public List<LispWindow> getWindows() {
+        return myBufferManager.getWindows();
+    }
+
+    //    @Override
 //    public List<LispBuffer> getBuffers() {
 //        return myBufferManager.getBuffers();
 //    }

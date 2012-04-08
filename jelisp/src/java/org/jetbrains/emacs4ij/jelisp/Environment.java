@@ -340,6 +340,18 @@ public abstract class Environment {
         return getFrameManager().getAllFrames();
     }
 
+    public LispFrame getFrameByWindow (LispWindow window) {
+        return getFrameManager().getFrameByWindow(window);
+    }
+    
+    public List<LispFrame> getFramesByBuffer (LispBuffer buffer) {
+        return getFrameManager().getFramesByBuffer(buffer);
+    } 
+    
+    public boolean isWindowAlive (LispWindow window) {
+        return getFrameManager().getFrameByWindow(window) != null;
+    }
+
     //upload
     public LispSymbol findAndRegisterEmacsVariable (String name) {
         return DefinitionLoader.findAndRegisterEmacsVariable(name);

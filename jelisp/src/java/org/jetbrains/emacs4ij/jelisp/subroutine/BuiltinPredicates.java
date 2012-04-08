@@ -222,4 +222,9 @@ public abstract class BuiltinPredicates {
     public static boolean isNil (LispObject object) {
         return object == null || object.equals(LispSymbol.ourNil);
     }
+    
+    @Subroutine("window-live-p")
+    public static LispSymbol windowLiveP (Environment environment, LispWindow window) {
+        return LispSymbol.bool(environment.isWindowAlive(window));
+    }
 }

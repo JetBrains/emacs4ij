@@ -134,4 +134,8 @@ public class WindowManager {
     public int size () {
         return myWindows.size();
     }
+    
+    public boolean containsWindow (LispWindow window) {
+        return myWindows.contains(window);
+    }
 }

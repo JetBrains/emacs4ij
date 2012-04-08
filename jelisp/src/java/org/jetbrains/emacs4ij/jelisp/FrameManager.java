@@ -20,6 +20,8 @@ public interface FrameManager {
     void onFrameReleased (LispFrame frame);
     void setSelectedFrame (LispFrame frame);
     LispFrame getSelectedFrame();
+    LispFrame getFrameByWindow (LispWindow window);
+    List<LispFrame> getFramesByBuffer (LispBuffer buffer);
     void setFrameVisible   (LispFrame frame, boolean status);
     void setFrameIconified (LispFrame frame, boolean status);
     boolean isFrameAlive (LispFrame frame);

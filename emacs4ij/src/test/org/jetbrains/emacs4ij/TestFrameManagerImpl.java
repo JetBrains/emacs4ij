@@ -118,4 +118,18 @@ public class TestFrameManagerImpl implements FrameManager {
     public BufferManager getCurrentBufferManager() {
         return myFrame.getBufferManager();
     }
+
+    @Override
+    public LispFrame getFrameByWindow(LispWindow window) {
+        if (myFrame.containsWindow(window))
+            return myFrame;
+        return null;
+    }
+
+    @Override
+    public List<LispFrame> getFramesByBuffer(LispBuffer buffer) {
+        if (myFrame.getBufferManager().containsBuffer(buffer.getName()))
+            return Arrays.asList(myFrame);
+        return null;
+    }
 }
