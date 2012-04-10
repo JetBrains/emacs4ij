@@ -25,7 +25,7 @@ public class EmacsAction extends AnAction {
     public EmacsAction () {}
     
     public EmacsAction (KeymapCell command) {
-        myCommand = command;        
+        myCommand = command;
     }
     
     public void update(AnActionEvent event) {
@@ -48,10 +48,14 @@ public class EmacsAction extends AnAction {
                 return;
             }
             if (!((LispSymbol)myCommand).isFunction()) {
-                System.err.println("upload: " + ((LispSymbol)myCommand).getName());
-                LispSymbol realCommand = environment.findAndRegisterEmacsFunction(((LispSymbol)myCommand).getName());
-                if (realCommand != null)
-                    myCommand = realCommand;
+                LispSymbol cmd = environment.find(((LispSymbol)myCommand).getName());
+                if (cmd == null || !cmd.isFunction()) {
+                    System.err.println("upload: " + ((LispSymbol)myCommand).getName());
+                    LispSymbol realCommand = environment.findAndRegisterEmacsFunction(((LispSymbol)myCommand).getName());
+                    if (realCommand != null)
+                        myCommand = realCommand;
+                } else
+                    myCommand = cmd;
             }
             BuiltinsCore.callInteractively(environment, (LispSymbol)myCommand, null, null);
         } catch (Exception exc2) {

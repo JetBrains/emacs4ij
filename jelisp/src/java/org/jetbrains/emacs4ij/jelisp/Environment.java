@@ -33,8 +33,11 @@ public abstract class Environment {
     protected static EmacsKeymapManager ourKeymapManager;
     protected static FrameManager myFrameManager = null;
 
+    protected final List<LispBuffer> myGlobalBufferRing = new ArrayList<>();
+    protected final List<LispBuffer> myGlobalWindowRing = new ArrayList<>();
+
     public boolean isMainOrGlobal() {
-        return (myOuterEnv == null || myOuterEnv.getOuterEnv() == null);
+        return myOuterEnv == null || myOuterEnv.getOuterEnv() == null;
     }
 
     private Environment getOuterEnv() {
@@ -76,10 +79,6 @@ public abstract class Environment {
         return myBufferCurrentForEditing == null
                 ? getBufferManager().getCurrentBuffer()
                 : myBufferCurrentForEditing;
-    }
-
-    public LispString getDefaultDirectory () {
-        return (LispString) getBufferCurrentForEditing().getLocalVariableValue("default-directory");
     }
 
     public LispSymbol find(String name) {
@@ -139,6 +138,14 @@ public abstract class Environment {
         LispBuffer buffer = getBufferManager().switchToBuffer(bufferName);
         if (buffer != null)
             setBufferCurrentForEditing(buffer);
+    }
+    
+    public void switchToWindow (Editor editor) {
+        LispBuffer buffer = getBufferManager().findBuffer(editor);
+        if (buffer == null)
+            throw new InternalException(JelispBundle.message("unregistered.editor"));
+        buffer.switchToEditor(editor);
+        setBufferCurrentForEditing(buffer);
     }
 
     public LispList getBufferList() {

@@ -2,6 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
+import java.util.List;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -17,6 +19,13 @@ public interface LispMiniBuffer extends LispBuffer {
     void open(LispBuffer parent);
     boolean wasInteractiveFormResult();
     void setReadCommandStatus();
+
+    //todo: as in emacs
+    String readInputString();
+    List<String> getCompletions (String parameter);
+    void setNoMatch(String input);
+    void setInputStartValue (String startValue);
+    void updateEditorText();
 
     //todo: these methods mustn't return the evaluation result. This is only for testing.
     LispObject onReadInput();

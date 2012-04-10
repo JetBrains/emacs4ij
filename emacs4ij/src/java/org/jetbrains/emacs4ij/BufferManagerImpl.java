@@ -5,10 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.BufferManager;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,6 +43,17 @@ public class BufferManagerImpl implements BufferManager {
         return -1;
     }
 
+    @Override
+    public void switchToWindow (LispWindow window) {
+        LispBuffer buffer = findBuffer(window);
+        if (buffer == null)
+            throw new LispException(Emacs4ijBundle.message("no.such.window.in.frame", window.toString()));
+        buffer = switchToBuffer(buffer.getName());
+        if (buffer != null)
+            buffer.switchToEditor(window.getEditor());
+    }
+
+    @Override
     public LispBuffer switchToWindow(String bufferName, Editor editor) {
         LispBuffer current = switchToBuffer(bufferName);
         if (current != null)
@@ -96,6 +104,14 @@ public class BufferManagerImpl implements BufferManager {
     public LispBuffer findBuffer (Editor editor) {
         for (LispBuffer buffer: myBuffers) {
             if (buffer.containsEditor(editor))
+                return buffer;
+        }
+        return null;
+    }
+
+    public LispBuffer findBuffer (LispWindow window) {
+        for (LispBuffer buffer: myBuffers) {
+            if (buffer.containsWindow(window))
                 return buffer;
         }
         return null;

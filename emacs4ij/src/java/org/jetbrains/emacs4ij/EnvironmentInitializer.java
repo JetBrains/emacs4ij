@@ -2,7 +2,11 @@ package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.keymap.Keymap;
+import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFrame;
@@ -33,14 +37,11 @@ public class EnvironmentInitializer {
     }
 
     public static boolean silentInitGlobal() {
-        if (isGlobalInitialized)
-            return true;
         EmacsHomeService emacsHomeService = ServiceManager.getService(EmacsHomeService.class);
         EmacsSourceService emacsSourceService = ServiceManager.getService(EmacsSourceService.class);
         if (emacsHomeService.isParameterSet() && emacsSourceService.isParameterSet()) {
             try {
-                GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new FrameManagerImpl());
-                isGlobalInitialized = true;
+                return init();
             } catch (LispException e) {
                 //skip
             }
@@ -49,13 +50,24 @@ public class EnvironmentInitializer {
     }
 
     public static boolean initGlobal() {
+        try {
+            return init();
+        } catch (LispException e) {
+            GlobalEnvironment.showErrorMessage(e.getMessage());
+        }
+        return isGlobalInitialized;
+    }
+
+    private static boolean init() {
         if (isGlobalInitialized)
             return true;
+        Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
         try {
             GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(),new FrameManagerImpl());
             isGlobalInitialized = true;
         } catch (LispException e) {
-            GlobalEnvironment.showErrorMessage(e.getMessage());
+            ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(userKeymap);
+            throw e;
         }
         return isGlobalInitialized;
     }
@@ -92,7 +104,13 @@ public class EnvironmentInitializer {
                                 }
                             });
                         }
-
+                        Editor editor = fileEditorManager.getSelectedTextEditor();
+                        if (editor != null) {
+                            environment.switchToWindow(fileEditorManager.getSelectedTextEditor());
+                            return;
+                        }
+                        if (fileEditorManager.getOpenFiles().length != 0)
+                            throw new Attention();
                     }
                 });
             }

@@ -5,7 +5,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
-import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
 
 import java.io.*;
@@ -86,7 +85,9 @@ public abstract class DefinitionLoader {
             index = p.getLine();
             if (BuiltinPredicates.isNil(parsed))
                 continue;
-            if (parsed instanceof LispList && ((LispList) parsed).car() instanceof LispSymbol && mySkipFunctions.contains(((LispList) parsed).car()))
+            if (parsed instanceof LispList &&
+                    ((LispList) parsed).car() instanceof LispSymbol
+                    && mySkipFunctions.contains(((LispList) parsed).car()))
                 continue;
             try {
                 parsed.evaluate(GlobalEnvironment.INSTANCE);
@@ -315,7 +316,9 @@ public abstract class DefinitionLoader {
                         end = line.charAt(line.length()-1) == ')' ? line.length() - 2 : line.length() - 1;
                     }
                     String name = line.substring(start, end);
-                    Identifier id = null;
+                    //todo: back
+                    Identifier id = new Identifier(name, type);
+                    /*Identifier id = null;
                     if (type == DefType.FUN) {//check if it is command
                         try {
                             LispList definition = getDef(reader, line, name);
@@ -332,7 +335,7 @@ public abstract class DefinitionLoader {
                         }
                     }
                     if (id == null)
-                        id = new Identifier(name, type);
+                        id = new Identifier(name, type);*/
                     if (myIndex.containsKey(id)) {
                         List<String> files = myIndex.get(id);
                         if (files.contains(myFile.getAbsolutePath()))

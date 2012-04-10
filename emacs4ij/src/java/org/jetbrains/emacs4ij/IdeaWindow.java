@@ -39,16 +39,6 @@ public class IdeaWindow implements LispWindow {
     public Editor getEditor() {
         return myEditor;
     }
-    
-//    @Override
-//    public boolean containsBuffer(LispBuffer buffer) {
-//        return myBuffer == buffer;
-//    }
-//
-//    @Override
-//    public LispBuffer getBuffer() {
-//        return myBuffer;
-//    }
 
     @Override
     public String toString() {

@@ -50,7 +50,7 @@ public class SpecialFormInteractive {
             myPrompt = ourEmptyMessage;
         }
     }
-
+    
     public boolean isFinished () {
         return myIndex == myParameters.length;
     }
@@ -295,7 +295,10 @@ public class SpecialFormInteractive {
         putArgument();
     }
 
-
+    private String defaultDirectory()  {
+        return ((LispString) myEnvironment.getBufferCurrentForEditing().getLocalVariableValue("default-directory")).getData();
+    }
+    
     private void prepare () {
         switch (myInteractiveChar) {
             case 'b': // -- Name of existing buffer.
@@ -314,7 +317,7 @@ public class SpecialFormInteractive {
                 notifyMiniBuffer();
                 return;
             case 'D': // -- Directory name.
-                myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
+                myParameterStartValue = defaultDirectory();
                 break;
             case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
                 // If used more than once, the Nth `e' returns the Nth parametrized event.
@@ -323,13 +326,13 @@ public class SpecialFormInteractive {
                 //todo: notifyMiniBuffer(); return;
                 throw new NotImplementedException("e character not implemented");
             case 'f': // -- Existing file name.
-                myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
+                myParameterStartValue = defaultDirectory();
                 break;
             case 'F': // -- Possibly nonexistent file name. -- no check
-                myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
+                myParameterStartValue = defaultDirectory();
                 break;
             case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
-                myParameterStartValue = myEnvironment.getDefaultDirectory().getData();
+                myParameterStartValue = defaultDirectory();
                 break;
             case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
                 addArg(LispSymbol.ourNil);

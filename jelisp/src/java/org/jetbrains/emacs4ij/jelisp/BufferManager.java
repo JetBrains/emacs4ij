@@ -29,6 +29,7 @@ public interface BufferManager {
     LispBuffer getServiceBuffer (String name);
     LispBuffer createBuffer (String name);
     LispBuffer switchToWindow (String bufferName, Editor editor);
+    void switchToWindow (LispWindow window);
     LispBuffer switchToBuffer (String bufferName);
 
     List<LispBuffer> getBuffers();

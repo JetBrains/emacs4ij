@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
+ * Created with IntelliJ IDEA.
  * User: kate
- * Date: 3/30/12
- * Time: 4:10 PM
+ * Date: 4/10/12
+ * Time: 6:17 PM
  * To change this template use File | Settings | File Templates.
  */
 public class WindowManager {
@@ -71,8 +71,9 @@ public class WindowManager {
         }
         return null;
     }
-    
+
     public void switchToEditor (Editor editor) {
+        System.out.println("switch to editor: " + editor.toString());
         LispWindow my = getByEditor(editor);
         if (my == null) {
             add(editor);
@@ -89,13 +90,13 @@ public class WindowManager {
         }
         return null;
     }
-    
+
     public LispWindow getSelectedWindow() {
 //        if (mySelectedWindow == null)
 //            throw new NoEditorException();
         return mySelectedWindow;
     }
-    
+
     private void add (Editor editor) {
         LispWindow bufferEditor = new IdeaWindow(myWindows.size(), myBufferName, editor);
         myWindows.add(bufferEditor);
@@ -130,12 +131,14 @@ public class WindowManager {
     public List<LispWindow> getWindows() {
         return myWindows;
     }
-    
+
     public int size () {
         return myWindows.size();
     }
-    
+
     public boolean containsWindow (LispWindow window) {
         return myWindows.contains(window);
     }
 }
+
+

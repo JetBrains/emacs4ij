@@ -269,7 +269,11 @@ public class IdeaBuffer implements LispBuffer {
 
     @Override
     public void closeHeader () {
-        myWindowManager.getSelectedWindow().closeHeader();
+        try {
+            myWindowManager.getSelectedWindow().closeHeader();
+        } catch (NullPointerException e) {
+            //the buffer was killed, skip
+        }
     }
 
     //--------------- mark --------------------------------

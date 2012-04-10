@@ -21,11 +21,11 @@
         <!-- Add your actions here -->
         <group id="Emacs4ijActionGroup" text="Emacs4ij Group" description="Group with Emacs4ij actions" popup="false">
 
-            <action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
+            <!--action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
                     text="Execute command in minibuffer" icon="icons/execute.png"
                     description="Execute command in minibuffer">
-                <!--keyboard-shortcut keymap="$default" first-keystroke="alt X"/-->
-            </action>
+                <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
+            </action-->
             <action id="Open Settings" class="org.jetbrains.emacs4ij.OpenSettings"
                     text="Emacs4ij settings" icon="icons/options.png"
                     description="View and edit Emacs4ij settings">
@@ -33,15 +33,12 @@
             <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
         </group>
 
-        <action id="Evaluate Code" class="org.jetbrains.emacs4ij.EvaluateCode"
+        <!--action id="Evaluate Code" class="org.jetbrains.emacs4ij.EvaluateCode"
                 text="Evaluate elisp code" icon="icons/emacs.png">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
-        </action>
+        </action-->
 
-        <action id="Execute Command" class="org.jetbrains.emacs4ij.ExecuteCommand"/>
-        <action id="Auto Complete" class="org.jetbrains.emacs4ij.AutoComplete"/>
-        <action id="Interrupt Mini Buffer" class="org.jetbrains.emacs4ij.InterruptMiniBuffer"/>
-        <action id="Internal Emacs Action" class="org.jetbrains.emacs4ij.EmacsAction"/>
+        <!--<action id="Internal Emacs Action" class="org.jetbrains.emacs4ij.EmacsAction"/>-->
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">

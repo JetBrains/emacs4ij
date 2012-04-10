@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -70,14 +69,16 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         @Override
         public void focusGained(Editor editor) {
             myOldKeymap = myEnvironment.getActiveKeymap();
-            myEnvironment.setActiveKeymap("minibuffer-local-map");
-            System.err.println("minibuffer-local-map");
+            myEnvironment.setActiveKeymap("minibuffer-local-completion-map");
+//            System.out.println("minibuffer-local-completion-map, onEnter = " +
+//                    Arrays.toString(KeymapManager.getInstance().getActiveKeymap().getActionIds(KeyStroke.getKeyStroke("ENTER"))));
         }
 
         @Override
         public void focusLost(Editor editor) {
             myEnvironment.setActiveKeymap(myOldKeymap);
-            System.err.println("global-map");
+//            System.out.println("global-map, onEnter = " +
+//                    Arrays.toString(KeymapManager.getInstance().getActiveKeymap().getActionIds(KeyStroke.getKeyStroke("ENTER"))));
         }
     };
 
@@ -140,10 +141,12 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         });
     }
 
+    @Override
     public List<String> getCompletions (String parameter) {
         return myInteractive.getCompletions(parameter);
     }
 
+    @Override
     public void setInputStartValue (String startValue) {
         myInteractive.setParameterStartValue(startValue);
     }
@@ -169,8 +172,10 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myInteractive.readNextArgument();
     }
 
+    @Override
     public void updateEditorText() {
-        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
+        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() +
+                ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
         write(text);
     }
 
@@ -225,6 +230,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         throw new WrongTypeArgumentException("stringp", defaultValue.toString());
     }
 
+    @Override
     public String readInputString() {
         if (myCharCode != null) {
             String code = myCharCode.toString();
@@ -267,30 +273,20 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     @Override
     public void open(LispBuffer parent) {
         EditorTextField input = new EditorTextField();
-        System.out.println("open minibuffer");
         parent.getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
 
         Editor editor = input.getEditor();
-        if (editor == null)
-            throw new InternalException("No editor for minibuffer!");
-        ((EditorEx) editor).addFocusListener(myFocusListener);
+//        if (editor == null)
+//            throw new InternalException("No editor for minibuffer!");
+        if (editor != null) {
+            ((EditorEx) editor).addFocusListener(myFocusListener);
+        }
         setEditor(editor);
         myActivationsDepth++;
 
         isOpened = true;
-
-//        InterruptMiniBuffer imb = new InterruptMiniBuffer();
-//        imb.registerCustomShortcutSet(new CustomShortcutSet
-//                (new KeyboardShortcut(KeyStroke.getKeyStroke("ESCAPE"), KeyStroke.getKeyStroke("ESCAPE"))),
-//                input.getComponent());
-//
-//        ExecuteCommand command = new ExecuteCommand();
-//        command.registerCustomShortcutSet(KeyEvent.VK_ENTER, 0, input.getComponent());
-//
-//        AutoComplete autoComplete = new AutoComplete();
-//        autoComplete.registerCustomShortcutSet(KeyEvent.VK_TAB, 0, input.getComponent());
         setActive();
     }
 
@@ -304,6 +300,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         write (getDocument().getText() + text);
     }
 
+    @Override
     public void setNoMatch(String input) {
         myInteractive.setNoMatch(input);
     }

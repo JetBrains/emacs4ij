@@ -6,8 +6,10 @@ import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.KeymapManagerListener;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.keymap.impl.DefaultKeymap;
+import com.intellij.openapi.keymap.impl.KeymapImpl;
 import com.intellij.openapi.keymap.impl.KeymapManagerImpl;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.ArrayUtil;
@@ -36,22 +38,44 @@ public class IdeaKeymap implements LispKeymap {
     private LispKeymap myParent = null;
     private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
     private static final KeymapManagerImpl ourKeymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
-    private static final Keymap ourIdeaEmacsKeymap;
+    private static final KeymapImpl myIdeaKeymap;
+
     static {
-        Keymap tmp;
+        KeymapImpl tmp;
         try {
-            tmp = (Keymap) CollectionUtils.find(
-                    Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
-                    new Predicate() {
-                        @Override
-                        public boolean evaluate(Object o) {
-                            return KeymapUtil.isEmacsKeymap((Keymap) o);
-                        }
-                    });
+            KeymapImpl emacsKeymap = (KeymapImpl) getIdeaEmacsKeyMap();
+            emacsKeymap.setCanModify(false);
+            tmp = emacsKeymap.deriveKeymap();
+            tmp.setName(Emacs4ijBundle.message("emacs4ij"));
+            tmp.setCanModify(true);
         } catch (NullPointerException e) {
             tmp = null;
         }
-        ourIdeaEmacsKeymap = tmp;
+        myIdeaKeymap = tmp;
+        ourKeymapManager.addKeymap(myIdeaKeymap);
+
+        ourKeymapManager.addKeymapManagerListener(new KeymapManagerListener() {
+            @Override
+            public void activeKeymapChanged(Keymap keymap) {
+                System.out.println("incoming: " + keymap.getName() + " = " + keymap.toString() +
+                        ", current: " + ourKeymapManager.getActiveKeymap().getName() + " = " + ourKeymapManager.getActiveKeymap().toString());
+                //if user changes keymap to non-emacs?
+                //todo: remove my bindings from old keymap. Should I add them to the new one?
+                // or should i derive myIdeaKeymap from new one?
+            }
+        });
+        ourKeymapManager.setActiveKeymap(myIdeaKeymap);
+    }
+    
+    private static Keymap getIdeaEmacsKeyMap () {
+        return (Keymap) CollectionUtils.find(
+                Arrays.asList(DefaultKeymap.getInstance().getKeymaps()),
+                new Predicate() {
+                    @Override
+                    public boolean evaluate(Object o) {
+                        return KeymapUtil.isEmacsKeymap((Keymap) o);
+                    }
+                });
     }
 
     public IdeaKeymap(@Nullable LispObject name, @Nullable LispKeymap parent) {
@@ -63,12 +87,14 @@ public class IdeaKeymap implements LispKeymap {
 
     @Override
     public void defineKey(KeymapCell action, StringOrVector key) {
-        defineKey(action, key.toKeyboardShortcutList(), 0);
+        Shortcut shortcut = defineKey(action, key.toKeyboardShortcutList(), 0);
+        if (GlobalEnvironment.INSTANCE.isKeymapActive(this) && shortcut != null)
+            registerAction(action, shortcut);
     }
 
-    private void defineKey(KeymapCell action, List<Shortcut> shortcuts, int index) {
+    private Shortcut defineKey(KeymapCell action, List<Shortcut> shortcuts, int index) {
         if (shortcuts.isEmpty())
-            return;
+            return null;
         Shortcut firstKeystroke = shortcuts.get(index);
         if (shortcuts.size() - 1 == index) {
             //while i don't support multiple shortcuts, save max 2:
@@ -78,16 +104,14 @@ public class IdeaKeymap implements LispKeymap {
                         ((KeyboardShortcut) shortcuts.get(1)).getFirstKeyStroke());
             }
             myKeyBindings.put(firstKeystroke, action);
-            if (GlobalEnvironment.INSTANCE.isKeymapActive(this))
-                registerAction(action, shortcut);
-            return;
+            return shortcut;
         }
         LispKeymap prefix = getPrefixKeymap(firstKeystroke);
         if (prefix != null) {
-            ((IdeaKeymap) prefix).defineKey(action, shortcuts, index + 1);
-            return;
+            return ((IdeaKeymap) prefix).defineKey(action, shortcuts, index + 1);
         }
         BuiltinsCore.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
+        return null;
     }
 
     private LispKeymap getPrefixKeymap (Shortcut shortcut) {
@@ -97,16 +121,18 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     private String generateActionId (String binding) {
-        return Emacs4ijBundle.message("emacs4ij") + ' ' + StringUtil.capitalizeWords(binding, "-", true, false);
+        return (Emacs4ijBundle.message("emacs4ij") + StringUtil.capitalizeWords(binding, "-", true, false)).replaceAll(" ", "");
     }
 
+    private Map<Shortcut, String> myUnbound = new HashMap<>();
+    
     private void unregisterShortcut (Shortcut shortcut) {
-        Keymap activeKeymap = ourKeymapManager.getActiveKeymap();
-        String[] actionIds = activeKeymap.getActionIds(shortcut);
+        String[] actionIds = myIdeaKeymap.getActionIds(shortcut);
         while (actionIds != ArrayUtil.EMPTY_STRING_ARRAY) {
-            for (String actionId: actionIds)
-                activeKeymap.removeShortcut(actionId, shortcut);
-            actionIds = activeKeymap.getActionIds(shortcut);
+            for (String actionId: actionIds) {
+                myIdeaKeymap.removeShortcut(actionId, shortcut);
+            }
+            actionIds = myIdeaKeymap.getActionIds(shortcut);
         }
     }
 
@@ -139,11 +165,10 @@ public class IdeaKeymap implements LispKeymap {
     private void registerKbdAction(KeymapCell action, KeyboardShortcut shortcut) {
         ActionManager actionManager = ActionManager.getInstance();
         String id = generateActionId(action.toString());
-        if (actionManager.getActionIds(id).length != 0)
-            actionManager.unregisterAction(id);
-        actionManager.registerAction(id, new EmacsAction(action), PluginId.getId(Emacs4ijBundle.message("emacs4ij")));
+        if (actionManager.getActionIds(id).length == 0)
+            actionManager.registerAction(id, new EmacsAction(action), PluginId.getId(Emacs4ijBundle.message("emacs4ij")));
         unregisterShortcut(shortcut);
-        ourKeymapManager.getActiveKeymap().addShortcut(id, shortcut);
+        myIdeaKeymap.addShortcut(id, shortcut);
     }
 
     private Stack<LispKeymap> getKeymapStack() {
@@ -160,14 +185,14 @@ public class IdeaKeymap implements LispKeymap {
             bind();
             return;
         }
-        ourKeymapManager.setActiveKeymap(ourIdeaEmacsKeymap);
+        myIdeaKeymap.clearOwnActionsIds();
         Stack<LispKeymap> keymaps = getKeymapStack();
         while (!keymaps.isEmpty()) {
             ((IdeaKeymap)keymaps.pop()).bind();
         }
     }
 
-    private void bind() {
+    protected void bind() {
         for (Map.Entry<Shortcut, KeymapCell> entry: myKeyBindings.entrySet()) {
             registerAction(entry.getValue(), entry.getKey());
         }
@@ -236,13 +261,15 @@ public class IdeaKeymap implements LispKeymap {
             return function;
         if (myParent != null)
             return ((IdeaKeymap)myParent).getKeyBinding(shortcut);
+        return LispSymbol.ourNil;
         //get idea binding
-        String[] actions = ourKeymapManager.getActiveKeymap().getActionIds(shortcut);
-        if (actions == ArrayUtil.EMPTY_STRING_ARRAY)
-            return null;
-        if (actions.length != 1)
-            throw new Attention();
-        return new LispSymbol(actions[0]);
+
+//        String[] actions = ourKeymapManager.getActiveKeymap().getActionIds(shortcut);
+//        if (actions == ArrayUtil.EMPTY_STRING_ARRAY)
+//            return null;
+//        if (actions.length != 1)
+//            throw new Attention();
+//        return new LispSymbol(actions[0]);
     }
 
     @Override

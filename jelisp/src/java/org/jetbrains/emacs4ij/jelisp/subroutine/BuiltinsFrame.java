@@ -5,6 +5,8 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoWindowException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
@@ -96,6 +98,7 @@ public abstract class BuiltinsFrame {
             int k = ((LispFrame)frame).isVisible() ? 1 : 0;
             if (environment.getVisibleAndIconifiedFrames().size() - k <= 0) {
                 BuiltinsCore.error(JelispBundle.message("make.invisible.error"));
+                return LispSymbol.ourNil;
             }
         }
         ((LispFrame)frame).setVisible(false);
@@ -186,5 +189,21 @@ public abstract class BuiltinsFrame {
         if (index == windows.size())
             return windows.get(0);
         return windows.get(index + 1);
+    }
+    
+    @Subroutine("(set-frame-selected-window FRAME WINDOW &optional NORECORD)")
+    public static LispWindow setFrameSelectedWindow (Environment environment, LispObject frame, 
+                                                     LispWindow window, @Optional LispObject noRecord) {
+        if (frame.equals(LispSymbol.ourNil))
+            frame = environment.getSelectedFrame();
+        if (!(frame instanceof LispFrame))
+            throw new WrongTypeArgumentException("frame-live-p", frame);
+        try {
+            //todo: if noRecord -- don't change buffers' ans windows' order
+            ((LispFrame)frame).getBufferManager().switchToWindow(window);
+            return window;
+        } catch (LispException e) {
+            throw new NoWindowException((LispFrame) frame, window);
+        }
     }
 }

@@ -1,9 +1,15 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,6 +28,7 @@ public abstract class BuiltinsMinibiffer {
                                            LispObject inheritInputMethod) {
 
         LispObject minibufferCompletionFilenameValue = environment.find("minibuffer-completing-file-name").getValue();
+
         boolean isMinibufferCompletingFilename = !BuiltinPredicates.isNil(minibufferCompletionFilenameValue)
                 && !BuiltinsCore.eqs(minibufferCompletionFilenameValue, new LispSymbol("tForOneTime"));
         String keymapName = BuiltinPredicates.isNil(requireMatch)
@@ -86,6 +93,7 @@ public abstract class BuiltinsMinibiffer {
 
 
 
+
         environment.setActiveKeymap(oldKeymap);
         return null;
     }
@@ -105,7 +113,46 @@ public abstract class BuiltinsMinibiffer {
         return LispSymbol.bool(isMinibufferWindow(environment, (LispWindow) window));
     }
 
+    //todo: compiled lisp f
+    @Subroutine(value = "minibuffer-complete", isCmd = true)
+    public static void minibufferComplete (Environment environment) {
+        try {
+            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+            String parameter = miniBuffer.readInputString();
+            List<String> completions = miniBuffer.getCompletions(parameter);
+            if (completions.isEmpty()) {
+                miniBuffer.setNoMatch(parameter);
+            } else {
+                if (completions.size() == 1) {
+                    parameter = completions.get(0);
+                } else {
+                    parameter = StringUtil.commonPrefix(completions.get(0), completions.get(completions.size() - 1));
+                }
+                miniBuffer.setInputStartValue(parameter);
+                miniBuffer.updateEditorText();
 
+                if (completions.size()>1) {
+                    StringBuilder message = new StringBuilder(JelispBundle.message("possible.completions"));
+                    for (String name: completions) {
+                        message.append(name).append("\n");
+                    }
+                    Messages.showInfoMessage(message.toString(), JelispBundle.message("possible.completions.title"));
+                }
+            }
+        } catch (LispException exc) {
+            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("auto.complete.error.title"));
+        }
+    }
 
+    //todo: compiled lisp f
+    @Subroutine(value = "minibuffer-complete-word", isCmd = true)
+    public static void minibufferCompleteWord (Environment environment) {
+        minibufferComplete(environment);
+    }
 
+    //todo: compiled lisp f
+    @Subroutine(value = "minibuffer-completion-help", isCmd = true)
+    public static void minibufferCompletionHelp (Environment environment) {
+        //todo all possible completions
+    }
 }

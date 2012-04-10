@@ -164,6 +164,8 @@ public abstract class BuiltinsKey {
 
         LispSymbol mblMap = makeKeymap("minibuffer-local-map");
         setKey(mblMap, "exit-minibuffer", "<RET>");
+        setKey(mblMap, makeSparseKeymap("minibuffer-esc-map"), "<ESC>");
+        setKey(mblMap, "keyboard-escape-quit", "<ESC><ESC>");
 
         LispSymbol mblNsMap = makeKeymap("minibuffer-local-ns-map", mblMap);
         setKey(mblNsMap, "exit-minibuffer", "<SPC>");

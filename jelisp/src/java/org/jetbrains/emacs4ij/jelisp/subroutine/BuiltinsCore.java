@@ -1,9 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -97,12 +99,26 @@ public abstract class BuiltinsCore {
             function = symbol;
         if (!BuiltinPredicates.commandp(function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
-        if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
-            LispList.list(function).evaluate(environment);
-            return;
+        LispMiniBuffer miniBuffer = null;
+        try {
+            if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
+                LispList.list(function).evaluate(environment);
+                return;
+            }
+            miniBuffer = environment.getMiniBuffer();
+            miniBuffer.onInteractiveCall(environment, function);
+        } catch (LispThrow e) {
+            //todo: check exit values. <RET> was typed
+            try {
+                if (miniBuffer == null)
+                    return;
+                LispObject result = miniBuffer.onReadInput();
+                if (result != null && miniBuffer.wasInteractiveFormResult())
+                    Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+            } catch (LispException exc) {
+                Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+            }
         }
-        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-        miniBuffer.onInteractiveCall(environment, function);
     }
 
     @Subroutine("funcall")
@@ -345,12 +361,51 @@ public abstract class BuiltinsCore {
 
     @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "P", key = "\\M-x")
     public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
-        environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
-        LispBuffer buffer = environment.getBufferCurrentForEditing();
-        buffer.setActive();
-        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-        miniBuffer.setReadCommandStatus();
-        miniBuffer.open(buffer);
+        LispMiniBuffer miniBuffer = null;
+        try {
+            environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
+            LispBuffer buffer = environment.getBufferCurrentForEditing();
+            buffer.setActive();
+            miniBuffer = environment.getMiniBuffer();
+            miniBuffer.setReadCommandStatus();
+            miniBuffer.open(buffer);
+        } catch (LispThrow e) {
+            //todo: check exit values. <RET> was typed
+            try {
+                if (miniBuffer == null)
+                    return;
+                LispObject result = miniBuffer.onReadInput();
+                if (result != null && miniBuffer.wasInteractiveFormResult())
+                    Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+            } catch (LispException exc) {
+                Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+            }
+        }
+    }
+
+    //todo: compiled lisp f
+    @Subroutine(value = "eval-last-sexp", isCmd = true, key = "\\C-x\\C-e") //todo interactive = "P"
+    public static void evalLastSexp (Environment environment) {//, LispObject evalLastSexpArgInternal) {
+        try {
+            LispBuffer buffer = environment.getBufferCurrentForEditing();
+            LispObject result = buffer.evaluateLastForm();
+            if (result != null)
+                Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+        } catch (LispException exc) {
+            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+        }
+    }
+
+    //todo: compiled lisp f
+    @Subroutine(value = "exit-minibuffer", isCmd = true)
+    public static void exitMinibuffer (Environment environment) {
+        try {
+            LispObject result = environment.getMiniBuffer().onReadInput();
+            if (result != null && environment.getMiniBuffer().wasInteractiveFormResult())
+                Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+        } catch (LispException exc) {
+            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+        }
     }
 
     public static boolean isSyntaxTable (LispObject object) {

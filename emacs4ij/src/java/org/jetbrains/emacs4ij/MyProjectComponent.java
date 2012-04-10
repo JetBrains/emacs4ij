@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.components.ProjectComponent;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -53,12 +54,13 @@ public class MyProjectComponent implements ProjectComponent {
                 if (myEnvironment == null)
                     return;
                 try {
-                new IdeaBuffer(myEnvironment, virtualFile.getName(),
+                    Editor editor = ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor();
+                    new IdeaBuffer(myEnvironment, virtualFile.getName(),
                         virtualFile.getParent().getPath() + '/',
-                        ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor());
+                            editor);
+                    myEnvironment.switchToWindow(editor);
                 } catch (DoubleBufferException e) {
                     //opened 1 file in 2 or more editors.
-                    //todo: change active editor in my environment
                 }
             }
 
