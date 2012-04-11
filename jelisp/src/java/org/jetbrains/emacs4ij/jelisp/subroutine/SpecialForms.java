@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -343,7 +343,7 @@ public abstract class SpecialForms {
                         throw new ClassCastException();
                     h.add(handler);
                 } catch (ClassCastException e) {
-                    BuiltinsCore.error(JelispBundle.message("invalid.condition.handler"));
+                    Core.error(JelispBundle.message("invalid.condition.handler"));
                 }
             }
         }
@@ -403,7 +403,7 @@ public abstract class SpecialForms {
             }
             return result;
         } catch (LispThrow e) {
-            if (BuiltinsCore.eqs(tag, e.getTag())) {
+            if (Core.eqs(tag, e.getTag())) {
                 return e.getValue();
             }
             throw e;

@@ -13,8 +13,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 5:02 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinPredicates {
-    private BuiltinPredicates() {}
+public abstract class Predicate {
+    private Predicate() {}
 
     public static boolean isCharacter(LispObject object) {
         return object instanceof LispInteger && ((LispInteger) object).isCharacter();
@@ -183,7 +183,7 @@ public abstract class BuiltinPredicates {
     @Subroutine("default-boundp")
     public static LispSymbol defaultBoundP (Environment environment, LispSymbol symbol) {
         try {
-            BuiltinsSymbol.defaultValue(environment, symbol);
+            Symbol.defaultValue(environment, symbol);
         } catch (VoidVariableException e) {
             return LispSymbol.ourNil;
         }
@@ -226,5 +226,17 @@ public abstract class BuiltinPredicates {
     @Subroutine("window-live-p")
     public static LispSymbol windowLiveP (Environment environment, LispWindow window) {
         return LispSymbol.bool(environment.isWindowAlive(window));
+    }
+
+    @Subroutine("minibufferp")
+    public static LispSymbol minibufferP (Environment environment, @Optional LispObject bufferOrName) {
+        LispBuffer buffer = Buffer.getBufferByBufferNameOrNil(environment, bufferOrName);
+        return LispSymbol.bool(buffer instanceof LispMiniBuffer);
+    }
+
+    @Subroutine("input-pending-p")
+    public static LispSymbol inputPendingP (Environment environment) {
+        return LispSymbol.bool(environment.getMinibufferWindow() != null
+                && environment.getSelectedWindow() == environment.getMinibufferWindow());
     }
 }

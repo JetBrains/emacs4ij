@@ -7,7 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleKeymapNameException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ public class EmacsKeymapManager {
     private LispKeymap createKeymap (@Nullable LispObject name, @Nullable LispKeymap parent) {
         if (myKeymapFactory == null) //todo: this is only for test!
             return null;
-        else if (!BuiltinPredicates.isNil(name) && !isUniqueKeymapName(name.toString()))
+        else if (!Predicate.isNil(name) && !isUniqueKeymapName(name.toString()))
             throw new DoubleKeymapNameException(name);
         LispKeymap keymap = myKeymapFactory.createKeymap(name, parent);
         myKeymaps.add(keymap);

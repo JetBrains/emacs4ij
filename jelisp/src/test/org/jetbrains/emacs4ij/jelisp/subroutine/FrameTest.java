@@ -9,7 +9,7 @@ import org.junit.Test;
  * Time: 9:01 AM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsFrameTest {
+public class FrameTest {
     @Test
     public void testSelectedFrame() throws Exception {
 

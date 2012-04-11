@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,12 +21,12 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
  * Time: 7:14 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsFrame {
-    private BuiltinsFrame() {}
+public abstract class Frame {
+    private Frame() {}
 
     @Subroutine("selected-frame")
     public static LispObject selectedFrame () {
-        return BuiltinsCore.thisOrNil(GlobalEnvironment.INSTANCE.getSelectedFrame());
+        return Core.thisOrNil(GlobalEnvironment.INSTANCE.getSelectedFrame());
     }
 
     @Subroutine("frame-parameter")
@@ -45,7 +45,7 @@ public abstract class BuiltinsFrame {
     @Subroutine("get-buffer-window")
     public static LispObject getBufferWindow(Environment environment,
                                              @Optional LispObject bufferOrName, @Optional LispObject frame) {
-        LispBuffer buffer = BuiltinsBuffer.getBufferByBufferNameOrNil(environment, bufferOrName);
+        LispBuffer buffer = Buffer.getBufferByBufferNameOrNil(environment, bufferOrName);
         List<LispFrame> frames = new ArrayList<>();
         if (isNil(frame)) {
             frame = LispSymbol.ourNil;
@@ -78,7 +78,7 @@ public abstract class BuiltinsFrame {
         if (isNil(frame)) {
             frame = selectedFrame();
         }
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
+        LispSymbol frameLiveP = Predicate.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         ((LispFrame)frame).setVisible(true);
@@ -90,14 +90,14 @@ public abstract class BuiltinsFrame {
                                                 @Optional LispObject frame, @Optional LispObject force) {
         if (isNil(frame))
             frame = selectedFrame();
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
+        LispSymbol frameLiveP = Predicate.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         if (isNil(force)) {
             //check that exists one more visible frame than that we want to hide
             int k = ((LispFrame)frame).isVisible() ? 1 : 0;
             if (environment.getVisibleAndIconifiedFrames().size() - k <= 0) {
-                BuiltinsCore.error(JelispBundle.message("make.invisible.error"));
+                Core.error(JelispBundle.message("make.invisible.error"));
                 return LispSymbol.ourNil;
             }
         }
@@ -109,7 +109,7 @@ public abstract class BuiltinsFrame {
     public static LispObject iconifyFrame(Environment environment, @Optional LispObject frame) {
         if (isNil(frame))
             frame = selectedFrame();
-        LispSymbol frameLiveP = BuiltinPredicates.frameLiveP(environment, frame);
+        LispSymbol frameLiveP = Predicate.frameLiveP(environment, frame);
         if (frameLiveP.equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("frame-live-p", frame);
         ((LispFrame)frame).setIconified(true);
@@ -124,14 +124,14 @@ public abstract class BuiltinsFrame {
     
     @Subroutine("selected-window")
     public static LispObject selectedWindow (Environment environment) {
-        return BuiltinsCore.thisOrNil(environment.getSelectedWindow());
+        return Core.thisOrNil(environment.getSelectedWindow());
     }
 
     @Subroutine("frame-selected-window")
     public static LispObject frameSelectedWindow (Environment environment, @Optional LispObject frame) {
-        if (!BuiltinPredicates.isNil(frame) && !(frame instanceof LispFrame))
+        if (!Predicate.isNil(frame) && !(frame instanceof LispFrame))
             throw new WrongTypeArgumentException("frame-live-p", frame);
-        if (BuiltinPredicates.isNil(frame))
+        if (Predicate.isNil(frame))
             frame = environment.getSelectedFrame();
         if (frame == null)
             return LispSymbol.ourNil;
@@ -141,7 +141,7 @@ public abstract class BuiltinsFrame {
     @Subroutine("next-window")
     public static LispObject nextWindow(Environment environment, 
                                         @Optional LispObject window, LispObject considerMinibuffer, LispObject allFrames) {
-        if (BuiltinPredicates.isNil(window))
+        if (Predicate.isNil(window))
             window = environment.getSelectedWindow();
         if (!(window instanceof LispWindow))
             throw new WrongTypeArgumentException("window-live-p", window);

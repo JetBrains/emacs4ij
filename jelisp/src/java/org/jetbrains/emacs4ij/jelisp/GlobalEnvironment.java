@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 
 import java.io.File;
@@ -131,7 +131,7 @@ public class GlobalEnvironment extends Environment {
                                    @Nullable Ide ide, @Nullable FrameManager frameManager) {
         ourKeymapManager = new EmacsKeymapManager(keymapFactory);
         INSTANCE = new GlobalEnvironment(frameManager, ide);
-        BuiltinsKey.init();
+        Key.init();
         INSTANCE.init();
     }
 
@@ -237,6 +237,8 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("prefix-arg");
         defineSymbol("last-prefix-arg");
         defineSymbol("minibuffer-completing-file-name");
+        defineSymbol("minibuffer-message-timeout", new LispInteger(2));
+        defineSymbol("noninteractive");
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {
@@ -341,7 +343,7 @@ public class GlobalEnvironment extends Environment {
         List<String> commandList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
-            if (BuiltinPredicates.commandp(symbol, null).equals(LispSymbol.ourT)) {
+            if (Predicate.commandp(symbol, null).equals(LispSymbol.ourT)) {
                 if (symbol.getName().length() < begin.length())
                     continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))
@@ -356,7 +358,7 @@ public class GlobalEnvironment extends Environment {
         List<String> functionList = new ArrayList<>();
         while (iterator.hasNext()) {
             LispSymbol symbol = iterator.next().getValue();
-            if (BuiltinPredicates.fboundp(this, symbol).equals(LispSymbol.ourT)) {
+            if (Predicate.fboundp(this, symbol).equals(LispSymbol.ourT)) {
                 if (symbol.getName().length() < begin.length())
                     continue;
                 if (begin.equals(symbol.getName().substring(0, begin.length())))

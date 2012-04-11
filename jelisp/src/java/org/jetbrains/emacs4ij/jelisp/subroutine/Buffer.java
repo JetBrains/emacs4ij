@@ -9,8 +9,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isCharOrString;
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isCharOrString;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,8 +19,8 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
  * Time: 5:30 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsBuffer {
-    private BuiltinsBuffer() {}
+public abstract class Buffer {
+    private Buffer() {}
 
     public static LispBuffer getBufferByBufferNameOrNil (Environment environment, @Optional LispObject bufferOrName) {
         if (isNil(bufferOrName))
@@ -30,7 +30,7 @@ public abstract class BuiltinsBuffer {
         }
         if (bufferOrName instanceof LispBuffer)
             return (LispBuffer) bufferOrName;
-        throw new WrongTypeArgumentException("stringp", bufferOrName);
+        throw new WrongTypeArgumentException("buffer-or-name", bufferOrName);
     }
 
     @Subroutine(value = "current-buffer")
@@ -192,7 +192,7 @@ public abstract class BuiltinsBuffer {
 
     @Subroutine("buffer-list")
     public static LispObject bufferList (Environment environment, @Optional LispObject frame) {
-        return (BuiltinPredicates.isNil(frame) || !(frame instanceof LispFrame))
+        return (Predicate.isNil(frame) || !(frame instanceof LispFrame))
                 ? environment.getBufferList()
                 : environment.getBufferList((LispFrame)frame);
     }
@@ -297,6 +297,6 @@ public abstract class BuiltinsBuffer {
     public static LispObject setBufferMajorMode (Environment environment, LispBuffer buffer) {
         //if buffer == scratch => set value from "initial-major-mode". But I have no scratch :)
         LispSymbol mode = environment.find("major-mode");
-        return BuiltinsCore.functionCall(environment, mode.getValue());
+        return Core.functionCall(environment, mode.getValue());
     }
 }

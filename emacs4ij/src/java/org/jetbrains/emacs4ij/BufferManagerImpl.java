@@ -25,7 +25,8 @@ public class BufferManagerImpl implements BufferManager {
     public BufferManagerImpl() {}
 
     public LispBuffer createBuffer (String bufferName) {
-        String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().getLocalVariableValue("default-directory")).getData();
+        String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing()
+                .getLocalVariableValue("default-directory")).getData();
         return new IdeaBuffer(GlobalEnvironment.INSTANCE, bufferName, baseDir, null);
     }
 
@@ -129,15 +130,8 @@ public class BufferManagerImpl implements BufferManager {
             existing.mergeEditors(buffer);
             return true;
         }
-//        if (!isDead(buffer.getName())) {
-            myBuffers.add(buffer);
-            return true;
-//        }
-//        LispBuffer buried = myDeadBuffers.get(getIndexByName(myDeadBuffers, buffer.getName()));
-//        buried.setEditor(buffer.getEditor());
-//        myBuffers.add(buried);
-//        myDeadBuffers.remove(buried);
-//        return false;
+        myBuffers.add(buffer);
+        return true;
     }
 
     public void defineServiceBuffer (LispBuffer buffer) {
@@ -171,7 +165,6 @@ public class BufferManagerImpl implements BufferManager {
 
     public void killBuffer (LispBuffer buffer) {
         buffer.kill();
-//        myDeadBuffers.add(buffer);
         myBuffers.remove(buffer);
     }
 
@@ -259,7 +252,7 @@ public class BufferManagerImpl implements BufferManager {
             if (buffer instanceof LispMiniBuffer)
                 return (LispMiniBuffer) buffer;
         }
-        return null;        
+        return null;
     }
 
     @Override

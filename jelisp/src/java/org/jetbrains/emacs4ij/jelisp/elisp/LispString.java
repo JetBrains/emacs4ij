@@ -6,8 +6,8 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +90,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
     public List<LispObject> mapCar(Environment environment, LispObject method) {
         ArrayList<LispObject> data = new ArrayList<>();
         for (LispObject item: toLispObjectList()) {
-            data.add(BuiltinsCore.functionCall(environment, method, item));
+            data.add(Core.functionCall(environment, method, item));
         }
         return data;
     }
@@ -130,7 +130,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
 
     @Override
     public void setItem(int position, LispObject value) {
-        if (!BuiltinPredicates.isCharacter(value))
+        if (!Predicate.isCharacter(value))
             throw new WrongTypeArgumentException("characterp", value);
         myData = myData.substring(0, position) + ((LispInteger)value).toCharacterString() + myData.substring(position + 1);
     }

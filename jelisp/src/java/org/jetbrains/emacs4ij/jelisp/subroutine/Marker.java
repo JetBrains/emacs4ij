@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 4:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsMarker {
+public abstract class Marker {
     @Subroutine("make-marker")
     public static LispMarker makeMarker () {
         return new LispMarker();
@@ -57,7 +57,7 @@ public abstract class BuiltinsMarker {
 
     @Subroutine("set-marker")
     public static LispMarker setMarker (LispMarker marker, LispObject markerOrInteger, @Optional LispBuffer buffer) {
-        if (BuiltinPredicates.isNil(buffer))
+        if (Predicate.isNil(buffer))
             buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
         if (!markerOrInteger.equals(LispSymbol.ourNil) && !(markerOrInteger instanceof MarkerOrInteger))
             throw new WrongTypeArgumentException("integer-or-marker-p", markerOrInteger);
@@ -80,7 +80,7 @@ public abstract class BuiltinsMarker {
 
     @Subroutine("marker-buffer")
     public static LispObject markerBuffer (LispMarker marker) {
-        return BuiltinsCore.thisOrNil(marker.getBuffer());
+        return Core.thisOrNil(marker.getBuffer());
     }
     
     @Subroutine("buffer-has-markers-at")
@@ -100,7 +100,7 @@ public abstract class BuiltinsMarker {
         LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
         LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
         if (!mark.equals(LispSymbol.ourNil)) {
-            if (BuiltinArithmetic.less(mark, point).toBoolean())
+            if (Arithmetic.less(mark, point).toBoolean())
                 return (LispInteger)mark;
         }
         return point;
@@ -111,7 +111,7 @@ public abstract class BuiltinsMarker {
         LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
         LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
         if (!mark.equals(LispSymbol.ourNil)) {
-            if (BuiltinArithmetic.more(mark, point).toBoolean())
+            if (Arithmetic.more(mark, point).toBoolean())
                 return (LispInteger)mark;
         }
         return point;

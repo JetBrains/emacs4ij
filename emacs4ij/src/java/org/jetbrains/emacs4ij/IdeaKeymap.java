@@ -21,7 +21,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import javax.swing.*;
 import java.util.*;
@@ -110,7 +110,7 @@ public class IdeaKeymap implements LispKeymap {
         if (prefix != null) {
             return ((IdeaKeymap) prefix).defineKey(action, shortcuts, index + 1);
         }
-        BuiltinsCore.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
+        Core.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
         return null;
     }
 
@@ -213,7 +213,7 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public void setParent(@Nullable LispKeymap parent) {
         if (equalsOrIsParentFor(parent))
-            BuiltinsCore.error("Cyclic keymap inheritance");
+            Core.error("Cyclic keymap inheritance");
         myParent = parent;
         for (KeymapCell cell: myKeyBindings.values()) {
             if (cell instanceof LispKeymap)
@@ -239,7 +239,7 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public KeymapCell getKeyBinding(StringOrVector key) {
         KeymapCell function = getKeyBinding(key.toKeyboardShortcutList());
-        return (KeymapCell) BuiltinsCore.thisOrNil(function);
+        return (KeymapCell) Core.thisOrNil(function);
     }
 
     private KeymapCell getKeyBinding(List<Shortcut> shortcuts) {

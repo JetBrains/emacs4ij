@@ -12,7 +12,7 @@ import org.junit.Test;
  * Time: 3:55 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinPredicatesTest extends BaseSubroutineTest {
+public class PredicateTest extends BaseSubroutineTest {
     @Test
     public void testStringp() throws Exception {
         LispObject lispObject = evaluateString("(stringp \"hello\")");

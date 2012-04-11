@@ -4,7 +4,7 @@ import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -48,10 +48,12 @@ public class Lambda implements FunctionCell, LispCommand {
                 myDocumentation = null;
             }
             myBody = data.subList(2, data.size());
-            for (LispObject bodyForm: myBody) {
-                if (bodyForm instanceof LispList && !((LispList)bodyForm).isEmpty()) {
-                    if (((LispList)bodyForm).car().equals(new LispSymbol("interactive")) && myInteractive == null) {
+            for (LispObject bodyForm : myBody) {
+                if (bodyForm instanceof LispList && !((LispList) bodyForm).isEmpty()) {
+                    if (((LispList) bodyForm).car().equals(new LispSymbol("interactive")) && myInteractive == null) {
                         myInteractive = (LispList) bodyForm;
+                        myBody.remove(bodyForm);
+                        break;
                     }
                 }
             }
@@ -61,6 +63,11 @@ public class Lambda implements FunctionCell, LispCommand {
     //todo: for test only
     public List<LambdaArgument> getArguments () {
         return myArgumentList;
+    }
+
+    //todo: for test only
+    public int getBodyLength() {
+        return myBody.size();
     }
     
     public void parseArgumentsList (LispList args) {
@@ -176,7 +183,7 @@ public class Lambda implements FunctionCell, LispCommand {
 
     @Override
     public LispObject getDocumentation() {
-        return BuiltinsCore.thisOrNil(myDocumentation);
+        return Core.thisOrNil(myDocumentation);
     }
 
     @Override

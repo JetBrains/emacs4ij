@@ -13,12 +13,12 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 5:16 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsVector {
-    private BuiltinsVector() {}
+public abstract class BVector {
+    private BVector() {}
 
     @Subroutine("make-vector")
     public static LispVector makeVector(LispObject length, LispObject value) {
-        if (!BuiltinPredicates.isWholeNumber(length))
+        if (!Predicate.isWholeNumber(length))
             throw new WrongTypeArgumentException("wholenump", length);
         return LispVector.make(((LispInteger)length).getData(), value);
     }

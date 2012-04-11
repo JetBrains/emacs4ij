@@ -9,8 +9,8 @@ import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 /**
  * Created by IntelliJ IDEA.
@@ -34,7 +34,7 @@ public class EmacsAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        if (BuiltinPredicates.isNil(myCommand))
+        if (Predicate.isNil(myCommand))
             throw new LispException(Emacs4ijBundle.message("emacs.action.nocommand.error", e.toString()));
         Environment environment;
         try {
@@ -57,7 +57,7 @@ public class EmacsAction extends AnAction {
                 } else
                     myCommand = cmd;
             }
-            BuiltinsCore.callInteractively(environment, (LispSymbol)myCommand, null, null);
+            Core.callInteractively(environment, (LispSymbol) myCommand, null, null);
         } catch (Exception exc2) {
             exc2.printStackTrace();
             Messages.showErrorDialog("Emacs4ij action:\n" + exc2.getMessage(), Emacs4ijBundle.message("evaluation.error.title"));

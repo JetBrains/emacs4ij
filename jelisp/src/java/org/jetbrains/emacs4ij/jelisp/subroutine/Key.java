@@ -17,10 +17,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 3:31 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsKey {
+public abstract class Key {
     private static LispSymbol ourKeyMapSymbol = new LispSymbol("keymap");
 
-    private BuiltinsKey() {}
+    private Key() {}
 
     private static boolean isKeymapItself(LispObject object) {
         return object instanceof LispKeymap;
@@ -128,10 +128,10 @@ public abstract class BuiltinsKey {
 
     @Subroutine("key-description")
     public static LispString keyDescription (Environment environment, LispObject keys, @Optional LispObject prefix) {
-        String first = BuiltinPredicates.isNil(prefix)
+        String first = Predicate.isNil(prefix)
                 ? ""
-                : BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), prefix, new LispString(" ")).getData();
-        String second = BuiltinsSequence.mapConcat(environment, new LispSymbol("single-key-description"), keys, new LispString(" ")).getData();
+                : Sequence.mapConcat(environment, new LispSymbol("single-key-description"), prefix, new LispString(" ")).getData();
+        String second = Sequence.mapConcat(environment, new LispSymbol("single-key-description"), keys, new LispString(" ")).getData();
         return new LispString(first + " " + second);
     }
 

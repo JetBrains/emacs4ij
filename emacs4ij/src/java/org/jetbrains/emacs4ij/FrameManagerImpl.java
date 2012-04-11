@@ -11,7 +11,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredFrameException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,7 +100,7 @@ public class FrameManagerImpl implements FrameManager {
     public List<LispFrame> getVisibleFrames () {
         List<LispFrame> visibleFrames = new ArrayList<>();
         for (LispFrame frame: myFrames) {
-            if (BuiltinPredicates.frameVisibleP(GlobalEnvironment.INSTANCE, frame).equals(LispSymbol.ourT))
+            if (Predicate.frameVisibleP(GlobalEnvironment.INSTANCE, frame).equals(LispSymbol.ourT))
                 visibleFrames.add(frame);
         }
         return visibleFrames;
@@ -110,7 +110,7 @@ public class FrameManagerImpl implements FrameManager {
     public List<LispFrame> getVisibleAndIconifiedFrames () {
         List<LispFrame> frames = new ArrayList<>();
         for (LispFrame frame: myFrames) {
-            LispSymbol predicate = BuiltinPredicates.frameVisibleP(GlobalEnvironment.INSTANCE, frame);
+            LispSymbol predicate = Predicate.frameVisibleP(GlobalEnvironment.INSTANCE, frame);
             if (predicate.equals(LispSymbol.ourT) || predicate.equals(new LispSymbol("icon")))
                 frames.add(frame);
         }

@@ -4,8 +4,8 @@ import com.intellij.openapi.actionSystem.Shortcut;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,7 +106,7 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     public List<LispObject> mapCar(Environment environment, LispObject method) {
         ArrayList<LispObject> data = new ArrayList<>();
         for (LispObject item: toLispObjectList()) {
-            data.add(BuiltinsCore.functionCall(environment, method, item));
+            data.add(Core.functionCall(environment, method, item));
         }
         return data;
     }
@@ -120,7 +120,7 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     public String toCharString() {
         String s = "";
         for (LispObject element: myData) {
-            if (!BuiltinPredicates.isCharacter(element))
+            if (!Predicate.isCharacter(element))
                 throw new WrongTypeArgumentException("characterp", element);
             s += ((LispInteger)element).toCharacterString();
         }

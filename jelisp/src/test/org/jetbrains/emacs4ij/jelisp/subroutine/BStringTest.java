@@ -12,7 +12,7 @@ import org.junit.Test;
  * Time: 18:19
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsStringTest extends BaseSubroutineTest {
+public class BStringTest extends BaseSubroutineTest {
     @Test
     public void testFormatEmpty() {
         LispObject s = evaluateString("(format \"\")");

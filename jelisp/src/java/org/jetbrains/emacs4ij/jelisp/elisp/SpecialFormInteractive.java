@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -162,7 +162,7 @@ public class SpecialFormInteractive {
             case 'C': //command
                 LispSymbol cmd = myEnvironment.find(parameter);
                 if (cmd != null)
-                    if (BuiltinPredicates.commandp(cmd, null).equals(LispSymbol.ourT)) {
+                    if (Predicate.commandp(cmd, null).equals(LispSymbol.ourT)) {
                         addArg(cmd);
                         return;
                     }

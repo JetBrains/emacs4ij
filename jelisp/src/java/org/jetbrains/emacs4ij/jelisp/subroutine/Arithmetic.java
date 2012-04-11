@@ -11,14 +11,14 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * Time: 18:16
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinArithmetic {
-    private BuiltinArithmetic() {}
+public abstract class Arithmetic {
+    private Arithmetic() {}
 
     public static LispNumber numberOrMarkerToNumber (LispObject lispObject) {
-        if (BuiltinPredicates.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
+        if (Predicate.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
         LispNumber n;
-        if (BuiltinPredicates.markerP(lispObject).equals(LispSymbol.ourT)) {
+        if (Predicate.markerP(lispObject).equals(LispSymbol.ourT)) {
             if (((LispMarker)lispObject).isSet())
                 n = new LispInteger(((LispMarker)lispObject).getPosition());
             else 

@@ -14,7 +14,7 @@ import org.junit.Test;
  * Time: 4:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsSymbolTest extends BaseSubroutineTest {
+public class SymbolTest extends BaseSubroutineTest {
     @Test
     public void testSymbolFunction () {
         LispObject lispObject = evaluateString("(symbol-function '+)");

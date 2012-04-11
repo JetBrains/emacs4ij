@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.ui.EditorTextField;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -12,6 +13,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -19,18 +24,31 @@ import org.junit.Test;
  * Time: 4:50 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
+public class MinibufferTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
-    private CustomEnvironment myEnvironment;
+    private Environment myEnvironment;
+    String myTestsPath;
+    String[] myTestFiles;
+    Map<String, IdeaBuffer> myTests = new HashMap<>();
 
     @Before
     public void setUp() throws Exception {
-        TestSetup.setGlobalEnv();
+        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment, null);
+
+        myTestFiles = (new File(myTestsPath)).list();
+        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
+        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
+        for (String fileName: myTestFiles) {
+            myFixture.configureByFile(myTestsPath + fileName);
+            IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
+            myTests.put(fileName, buffer);
+        }
+//        myFileEditorManager = FileEditorManager.getInstance(getProject());
     }
 
     private LispObject evaluateString (String lispCode) throws LispException {
@@ -106,5 +124,10 @@ public class IdeaMiniBufferTest extends CodeInsightFixtureTestCase {
     public void testReturnDefault_EmptyList () {
         LispObject ret = myMiniBuffer.returnDefault (LispList.list());
         Assert.assertEquals(new LispSymbol(""), ret);
+    }
+
+    @Test
+    public void testMessage() {
+        evaluateString("(minibuffer-message \"test\")");
     }
 }

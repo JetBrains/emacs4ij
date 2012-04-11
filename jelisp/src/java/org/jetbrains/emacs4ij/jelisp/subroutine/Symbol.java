@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -22,8 +21,8 @@ import java.io.RandomAccessFile;
  * Time: 5:05 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsSymbol {
-    private BuiltinsSymbol() {}
+public abstract class Symbol {
+    private Symbol() {}
 
     @Subroutine("symbol-function")
     public static LispObject symbolFunction(Environment environment, LispSymbol arg) {
@@ -169,11 +168,11 @@ public abstract class BuiltinsSymbol {
     }
 
     private static LispSymbol getSymbol (final String name, LispVector objectArray) {
-        return (LispSymbol) CollectionUtils.find(objectArray.toLispObjectList(), new Predicate() {
+        return (LispSymbol) CollectionUtils.find(objectArray.toLispObjectList(), new org.apache.commons.collections.Predicate() {
             @Override
             public boolean evaluate(Object o) {
                 if (!(o instanceof LispSymbol)) {
-                    BuiltinsCore.error(JelispBundle.message("wrong.obarray"));
+                    Core.error(JelispBundle.message("wrong.obarray"));
                 }
                 return ((LispSymbol) o).getName().equals(name);
             }
@@ -205,7 +204,7 @@ public abstract class BuiltinsSymbol {
     public static LispObject interactiveForm (LispObject command) {
         if (command instanceof LispList)
             command = new Lambda((LispList) command);
-        if (!BuiltinPredicates.commandp(command, null).toBoolean())
+        if (!Predicate.commandp(command, null).toBoolean())
             return LispSymbol.ourNil;
         return ((LispCommand)command).getInteractiveForm();
     }

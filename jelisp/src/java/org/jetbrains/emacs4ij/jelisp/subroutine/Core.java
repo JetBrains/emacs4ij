@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.isNil;
-import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
+import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.subrp;
 
 /**
  * Created by IntelliJ IDEA.
@@ -24,8 +24,8 @@ import static org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates.subrp;
  * Time: 3:49 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsCore {
-    private BuiltinsCore() {}
+public abstract class Core {
+    private Core() {}
 
     public static LispObject thisOrNil (@Nullable LispObject object) {
         return object == null ? LispSymbol.ourNil : object;
@@ -92,16 +92,24 @@ public abstract class BuiltinsCore {
         return lispNull(lObject);
     }
 
+    public static void shiftCommandVars(LispSymbol command) {
+        LispSymbol thisCommand = GlobalEnvironment.INSTANCE.find("this-command");
+        LispSymbol lastCommand = GlobalEnvironment.INSTANCE.find("last-command");
+        lastCommand.setValue(thisCommand.getValue());
+        thisCommand.setValue(command);
+    }
+
     @Subroutine("call-interactively")
     public static void callInteractively (Environment environment, LispSymbol symbol, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
         LispSymbol function = environment.find(symbol.getName());
         if (function == null)
             function = symbol;
-        if (!BuiltinPredicates.commandp(function, null).equals(LispSymbol.ourT))
+        if (!Predicate.commandp(function, null).equals(LispSymbol.ourT))
             throw new WrongTypeArgumentException("commandp", function.getName());
         LispMiniBuffer miniBuffer = null;
         try {
             if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
+                shiftCommandVars(function);
                 LispList.list(function).evaluate(environment);
                 return;
             }
@@ -349,7 +357,7 @@ public abstract class BuiltinsCore {
     public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
         int length = stringOrVector.length();
         int start = processBound(from, length);        
-        int end = BuiltinPredicates.isNil(to)
+        int end = Predicate.isNil(to)
                 ? length
                 : processBound(getInt(to), length);
         try {

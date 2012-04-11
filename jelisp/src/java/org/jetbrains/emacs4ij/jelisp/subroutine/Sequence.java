@@ -16,8 +16,8 @@ import java.util.List;
  * Time: 5:38 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsSequence {
-    private BuiltinsSequence() {}
+public abstract class Sequence {
+    private Sequence() {}
 
     private static boolean isSequence (LispObject object) {
         //Returns t if object is a list, vector, string, char-table, todo: bool-vector, nil otherwise.

@@ -13,7 +13,7 @@ import org.junit.Test;
  * Time: 18:22
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinArithmeticTest extends BaseSubroutineTest {
+public class ArithmeticTest extends BaseSubroutineTest {
     @Test
     public void testPlusInteger() throws LispException {
         LispObject lispObject = evaluateString("(+ 2 2)");
@@ -28,14 +28,14 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testPlusSimple () {
-        LispNumber n = BuiltinArithmetic.plus(new LispInteger(5), new LispFloat(6.6));
+        LispNumber n = Arithmetic.plus(new LispInteger(5), new LispFloat(6.6));
         Assert.assertEquals(new LispFloat(11.6), n);
     }
 
     @Test
     public void testPlusMarker () {
         try {
-            BuiltinArithmetic.plus(new LispMarker(), new LispMarker());
+            Arithmetic.plus(new LispMarker(), new LispMarker());
         } catch (Exception e) {
             Assert.assertEquals("Marker does not point anywhere", TestSetup.getCause(e));
             return;
@@ -45,13 +45,13 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testMore() {
-        LispSymbol more = BuiltinArithmetic.more(new LispInteger(5), new LispFloat(1.3));
+        LispSymbol more = Arithmetic.more(new LispInteger(5), new LispFloat(1.3));
         Assert.assertEquals(LispSymbol.ourT, more);
     }
 
     @Test
     public void testMultiplySimple () {
-        LispNumber n = BuiltinArithmetic.multiply(new LispInteger(5), new LispFloat(2.0));
+        LispNumber n = Arithmetic.multiply(new LispInteger(5), new LispFloat(2.0));
         Assert.assertEquals(new LispFloat(10), n);
     }
 
@@ -117,11 +117,11 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testMoreOrEqual() {
-        LispSymbol more = BuiltinArithmetic.moreOrEqual(new LispInteger(5), new LispFloat(1.3));
+        LispSymbol more = Arithmetic.moreOrEqual(new LispInteger(5), new LispFloat(1.3));
         Assert.assertEquals(LispSymbol.ourT, more);
-        more = BuiltinArithmetic.moreOrEqual(new LispInteger(5), new LispFloat(5));
+        more = Arithmetic.moreOrEqual(new LispInteger(5), new LispFloat(5));
         Assert.assertEquals(LispSymbol.ourT, more);
-        more = BuiltinArithmetic.moreOrEqual(new LispInteger(3), new LispFloat(4));
+        more = Arithmetic.moreOrEqual(new LispInteger(3), new LispFloat(4));
         Assert.assertEquals(LispSymbol.ourNil, more);
     }
 
@@ -151,14 +151,14 @@ public class BuiltinArithmeticTest extends BaseSubroutineTest {
 
     @Test
     public void testMinusSimple () {
-        LispNumber n = BuiltinArithmetic.minus(new LispInteger(5), new LispFloat(6.8), new LispInteger(1));
+        LispNumber n = Arithmetic.minus(new LispInteger(5), new LispFloat(6.8), new LispInteger(1));
         Assert.assertEquals(new LispFloat(-2.8), n);
     }
 
     @Test
     public void testMinusMarker () {
         try {
-            BuiltinArithmetic.minus(new LispMarker(), new LispMarker());
+            Arithmetic.minus(new LispMarker(), new LispMarker());
         } catch (Exception e) {
             Assert.assertEquals("Marker does not point anywhere", TestSetup.getCause(e));
             return;

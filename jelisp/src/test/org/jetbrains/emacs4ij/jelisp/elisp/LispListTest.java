@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsList;
+import org.jetbrains.emacs4ij.jelisp.subroutine.BList;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class LispListTest {
     @Test
     public void testMemq() {
         LispList list = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
-        LispObject m = BuiltinsList.memq(new LispInteger(2), list);
+        LispObject m = BList.memq(new LispInteger(2), list);
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), m);
     }
 

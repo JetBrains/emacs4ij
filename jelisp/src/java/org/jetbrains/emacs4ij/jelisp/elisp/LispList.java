@@ -6,8 +6,8 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsCore;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,7 +85,7 @@ public class LispList implements LispSequence {
     }
 
     private LispList (@NotNull LispObject car, @Nullable LispObject cdr) {
-        if (BuiltinPredicates.isNil(cdr)) {
+        if (Predicate.isNil(cdr)) {
             myCar = car;
             isTrueList = true;
             return;
@@ -181,7 +181,7 @@ public class LispList implements LispSequence {
         LispObject list = this;
         ArrayList<LispObject> data = new ArrayList<>();
         while (list instanceof LispList) {
-            data.add(BuiltinsCore.functionCall(environment, method, ((LispList) list).car()));
+            data.add(Core.functionCall(environment, method, ((LispList) list).car()));
             list = ((LispList) list).realCdr();
         }
         if (list == null) {
@@ -195,7 +195,7 @@ public class LispList implements LispSequence {
         List<LispObject> list = toLispObjectList();
         String s = "";
         for (LispObject element: list) {
-            if (!BuiltinPredicates.isCharacter(element))
+            if (!Predicate.isCharacter(element))
                 throw new WrongTypeArgumentException("characterp", element);
             s += ((LispInteger)element).toCharacterString();
         }
@@ -220,11 +220,11 @@ public class LispList implements LispSequence {
     }
 
     public LispObject car () {
-        return BuiltinsCore.thisOrNil(myCar);
+        return Core.thisOrNil(myCar);
     }
 
     public LispObject cdr () {
-        return BuiltinsCore.thisOrNil(myCdr);
+        return Core.thisOrNil(myCdr);
     }
 
     private LispObject realCdr() {
@@ -260,7 +260,7 @@ public class LispList implements LispSequence {
         try {
             if (equalityFunctionName.equals("eq")) {
                 for (; cdr != null; cdr = ((LispList)cdr).realCdr()) {
-                    if (((LispList) cdr).realCar() != null && BuiltinsCore.eqs(element, ((LispList) cdr).realCar())) {
+                    if (((LispList) cdr).realCar() != null && Core.eqs(element, ((LispList) cdr).realCar())) {
                         return (LispList)cdr;
                     }
                 }
@@ -269,7 +269,7 @@ public class LispList implements LispSequence {
 
             if (equalityFunctionName.equals("equal")) {
                 for (; cdr != null; cdr = ((LispList)cdr).realCdr()) {
-                    if (((LispList) cdr).realCar() != null && BuiltinsCore.equals(element, ((LispList) cdr).realCar())) {
+                    if (((LispList) cdr).realCar() != null && Core.equals(element, ((LispList) cdr).realCar())) {
                         return (LispList)cdr;
                     }
                 }
@@ -325,7 +325,7 @@ public class LispList implements LispSequence {
     }
 
     public void setCdr (@Nullable LispObject cdr) {
-        if (BuiltinPredicates.isNil(cdr)) {
+        if (Predicate.isNil(cdr)) {
             myCdr = null;
             isTrueList = true;
             return;
@@ -342,7 +342,7 @@ public class LispList implements LispSequence {
         LispList prev = LispList.list();
         while (tail instanceof LispList) {
             LispObject cdr = ((LispList) tail).realCdr();
-            if (BuiltinsCore.eqs(element, ((LispList) tail).realCar())) {
+            if (Core.eqs(element, ((LispList) tail).realCar())) {
                 if (prev.isEmpty()) {
                     if (cdr == null)
                         list = LispList.list();
@@ -366,7 +366,7 @@ public class LispList implements LispSequence {
     public LispObject assq (LispObject first) {
         for (LispObject item: toLispObjectList()) {
             if (item instanceof LispList) {
-                if (BuiltinsCore.eqs(first, ((LispList) item).realCar()))
+                if (Core.eqs(first, ((LispList) item).realCar()))
                     return item;
             }
         }

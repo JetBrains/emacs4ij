@@ -12,8 +12,8 @@ import java.util.List;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsList {
-    private BuiltinsList() {}
+public abstract class BList {
+    private BList() {}
 
     private static boolean isCons (LispObject object) {
         return object instanceof LispList;
@@ -157,7 +157,7 @@ public abstract class BuiltinsList {
             return LispSymbol.ourNil;
         if (!(list instanceof LispList))
             throw new WrongTypeArgumentException("listp", list);
-        return BuiltinsCore.thisOrNil(((LispList)list).nthCdr(n.getData()));
+        return Core.thisOrNil(((LispList) list).nthCdr(n.getData()));
     }
 
     @Subroutine("assq")

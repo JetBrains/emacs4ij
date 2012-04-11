@@ -18,8 +18,8 @@ import java.util.List;
  * Time: 3:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsMinibiffer {
-    private BuiltinsMinibiffer() {}
+public abstract class Minibuffer {
+    private Minibuffer() {}
 
     @Subroutine("completing-read")
     public static LispObject completingRead (Environment environment, LispString prompt, LispObject collection,
@@ -29,21 +29,21 @@ public abstract class BuiltinsMinibiffer {
 
         LispObject minibufferCompletionFilenameValue = environment.find("minibuffer-completing-file-name").getValue();
 
-        boolean isMinibufferCompletingFilename = !BuiltinPredicates.isNil(minibufferCompletionFilenameValue)
-                && !BuiltinsCore.eqs(minibufferCompletionFilenameValue, new LispSymbol("tForOneTime"));
-        String keymapName = BuiltinPredicates.isNil(requireMatch)
+        boolean isMinibufferCompletingFilename = !Predicate.isNil(minibufferCompletionFilenameValue)
+                && !Core.eqs(minibufferCompletionFilenameValue, new LispSymbol("tForOneTime"));
+        String keymapName = Predicate.isNil(requireMatch)
                 ? isMinibufferCompletingFilename ? "minibuffer-local-filename-completion-map"
                 : "minibuffer-local-completion-map"
                 : isMinibufferCompletingFilename ? "minibuffer-local-filename-must-match-map"
                 : "minibuffer-local-must-match-map";
 
         environment.setVariable(new LispSymbol("minibuffer-completion-table", collection));
-        environment.setVariable(new LispSymbol("minibuffer-completion-predicate", BuiltinsCore.thisOrNil(predicate)));
+        environment.setVariable(new LispSymbol("minibuffer-completion-predicate", Core.thisOrNil(predicate)));
         environment.setVariable(new LispSymbol("minibuffer-completion-confirm",
                 requireMatch.equals(LispSymbol.ourT) ? LispSymbol.ourNil : requireMatch));
 
         String alreadyTyped = "";
-        if (!BuiltinPredicates.isNil(initialInput)) {
+        if (!Predicate.isNil(initialInput)) {
             LispObject init = initialInput;
             if (initialInput instanceof LispList) {
                 // initialInput may be (string . position) but i ignore the position
@@ -56,7 +56,7 @@ public abstract class BuiltinsMinibiffer {
 
         LispSymbol historySymbol = environment.find("minibuffer-history");
         int historyPosition = 0;
-        if (!BuiltinPredicates.isNil(history)) {
+        if (!Predicate.isNil(history)) {
             if (history instanceof LispSymbol) {
                 historySymbol = (LispSymbol) history;
             } else if (history instanceof LispList) {
@@ -79,8 +79,8 @@ public abstract class BuiltinsMinibiffer {
         LispObject read = readFromMinibuffer(environment, keymapName, alreadyTyped, prompt.getData(),
                 historySymbol, historyPosition, defaultValue);
 
-        if (BuiltinPredicates.isNil(read))
-            return BuiltinPredicates.isNil(defaultValue)
+        if (Predicate.isNil(read))
+            return Predicate.isNil(defaultValue)
                     ? LispSymbol.ourNil
                     : defaultValue instanceof LispList ? ((LispList) defaultValue).car() : defaultValue;
         return read;
@@ -106,9 +106,9 @@ public abstract class BuiltinsMinibiffer {
     
     @Subroutine("window-minibuffer-p")
     public static LispSymbol windowMinibufferP (Environment environment, @Optional LispObject window) {
-        if (!BuiltinPredicates.isNil(window) && !(window instanceof LispWindow))
+        if (!Predicate.isNil(window) && !(window instanceof LispWindow))
             throw new WrongTypeArgumentException("window-live-p", window);
-        if (BuiltinPredicates.isNil(window))
+        if (Predicate.isNil(window))
             window = environment.getSelectedWindow();
         return LispSymbol.bool(isMinibufferWindow(environment, (LispWindow) window));
     }
@@ -154,5 +154,11 @@ public abstract class BuiltinsMinibiffer {
     @Subroutine(value = "minibuffer-completion-help", isCmd = true)
     public static void minibufferCompletionHelp (Environment environment) {
         //todo all possible completions
+    }
+
+    @Subroutine("redisplay")
+    public static LispSymbol redisplay (Environment environment, @Optional LispObject force) {
+        System.err.println("redisplay");
+        return LispSymbol.ourT;
     }
 }

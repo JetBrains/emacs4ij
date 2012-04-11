@@ -13,7 +13,7 @@ import org.junit.Test;
  * Time: 5:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsSequenceTest extends BaseSubroutineTest{
+public class SequenceTest extends BaseSubroutineTest{
     @Test
     public void testLength() throws Exception {
         LispObject r = evaluateString("(length '(1 2 3))");

@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsBuffer;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetBufferNoBuffer() {
         try {
-            BuiltinsBuffer.setBuffer(myEnvironment, new LispString("hello.lisp"));
+            Buffer.setBuffer(myEnvironment, new LispString("hello.lisp"));
         } catch (NoBufferException e) {
             //success
             return;

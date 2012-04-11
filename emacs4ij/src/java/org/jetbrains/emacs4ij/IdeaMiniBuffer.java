@@ -15,6 +15,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -46,7 +47,9 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
         @Override
         public void beforeDocumentChange(DocumentEvent documentEvent) {
+            System.out.println("TEXT = " + documentEvent.getDocument().getText());
         }
+
         @Override
         public void documentChanged(DocumentEvent documentEvent) {
             documentEvent.getDocument().removeDocumentListener(this);
@@ -84,10 +87,10 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     private void cancelNoMatchMessageUpdate() {
         myAlarm.cancelAllRequests();
-        if (isDocumentListenerSet) {
-            getDocument().removeDocumentListener(myMiniBufferChangedListener);
-            isDocumentListenerSet = false;
-        }
+//        if (isDocumentListenerSet) {
+//            getDocument().removeDocumentListener(myMiniBufferChangedListener);
+//            isDocumentListenerSet = false;
+//        }
     }
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
@@ -159,7 +162,13 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             public void run() {
                 getDocument().removeDocumentListener(myMiniBufferChangedListener);
                 isDocumentListenerSet = false;
-                write(myPrompt + ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue()));
+                String text = getDocument().getText();
+                if (myInteractive.isNoMatch()
+                        && text.endsWith(myInteractive.getNoMatchMessage())
+                        && text.startsWith(myPrompt)) {
+                    String input = text.substring(myPrompt.length(), text.length() - myInteractive.getNoMatchMessage().length());
+                    write(myPrompt + input);
+                }
             }
         }, 3000);
     }
@@ -319,7 +328,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                     myCommand = cmd;
                     if (interactiveString.equals("")) {
                         kill();
-                        return myCommand.evaluateFunction(myEnvironment, new ArrayList<LispObject>());
+                        return evaluateCommand(false);
                     }
                     myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
                     setReadArgumentStatus();
@@ -401,7 +410,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         clearPrefixArgs();
         LispObject result = myCommand == null
                 ? LispList.list(myInteractive.getArguments())
-                : myCommand.evaluateFunction(myEnvironment, myInteractive.getArguments());
+                : evaluateCommand(true);
         kill();
         return result;
     }
@@ -414,4 +423,24 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             throw new Emacs4ijFatalException("Null editor!");
         getEditor().getContentComponent().grabFocus();
     }
+
+    private LispObject evaluateCommand(boolean interactiveHasArgs) {
+        Core.shiftCommandVars(myCommand);
+        return myCommand.evaluateFunction(myEnvironment,
+                (interactiveHasArgs ? myInteractive.getArguments() : new ArrayList<LispObject>()));
+    }
+
+    public void message (final String text) {
+        getDocument().addDocumentListener(myMiniBufferChangedListener);
+        isDocumentListenerSet = true;
+        myAlarm.addRequest(new Runnable() {
+            @Override
+            public void run() {
+                getDocument().removeDocumentListener(myMiniBufferChangedListener);
+                isDocumentListenerSet = false;
+                appendText(text);
+            }
+        }, 3000);
+    }
+
 }

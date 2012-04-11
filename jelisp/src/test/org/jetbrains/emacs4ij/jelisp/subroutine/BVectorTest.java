@@ -13,7 +13,7 @@ import org.junit.Test;
  * Time: 3:27 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsVectorTest extends BaseSubroutineTest {
+public class BVectorTest extends BaseSubroutineTest {
     @Test
     public void testVector() {
         evaluateString("(defvar v1 '[2 3 4])");

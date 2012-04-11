@@ -19,19 +19,19 @@ import java.util.List;
 * To change this template use File | Settings | File Templates.
 */
 public abstract class LispSubroutine {
-    private static Class[] myBuiltIns = new Class[] {BuiltinArithmetic.class,
-                                                    BuiltinPredicates.class,
-                                                    BuiltinsBuffer.class,
-                                                    BuiltinsMinibiffer.class,
-                                                    BuiltinsCore.class,
-                                                    BuiltinsFrame.class,
-                                                    BuiltinsKey.class,
-                                                    BuiltinsList.class,
-                                                    BuiltinsMarker.class,
-                                                    BuiltinsSequence.class,
-                                                    BuiltinsString.class,
-                                                    BuiltinsSymbol.class,
-                                                    BuiltinsVector.class};
+    private static Class[] myBuiltIns = new Class[] {Arithmetic.class,
+                                                    Predicate.class,
+                                                    Buffer.class,
+                                                    Minibuffer.class,
+                                                    Core.class,
+                                                    Frame.class,
+                                                    Key.class,
+                                                    BList.class,
+                                                    Marker.class,
+                                                    Sequence.class,
+                                                    BString.class,
+                                                    Symbol.class,
+                                                    BVector.class};
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 
     private LispSubroutine() {}

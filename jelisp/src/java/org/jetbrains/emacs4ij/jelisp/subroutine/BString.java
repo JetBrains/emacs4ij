@@ -19,8 +19,8 @@ import java.util.regex.Matcher;
  * Time: 18:06
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BuiltinsString {
-    private BuiltinsString () {}
+public abstract class BString {
+    private BString() {}
 
     private static void checkFormatCharacters (String format) {
         List<Character> emacsFormatChars = Arrays.asList('s', 'S', 'd', 'o', 'x', 'X', 'e', 'f', 'g', 'c');
@@ -140,7 +140,7 @@ public abstract class BuiltinsString {
 
     @Subroutine("string-to-number")
     public static LispNumber stringToNumber (LispString string, @Optional LispObject baseObject) {
-        int base = BuiltinPredicates.isNil(baseObject) ? 10 : getIntegerData(baseObject);
+        int base = Predicate.isNil(baseObject) ? 10 : getIntegerData(baseObject);
         return string.toNumber(base);
     }
 }

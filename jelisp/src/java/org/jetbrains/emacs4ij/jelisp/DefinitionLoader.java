@@ -5,7 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinPredicates;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.*;
 import java.util.*;
@@ -83,7 +83,7 @@ public abstract class DefinitionLoader {
 
             LispObject parsed = p.parse(line, index);
             index = p.getLine();
-            if (BuiltinPredicates.isNil(parsed))
+            if (Predicate.isNil(parsed))
                 continue;
             if (parsed instanceof LispList &&
                     ((LispList) parsed).car() instanceof LispSymbol

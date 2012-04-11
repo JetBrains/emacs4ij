@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.subroutine.BuiltinsKey;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +57,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(k1.getValue(), k2.getValue());
         evaluateString("(set-keymap-parent k1 (make-sparse-keymap))");
         LispObject parent = evaluateString("(keymap-parent k1)");
-        Assert.assertEquals(BuiltinsKey.makeSparseKeymap(null), parent);
+        Assert.assertEquals(Key.makeSparseKeymap(null), parent);
         parent = evaluateString("(keymap-parent k2)");
         Assert.assertEquals(LispSymbol.ourNil, parent);
     }
@@ -348,7 +348,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     public void testDefinePrefixCommandNoOpt () {
         evaluateString("(setq cmd 1)");
         LispObject cmd = evaluateString("(define-prefix-command 'cmd)");
-        LispKeymap km = BuiltinsKey.makeSparseKeymap(null);
+        LispKeymap km = Key.makeSparseKeymap(null);
         Assert.assertTrue(cmd instanceof LispSymbol);
         Assert.assertEquals(km, ((LispSymbol) cmd).getValue());
         Assert.assertEquals(km, ((LispSymbol) cmd).getFunction());
@@ -386,7 +386,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         evaluateString("(define-key k \"s\" 'pp)");
         evaluateString("(define-key k \"sk\" 'f)");
         LispObject f1 = evaluateString("(symbol-function 'p1)"); // empty
-        LispKeymap expected = BuiltinsKey.makeSparseKeymap(null);
+        LispKeymap expected = Key.makeSparseKeymap(null);
         Assert.assertEquals(expected, f1);
         expected.defineKey(new LispSymbol("f"), new LispString("k"));
         LispObject f2 = evaluateString("(symbol-function 'p2)"); //set

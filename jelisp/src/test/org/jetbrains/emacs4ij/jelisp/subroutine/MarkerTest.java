@@ -14,11 +14,11 @@ import org.junit.Test;
  * Time: 5:08 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsMarkerTest extends BaseSubroutineTest {
+public class MarkerTest extends BaseSubroutineTest {
     @Test
     public void testMarkerInsertionType() throws Exception {
         LispMarker marker = new LispMarker();
-        Assert.assertEquals(LispSymbol.ourNil, BuiltinsMarker.markerInsertionType(marker));
+        Assert.assertEquals(LispSymbol.ourNil, Marker.markerInsertionType(marker));
     }
 
     @Test

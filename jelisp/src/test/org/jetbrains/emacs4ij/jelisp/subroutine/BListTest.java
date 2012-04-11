@@ -13,7 +13,7 @@ import org.junit.Test;
  * Time: 4:10 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsListTest extends BaseSubroutineTest {
+public class BListTest extends BaseSubroutineTest {
 
     @Test
     public void testInnerLists() throws LispException {

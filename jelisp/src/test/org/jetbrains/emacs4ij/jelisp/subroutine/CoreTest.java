@@ -19,7 +19,7 @@ import org.junit.Test;
  * Time: 4:04 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BuiltinsCoreTest extends BaseSubroutineTest {
+public class CoreTest extends BaseSubroutineTest {
     @Test
     public void testSetVar() throws LispException {
         LispObject value = evaluateString("(set 'var (+ 2 3))");
@@ -161,6 +161,14 @@ public class BuiltinsCoreTest extends BaseSubroutineTest {
     public void testFuncallSymbolFunction () {
         LispObject r = evaluateString("(funcall (symbol-function '1+) 5)");
         Assert.assertEquals(new LispInteger(6), r);
+    }
+
+    @Test
+    public void testLambdaInteractiveForm() {
+        LispList list = (LispList) evaluateString("'(lambda (a b) (message \"test\") (interactive \"sFirst: \") (message \"%s\" a) (interactive \"sString2: \") (message \"%s\" b))");
+        Lambda lambda = new Lambda(list);
+        Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("sFirst: ")), lambda.getInteractiveForm());
+        Assert.assertEquals(4, lambda.getBodyLength());
     }
 
     @Test
