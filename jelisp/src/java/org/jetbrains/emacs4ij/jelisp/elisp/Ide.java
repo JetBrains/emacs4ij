@@ -10,4 +10,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 public interface Ide {
     void showErrorMessage (String message);
     void showInfoMessage (String message);
+    void echoMessage (String message);
+    void echoError (String error);
 }

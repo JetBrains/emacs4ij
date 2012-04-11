@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -140,7 +141,8 @@ public abstract class Minibuffer {
                 }
             }
         } catch (LispException exc) {
-            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("auto.complete.error.title"));
+            GlobalEnvironment.echoError(exc.getMessage());
+//            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("auto.complete.error.title"));
         }
     }
 

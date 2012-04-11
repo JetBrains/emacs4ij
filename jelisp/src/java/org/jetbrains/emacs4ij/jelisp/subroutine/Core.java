@@ -1,11 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 
@@ -122,9 +120,9 @@ public abstract class Core {
                     return;
                 LispObject result = miniBuffer.onReadInput();
                 if (result != null && miniBuffer.wasInteractiveFormResult())
-                    Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+                    GlobalEnvironment.echoMessage(result.toString());
             } catch (LispException exc) {
-                Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+                GlobalEnvironment.echoError(exc.getMessage());
             }
         }
     }
@@ -384,9 +382,9 @@ public abstract class Core {
                     return;
                 LispObject result = miniBuffer.onReadInput();
                 if (result != null && miniBuffer.wasInteractiveFormResult())
-                    Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+                    GlobalEnvironment.echoMessage(result.toString());
             } catch (LispException exc) {
-                Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+                GlobalEnvironment.echoError(exc.getMessage());
             }
         }
     }
@@ -398,9 +396,9 @@ public abstract class Core {
             LispBuffer buffer = environment.getBufferCurrentForEditing();
             LispObject result = buffer.evaluateLastForm();
             if (result != null)
-                Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+                GlobalEnvironment.echoMessage(result.toString() + "\n");
         } catch (LispException exc) {
-            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+            GlobalEnvironment.echoError(exc.getMessage() + "\n");
         }
     }
 
@@ -410,9 +408,9 @@ public abstract class Core {
         try {
             LispObject result = environment.getMiniBuffer().onReadInput();
             if (result != null && environment.getMiniBuffer().wasInteractiveFormResult())
-                Messages.showInfoMessage(result.toString(), JelispBundle.message("evaluation.result.title"));
+                GlobalEnvironment.echoMessage(result.toString());
         } catch (LispException exc) {
-            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("evaluation.result.title"));
+            GlobalEnvironment.echoError(exc.getMessage());
         }
     }
 

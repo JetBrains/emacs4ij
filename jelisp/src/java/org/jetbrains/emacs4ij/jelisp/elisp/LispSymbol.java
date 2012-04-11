@@ -208,6 +208,8 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
 
     public LispObject evaluateFunction (Environment environment, @Nullable List<LispObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
+        if (myName.equals("f"))
+            System.out.print("1");
         LispObject result;
         if (args == null)
             args = new ArrayList<>();

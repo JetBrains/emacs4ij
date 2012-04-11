@@ -307,6 +307,22 @@ public class GlobalEnvironment extends Environment {
         INSTANCE.myIde.showInfoMessage(message);
     }
 
+    public static void echoMessage (String message) {
+        if (INSTANCE == null || INSTANCE.myIde == null) {
+            System.out.println(JelispBundle.message("emacs4ij.message", message));
+            return;
+        }
+        INSTANCE.myIde.echoMessage(message);
+    }
+
+    public static void echoError (String message) {
+        if (INSTANCE == null || INSTANCE.myIde == null) {
+            System.out.println(JelispBundle.message("emacs4ij.message", message));
+            return;
+        }
+        INSTANCE.myIde.echoError(message);
+    }
+
     public LispObject getBufferLocalSymbolValue (LispSymbol symbol) {
         LispSymbol real = mySymbols.get(symbol.getName());
         if (real == null || !real.isBufferLocal())

@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.Ide;
@@ -43,5 +45,21 @@ public class IdeProvider implements Ide {
                 });
             }
         });
+    }
+
+    private EchoArea getEchoArea() {
+        return ProjectManager.getInstance().getOpenProjects()[0].getComponent(MyProjectComponent.class).getEchoArea();
+    }
+
+    //todo print in different colors
+
+    @Override
+    public void echoMessage(final String message) {
+        getEchoArea().print(message, ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    }
+
+    @Override
+    public void echoError(final String error) {
+        getEchoArea().print(error, ConsoleViewContentType.ERROR_OUTPUT_KEY);
     }
 }

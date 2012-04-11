@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.ui.Messages;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
@@ -39,9 +38,9 @@ public class EvaluateCode extends AnAction {
             LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
             LispObject result = buffer.evaluateLastForm();
             if (result != null)
-                Messages.showInfoMessage(result.toString(), Emacs4ijBundle.message("evaluation.result.title"));
+                GlobalEnvironment.echoMessage(result.toString() + "\n");
         } catch (LispException exc) {
-            Messages.showErrorDialog(exc.getMessage(), Emacs4ijBundle.message("evaluation.result.title"));
+            GlobalEnvironment.echoError(exc.getMessage() + "\n");
         }
     }
 }

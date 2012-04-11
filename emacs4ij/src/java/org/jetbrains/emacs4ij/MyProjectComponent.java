@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -36,10 +37,20 @@ import javax.swing.event.HyperlinkListener;
 public class MyProjectComponent implements ProjectComponent {
     private Environment myEnvironment = null;
     private Project myProject;
+    private EchoArea myEchoArea;
 
     public MyProjectComponent(Project project) {
         myProject = project;
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                myEchoArea = new EchoArea(myProject);
+            } });
         IdeaBuffer.setProject(project);
+    }
+
+    public EchoArea getEchoArea() {
+        return myEchoArea;
     }
 
     @NotNull
