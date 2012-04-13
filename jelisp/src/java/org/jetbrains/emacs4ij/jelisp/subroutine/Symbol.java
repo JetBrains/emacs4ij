@@ -46,7 +46,7 @@ public abstract class Symbol {
     }
 
     @Subroutine("get")
-    public static LispObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
+    public static LispObject get(LispSymbol symbol, LispSymbol propertyName) {
         LispObject result = symbol.getProperty(propertyName);
         return result == null ? LispSymbol.ourNil : result;
     }
@@ -212,5 +212,10 @@ public abstract class Symbol {
     @Subroutine("boundp")
     public static LispSymbol boundP (LispSymbol symbol) {
         return LispSymbol.bool(symbol.hasValue());
+    }
+
+    @Subroutine("symbol-plist")
+    public static LispList getPropertyList (LispSymbol symbol) {
+        return symbol.getPropertyList();
     }
 }

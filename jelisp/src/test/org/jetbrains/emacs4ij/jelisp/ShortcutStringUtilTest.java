@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,4 +97,11 @@ public class ShortcutStringUtilTest {
         Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
     }
 
+    @Test
+    public void test11() {
+        List<Integer> list = new ArrayList<>(10);
+        Collections.fill(list, null);
+        for (Integer q: list)
+            Assert.assertNull(q);
+    }
 }

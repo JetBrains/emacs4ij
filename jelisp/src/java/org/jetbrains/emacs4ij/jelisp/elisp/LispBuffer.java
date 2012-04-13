@@ -54,4 +54,7 @@ public interface LispBuffer extends LispObject {
     Document getDocument();
     List<LispWindow> getWindows();
     void mergeEditors (LispBuffer other);
+
+    void setSyntaxTable(LispSyntaxTable table);
+    LispSyntaxTable getSyntaxTable ();
 }

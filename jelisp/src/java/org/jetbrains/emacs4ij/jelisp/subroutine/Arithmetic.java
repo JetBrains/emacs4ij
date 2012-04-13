@@ -154,4 +154,10 @@ public abstract class Arithmetic {
     public static LispInteger logNot (LispInteger object) {
         return new LispInteger(~object.getData());
     }
+
+    @Subroutine("lsh")
+    public static LispInteger leftShift (LispInteger value, LispInteger count) {
+        return new LispInteger(value.getData() << count.getData());
+    }
+
 }

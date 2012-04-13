@@ -13,7 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  * elisp integer number = 13, 1355, -7979, etc
  */
 public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger {
-    private static final int MAX_CHAR   = 0x3FFFFF;
+    public static final int MAX_CHAR   = 0x3FFFFF;
 
     public LispInteger(int data) {
         myData = data;

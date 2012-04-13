@@ -367,4 +367,15 @@ public abstract class Environment {
     public LispSymbol findAndRegisterEmacsFunction (String name) {
         return DefinitionLoader.findAndRegisterEmacsFunction(name);
     }
+
+    //syntax tables
+    public void setSyntaxTable (LispSyntaxTable table) {
+        getBufferCurrentForEditing().setSyntaxTable(table);
+    }
+
+    public LispSyntaxTable getSyntaxTable () {
+        return getBufferCurrentForEditing().getSyntaxTable();
+    }
 }
+
+

@@ -208,8 +208,6 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
 
     public LispObject evaluateFunction (Environment environment, @Nullable List<LispObject> args) {
         GlobalEnvironment.ourCallStack.push(myName);
-        if (myName.equals("f"))
-            System.out.print("1");
         LispObject result;
         if (args == null)
             args = new ArrayList<>();
@@ -258,10 +256,12 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         return ((Lambda)myFunction).evaluate(environment, args);
     }
 
-    public LispObject getPropertyList() {
-        ArrayList<LispObject> pList = new ArrayList<>();
-        for (LispSymbol key: myProperties.keySet())
-            pList.add(LispList.list(key, myProperties.get(key)));
+    public LispList getPropertyList() {
+        List<LispObject> pList = new ArrayList<>();
+        for (Map.Entry<LispSymbol, LispObject> entry: myProperties.entrySet()) {
+            pList.add(entry.getKey());
+            pList.add(entry.getValue());
+        }
         return LispList.list(pList);
     }
 

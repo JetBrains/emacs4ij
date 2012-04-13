@@ -29,6 +29,7 @@ public abstract class LispSubroutine {
                                                     BList.class,
                                                     Marker.class,
                                                     Sequence.class,
+                                                    SyntaxTable.class,
                                                     BString.class,
                                                     Symbol.class,
                                                     BVector.class};

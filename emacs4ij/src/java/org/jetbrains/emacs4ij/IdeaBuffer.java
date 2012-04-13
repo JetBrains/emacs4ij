@@ -18,6 +18,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,8 @@ public class IdeaBuffer implements LispBuffer {
     private static Project ourProject;
     private LispMarker myMark = new LispMarker();
     private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
+
+    private LispSyntaxTable mySyntaxTable;
 
     protected final DocumentListener myDocumentListener = new DocumentListener() {
         private int myOldPosition;
@@ -70,6 +73,8 @@ public class IdeaBuffer implements LispBuffer {
         myEnvironment = environment;
         myName = name;
         myWindowManager = new WindowManager(myName, editor);
+        mySyntaxTable = SyntaxTable.getStandardSyntaxTable();
+        //todo: set fundamental mode, it has StandardSyntaxTable set
     }
 
     public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
@@ -167,6 +172,16 @@ public class IdeaBuffer implements LispBuffer {
         }
         if (isDuplicate)
             throw new DoubleBufferException(myName);
+    }
+
+    @Override
+    public void setSyntaxTable(LispSyntaxTable table) {
+        mySyntaxTable = table;
+    }
+
+    @Override
+    public LispSyntaxTable getSyntaxTable() {
+        return mySyntaxTable;
     }
 
     @Override
