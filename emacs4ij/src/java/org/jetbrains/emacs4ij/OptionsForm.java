@@ -151,14 +151,16 @@ public class OptionsForm extends JFrame {
                     wasHome = homeTextField.getText();
                     wasSrc = srcTextField.getText();
                     applyButton.setEnabled(false);
+                    myProjectComponent.reset();
+                    EnvironmentInitializer.reset();
                     close();
                     if (isHomeValid && isSourceValid)
                         new Task.Backgroundable(myProject, Emacs4ijBundle.message("init.task"), false) {
                             public void run(@NotNull ProgressIndicator indicator) {
                                 indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                                 indicator.setFraction(0.0);
-                                EnvironmentInitializer.reset();
-                                if (EnvironmentInitializer.initGlobal() && myProjectComponent != null) {
+                                if (EnvironmentInitializer.initGlobal()) {
+                                    myProjectComponent.getEchoArea().setToolWindowEnabled(true);
                                     myProjectComponent.initEnv();
                                 }
                                 indicator.setFraction(1.0);

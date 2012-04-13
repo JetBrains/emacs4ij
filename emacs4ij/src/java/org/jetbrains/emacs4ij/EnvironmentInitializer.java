@@ -25,8 +25,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispException;
  * Time: 9:55 AM
  * To change this template use File | Settings | File Templates.
  */
-public class EnvironmentInitializer {
+public abstract class EnvironmentInitializer {
     private static boolean isGlobalInitialized = false;
+
+    private EnvironmentInitializer() {}
 
     public static boolean isGlobalInitialized() {
         return isGlobalInitialized;

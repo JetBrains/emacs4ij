@@ -114,8 +114,10 @@ public class MyProjectComponent implements ProjectComponent {
                 indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                 indicator.setFraction(0.0);
                 if (EnvironmentInitializer.silentInitGlobal()) {
+                    myProject.getComponent(MyProjectComponent.class).getEchoArea().setToolWindowEnabled(true);
                     initEnv();
                 } else {
+                    myProject.getComponent(MyProjectComponent.class).getEchoArea().setToolWindowEnabled(false);
                     JBPopupFactory.getInstance()
                             .createHtmlTextBalloonBuilder(Emacs4ijBundle.message("global.env.not.initialized.message"),
                                     MessageType.WARNING, new HyperlinkListener() {
@@ -137,6 +139,11 @@ public class MyProjectComponent implements ProjectComponent {
     public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
+    }
+
+    public void reset () {
+        myEchoArea.setToolWindowEnabled(false);
+        myEnvironment = null;
     }
 
     public Environment getEnvironment() {

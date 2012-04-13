@@ -10,13 +10,13 @@ import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.ScrollType;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.editor.ex.EditorMarkupModel;
 import com.intellij.openapi.editor.markup.HighlighterLayer;
 import com.intellij.openapi.editor.markup.HighlighterTargetArea;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -36,21 +36,25 @@ public class EchoArea extends SimpleToolWindowPanel implements DataProvider, Dis
         super(false, true);
         myProject = project;
         myEditor = ConsoleViewUtil.setupConsoleEditor(myProject, false, false);
-        Disposer.register(myProject, new Disposable() {
-            @Override
-            public void dispose() {
-                if (myEditor != null)
-                    EditorFactory.getInstance().releaseEditor(myEditor);
-            }
-        });
-        ((EditorMarkupModel)myEditor.getMarkupModel()).setErrorStripeVisible(true);
         setToolbar(new JPanel(new BorderLayout()));
         setContent(myEditor.getComponent());
+        setEnabled(EnvironmentInitializer.isGlobalInitialized());
+    }
+
+    public void setToolWindowEnabled (final boolean state) {
+        ApplicationManager.getApplication().invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Emacs4ij Echo Area");
+                toolWindow.setAvailable(state, null);
+            }
+        });
     }
 
     @Override
     public void dispose() {
         myProject = null;
+        EditorFactory.getInstance().releaseEditor(myEditor);
         myEditor = null;
     }
 
@@ -73,6 +77,10 @@ public class EchoArea extends SimpleToolWindowPanel implements DataProvider, Dis
                         myEditor.getCaretModel().moveToOffset(document.getTextLength());
                         myEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
                     }
+
+                    ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Emacs4ij Echo Area");
+                    if (!toolWindow.isVisible())
+                        toolWindow.show(null);
                 }
             }
         });
