@@ -322,16 +322,18 @@ public class SymbolTest extends BaseSubroutineTest {
 
     @Test
     public void testDefCustom() {
-        LispObject r = evaluateString("(defcustom a 5 \"doc\")");
+        LispObject a = evaluateString("(defcustom a 5 \"doc\")");
+        Assert.assertTrue(a instanceof LispSymbol);
         LispObject b = evaluateString("(documentation-property 'a 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
+        Assert.assertEquals(new LispInteger(5), ((LispSymbol) a).getValue());
     }
 
     @Test
     public void testCustomDeclareVariable() {
         evaluateString("(custom-declare-variable 'b 10 \"doc\")");
         LispObject b = evaluateString("b");
-        Assert.assertNotNull(b);
+        Assert.assertEquals(new LispInteger(10), b);
         b = evaluateString("(documentation-property 'b 'variable-documentation)");
         Assert.assertEquals(new LispString("doc"), b);
     }
@@ -346,5 +348,46 @@ public class SymbolTest extends BaseSubroutineTest {
         Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("BSwitch to buffer")), r);
         r = evaluateString("(interactive-form '(lambda () (+ 6 3) (interactive \"f\")))");
         Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("f")), r);
+    }
+
+    @Test
+    public void testPropList() {
+        evaluateString("(defcustom myc t\n" +
+                "  \"doc\"\n" +
+                "  :group 'lisp\n" +
+                "  :type 'boolean\n" +
+                "  :version \"21.1\")");
+        LispObject properties = evaluateString("(symbol-plist 'myc)");
+        Assert.assertTrue(properties instanceof LispList);
+        Assert.assertEquals(10, ((LispList) properties).length());
+        String prop = properties.toString();
+        Assert.assertTrue(prop.contains("standard-value (t)"));
+        Assert.assertTrue(prop.contains("custom-requests nil"));
+        Assert.assertTrue(prop.contains("custom-version \"21.1\""));
+        Assert.assertTrue(prop.contains("custom-type boolean"));
+        Assert.assertTrue(prop.contains("variable-documentation \"doc\""));
+    }
+
+    @Test
+    public void testDefcustom2() {
+        LispObject symbol = evaluateString("(defcustom myc t\n" +
+                "  \"doc\"\n" +
+                "  :group 'lisp\n" +
+                "  :type 'boolean\n" +
+                "  :version \"21.1\")");
+        Assert.assertTrue(symbol instanceof LispSymbol);
+        Assert.assertEquals(LispSymbol.ourT, ((LispSymbol) symbol).getValue());
+    }
+
+    @Test
+    public void defaultForDefcustom() {
+        LispObject value = evaluateString("eval-expression-debug-on-error");
+        Assert.assertEquals(LispSymbol.ourT, value);
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(default-boundp 'eval-expression-debug-on-error)"));
+    }
+
+    @Test
+    public void testCCGAValue() {
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("custom-current-group-alist"));
     }
 }

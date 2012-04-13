@@ -88,4 +88,14 @@ public class DefinitionLoaderTest {
         return false;
     }
 
+    @Test
+    public void testContainsDef() {
+        String line = "(defvar emacs-lisp-mode-syntax-table";
+        DefinitionLoader.Identifier id = new DefinitionLoader.Identifier("emacs-lisp-mode-syntax-table", DefinitionLoader.DefType.VAR);
+        boolean condition = DefinitionLoader.containsDef(line, id.getName(), (id.getType() == DefinitionLoader.DefType.FUN
+                ? DefinitionLoader.myDefFuns : DefinitionLoader.myDefVars));
+        Assert.assertTrue(condition);
+    }
+
+
 }

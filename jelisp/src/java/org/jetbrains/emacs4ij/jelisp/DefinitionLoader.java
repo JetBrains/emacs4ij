@@ -20,8 +20,8 @@ import java.util.*;
 public abstract class DefinitionLoader {
     static enum DefType {VAR, FUN} //todo: not private for test only
     private static enum SymbolType {VAR, FUN, CMD}
-    private static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
-    private static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
+    protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
+    protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
     private static Map<String, File> myUploadHistory = new HashMap<>();
     private static Map<Identifier, List<String>> myIndex = new HashMap<>();
     //for test
@@ -102,9 +102,11 @@ public abstract class DefinitionLoader {
         return FileScanner.getDefFromFile(new File(fileName), new Identifier(functionName, type));
     }
 
-    private static boolean containsDef (String line, String name, List<String> defForms) {
+    protected static boolean containsDef (String line, String name, List<String> defForms) {
         for (String defForm: defForms) {
-            if (line.contains('(' + defForm + ' ' + name + ' ')
+            if (line.endsWith('(' + defForm + ' ' + name)
+                    || line.endsWith('(' + defForm + " '" + name)
+                    || line.contains('(' + defForm + ' ' + name + ' ')
                     || line.contains('(' + defForm + " '" + name + ' ')) {
                 return true;
             }
@@ -154,8 +156,6 @@ public abstract class DefinitionLoader {
                 throw new VoidFunctionException(name);
             throw new VoidVariableException(name);
         }
-
-
         LispList definition = getDefFromInvokersSrc(id);
         if (definition == null) {
             definition = lookInSubrFirst(id);
@@ -174,8 +174,9 @@ public abstract class DefinitionLoader {
     }
 
     private static LispList getDefFromInvokersSrc(Identifier id) {
+        List<String> files = myIndex.get(id);
         for (String invoker: GlobalEnvironment.ourCallStack) {
-            if (myUploadHistory.containsKey(invoker)) {
+            if (myUploadHistory.containsKey(invoker) && files.contains(myUploadHistory.get(invoker).getAbsolutePath())) {
                 LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), id);
                 if (def != null)
                     return def;
@@ -184,7 +185,7 @@ public abstract class DefinitionLoader {
         return null;
     }
 
-    private static class Identifier {
+    protected static class Identifier {
         private final String myName;
         private final DefType myType;
         private final SymbolType mySymbolType;
@@ -231,7 +232,7 @@ public abstract class DefinitionLoader {
 
         @Override
         public String toString() {
-            return myType + " " + myName;
+            return "[" + myType + " " + myName + "]";
         }
     }
 
@@ -283,9 +284,8 @@ public abstract class DefinitionLoader {
                 if (line == null)
                     return null;
                 if (containsDef(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars)))
-                    break;
+                    return getDef(reader, line, id.getName());
             }
-            return getDef(reader, line, id.getName());
         }
 
         private static LispList getDef(BufferedReader reader, String line, String name) {
@@ -313,7 +313,7 @@ public abstract class DefinitionLoader {
                         start++;
                     int end = line.indexOf(' ', start);
                     if (end == -1) {
-                        end = line.charAt(line.length()-1) == ')' ? line.length() - 2 : line.length() - 1;
+                        end = line.charAt(line.length()-1) == ')' ? line.length() - 1 : line.length();
                     }
                     String name = line.substring(start, end);
                     //todo: back
