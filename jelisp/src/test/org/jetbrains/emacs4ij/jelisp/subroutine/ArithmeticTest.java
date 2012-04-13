@@ -187,5 +187,10 @@ public class ArithmeticTest extends BaseSubroutineTest {
         r = evaluateString("(lognot -1)");
         Assert.assertEquals(new LispInteger(0), r);
     }
+
+    @Test
+    public void testLeftShift () {
+        Assert.assertEquals(new LispInteger(65536), evaluateString("(lsh 1 16)"));
+    }
     
 }
