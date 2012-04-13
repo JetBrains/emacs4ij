@@ -39,7 +39,8 @@ public class EchoArea extends SimpleToolWindowPanel implements DataProvider, Dis
         Disposer.register(myProject, new Disposable() {
             @Override
             public void dispose() {
-                EditorFactory.getInstance().releaseEditor(myEditor);
+                if (myEditor != null)
+                    EditorFactory.getInstance().releaseEditor(myEditor);
             }
         });
         ((EditorMarkupModel)myEditor.getMarkupModel()).setErrorStripeVisible(true);

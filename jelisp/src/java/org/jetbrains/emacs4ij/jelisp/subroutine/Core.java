@@ -414,23 +414,6 @@ public abstract class Core {
         }
     }
 
-    public static boolean isSyntaxTable (LispObject object) {
-        //todo: true if char-table
-        return false;
-    }
-
-    @Subroutine("syntax-table-p")
-    public static LispSymbol syntaxTableP (LispObject object) {
-        return LispSymbol.bool(isSyntaxTable(object));
-    }
-
-    @Subroutine("set-syntax-table")
-    public static void setSyntaxTable (LispObject syntaxTable) {
-        if (!isSyntaxTable(syntaxTable))
-            throw new WrongTypeArgumentException("syntax-table-p", syntaxTable.toString());
-        //todo ?
-    }
-
     private static LispString print (Environment environment, LispObject object,
                                      @Optional LispObject printCharFun, boolean quoteStrings) {
         LispString result = quoteStrings 

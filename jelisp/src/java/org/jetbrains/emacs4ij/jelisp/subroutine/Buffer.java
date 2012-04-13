@@ -299,4 +299,9 @@ public abstract class Buffer {
         LispSymbol mode = environment.find("major-mode");
         return Core.functionCall(environment, mode.getValue());
     }
+
+    @Subroutine("following-char")
+    public static LispInteger followingChar (Environment environment) {
+        return new LispInteger(environment.getBufferCurrentForEditing().getSelectedWindow().followingCharacter());
+    }
 }
