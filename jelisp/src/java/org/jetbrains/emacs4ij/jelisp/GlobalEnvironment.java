@@ -239,6 +239,7 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("minibuffer-completing-file-name");
         defineSymbol("minibuffer-message-timeout", new LispInteger(2));
         defineSymbol("noninteractive");
+        defineSymbol("parse-sexp-ignore-comments");
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

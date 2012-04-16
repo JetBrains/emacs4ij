@@ -151,7 +151,7 @@ public abstract class DefinitionLoader {
     private static LispSymbol findAndRegisterEmacsForm (String name, DefType type) {
         Identifier id = new Identifier(name, type);
         if (!myIndex.containsKey(id)) {
-            //throw new InternalError(JelispBundle.message("unknown.lisp.object", id.toString()));
+//            throw new InternalError(JelispBundle.message("unknown.lisp.object", id.toString()));
             if (type == DefType.FUN)
                 throw new VoidFunctionException(name);
             throw new VoidVariableException(name);

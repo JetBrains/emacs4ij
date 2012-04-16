@@ -50,9 +50,9 @@ public class ForwardParser extends Parser {
         return Collections.min(getItemsIndexes(items));
     }
 
-    private void skipListSeparators() {
+    private void skipWhitespaces() {
         while (true) {
-            if (myInnerSeparators.contains(getCurrentChar())) {
+            if (myWhitespaces.contains(getCurrentChar())) {
                 advance();
                 continue;
             }
@@ -67,7 +67,7 @@ public class ForwardParser extends Parser {
         while (true) {
             try {
                 while (true) {
-                    skipListSeparators();
+                    skipWhitespaces();
                     if (getCurrentChar() == ')')
                         break;
                     if (!makeList)
@@ -77,8 +77,7 @@ public class ForwardParser extends Parser {
                             throw new InvalidReadSyntaxDot();
                         if (!Character.isDigit(getNextChar())) {
                             advance();
-//                        if (myInnerSeparators.contains(getCurrentChar())) {
-                            skipListSeparators();
+                            skipWhitespaces();
                             if (getCurrentChar() == ')')
                                 throw new InvalidReadSyntax(")");
                             if (data.size() == 0) {
@@ -98,7 +97,7 @@ public class ForwardParser extends Parser {
                             }
                             data.set(data.size()-1, LispList.cons(car, cdr));
                             wasCons = true;
-                            skipListSeparators();
+                            skipWhitespaces();
                             if (getCurrentChar() != ')')
                                 throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
                             break;
@@ -135,7 +134,7 @@ public class ForwardParser extends Parser {
         while (true) {
             try {
                 while (true) {
-                    skipListSeparators();
+                    skipWhitespaces();
                     if (getCurrentChar() == ']')
                         break;
                     vector.add(parseObject(isBackQuote));
@@ -422,13 +421,13 @@ public class ForwardParser extends Parser {
         myCurrentIndex = 0;
         myLispCode = lispCode;
         try {
-            skipListSeparators();
+            skipWhitespaces();
         } catch (EndOfLineException e) {
             return null;
         }
         LispObject lispObject = parseObject();
         try {
-            skipListSeparators();
+            skipWhitespaces();
             getMyCurrentIndex();
         } catch (EndOfLineException ignored) {
             return lispObject;
@@ -443,7 +442,7 @@ public class ForwardParser extends Parser {
         switch (getCurrentChar()) {
             case '\'':
                 advance();
-                skipListSeparators();
+                skipWhitespaces();
                 return parseQuote(isBackQuote);
             case '"':
                 advance();
@@ -466,11 +465,11 @@ public class ForwardParser extends Parser {
                 if (!isBackQuote)
                     break;
                 advance();
-                skipListSeparators();
+                skipWhitespaces();
                 return parseComma();
             case '.':
                 if (hasNextChar()) {
-                    if (myInnerSeparators.contains(getNextChar()))
+                    if (myWhitespaces.contains(getNextChar()))
                         throw new InvalidReadSyntaxDot();
                 }
         }

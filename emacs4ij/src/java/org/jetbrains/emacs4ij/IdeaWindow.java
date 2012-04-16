@@ -66,6 +66,13 @@ public class IdeaWindow implements LispWindow {
         return (int)myEditor.getDocument().getText().charAt(point()-1);
     }
 
+    @Override
+    public int precedingCharacter() {
+        if (point() == pointMin())
+            return 0;
+        return (int)myEditor.getDocument().getText().charAt(point()-2);
+    }
+
     public void setPoint(int position) {
         myEditor.getCaretModel().moveToOffset(position);
     }

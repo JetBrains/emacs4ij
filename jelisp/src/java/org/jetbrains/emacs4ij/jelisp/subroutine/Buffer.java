@@ -304,4 +304,10 @@ public abstract class Buffer {
     public static LispInteger followingChar (Environment environment) {
         return new LispInteger(environment.getBufferCurrentForEditing().getSelectedWindow().followingCharacter());
     }
+
+    @Subroutine("preceding-char")
+    public static LispInteger precedingChar (Environment environment) {
+        return new LispInteger(environment.getBufferCurrentForEditing().getSelectedWindow().precedingCharacter());
+    }
+
 }

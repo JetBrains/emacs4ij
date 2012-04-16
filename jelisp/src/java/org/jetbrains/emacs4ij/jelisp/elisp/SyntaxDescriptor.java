@@ -16,9 +16,13 @@ import java.util.Map;
  */
 
 public class SyntaxDescriptor {
-    public static enum Type {WHITESPACE, PUNCTUATION, WORD, SYMBOL, OPEN_PARENTHESIS, CLOSE_PARENTHESIS,
+    public static enum ClassType {WHITESPACE, PUNCTUATION, WORD, SYMBOL, OPEN_PARENTHESIS, CLOSE_PARENTHESIS,
         EXPRESSION_PREFIX, STRING_QUOTE, PAIRED_DELIMITER, ESCAPE, CHARACTER_QUOTE, COMMENT_START, COMMENT_END, INHERIT,
         GENERIC_COMMENT, GENERIC_STRING}
+
+    public static enum FlagType {START_2CHAR_COMMENT_START, END_2CHAR_COMMENT_START,
+                                 START_2CHAR_COMMENT_END,   END_2CHAR_COMMENT_END,
+                                 PREFIX, PART_OF_B_COMMENT, PART_OF_NESTABLE_COMMENT}
 
     private static final Map<Character, Integer> ourSyntaxClassMap;
     private static final Map<Character, Integer> ourFlagMap;
@@ -59,12 +63,29 @@ public class SyntaxDescriptor {
                 : LispList.cons(new LispInteger(syntaxCode), new LispInteger(matchingCharacter));
     }
 
-    public static LispList toSyntaxTableEntry (Type type) {
-        return LispList.list(new LispInteger(Arrays.asList(Type.values()).indexOf(type)));
+    public static int getSyntaxClass (ClassType type) {
+        return Arrays.asList(ClassType.values()).indexOf(type);
     }
 
-    static LispList toSyntaxTableEntry (Type type, char matchingCharacter) {
-        return LispList.cons(new LispInteger(Arrays.asList(Type.values()).indexOf(type)),
-                      new LispInteger(matchingCharacter));
+    public static LispList toSyntaxTableEntry (ClassType type) {
+        return LispList.list(new LispInteger(getSyntaxClass(type)));
+    }
+
+    static LispList toSyntaxTableEntry (ClassType type, char matchingCharacter) {
+        return LispList.cons(new LispInteger(getSyntaxClass(type)),
+                new LispInteger(matchingCharacter));
+    }
+
+    private static int getFlagShift (FlagType type) {
+        return 16 + Arrays.asList(FlagType.values()).indexOf(type);
+    }
+
+    public static boolean is(FlagType type, int code) {
+        int i = (code >> getFlagShift(type)) & 1;
+        return i == 1;
+    }
+
+    public static ClassType classByIndex (int index) {
+        return ClassType.values()[index];
     }
 }

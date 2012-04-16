@@ -127,7 +127,7 @@ public class BackwardParser extends Parser {
 
     private void skipSpacesAndEmptyComments () {
         char last = 0;
-        List<Character> skipChars = new ArrayList<>(myInnerSeparators);
+        List<Character> skipChars = new ArrayList<>(myWhitespaces);
         skipChars.add(';');
         while (skipChars.contains(getCurrentChar())) {
             int i = myCurrentIndex;
@@ -155,7 +155,7 @@ public class BackwardParser extends Parser {
     @Override
     protected LispObject tryToParse(boolean isBackQuote) {
         skipSpacesAndEmptyComments();
-        char end = myInnerSeparators.contains(getCurrentChar()) ? getNextChar() : getCurrentChar();
+        char end = myWhitespaces.contains(getCurrentChar()) ? getNextChar() : getCurrentChar();
         char start = '0';
         switch (end) {
             case '"':

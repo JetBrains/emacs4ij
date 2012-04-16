@@ -31,6 +31,7 @@ public abstract class LispSubroutine {
                                                     Sequence.class,
                                                     SyntaxTable.class,
                                                     BString.class,
+                                                    Scan.class,
                                                     Symbol.class,
                                                     BVector.class};
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};

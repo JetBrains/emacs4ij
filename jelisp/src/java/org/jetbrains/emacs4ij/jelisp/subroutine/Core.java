@@ -390,19 +390,6 @@ public abstract class Core {
     }
 
     //todo: compiled lisp f
-    @Subroutine(value = "eval-last-sexp", isCmd = true, key = "\\C-x\\C-e") //todo interactive = "P"
-    public static void evalLastSexp (Environment environment) {//, LispObject evalLastSexpArgInternal) {
-        try {
-            LispBuffer buffer = environment.getBufferCurrentForEditing();
-            LispObject result = buffer.evaluateLastForm();
-            if (result != null)
-                GlobalEnvironment.echoMessage(result.toString() + "\n");
-        } catch (LispException exc) {
-            GlobalEnvironment.echoError(exc.getMessage() + "\n");
-        }
-    }
-
-    //todo: compiled lisp f
     @Subroutine(value = "exit-minibuffer", isCmd = true)
     public static void exitMinibuffer (Environment environment) {
         try {
@@ -456,4 +443,5 @@ public abstract class Core {
     public static LispInteger recursionDepth (Environment environment) {
         return new LispInteger(environment.getMiniBufferActivationsDepth());
     }
+
 }

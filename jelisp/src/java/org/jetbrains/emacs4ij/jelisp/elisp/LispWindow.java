@@ -20,6 +20,7 @@ public interface LispWindow extends LispObject {
     int getSize();
     int point();
     int followingCharacter();
+    int precedingCharacter();
     int pointMax();
     int pointMin();
     void setPoint(int position);

@@ -16,42 +16,42 @@ public abstract class SyntaxTable {
     static {
         myStandardSyntaxTable = new LispSyntaxTable();
         for (char i = 0; i < ' '; i++)
-            myStandardSyntaxTable.setCharSyntax(i, SyntaxDescriptor.Type.PUNCTUATION);
+            myStandardSyntaxTable.setCharSyntax(i, SyntaxDescriptor.ClassType.PUNCTUATION);
         String punct = ".,;:?!#@~^'`";
         for (int i = 0; i < punct.length(); i++) {
-            myStandardSyntaxTable.setCharSyntax(punct.charAt(i), SyntaxDescriptor.Type.PUNCTUATION);
+            myStandardSyntaxTable.setCharSyntax(punct.charAt(i), SyntaxDescriptor.ClassType.PUNCTUATION);
         }
-        myStandardSyntaxTable.setCharSyntax(' ', SyntaxDescriptor.Type.WHITESPACE);
-        myStandardSyntaxTable.setCharSyntax('\t', SyntaxDescriptor.Type.WHITESPACE);
-        myStandardSyntaxTable.setCharSyntax('\n', SyntaxDescriptor.Type.WHITESPACE);
-        myStandardSyntaxTable.setCharSyntax('\r', SyntaxDescriptor.Type.WHITESPACE);
-        myStandardSyntaxTable.setCharSyntax((char)12, SyntaxDescriptor.Type.WHITESPACE);
+        myStandardSyntaxTable.setCharSyntax(' ', SyntaxDescriptor.ClassType.WHITESPACE);
+        myStandardSyntaxTable.setCharSyntax('\t', SyntaxDescriptor.ClassType.WHITESPACE);
+        myStandardSyntaxTable.setCharSyntax('\n', SyntaxDescriptor.ClassType.WHITESPACE);
+        myStandardSyntaxTable.setCharSyntax('\r', SyntaxDescriptor.ClassType.WHITESPACE);
+        myStandardSyntaxTable.setCharSyntax((char)12, SyntaxDescriptor.ClassType.WHITESPACE);
 
         for (char i = '0'; i <= '9'; i++)
-            myStandardSyntaxTable.setCharSyntax(i, SyntaxDescriptor.Type.WORD);
+            myStandardSyntaxTable.setCharSyntax(i, SyntaxDescriptor.ClassType.WORD);
         for (char i = 'A'; i <= 'Z'; i++)
-            myStandardSyntaxTable.setCharSyntax (i, SyntaxDescriptor.Type.WORD);
+            myStandardSyntaxTable.setCharSyntax (i, SyntaxDescriptor.ClassType.WORD);
         for (char i = 'a'; i <= 'z'; i++)
-            myStandardSyntaxTable.setCharSyntax (i, SyntaxDescriptor.Type.WORD);
-        myStandardSyntaxTable.setCharSyntax ('$', SyntaxDescriptor.Type.WORD);
-        myStandardSyntaxTable.setCharSyntax ('%', SyntaxDescriptor.Type.WORD);
+            myStandardSyntaxTable.setCharSyntax (i, SyntaxDescriptor.ClassType.WORD);
+        myStandardSyntaxTable.setCharSyntax ('$', SyntaxDescriptor.ClassType.WORD);
+        myStandardSyntaxTable.setCharSyntax ('%', SyntaxDescriptor.ClassType.WORD);
 
-        myStandardSyntaxTable.setCharSyntax ('(', SyntaxDescriptor.Type.OPEN_PARENTHESIS, '(');
-        myStandardSyntaxTable.setCharSyntax (')', SyntaxDescriptor.Type.CLOSE_PARENTHESIS, ')');
-        myStandardSyntaxTable.setCharSyntax ('[', SyntaxDescriptor.Type.OPEN_PARENTHESIS, '[');
-        myStandardSyntaxTable.setCharSyntax (']', SyntaxDescriptor.Type.CLOSE_PARENTHESIS, ']');
-        myStandardSyntaxTable.setCharSyntax ('{', SyntaxDescriptor.Type.OPEN_PARENTHESIS, '{');
-        myStandardSyntaxTable.setCharSyntax ('}', SyntaxDescriptor.Type.CLOSE_PARENTHESIS, '}');
+        myStandardSyntaxTable.setCharSyntax ('(', SyntaxDescriptor.ClassType.OPEN_PARENTHESIS, '(');
+        myStandardSyntaxTable.setCharSyntax (')', SyntaxDescriptor.ClassType.CLOSE_PARENTHESIS, ')');
+        myStandardSyntaxTable.setCharSyntax ('[', SyntaxDescriptor.ClassType.OPEN_PARENTHESIS, '[');
+        myStandardSyntaxTable.setCharSyntax (']', SyntaxDescriptor.ClassType.CLOSE_PARENTHESIS, ']');
+        myStandardSyntaxTable.setCharSyntax ('{', SyntaxDescriptor.ClassType.OPEN_PARENTHESIS, '{');
+        myStandardSyntaxTable.setCharSyntax ('}', SyntaxDescriptor.ClassType.CLOSE_PARENTHESIS, '}');
 
-        myStandardSyntaxTable.setCharSyntax ('"', SyntaxDescriptor.Type.STRING_QUOTE);
-        myStandardSyntaxTable.setCharSyntax ('\\', SyntaxDescriptor.Type.ESCAPE);
+        myStandardSyntaxTable.setCharSyntax ('"', SyntaxDescriptor.ClassType.STRING_QUOTE);
+        myStandardSyntaxTable.setCharSyntax ('\\', SyntaxDescriptor.ClassType.ESCAPE);
 
         String others = "_-+*/&|<>=";
         for (int i = 0; i < others.length(); i++) {
-            myStandardSyntaxTable.setCharSyntax(others.charAt(i), SyntaxDescriptor.Type.SYMBOL);
+            myStandardSyntaxTable.setCharSyntax(others.charAt(i), SyntaxDescriptor.ClassType.SYMBOL);
         }
-        myStandardSyntaxTable.setCharSyntax((char) 127, SyntaxDescriptor.Type.PUNCTUATION);
-        myStandardSyntaxTable.setRange(128, LispInteger.MAX_CHAR, SyntaxDescriptor.toSyntaxTableEntry(SyntaxDescriptor.Type.WORD));
+        myStandardSyntaxTable.setCharSyntax((char) 127, SyntaxDescriptor.ClassType.PUNCTUATION);
+        myStandardSyntaxTable.setRange(128, LispInteger.MAX_CHAR, SyntaxDescriptor.toSyntaxTableEntry(SyntaxDescriptor.ClassType.WORD));
     }
 
     private SyntaxTable() {}

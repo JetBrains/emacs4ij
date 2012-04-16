@@ -64,7 +64,7 @@ public class LispSyntaxTable implements LispObject, LispSequence {
         throw new UnsupportedOperationException();
     }
 
-    public void setCharSyntax (char c, SyntaxDescriptor.Type value) {
+    public void setCharSyntax (char c, SyntaxDescriptor.ClassType value) {
         myData.put((int)c, SyntaxDescriptor.toSyntaxTableEntry(value));
     }
 
@@ -72,13 +72,13 @@ public class LispSyntaxTable implements LispObject, LispSequence {
         myData.put(i, value);
     }
 
-    public void setCharSyntax (char c, SyntaxDescriptor.Type value, char matchingCharacter) {
+    public void setCharSyntax (char c, SyntaxDescriptor.ClassType value, char matchingCharacter) {
         myData.put((int)c, SyntaxDescriptor.toSyntaxTableEntry(value, matchingCharacter));
     }
 
-    public LispList getCharSyntax (char c) {
-        if (myData.containsKey((int)c))
-            return myData.get((int)c);
+    public LispList getCharSyntax (int c) {
+        if (myData.containsKey(c))
+            return myData.get(c);
         System.err.println("request for char syntax of " + c);
         return LispList.list();
     }
