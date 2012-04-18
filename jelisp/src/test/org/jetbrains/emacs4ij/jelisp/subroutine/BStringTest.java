@@ -336,4 +336,21 @@ public class BStringTest extends BaseSubroutineTest {
         n = evaluateString("(string-to-number \"110101\" 2)");
         Assert.assertEquals(new LispInteger(53), n);
     }
+
+    @Test
+    public void testReadFromString() {
+        LispList read = BString.readFromString(new LispString("a"), null, null);
+        Assert.assertEquals(LispList.cons(new LispSymbol("a"), new LispInteger(1)), read);
+    }
+
+    @Test
+    public void testReadFromStringError() {
+        try {
+            BString.readFromString(new LispString("a"), new LispInteger(2), null);
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"a\" 2 1)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
 }

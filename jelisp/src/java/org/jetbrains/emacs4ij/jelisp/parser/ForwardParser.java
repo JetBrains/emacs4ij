@@ -491,4 +491,12 @@ public class ForwardParser extends Parser {
     public String getCode () {
         return myLispCode;
     }
+
+    /**
+     * for read-from-string only,
+     * @see org.jetbrains.emacs4ij.jelisp.subroutine.BString
+     */
+    public int getCurrentIndex () {
+        return myCurrentIndex;
+    }
 }

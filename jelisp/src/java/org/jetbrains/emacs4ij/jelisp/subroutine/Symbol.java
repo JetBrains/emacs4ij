@@ -142,26 +142,26 @@ public abstract class Symbol {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real != null) {
             //todo: check for buffer-locality
-           // real.setBufferLocal(true); //?
+            // real.setBufferLocal(true); //?
             real.setValue(value);
         } else
             symbol.setValue(value);
-            GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol));
+        GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol));
         return value;
     }
-    
+
     @Subroutine(value = "make-variable-buffer-local", isCmd = true, interactive = "")
     public static LispObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
         if (!(environment instanceof GlobalEnvironment)) {
             LispObject var = environment.find(variable.getName());
             if (var == null)
-                environment.defineSymbol(variable);           
+                environment.defineSymbol(variable);
         } else {
             ((GlobalEnvironment) environment).defineBufferLocalVariable(variable);
         }
         return variable;
     }
-    
+
     @Subroutine("make-symbol")
     public static LispObject makeSymbol (LispString name) {
         return new LispSymbol(name.getData());
@@ -181,6 +181,7 @@ public abstract class Symbol {
 
     @Subroutine("intern")
     public static LispSymbol intern (LispString name, @Optional LispObject objectArray) {
+        //tODO you cannot intern a given symbol in more than one obarray
         if (objectArray == null || objectArray.equals(LispSymbol.ourNil)) {
             LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getData());
             if (symbol != null)
@@ -208,7 +209,7 @@ public abstract class Symbol {
             return LispSymbol.ourNil;
         return ((LispCommand)command).getInteractiveForm();
     }
-    
+
     @Subroutine("boundp")
     public static LispSymbol boundP (LispSymbol symbol) {
         return LispSymbol.bool(symbol.hasValue());

@@ -29,7 +29,7 @@ public class Lambda implements FunctionCell, LispCommand {
     public Lambda (LispList def) {
         List<LispObject> data = def.toLispObjectList();
         if (!data.get(0).equals(new LispSymbol("lambda")))
-            throw new InternalException(JelispBundle.message("wrong.def.form", "lambda", def.toString()));
+            throw new InvalidFunctionException(def.toString());
         try {
             if (!data.get(1).equals(LispSymbol.ourNil))
                 parseArgumentsList((LispList) data.get(1));

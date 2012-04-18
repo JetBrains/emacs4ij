@@ -240,6 +240,10 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("minibuffer-message-timeout", new LispInteger(2));
         defineSymbol("noninteractive");
         defineSymbol("parse-sexp-ignore-comments");
+        defineSymbol("read-buffer-completion-ignore-case");
+        defineSymbol("buffer-name-history");
+        defineSymbol("completion-ignore-case");
+        defineSymbol("completion-regexp-list", LispList.list());
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

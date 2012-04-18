@@ -1,9 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
@@ -22,13 +19,13 @@ public abstract class BaseSubroutineTest {
 
     @BeforeClass
     public static void runBeforeClass() {
-        TestSetup.runBeforeClass();
+       // TestSetup.runBeforeClass();
     }
 
     @Before
     public void setUp() throws Exception {
-        GlobalEnvironment.INSTANCE.clearRecorded();
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
+//        GlobalEnvironment.INSTANCE.clearRecorded();
+//        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 
     protected LispObject evaluateString (String lispCode) throws LispException {

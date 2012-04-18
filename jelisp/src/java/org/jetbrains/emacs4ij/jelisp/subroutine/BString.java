@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
@@ -8,6 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFormatOperationException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -132,15 +134,32 @@ public abstract class BString {
         return new LispInteger(m.end(index));
     }
 
-    private static int getIntegerData (LispObject object) {
-        if (object instanceof LispInteger)
-            return ((LispInteger) object).getData();
-        throw new WrongTypeArgumentException("integerp", object.toString());
-    }
-
     @Subroutine("string-to-number")
     public static LispNumber stringToNumber (LispString string, @Optional LispObject baseObject) {
-        int base = Predicate.isNil(baseObject) ? 10 : getIntegerData(baseObject);
+        int base = getInt(baseObject, 10);
         return string.toNumber(base);
+    }
+
+    private static int getInt (@Nullable LispObject intOrNil, int defaultValue) {
+        if (Predicate.isNil(intOrNil))
+            return defaultValue;
+        if (!(intOrNil instanceof LispInteger))
+            throw new WrongTypeArgumentException("integerp", intOrNil);
+        return ((LispInteger) intOrNil).getData();
+    }
+
+    @Subroutine("read-from-string")
+    public static LispList readFromString (LispString string, @Optional @Nullable LispObject start,
+                                             @Optional @Nullable LispObject finish) {
+        int begin = getInt(start, 0);
+        int end = getInt(finish, string.length());
+        try {
+            String code = string.getData().substring(begin, end);
+            ForwardParser forwardParser = new ForwardParser();
+            LispObject read = Core.thisOrNil(forwardParser.parseLine(code));
+            return LispList.cons(read, new LispInteger(begin + forwardParser.getCurrentIndex()));
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(string, begin, end);
+        }
     }
 }

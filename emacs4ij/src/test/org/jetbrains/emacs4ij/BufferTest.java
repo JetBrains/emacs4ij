@@ -679,6 +679,16 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         LispObject windows = evaluateString("(get-buffer-window-list)");
         System.out.println(windows.toString());
     }
+
+    @Test
+    public void testInternalCompleteBuffer () {
+        LispObject completion = evaluateString("(internal-complete-buffer \"1\" nil t)");
+        Assert.assertEquals(LispList.list(new LispString("1.txt")), completion);
+        completion = evaluateString("(internal-complete-buffer \"1\" nil nil)");
+        Assert.assertEquals(new LispString("1.txt"), completion);
+        completion = evaluateString("(internal-complete-buffer \"1\" nil 5)");
+        Assert.assertEquals(LispSymbol.ourT, completion); //todo: emacs shows nil
+    }
 }
 
 
