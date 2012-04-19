@@ -97,6 +97,22 @@ public abstract class Core {
         thisCommand.setValue(command);
     }
 
+    private static LispObject getArgumentsForCall (Environment environment, LispList interactiveForm) {
+        LispObject body = interactiveForm.cdr();
+        if (!(body instanceof LispList))
+            throw new WrongTypeArgumentException("listp", body);
+        body = ((LispList) body).car();
+        if (body instanceof LispString) {
+            return body;
+        } else if (body instanceof LispList) {
+            LispObject args = body.evaluate(environment);
+            if (!(args instanceof LispList))
+                throw new WrongTypeArgumentException("listp", args);
+            return args;
+        } else
+            throw new WrongTypeArgumentException("sequencep", body);
+    }
+
     @Subroutine("call-interactively")
     public static void callInteractively (Environment environment, LispSymbol symbol, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
         LispSymbol function = environment.find(symbol.getName());
@@ -111,8 +127,18 @@ public abstract class Core {
                 LispList.list(function).evaluate(environment);
                 return;
             }
-            miniBuffer = environment.getMiniBuffer();
-            miniBuffer.onInteractiveCall(environment, function);
+            LispObject args = getArgumentsForCall(environment, function.getInteractiveForm());
+            if (args instanceof LispString) {
+                miniBuffer = environment.getMiniBuffer();
+                miniBuffer.onInteractiveCall(environment, function);
+                return;
+            }
+            if (args instanceof LispList) {
+                LispList toCall = LispList.list(function, args);
+                toCall.evaluate(environment);
+                return;
+            }
+            throw new InternalException("getArgumentsForCall can return only LispString or LispList, but got " + args.getClass().getSimpleName());
         } catch (LispThrow e) {
             //todo: check exit values. <RET> was typed
             try {
@@ -414,7 +440,7 @@ public abstract class Core {
         } else if (printCharFun instanceof LispMarker) {
             ((LispMarker) printCharFun).insert(toInsert);
         } else if (printCharFun.equals(LispSymbol.ourT)) {
-            GlobalEnvironment.showInfoMessage(object.toString());
+            GlobalEnvironment.echoMessage(object.toString());
         } else {
             for (LispObject character: result.toLispObjectList()) {
                 functionCall(environment, printCharFun, character);

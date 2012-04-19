@@ -25,8 +25,15 @@ import java.util.List;
 public abstract class Minibuffer {
     private Minibuffer() {}
 
-    private static LispList history (Environment environment, LispObject historyObject) {
-        LispSymbol historySymbol = environment.find("minibuffer-history");
+    private static final LispSymbol ourMinibufferHistory;
+    static {
+        ourMinibufferHistory = GlobalEnvironment.INSTANCE.find("minibuffer-history");
+        if (ourMinibufferHistory == null)
+            throw new InternalException("null minibuffer-history");
+    }
+
+    private static LispList history (LispObject historyObject) {
+        LispSymbol historySymbol = ourMinibufferHistory;
         int historyPosition = 0;
         if (!Predicate.isNil(historyObject)) {
             if (historyObject instanceof LispSymbol) {
@@ -48,6 +55,19 @@ public abstract class Minibuffer {
             }
         }
         return LispList.cons(historySymbol, new LispInteger(historyPosition));
+    }
+
+    private static LispList historyValue() {
+        return (LispList) ourMinibufferHistory.getValue();
+    }
+
+    private static void addToHistory (@Nullable LispObject read) {
+        if (read == null)
+            return;
+        LispString value = read instanceof LispString ? (LispString) read : new LispString(read.toString());
+        if (value.isEmpty())
+            return;
+        historyValue().addToBeginning(value);
     }
 
     @Subroutine("completing-read")
@@ -83,18 +103,17 @@ public abstract class Minibuffer {
             alreadyTyped = ((LispString) init).getData();
         }
 
-        LispList h = history(environment, history);
+        LispList h = history(history);
         LispSymbol historySymbol = (LispSymbol) h.car();
         LispInteger historyPosition = (LispInteger) h.cdr();
 
-        String read = readFromMinibuffer(environment, keymapName, alreadyTyped, prompt.getData(),
+        LispString read = readFromMinibuffer(environment, keymapName, alreadyTyped, prompt.getData(),
                 historySymbol, historyPosition.getData(), defaultValue);
-
-        if (StringUtil.isEmpty(read))
-            return Predicate.isNil(defaultValue)
-                    ? LispSymbol.ourNil
-                    : defaultValue instanceof LispList ? ((LispList) defaultValue).car() : defaultValue;
-        return new LispString(read);
+        LispObject result = read;
+        if (read.isEmpty() && !Predicate.isNil(defaultValue))
+            result = defaultValue instanceof LispList ? ((LispList) defaultValue).car() : defaultValue;
+        addToHistory(result);
+        return result;
     }
 
     private static LispObject thisOrCar (LispObject maybeList) {
@@ -111,40 +130,42 @@ public abstract class Minibuffer {
 
         String keymapName = keymap == null ? "minibuffer-local-map" : keymap.getName();
 
-        LispList h = history(environment, history);
+        LispList h = history(history);
         LispSymbol historySymbol = (LispSymbol) h.car();
         LispInteger historyPosition = (LispInteger) h.cdr();
 
-        String read = readFromMinibuffer(environment, keymapName, init, prompt.getData(), historySymbol,
+        LispString read = readFromMinibuffer(environment, keymapName, init, prompt.getData(), historySymbol,
                 historyPosition.getData(), defaults);
-
-        if (!Predicate.isNil(returnLispObject)) {
-            return StringUtil.isEmpty(read)
-                    ? new LispString("")
-                    : BString.readFromString(new LispString(read), null, null).car();
+        if (read == null) {
+            //todo
+            GlobalEnvironment.showErrorMessage("Param was not read");
+            return null;
         }
 
-        return StringUtil.isEmpty(read) && !Predicate.isNil(defaults)
+        LispObject result = Predicate.isNil(returnLispObject)
+                ? (read.isEmpty() && !Predicate.isNil(defaults)
                 ? thisOrCar(defaults)
-                : new LispString(read);
+                : read)
+                : BString.readFromString(read, null, null).car();
+
+        if (result == null) {
+            //todo
+            GlobalEnvironment.echoMessage(JelispBundle.message("file.ended.while.parsing"));
+        }
+
+        addToHistory(result);
+        return result;
     }
 
-    private static String readFromMinibuffer (Environment environment, String keymapName, String initialInput, String prompt,
+    private static LispString readFromMinibuffer (final Environment environment, String keymapName, String initialInput, String prompt,
                                                   LispSymbol history, int historyPosition, LispObject defaults) {
-        LispKeymap oldKeymap = environment.getActiveKeymap();
+        final LispKeymap oldKeymap = environment.getActiveKeymap();
         environment.setActiveKeymap(keymapName);
 
-      //LispObject mbcp = environment.find("minibuffer-completion-predicate").getValue();
-
-        SpecialFormInteractive spi = new SpecialFormInteractive(environment, "");
-        spi.setParameterStartValue(initialInput);
-        spi.setPrompt(prompt);
-
-        LispObject result = environment.getMiniBuffer().onInteractiveNoIoInput(spi);
-
+        //todo: read anything=)
 
         environment.setActiveKeymap(oldKeymap);
-        return null;
+        return new LispString("");
     }
 
     private static boolean isMinibufferWindow (Environment environment, @Nullable LispWindow window) {
