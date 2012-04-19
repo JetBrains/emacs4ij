@@ -388,4 +388,13 @@ public class LispList implements LispSequence {
     public LispList copy() {
         return new LispList(toLispObjectList());
     }
+
+    public void addToBeginning (LispObject object) {
+        if (myCar == null) {
+            myCar = object;
+            return;
+        }
+        myCdr = this;
+        myCar = object;
+    }
 }

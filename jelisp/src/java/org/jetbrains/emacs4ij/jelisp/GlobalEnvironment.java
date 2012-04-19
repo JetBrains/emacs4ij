@@ -220,15 +220,15 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void defineGlobalVariables() {
-        defineSymbol("load-history");   //lread.c
-        defineSymbol("deactivate-mark");  //keyboard.c
-        defineSymbol("purify-flag");   //alloc.c
-        defineSymbol("current-load-list");//lread.c
-        defineSymbol("executing-kbd-macro"); //macros.c
-        defineSymbol("load-file-name"); //lread.c
-        defineSymbol("overlay-arrow-variable-list");//xdisp.c
+        defineSymbol("load-history");
+        defineSymbol("deactivate-mark");
+        defineSymbol("purify-flag");
+        defineSymbol("current-load-list");
+        defineSymbol("executing-kbd-macro");
+        defineSymbol("load-file-name");
+        defineSymbol("overlay-arrow-variable-list");
         defineSymbol("case-fold-search");
-        defineSymbol("obarray", new LispVector()); //lread.c
+        defineSymbol("obarray", new LispVector());
         defineSymbol("values", LispList.list());
         defineSymbol("standard-output", LispSymbol.ourT);
         defineSymbol("this-command");
@@ -244,6 +244,11 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("buffer-name-history");
         defineSymbol("completion-ignore-case");
         defineSymbol("completion-regexp-list", LispList.list());
+        defineSymbol("minibuffer-history", LispList.list());
+    }
+
+    public LispVector getObjectArray() {
+        return new LispVector(mySymbols.values());
     }
 
     private void setSubroutinesFromClass (Class[] subroutineContainers, Primitive.Type type) {

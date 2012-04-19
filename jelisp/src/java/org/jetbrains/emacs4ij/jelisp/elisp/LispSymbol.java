@@ -182,6 +182,9 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     public LispObject evaluate(Environment environment) {
         if (equals(ourNil) || equals(ourT) || equals(ourVoid) || isKeyword())
             return this;
+        if (myName.equals("obarray")) {
+            return GlobalEnvironment.INSTANCE.getObjectArray();
+        }
         if (hasValue()) {
             return getValue();
         }

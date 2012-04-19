@@ -1,8 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidControlLetterException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
@@ -13,6 +15,8 @@ import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,27 +25,27 @@ import java.util.List;
  * Time: 6:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SpecialFormInteractive {
-    private final static String ourStandardNoMatchMessage = JelispBundle.message("standard.no.match.msg");
-    private final static String ourEmptyMessage = "";
+public class SpecialFormInteractive implements Completer {
     private char myInteractiveChar;
-    private Environment myEnvironment;
-    private String myPrompt;
-    private String myPromptDefaultValue;
-    private String myParameterStartValue;
-    private String myParameterDefaultValue;
     private String myNoMatchMessage;
     private List<LispObject> myArguments;
     private String[] myParameters;
     private int myIndex;
 
-    public SpecialFormInteractive (Environment environment, String interactive) {
+    private final static String ourStandardNoMatchMessage = JelispBundle.message("standard.no.match.msg");
+    private final static String ourEmptyMessage = "";
+    private Environment myEnvironment;
+    private String myPrompt;
+    private String myInitialInput;
+    private String myParameterDefaultValue;
+    private String myPromptDefaultValue = ourEmptyMessage;
+
+    public SpecialFormInteractive (Environment environment, @Nullable String interactive) {
         myEnvironment = environment;
-        myParameters = interactive.split("\\\\n");
+        myParameters = interactive == null ? null : interactive.split("\\\\n");
         myIndex = 0;
         myArguments = new ArrayList<>();
         myNoMatchMessage = ourEmptyMessage;
-        myPromptDefaultValue = ourEmptyMessage;
         try {
             myInteractiveChar = myParameters[0].charAt(0);
             myPrompt = myParameters[0].substring(1);
@@ -50,21 +54,54 @@ public class SpecialFormInteractive {
             myPrompt = ourEmptyMessage;
         }
     }
-    
-    public boolean isFinished () {
-        return myIndex == myParameters.length;
-    }
 
     public String getPrompt() {
         return myPrompt;
     }
 
-    public Environment getEnvironment() {
-        return myEnvironment;
+    public void setPrompt (String prompt) {
+        myPrompt = prompt;
     }
 
-    public String getParameterStartValue() {
-        return myParameterStartValue;
+    private void putArgument() {
+        myEnvironment.getMiniBuffer().readParameter(this);
+    }
+
+    private void notifyMiniBuffer() {
+        myEnvironment.getMiniBuffer().onInteractiveNoIoInput(this);
+    }
+
+    public String getInitialInput() {
+        return myInitialInput;
+    }
+
+    public void setInitialInput(String initialInput) {
+        myInitialInput = initialInput;
+    }
+
+    private void normalizePromptAndDefault() {
+        if (myPromptDefaultValue.equals(ourEmptyMessage))
+            return;
+        Pattern pattern = Pattern.compile("\\s*:\\s*");
+        Matcher matcher = pattern.matcher(myPrompt);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+            System.out.println("Match number " + count);
+            System.out.println("start(): " + matcher.start());
+            System.out.println("end(): " + matcher.end());
+        }
+        int start;
+        try {
+            start = matcher.start();
+        } catch (IllegalStateException e) {
+            start = myPrompt.length();
+        }
+        myPrompt = myPrompt.substring(0, start) + myPromptDefaultValue;
+    }
+
+    public boolean isFinished () {
+        return myIndex == myParameters.length;
     }
 
     public boolean isNoMatch() {
@@ -75,41 +112,27 @@ public class SpecialFormInteractive {
         return myArguments;
     }
 
-    public String getPromptDefaultValue () {
-        return myPromptDefaultValue;
-    }
-
     public String getNoMatchMessage() {
         return myNoMatchMessage;
     }
 
-    public boolean toShowNoMatchMessage() {
+    public boolean toShowSpecialNoMatchMessage() {
         return !myNoMatchMessage.equals(ourEmptyMessage) && !myNoMatchMessage.equals(ourStandardNoMatchMessage);
-    }
-
-    public void setParameterStartValue (String parameterStartValue) {
-        myParameterStartValue = parameterStartValue;
     }
 
     public void readNextArgument() {
         if (isFinished())
             return;
+        if (myParameters == null)
+            throw new InternalException();
         String command = myParameters[myIndex];
-        myParameterStartValue = null;
+        myInitialInput = null;
         myPrompt = command.substring(1);
         myPromptDefaultValue = ourEmptyMessage;
         myInteractiveChar = command.charAt(0);
         myParameterDefaultValue = null;
         myNoMatchMessage = ourEmptyMessage;
         prepare();
-    }
-
-    private void putArgument() {
-        myEnvironment.getMiniBuffer().readParameter(this);
-    }
-
-    private void notifyMiniBuffer() {
-        myEnvironment.getMiniBuffer().onInteractiveNoIoInput(this);
     }
 
     private void addArg (LispObject arg) {
@@ -122,7 +145,7 @@ public class SpecialFormInteractive {
     }
 
     public void setNoMatch (String parameter) {
-        myParameterStartValue = parameter;
+        myInitialInput = parameter;
         myNoMatchMessage = ourStandardNoMatchMessage;
         putArgument();
     }
@@ -258,7 +281,7 @@ public class SpecialFormInteractive {
                     } catch (NumberFormatException e2) {
                         //todo: don't show prompt
                         myNoMatchMessage = JelispBundle.message("number.no.match.msg");
-                        myParameterStartValue = null;
+                        myInitialInput = null;
                         putArgument();
                         return;
                     }
@@ -290,7 +313,7 @@ public class SpecialFormInteractive {
             default:
                 throw new InvalidControlLetterException(myInteractiveChar);
         }
-        myParameterStartValue = parameter;
+        myInitialInput = parameter;
         myNoMatchMessage = ourStandardNoMatchMessage;
         putArgument();
     }
@@ -298,7 +321,7 @@ public class SpecialFormInteractive {
     private String defaultDirectory()  {
         return ((LispString) myEnvironment.getBufferCurrentForEditing().getLocalVariableValue("default-directory")).getData();
     }
-    
+
     private void prepare () {
         switch (myInteractiveChar) {
             case 'b': // -- Name of existing buffer.
@@ -307,7 +330,7 @@ public class SpecialFormInteractive {
                 break;
             case 'B': // -- Name of buffer, possibly nonexistent.
                 myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
-                myPromptDefaultValue = " (default " + myEnvironment.getBufferCurrentForEditing().getName() + "): ";
+                myPromptDefaultValue = " (default " + myParameterDefaultValue + "): ";
                 break;
             case 'c':
                 myEnvironment.getMiniBuffer().addCharListener();
@@ -317,7 +340,7 @@ public class SpecialFormInteractive {
                 notifyMiniBuffer();
                 return;
             case 'D': // -- Directory name.
-                myParameterStartValue = defaultDirectory();
+                myInitialInput = defaultDirectory();
                 break;
             case 'e': // -- Parametrized event (i.e., one that's a list) that invoked this command.
                 // If used more than once, the Nth `e' returns the Nth parametrized event.
@@ -326,13 +349,13 @@ public class SpecialFormInteractive {
                 //todo: notifyMiniBuffer(); return;
                 throw new NotImplementedException("e character not implemented");
             case 'f': // -- Existing file name.
-                myParameterStartValue = defaultDirectory();
+                myInitialInput = defaultDirectory();
                 break;
             case 'F': // -- Possibly nonexistent file name. -- no check
-                myParameterStartValue = defaultDirectory();
+                myInitialInput = defaultDirectory();
                 break;
             case 'G': // -- Possibly nonexistent file name, defaulting to just directory name.
-                myParameterStartValue = defaultDirectory();
+                myInitialInput = defaultDirectory();
                 break;
             case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
                 addArg(LispSymbol.ourNil);
@@ -385,6 +408,7 @@ public class SpecialFormInteractive {
             case 'Z': // -- Coding system, nil if no prefix arg.
                 break;
         }
+        normalizePromptAndDefault();
         putArgument();
     }
 
@@ -430,6 +454,7 @@ public class SpecialFormInteractive {
         return completions;
     }
 
+    @Override
     public List<String> getCompletions (String parameter) {
         List<String> completions = new ArrayList<>();
         switch (myInteractiveChar) {

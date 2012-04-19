@@ -51,8 +51,6 @@ public class IdeProvider implements Ide {
         return ProjectManager.getInstance().getOpenProjects()[0].getComponent(MyProjectComponent.class).getEchoArea();
     }
 
-    //todo print in different colors
-
     @Override
     public void echoMessage(final String message) {
         getEchoArea().print(message, ConsoleViewContentType.NORMAL_OUTPUT_KEY);

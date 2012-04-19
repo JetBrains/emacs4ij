@@ -17,4 +17,5 @@ public interface LispSequence extends LispObject {
     List<LispObject> mapCar (Environment environment, LispObject method);
     LispObject copy();
     String toCharString();
+    boolean isEmpty();
 }

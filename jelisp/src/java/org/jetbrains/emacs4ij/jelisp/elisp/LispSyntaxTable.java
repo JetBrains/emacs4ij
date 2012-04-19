@@ -41,6 +41,8 @@ public class LispSyntaxTable implements LispObject, LispSequence {
 
     @Override
     public int length() {
+        if (isEmpty())
+            return 0;
         return Collections.max(myData.keySet());
     }
 
@@ -62,6 +64,11 @@ public class LispSyntaxTable implements LispObject, LispSequence {
     @Override
     public String toCharString() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return myData.isEmpty();
     }
 
     public void setCharSyntax (char c, SyntaxDescriptor.ClassType value) {

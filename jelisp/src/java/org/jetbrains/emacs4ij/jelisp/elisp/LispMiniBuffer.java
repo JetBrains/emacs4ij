@@ -19,16 +19,17 @@ public interface LispMiniBuffer extends LispBuffer {
     void open(LispBuffer parent);
     boolean wasInteractiveFormResult();
     void setReadCommandStatus();
-
-    //todo: as in emacs
-    String readInputString();
-    List<String> getCompletions (String parameter);
-    void setNoMatch(String input);
     void setInputStartValue (String startValue);
     void updateEditorText();
 
-    //todo: these methods mustn't return the evaluation result. This is only for testing.
     LispObject onReadInput();
     LispObject onInteractiveNoIoInput(SpecialFormInteractive interactive);
     LispObject onInteractiveCall(Environment environment, LispSymbol command);
+
+    //todo: as in emacs
+    String readInputString();
+
+    //it's for completer interface
+    List<String> getCompletions (String parameter);
+    void setNoMatch(String input);
 }

@@ -7,10 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -36,6 +33,10 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     
     public LispVector (List<LispObject> list) {
         myData = list; //rem: don't copy for LispSequence.copy to share data
+    }
+
+    public LispVector (Collection<LispSymbol> objectArray) {
+        myData = new ArrayList<LispObject>(objectArray);
     }
 
     @Override

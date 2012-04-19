@@ -6,6 +6,7 @@ import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.FocusChangeListener;
+import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
@@ -42,18 +43,14 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private LispBuffer myParent;
     private boolean isOpened = false;
 
-    private boolean isDocumentListenerSet = false;
-
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
         @Override
         public void beforeDocumentChange(DocumentEvent documentEvent) {
-            System.out.println("TEXT = " + documentEvent.getDocument().getText());
         }
 
         @Override
         public void documentChanged(DocumentEvent documentEvent) {
             documentEvent.getDocument().removeDocumentListener(this);
-            isDocumentListenerSet = false;
             myAlarm.cancelAllRequests();
             if (myInteractive.isNoMatch()) {
                 String newText = documentEvent.getDocument().getText();
@@ -73,24 +70,16 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         public void focusGained(Editor editor) {
             myOldKeymap = myEnvironment.getActiveKeymap();
             myEnvironment.setActiveKeymap("minibuffer-local-completion-map");
-//            System.out.println("minibuffer-local-completion-map, onEnter = " +
-//                    Arrays.toString(KeymapManager.getInstance().getActiveKeymap().getActionIds(KeyStroke.getKeyStroke("ENTER"))));
         }
 
         @Override
         public void focusLost(Editor editor) {
             myEnvironment.setActiveKeymap(myOldKeymap);
-//            System.out.println("global-map, onEnter = " +
-//                    Arrays.toString(KeymapManager.getInstance().getActiveKeymap().getActionIds(KeyStroke.getKeyStroke("ENTER"))));
         }
     };
 
     private void cancelNoMatchMessageUpdate() {
         myAlarm.cancelAllRequests();
-//        if (isDocumentListenerSet) {
-//            getDocument().removeDocumentListener(myMiniBufferChangedListener);
-//            isDocumentListenerSet = false;
-//        }
     }
 
     public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
@@ -151,17 +140,15 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public void setInputStartValue (String startValue) {
-        myInteractive.setParameterStartValue(startValue);
+        myInteractive.setInitialInput(startValue);
     }
 
     private void clearNoMatch () {
         getDocument().addDocumentListener(myMiniBufferChangedListener);
-        isDocumentListenerSet = true;
         myAlarm.addRequest(new Runnable() {
             @Override
             public void run() {
                 getDocument().removeDocumentListener(myMiniBufferChangedListener);
-                isDocumentListenerSet = false;
                 String text = getDocument().getText();
                 if (myInteractive.isNoMatch()
                         && text.endsWith(myInteractive.getNoMatchMessage())
@@ -183,8 +170,8 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public void updateEditorText() {
-        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue() +
-                ((myInteractive.getParameterStartValue() == null) ? "" : myInteractive.getParameterStartValue());
+        String text = myInteractive.getPrompt() +
+                ((myInteractive.getInitialInput() == null) ? "" : myInteractive.getInitialInput());
         write(text);
     }
 
@@ -193,16 +180,14 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
      */
     @Override
     public void readParameter (@NotNull SpecialFormInteractive interactive) {
-        myPrompt = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue();
-
-        if (myInteractive.toShowNoMatchMessage()) {
+        myPrompt = myInteractive.getPrompt();
+        if (myInteractive.toShowSpecialNoMatchMessage()) {
             write(myInteractive.getNoMatchMessage());
             clearNoMatch();
             return;
         }
-
-        String text = myInteractive.getPrompt() + myInteractive.getPromptDefaultValue()
-                + (myInteractive.getParameterStartValue() == null ? "" : myInteractive.getParameterStartValue());
+        String text = myInteractive.getPrompt()
+                + (myInteractive.getInitialInput() == null ? "" : myInteractive.getInitialInput());
         int cursorPosition = text.length()+1;
         text += myInteractive.getNoMatchMessage();
         write(text);
@@ -262,7 +247,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         cancelNoMatchMessageUpdate();
         write(myPrompt);
         myWindowManager.closeAll();
-//        myInput.removeFocusListener(myFocusListener);
         myActivationsDepth = 0;
         if (myParent != null) {
             myParent.closeHeader();
@@ -280,21 +264,17 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     @Override
-    public void open(LispBuffer parent) {
-        EditorTextField input = new EditorTextField();
+    public void open(final LispBuffer parent) {
+        final EditorTextField input = new EditorTextField("", ourProject, FileTypes.PLAIN_TEXT);
         parent.getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
-
         Editor editor = input.getEditor();
-//        if (editor == null)
-//            throw new InternalException("No editor for minibuffer!");
         if (editor != null) {
             ((EditorEx) editor).addFocusListener(myFocusListener);
         }
         setEditor(editor);
         myActivationsDepth++;
-
         isOpened = true;
         setActive();
     }
@@ -404,7 +384,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         if (myCommand != null && myCommand.getName().equals("execute-extended-command")) {
             setReadCommandStatus();
             shiftPrefixArgs();
-            startRead();
+            myInteractive.readNextArgument();
             return null;
         }
         clearPrefixArgs();
@@ -419,7 +399,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     public void setActive() {
         if (myEnvironment.getServiceBuffer(myName) == null)
             throw new NoBufferException(myName);
-        if (!myWindowManager.getSelectedWindow().hasEditor())
+        if (myWindowManager.getSelectedWindow() == null || !myWindowManager.getSelectedWindow().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
         getEditor().getContentComponent().grabFocus();
     }
@@ -432,15 +412,12 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     public void message (final String text) {
         getDocument().addDocumentListener(myMiniBufferChangedListener);
-        isDocumentListenerSet = true;
         myAlarm.addRequest(new Runnable() {
             @Override
             public void run() {
                 getDocument().removeDocumentListener(myMiniBufferChangedListener);
-                isDocumentListenerSet = false;
                 appendText(text);
             }
         }, 3000);
     }
-
 }

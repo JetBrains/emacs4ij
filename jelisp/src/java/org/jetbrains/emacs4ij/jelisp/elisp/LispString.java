@@ -105,6 +105,11 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
         return myData;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return myData == null || myData.equals("");
+    }
+
     public LispString capitalize() {
         return new LispString(StringUtil.capitalizeWords(myData.toLowerCase(), true));
     }

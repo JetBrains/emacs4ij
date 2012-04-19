@@ -39,7 +39,7 @@ public class IdeaBuffer implements LispBuffer {
     protected final WindowManager myWindowManager;
     protected boolean isChangedByMe = false;
 
-    private static Project ourProject;
+    protected static Project ourProject;
     private LispMarker myMark = new LispMarker();
     private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
 

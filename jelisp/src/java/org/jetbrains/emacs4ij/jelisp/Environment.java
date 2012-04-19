@@ -122,7 +122,6 @@ public abstract class Environment {
         mySymbols.put(symbol.getName(), symbol);
     }
 
-
     // =========== buffers =================
     public LispBuffer createBuffer (String bufferName) {
         return getBufferManager().createBuffer(bufferName);

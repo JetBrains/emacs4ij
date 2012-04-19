@@ -210,7 +210,10 @@ public abstract class LispSubroutine {
                     try {
                         return (LispObject) m.invoke(null, arguments.getValues());
                     } catch (IllegalAccessException | InvocationTargetException e) {
-                        System.err.println(e.getCause().getMessage());
+                        if (e.getCause().getMessage() == null)
+                            e.getCause().printStackTrace();
+                        else System.err.println(e.getCause().getMessage());
+                        
                         Throwable cause = getCause(e);
                         if (cause instanceof LispThrow)
                             throw (LispThrow) cause;
