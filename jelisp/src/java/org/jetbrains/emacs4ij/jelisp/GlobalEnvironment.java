@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
@@ -166,7 +167,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     public LispSymbol defineSymbol (String name, @Nullable LispObject value) {
-        LispSymbol symbol = new LispSymbol(name, value == null ? LispSymbol.ourNil : value);
+        LispSymbol symbol = new LispSymbol(name, Core.thisOrNil(value));
         defineSymbol(symbol);
         return symbol;
     }
@@ -365,6 +366,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     public List<String> getCommandList (String begin) {
+        //todo: add data retrieved after source index
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
         List<String> commandList = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -380,6 +382,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     public List<String> getFunctionList (String begin) {
+        //todo: add data retrieved after source index
         Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
         List<String> functionList = new ArrayList<>();
         while (iterator.hasNext()) {
@@ -392,6 +395,22 @@ public class GlobalEnvironment extends Environment {
             }
         }
         return functionList;
+    }
+
+    public List<String> getUserOptions (String begin) {
+        //todo extract user options from lisp code
+        Iterator<Map.Entry<String, LispSymbol>> iterator = mySymbols.entrySet().iterator();
+        List<String> userOptions = new ArrayList<>();
+        while (iterator.hasNext()) {
+            LispSymbol symbol = iterator.next().getValue();
+            if (Predicate.isUserOption(symbol)) {
+                if (symbol.getName().length() < begin.length())
+                    continue;
+                if (begin.equals(symbol.getName().substring(0, begin.length())))
+                    userOptions.add(symbol.getName());
+            }
+        }
+        return userOptions;
     }
 
     //==============

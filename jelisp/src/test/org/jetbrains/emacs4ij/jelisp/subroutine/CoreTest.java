@@ -152,6 +152,17 @@ public class CoreTest extends BaseSubroutineTest {
     }
 
     @Test
+    public void testEvalMacro() {
+        try {
+        evaluateString("((defmacro mac (a) (message \"%s\" a)) 5)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-function (defmacro mac (a) (message \"%s\" a)))", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
     public void testFuncallLambda () {
         LispObject result = evaluateString("(funcall '(lambda (a) (+ 1 a)) 2)");
         Assert.assertEquals(new LispInteger(3), result);

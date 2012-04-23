@@ -1,11 +1,13 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,20 +92,17 @@ public abstract class Core {
         return lispNull(lObject);
     }
 
-    public static void shiftCommandVars(LispSymbol command) {
-        LispSymbol thisCommand = GlobalEnvironment.INSTANCE.find("this-command");
-        LispSymbol lastCommand = GlobalEnvironment.INSTANCE.find("last-command");
-        lastCommand.setValue(thisCommand.getValue());
-        thisCommand.setValue(command);
-    }
-
     private static LispObject getArgumentsForCall (Environment environment, LispList interactiveForm) {
         LispObject body = interactiveForm.cdr();
+        if (body.equals(LispSymbol.ourNil))
+            return LispList.list();
         if (!(body instanceof LispList))
             throw new WrongTypeArgumentException("listp", body);
         body = ((LispList) body).car();
         if (body instanceof LispString) {
-            return body;
+            return ((LispString) body).getData().equals("") // my primitives have "" interactive string
+                    ? LispList.list()
+                    : body;
         } else if (body instanceof LispList) {
             LispObject args = body.evaluate(environment);
             if (!(args instanceof LispList))
@@ -113,53 +112,123 @@ public abstract class Core {
             throw new WrongTypeArgumentException("sequencep", body);
     }
 
-    @Subroutine("call-interactively")
-    public static void callInteractively (Environment environment, LispSymbol symbol, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
-        LispSymbol function = environment.find(symbol.getName());
-        if (function == null)
-            function = symbol;
-        if (!Predicate.commandp(function, null).equals(LispSymbol.ourT))
-            throw new WrongTypeArgumentException("commandp", function.getName());
-        LispMiniBuffer miniBuffer = null;
-        try {
-            if (StringUtil.isEmptyOrSpaces(function.getInteractiveString())) {
-                shiftCommandVars(function);
-                LispList.list(function).evaluate(environment);
-                return;
-            }
-            LispObject args = getArgumentsForCall(environment, function.getInteractiveForm());
-            if (args instanceof LispString) {
-                miniBuffer = environment.getMiniBuffer();
-                miniBuffer.onInteractiveCall(environment, function);
-                return;
-            }
-            if (args instanceof LispList) {
-                LispList toCall = LispList.list(function, args);
-                toCall.evaluate(environment);
-                return;
-            }
-            throw new InternalException("getArgumentsForCall can return only LispString or LispList, but got " + args.getClass().getSimpleName());
-        } catch (LispThrow e) {
-            //todo: check exit values. <RET> was typed
+    public static LispCommand toCommand (LispObject function) {
+        LispObject f = function;
+        if (function instanceof LispSymbol)
+            f = ((LispSymbol) function).getFunction();
+        if (f instanceof LispList) {
             try {
-                if (miniBuffer == null)
-                    return;
-                LispObject result = miniBuffer.onReadInput();
-                if (result != null && miniBuffer.wasInteractiveFormResult())
-                    GlobalEnvironment.echoMessage(result.toString());
-            } catch (LispException exc) {
-                GlobalEnvironment.echoError(exc.getMessage());
+                f = new Lambda((LispList) f);
+            } catch (Exception e) {
+                return null;
             }
         }
+        if ((f instanceof Lambda || f instanceof Primitive) && ((LispCommand)f).isInteractive()) {
+            return (LispCommand) f;
+        }
+        return null;
+    }
+    
+    @NotNull
+    private static LambdaOrSymbolWithFunction normalizeCommand (LispObject command) {
+        if (command instanceof LispSymbol) {
+            ((LispSymbol) command).castToLambda();
+            LispObject function = ((LispSymbol) command).getFunction();
+            if ((function instanceof Lambda || function instanceof Primitive) && ((LispCommand)function).isInteractive()) {
+                return (LispSymbol) command;
+            }            
+        } else if (command instanceof LispList) {
+            try {
+                Lambda f = new Lambda((LispList) command);
+                if (f.isInteractive())
+                    return f;
+            } catch (Exception e) {
+                throw new InternalException(JelispBundle.message("invalid.command"));
+            }
+        }
+        throw new InternalException(JelispBundle.message("invalid.command"));
+    }
+
+    private static void shiftPrefixArgs(Environment environment) {
+        environment.setVariable(new LispSymbol("last-prefix-arg", environment.find("current-prefix-arg").getValue()));
+        environment.setVariable(new LispSymbol("current-prefix-arg", environment.find("prefix-arg").getValue()));
+        environment.setVariable(new LispSymbol("prefix-arg", LispSymbol.ourNil));
+    }
+
+    private static void clearPrefixArgs(Environment environment) {
+        environment.setVariable(new LispSymbol("last-prefix-arg", environment.find("current-prefix-arg").getValue()));
+        environment.setVariable(new LispSymbol("current-prefix-arg", LispSymbol.ourNil));
+    }
+
+    public static void shiftCommandVars(LambdaOrSymbolWithFunction command) {
+        LispSymbol thisCommand = GlobalEnvironment.INSTANCE.find("this-command");
+        LispSymbol lastCommand = GlobalEnvironment.INSTANCE.find("last-command");
+        lastCommand.setValue(thisCommand.getValue());
+        thisCommand.setValue(command);
+    }   
+
+    @Subroutine("call-interactively")
+    public static void callInteractively (Environment environment, LispObject function, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
+        LispCommand command = toCommand(function);
+        if (command == null)
+            throw new WrongTypeArgumentException("commandp", function);
+
+        if (function.equals(new LispSymbol("execute-extended-command")))
+            shiftPrefixArgs(environment);
+        else clearPrefixArgs(environment);
+
+        shiftCommandVars(normalizeCommand(function));
+
+        LispObject args = getArgumentsForCall(environment, command.getInteractiveForm());
+//        GlobalEnvironment.ourCallStack.push(function.toString());
+        SpecialForms.interactive(environment, args);
+
+//        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+
+
+
+
+//        try {
+//            if (StringUtil.isEmptyOrSpaces(command.getInteractiveString())) {
+//                shiftCommandVars(command);
+//                LispList.list(command).evaluate(environment);
+//                return;
+//            }
+//            LispObject args = getArgumentsForCall(environment, command.getInteractiveForm());
+//            if (args instanceof LispString) {
+//                miniBuffer = environment.getMiniBuffer();
+//                miniBuffer.onInteractiveCall(environment, function);
+//                return;
+//            }
+//            if (args instanceof LispList) {
+//                LispList toCall = LispList.list(function, args);
+//                toCall.evaluate(environment);
+//                return;
+//            }
+//            throw new InternalException("getArgumentsForCall can return only LispString or LispList, but got " + args.getClass().getSimpleName());
+//        } catch (LispThrow e) {
+//            //todo: check exit values. <RET> was typed
+//            //we never come here, dont'we? =)
+//            try {
+//                if (miniBuffer == null)
+//                    return;
+//                miniBuffer.onReadInput();
+//                if (result != null && miniBuffer.wasInteractiveFormResult())
+//                    GlobalEnvironment.echoMessage(result.toString());
+//            } catch (LispException exc) {
+//                GlobalEnvironment.echoError(exc.getMessage());
+//            }
+//        }
     }
 
     @Subroutine("funcall")
     public static LispObject functionCall (Environment environment, LispObject function, @Optional LispObject... args) {
-        environment.setArgumentsEvaluated(true);
         List<LispObject> data = new ArrayList<>();
         data.add(function);
         Collections.addAll(data, args);
         LispList funcall = LispList.list(data);
+        environment.setArgumentsEvaluated(true);
+        environment.setSpecFormsAndMacroAllowed(false);
         return funcall.evaluate(environment);
     }
 
@@ -300,12 +369,13 @@ public abstract class Core {
 
     @Subroutine(value = "apply")
     public static LispObject apply (Environment environment, LispObject function, LispObject... args) {
-        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
-                || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
-            throw new InvalidFunctionException(function.toString());
+//        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
+//                || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
+//            throw new InvalidFunctionException(function.toString());
 
         if (!(args[args.length-1] instanceof LispList) && !args[args.length-1].equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("listp", args[args.length-1]);
+
         ArrayList<LispObject> list = new ArrayList<>();
         list.addAll(Arrays.asList(args).subList(0, args.length - 1));
 
@@ -314,6 +384,7 @@ public abstract class Core {
             list.addAll(last);
         }
         environment.setArgumentsEvaluated(true);
+        environment.setSpecFormsAndMacroAllowed(false);
         return ((LispSymbol) function).evaluateFunction(environment, list);
     }
 
@@ -393,38 +464,32 @@ public abstract class Core {
 
     @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "P", key = "\\M-x")
     public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
-        LispMiniBuffer miniBuffer = null;
-        try {
-            environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
-            LispBuffer buffer = environment.getBufferCurrentForEditing();
-            buffer.setActive();
-            miniBuffer = environment.getMiniBuffer();
-            miniBuffer.setReadCommandStatus();
-            miniBuffer.open(buffer);
-        } catch (LispThrow e) {
-            //todo: check exit values. <RET> was typed
-            try {
-                if (miniBuffer == null)
-                    return;
-                LispObject result = miniBuffer.onReadInput();
-                if (result != null && miniBuffer.wasInteractiveFormResult())
-                    GlobalEnvironment.echoMessage(result.toString());
-            } catch (LispException exc) {
-                GlobalEnvironment.echoError(exc.getMessage());
-            }
-        }
-    }
+        environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
+        SpecialFormInteractive interactive = new SpecialFormInteractive(environment,
+                new LispSymbol("call-interactively"), "CM-x ");
+        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        miniBuffer.onInteractiveNoIoInput(interactive);
 
-    //todo: compiled lisp f
-    @Subroutine(value = "exit-minibuffer", isCmd = true)
-    public static void exitMinibuffer (Environment environment) {
-        try {
-            LispObject result = environment.getMiniBuffer().onReadInput();
-            if (result != null && environment.getMiniBuffer().wasInteractiveFormResult())
-                GlobalEnvironment.echoMessage(result.toString());
-        } catch (LispException exc) {
-            GlobalEnvironment.echoError(exc.getMessage());
-        }
+
+//            LispBuffer buffer = environment.getBufferCurrentForEditing();
+//            buffer.setActive();
+//            miniBuffer = environment.getMiniBuffer();
+//            miniBuffer.onInteractiveCall();
+//
+//            miniBuffer.setReadCommandStatus();
+//            miniBuffer.open(buffer);
+//        } catch (LispThrow e) {
+//            //todo: check exit values. <RET> was typed
+//            try {
+//                if (miniBuffer == null)
+//                    return;
+//                LispObject result = miniBuffer.onReadInput();
+//                if (result != null && miniBuffer.wasInteractiveFormResult())
+//                    GlobalEnvironment.echoMessage(result.toString());
+//            } catch (LispException exc) {
+//                GlobalEnvironment.echoError(exc.getMessage());
+//            }
+//        }
     }
 
     private static LispString print (Environment environment, LispObject object,

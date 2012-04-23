@@ -193,8 +193,12 @@ public class IdeaBuffer implements LispBuffer {
     public void setEditor(@Nullable Editor editor) {
         if (myWindowManager.size() > 1)
             throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
-        if (editor == null && myWindowManager.size() == 1 && getDocument() != null) {
-            getDocument().removeDocumentListener(myDocumentListener);
+        if (editor == null && myWindowManager.size() == 1 && getDocument() != null && !(this instanceof IdeaMiniBuffer)) {
+            try {
+                getDocument().removeDocumentListener(myDocumentListener);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
         }
         myWindowManager.setActiveEditor(editor);
     }

@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -9,13 +10,13 @@ import org.jetbrains.emacs4ij.jelisp.exception.Error;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.interactive.EmptyReader;
+import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 
 /**
  * Created by IntelliJ IDEA.
@@ -218,22 +219,42 @@ public abstract class SpecialForms {
         return f;
     }
 
-    @Subroutine("interactive")
-    public static LispObject interactive(Environment environment, @Optional LispObject args) {
-        if (!environment.isMainOrGlobal() || isNil(args))
-            return LispSymbol.ourNil;
-        if (args instanceof LispList) {
-            args = args.evaluate(environment);
-            if (args instanceof LispList)
-                return args;
-            throw new WrongTypeArgumentException("listp", args.toString());
+    private static LambdaOrSymbolWithFunction getInvoker() {
+        LambdaOrSymbolWithFunction invoker = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
+        return invoker.equals(LispSymbol.ourNil) ? null : invoker;
+    }
+    
+    private static LispList interactivePrepare (Environment environment, @Nullable LispObject... args) {
+        if (!environment.isMainOrGlobal() || args == null || args.length == 0)
+            return LispList.list();
+        LispObject arg = args[0];
+        if (Predicate.isNil(arg))
+            return arg instanceof LispList && ((LispList) arg).isEmpty()
+                    ? (LispList) arg
+                    : LispList.list(LispSymbol.ourNil);
+
+        if (arg instanceof LispList) {
+            arg = arg.evaluate(environment);
+            if (arg instanceof LispList)
+                return (LispList) arg;
+            throw new WrongTypeArgumentException("listp", arg.toString());
         }
-        if (args instanceof LispString) {
-            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, ((LispString) args).getData());
+        if (arg instanceof LispString) {
+            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, getInvoker(), ((LispString) arg).getData());
             LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-            return miniBuffer.onInteractiveNoIoInput(interactive);
+            miniBuffer.onInteractiveNoIoInput(interactive);
+            return null;
         }
-        throw new WrongTypeArgumentException("listp", args.toString());
+        throw new WrongTypeArgumentException("listp", arg.toString());
+    }
+
+    @Subroutine("interactive")
+    public static void interactive(Environment environment, @Optional LispObject... args) {
+            LispList result = interactivePrepare(environment, args);
+        if (result == null)
+            return;
+        EmptyReader reader = new EmptyReader(environment, getInvoker(), result);
+        environment.getMiniBuffer().onInteractiveNoIoInput(reader);
     }
 
     @Subroutine("progn")

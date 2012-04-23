@@ -10,6 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -225,6 +226,57 @@ public abstract class Minibuffer {
     @Subroutine(value = "minibuffer-completion-help", isCmd = true)
     public static void minibufferCompletionHelp (Environment environment) {
         //todo all possible completions
+    }
+
+    /**
+     * though it's a compiled lisp f, I overwrite it.
+     * @param environment evaluation context
+     * @return to echo area
+     */
+    @Subroutine(value = "exit-minibuffer", isCmd = true)
+    public static LispObject exitMinibuffer (Environment environment) {
+//        try {
+//            final InteractiveReader reader = environment.getMiniBuffer().getInteractiveReader();
+//            List<LispObject> arguments = reader.getArguments();
+//            LambdaOrSymbolWithFunction command = reader.getCommand();
+//            if (command == null || command.equals(new LispSymbol("exit-minibuffer")) || wasInteractiveForm()) {
+//                GlobalEnvironment.echoMessage(LispList.list(arguments).toString() + '\n');
+                return LispSymbol.ourNil;
+//            }
+//            System.out.println("eval after exit: " + command.toString());
+////            Core.shiftCommandVars(command);
+//            return Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
+//        } catch (LispException exc) {
+//            GlobalEnvironment.echoError(exc.getMessage());
+//            return LispSymbol.ourNil;
+//        }
+    }
+
+    public static void goOn (InteractiveReader reader) {
+        try {
+            List<LispObject> arguments = reader.getArguments();
+            LambdaOrSymbolWithFunction command = reader.getCommand();
+            LambdaOrSymbolWithFunction recentCommand = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
+
+            if (command == null ||
+                    (GlobalEnvironment.ourCallStack.isEmpty() && recentCommand.equals(new LispSymbol("exit-minibuffer"))
+                    && !command.equals(new LispSymbol("call-interactively")))) {
+                GlobalEnvironment.echoMessage(LispList.list(arguments).toString() + '\n');
+                return;
+            }
+            System.out.println("eval after exit: " + command.toString());
+            LispObject result = Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
+            if (result != null) {
+                GlobalEnvironment.echoMessage(result.toString() + '\n');
+            }
+        } catch (LispException exc) {
+            GlobalEnvironment.echoError(exc.getMessage() + '\n');
+        }
+    }
+    
+    
+    private static boolean wasInteractiveForm() {
+        return !GlobalEnvironment.ourCallStack.isEmpty() && GlobalEnvironment.ourCallStack.getFirst().equals("interactive");
     }
 
     @Subroutine("redisplay")

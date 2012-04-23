@@ -112,8 +112,8 @@ public abstract class Symbol {
 
         } else if (function instanceof Lambda) {
             return ((Lambda) function).getDocumentation();
-        } else if (function instanceof Macro) {
-            return ((Macro)function).getDocumentation();
+        } else if (function instanceof LispMacro) {
+            return ((LispMacro)function).getDocumentation();
         } else if (function instanceof Primitive) {
             return ((Primitive) function).getDocumentation();
         }

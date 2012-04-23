@@ -10,17 +10,18 @@ import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Minibuffer;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -31,17 +32,21 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
-    public enum MiniBufferStatus {READ_COMMAND, READ_ARG}
-    public static String ourEvalPrompt = "M-x ";
-    private MiniBufferStatus myStatus;
     private int myActivationsDepth = 0;
-    private SpecialFormInteractive myInteractive;
-    private String myPrompt = ourEvalPrompt;
-    private LispSymbol myCommand;
+    private InteractiveReader myInteractive;
     private Integer myCharCode = null;
     private Alarm myAlarm;
     private LispBuffer myParent;
     private boolean isOpened = false;
+    private boolean exitOnSuccess = false;
+    private static Deque<InteractiveReader> myInteractiveStack = new ArrayDeque<>();
+
+    public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
+        super(environment, " *Minibuf-" + number + '*', editor);
+        myParent = parent;
+        myAlarm = new Alarm();
+        myEnvironment.defineServiceBuffer(this);
+    }
 
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
         @Override
@@ -82,36 +87,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         myAlarm.cancelAllRequests();
     }
 
-    public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
-        super(environment, " *Minibuf-" + number + '*', editor);
-        myParent = parent;
-        setReadCommandStatus();
-        myAlarm = new Alarm();
-        myEnvironment.defineServiceBuffer(this);
-    }
-
-    private void setDefaultInteractive () {
-        myInteractive = new SpecialFormInteractive(myEnvironment, 'C'+ourEvalPrompt);
-    }
-
-    @Override
-    public void setReadCommandStatus () {
-        myStatus = MiniBufferStatus.READ_COMMAND;
-        setDefaultInteractive();
-    }
-
-    private void setReadArgumentStatus () {
-        myStatus = MiniBufferStatus.READ_ARG;
-    }
-
-    @Override
-    public void setEditor(Editor editor) {
-        super.setEditor(editor);
-        //todo: on hide save state of interactive input and restore here.
-        if (editor != null)
-            write(myPrompt);
-    }
-
     @Override
     public void addCharListener () {
         IdeEventQueue.getInstance().addActivityListener(new Runnable() {
@@ -150,22 +125,15 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             public void run() {
                 getDocument().removeDocumentListener(myMiniBufferChangedListener);
                 String text = getDocument().getText();
+                String prompt = myInteractive.getPrompt();
                 if (myInteractive.isNoMatch()
                         && text.endsWith(myInteractive.getNoMatchMessage())
-                        && text.startsWith(myPrompt)) {
-                    String input = text.substring(myPrompt.length(), text.length() - myInteractive.getNoMatchMessage().length());
-                    write(myPrompt + input);
+                        && text.startsWith(prompt)) {
+                    String input = text.substring(prompt.length(), text.length() - myInteractive.getNoMatchMessage().length());
+                    write(prompt + input);
                 }
             }
         }, 3000);
-    }
-
-    /*
-    ** for outer usage plugin
-    */
-    @Override
-    public void startRead () {
-        myInteractive.readNextArgument();
     }
 
     @Override
@@ -179,8 +147,16 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         ** for usage from SpecialFormInteractive only
      */
     @Override
-    public void readParameter (@NotNull SpecialFormInteractive interactive) {
-        myPrompt = myInteractive.getPrompt();
+    public void readParameter (@NotNull InteractiveReader interactive) {
+        if (!isOpened) {
+            open(myEnvironment.getBufferCurrentForEditing());
+            if (myActivationsDepth > 1) {
+                kill();
+                GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
+                return;
+            }
+        }
+
         if (myInteractive.toShowSpecialNoMatchMessage()) {
             write(myInteractive.getNoMatchMessage());
             clearNoMatch();
@@ -237,16 +213,20 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
                 : text.length();
         if (k < 0)
             k = text.length();
-        return text.substring(myPrompt.length(), k);
+        if (myInteractive.getPrompt() == null)
+            System.out.print(1);
+        return text.substring(myInteractive.getPrompt().length(), k);
     }
 
     @Override
     public void kill() {
-        setReadCommandStatus();
-        myPrompt = ourEvalPrompt;
+//        setReadCommandStatus();
+//        myPrompt = ourEvalPrompt;
+        exitOnSuccess = false;
         cancelNoMatchMessageUpdate();
-        write(myPrompt);
-        myWindowManager.closeAll();
+        setEditor(null);
+//        write(myPrompt);
+//        myWindowManager.closeAll();
         myActivationsDepth = 0;
         if (myParent != null) {
             myParent.closeHeader();
@@ -263,25 +243,23 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         return myActivationsDepth;
     }
 
-    @Override
-    public void open(final LispBuffer parent) {
+    private void open(final LispBuffer parent) {
         final EditorTextField input = new EditorTextField("", ourProject, FileTypes.PLAIN_TEXT);
         parent.getEditor().setHeaderComponent(input);
+
         myParent = parent;
         input.setEnabled(true);
         Editor editor = input.getEditor();
         if (editor != null) {
             ((EditorEx) editor).addFocusListener(myFocusListener);
+            setEditor(editor);
+            editor.getContentComponent().setForeground(Color.GREEN);
+            editor.getComponent().setForeground(Color.BLUE);
         }
-        setEditor(editor);
+
         myActivationsDepth++;
         isOpened = true;
         setActive();
-    }
-
-    @Override
-    public boolean wasInteractiveFormResult() {
-        return myCommand == null;
     }
 
     //for test
@@ -295,104 +273,45 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     @Override
-    public LispObject onReadInput () {
-        switch (myStatus) {
-            case READ_COMMAND:
-                myInteractive.onReadParameter(readInputString());
-                if (myInteractive.isFinished()) {
-                    LispSymbol cmd = (LispSymbol) myInteractive.getArguments().get(0);
-                    String interactiveString = cmd.getInteractiveString();
-                    if (interactiveString == null) {
-                        throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.string.error", cmd.getName()));
-                    }
-                    myCommand = cmd;
-                    if (interactiveString.equals("")) {
-                        kill();
-                        return evaluateCommand(false);
-                    }
-                    myInteractive = new SpecialFormInteractive(myEnvironment, interactiveString);
-                    setReadArgumentStatus();
-                    myInteractive.readNextArgument();
-                } else {
-                    if (!myInteractive.isNoMatch())
-                        throw new Emacs4ijFatalException(Emacs4ijBundle.message("interactive.read.error"));
-                }
-                break;
-            case READ_ARG:
-                myInteractive.onReadParameter(readInputString());
-                if (myInteractive.isFinished()) {
-                    return runInteractive();
-                } else {
-                    if (!myInteractive.isNoMatch())
-                        myInteractive.readNextArgument();
-                }
-                break;
-        }
-        return null;
+    public InteractiveReader getInteractiveReader() {
+        return myInteractive;
     }
 
-    private LispObject onInteractiveNoIoInput (@Nullable LispSymbol command, SpecialFormInteractive interactive) {
-        if (command != null)
-            myCommand = command;
-        myInteractive = interactive;
+    @Override
+    public void onReadInput () {
+        myInteractive.onReadParameter(readInputString());
         if (myInteractive.isFinished()) {
-            return runInteractive();
-        } else {
-            if (!isOpened) {
-                myStatus = MiniBufferStatus.READ_ARG;
-                open(myEnvironment.getBufferCurrentForEditing());
-                if (myActivationsDepth > 1) {
-                    kill();
-                    GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
-                    return null;
-                }
-            }
+            runInteractive();
+        } else if (!myInteractive.isNoMatch())
             myInteractive.readNextArgument();
-        }
-        return null;
     }
 
     @Override
-    public LispObject onInteractiveNoIoInput (SpecialFormInteractive interactive) {
-        return onInteractiveNoIoInput(null, interactive);
-    }
-
-    private void shiftPrefixArgs() {
-        myEnvironment.setVariable(new LispSymbol("last-prefix-arg",
-                myEnvironment.find("current-prefix-arg").getValue()));
-        myEnvironment.setVariable(new LispSymbol("current-prefix-arg",
-                myEnvironment.find("prefix-arg").getValue()));
-        myEnvironment.setVariable(new LispSymbol("prefix-arg",
-                LispSymbol.ourNil));
-    }
-
-    private void clearPrefixArgs() {
-        myEnvironment.setVariable(new LispSymbol("last-prefix-arg",
-                myEnvironment.find("current-prefix-arg").getValue()));
-        myEnvironment.setVariable(new LispSymbol("current-prefix-arg",
-                LispSymbol.ourNil));
-    }
-
-    @Override
-    public LispObject onInteractiveCall(Environment environment, LispSymbol command) {
-        return onInteractiveNoIoInput(command,
-                new SpecialFormInteractive(environment, ((LispCommand)command.getFunction()).getInteractiveString()));
-    }
-
-    private LispObject runInteractive() {
-        myEnvironment.setArgumentsEvaluated(true);
-        if (myCommand != null && myCommand.getName().equals("execute-extended-command")) {
-            setReadCommandStatus();
-            shiftPrefixArgs();
-            myInteractive.readNextArgument();
-            return null;
+    public void onInteractiveNoIoInput (InteractiveReader interactive) {
+        if (interactive.getCommand().equals(new LispSymbol("exit-minibuffer"))) {
+            exitOnSuccess = true;
+            onReadInput();
+            return;
         }
-        clearPrefixArgs();
-        LispObject result = myCommand == null
-                ? LispList.list(myInteractive.getArguments())
-                : evaluateCommand(true);
-        kill();
-        return result;
+        if (myInteractive != interactive) {
+            if (myInteractive != null && !myInteractive.isFinished())
+                myInteractiveStack.push(myInteractive);
+            myInteractive = interactive;
+        }
+        if (myInteractive.isFinished()) {
+            runInteractive();
+            return;
+        }
+        myInteractive.readNextArgument();
+    }
+
+    private void runInteractive() {
+        if (isOpened && exitOnSuccess) {
+            kill();
+        }
+        InteractiveReader current = myInteractive;
+        myInteractive = !myInteractiveStack.isEmpty() ? myInteractiveStack.removeFirst() : null;
+        Minibuffer.goOn(current);
     }
 
     @Override
@@ -402,12 +321,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         if (myWindowManager.getSelectedWindow() == null || !myWindowManager.getSelectedWindow().hasEditor())
             throw new Emacs4ijFatalException("Null editor!");
         getEditor().getContentComponent().grabFocus();
-    }
-
-    private LispObject evaluateCommand(boolean interactiveHasArgs) {
-        Core.shiftCommandVars(myCommand);
-        return myCommand.evaluateFunction(myEnvironment,
-                (interactiveHasArgs ? myInteractive.getArguments() : new ArrayList<LispObject>()));
     }
 
     public void message (final String text) {

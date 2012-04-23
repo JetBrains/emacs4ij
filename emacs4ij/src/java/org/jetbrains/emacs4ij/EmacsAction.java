@@ -57,7 +57,7 @@ public class EmacsAction extends AnAction {
                 } else
                     myCommand = cmd;
             }
-            Core.callInteractively(environment, (LispSymbol) myCommand, null, null);
+            Core.callInteractively(environment, myCommand, null, null);
         } catch (Exception exc2) {
             exc2.printStackTrace();
             GlobalEnvironment.showErrorMessage("Emacs4ij action:\n" + exc2.getMessage());

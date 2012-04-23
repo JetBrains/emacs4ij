@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.interactive;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,4 +15,6 @@ import java.util.List;
  */
 public interface Completer {
     List<String> getCompletions (String parameter);
+    void setNoMatch (String parameter);
+
 }

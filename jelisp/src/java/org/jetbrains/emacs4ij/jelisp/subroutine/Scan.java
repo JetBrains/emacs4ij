@@ -67,8 +67,8 @@ public abstract class Scan {
     }
 
     //todo: compiled lisp f
-    @Subroutine(value = "eval-last-sexp", isCmd = true, key = "\\C-x\\C-e") //todo interactive = "P"
-    public static void evalLastSexp (Environment environment) {//, LispObject evalLastSexpArgInternal) {
+    @Subroutine(value = "eval-last-sexp", isCmd = true, interactive = "P", key = "\\C-x\\C-e")
+    public static void evalLastSexp (Environment environment, LispObject evalLastSexpArgInternal) {
         try {
             LispBuffer buffer = environment.getBufferCurrentForEditing();
             LispObject result = buffer.evaluateLastForm();

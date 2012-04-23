@@ -59,21 +59,9 @@ public abstract class Predicate {
 
     @Subroutine("commandp")
     public static LispSymbol commandp (LispObject function, @Nullable @Optional LispObject forCallInteractively) {
-        LispObject f = function;
-        if (function instanceof LispSymbol)
-            f = ((LispSymbol) function).getFunction();
-        if (f instanceof LispList) {
-            try {
-                f = new Lambda((LispList) f);
-            } catch (Exception e) {
-                return LispSymbol.ourNil;
-            }
-        }
-        
-        if (f instanceof Lambda || f instanceof Primitive) {
-            return LispSymbol.bool(((LispCommand) f).isInteractive());
-        }
-        
+        if (Core.toCommand(function) != null)
+            return LispSymbol.ourT;
+
         //todo: autoload objects
         // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
 
@@ -81,11 +69,11 @@ public abstract class Predicate {
             // do not accept keyboard macros: string and vector
             return LispSymbol.ourNil;
         }
-        if (f instanceof LispString) {
+        if (function instanceof LispString) {
             //todo: check
             return LispSymbol.ourNil;
         }
-        if (f instanceof LispVector) {
+        if (function instanceof LispVector) {
             //todo: check
             return LispSymbol.ourNil;
         }
@@ -238,5 +226,23 @@ public abstract class Predicate {
     public static LispSymbol inputPendingP (Environment environment) {
         return LispSymbol.bool(environment.getMinibufferWindow() != null
                 && environment.getSelectedWindow() == environment.getMinibufferWindow());
+    }
+
+    public static boolean isUserOption(LispObject object) {
+        if (!(object instanceof LispSymbol))
+            return false;
+        LispObject doc = ((LispSymbol) object).getDocumentation();
+        if (doc instanceof LispString && ((LispString) doc).getData().startsWith("*"))
+            return true;
+        if (!Predicate.isNil (((LispSymbol) object).getProperty("standard-value"))
+            || !Predicate.isNil (((LispSymbol) object).getProperty("custom-autoload")))
+            return true;
+        //todo: true if object is an alias for other user option. But if there is a loop in symbols chain, return false
+        return false;
+    }
+
+    @Subroutine("user-variable-p")
+    public static LispSymbol userOptionP (LispObject var) {
+        return LispSymbol.bool(isUserOption(var));
     }
 }

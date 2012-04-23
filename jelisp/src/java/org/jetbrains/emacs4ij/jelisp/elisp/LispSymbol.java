@@ -6,7 +6,9 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ import java.util.Map;
  *
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
-public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
+public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapCell {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");
@@ -99,15 +101,15 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         this.myValue = myValue;
     }
 
-    private void castToLambda () {
+    public void castToLambda () {
         if (isCustom() && !(myFunction instanceof Lambda)) {
             myFunction = new Lambda((LispList) myFunction);
         }
     }
 
     private void castToMacro () {
-        if (isMacro() && !(myFunction instanceof Macro)) {
-            myFunction = new Macro((LispList) myFunction);
+        if (isMacro() && !(myFunction instanceof LispMacro)) {
+            myFunction = new LispMacro((LispList) myFunction);
         }
     }
 
@@ -115,8 +117,11 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
         return myFunction;
     }
 
-    public void setFunction(LispObject myFunction) {
-        this.myFunction = myFunction;
+    public void setFunction(LispObject function) {
+        // this is for strict definition of this function
+        if (myName.equals("exit-minibuffer") && myFunction != null)
+            return;
+        myFunction = function;
     }
 
     @Override
@@ -131,6 +136,10 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     public boolean isBuiltIn () {
         return isSubroutine() && ((Primitive) myFunction).getType().equals(Primitive.Type.BUILTIN);
     }
+    
+    private boolean isSpecialForm()  {
+        return isSubroutine() && ((Primitive) myFunction).getType().equals(Primitive.Type.SPECIAL_FORM);
+    }
 
     public boolean isCustom() {
         return ((myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("lambda")))
@@ -143,7 +152,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
 
     public boolean isMacro() {
         return ((myFunction instanceof LispList && ((LispList)myFunction).car().equals(new LispSymbol("macro")))
-                || myFunction instanceof Macro);
+                || myFunction instanceof LispMacro);
     }
     
     public boolean isAlias() {
@@ -205,12 +214,21 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
         if (!q.equals(myName)) {
+            System.out.println(GlobalEnvironment.ourCallStack.toString());
             throw new InternalException(JelispBundle.message("callstack.error"));
         }
     }
 
     public LispObject evaluateFunction (Environment environment, @Nullable List<LispObject> args) {
+        if (!environment.areSpecFormsAndMacroAllowed()) {
+            if (isSpecialForm() || isMacro())
+                throw new InvalidFunctionException(myFunction.toString());
+            if (!isAlias())
+                environment.setSpecFormsAndMacroAllowed(true);
+        }
+
         GlobalEnvironment.ourCallStack.push(myName);
+        
         LispObject result;
         if (args == null)
             args = new ArrayList<>();
@@ -237,7 +255,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
     public LispObject macroExpand (Environment environment, List<LispObject> args) {
         castToMacro();
         try {
-            return ((Macro)myFunction).expand(environment, args);
+            return ((LispMacro)myFunction).expand(environment, args);
         } catch (ClassCastException e) {
             throw new InternalException(JelispBundle.message("wrong.macro", myName));
         }
@@ -270,7 +288,7 @@ public class LispSymbol implements LispAtom, LispCommand, KeymapCell {
 
     public LispObject getProperty (String pName) {
         LispObject value = getProperty(new LispSymbol(pName));
-        return value == null ? LispSymbol.ourNil : value;
+        return Core.thisOrNil(value);
     }
 
     public LispObject getProperty(LispSymbol pName) {

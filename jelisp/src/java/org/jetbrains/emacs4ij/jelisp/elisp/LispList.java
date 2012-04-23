@@ -96,19 +96,21 @@ public class LispList implements LispSequence {
     }
 
     public boolean isEmpty() {
-        return (myCar == null && myCdr == null);
+        return myCar == null && myCdr == null;
     }
 
     /**
-     * @param environment @return the result of last function execution
+     * @param environment
+     * @return the result of function execution
      */
     @Override
     public LispObject evaluate(Environment environment) {
         if (isEmpty())
             return LispSymbol.ourNil;
-        //todo: if assotiated list?
 
         LispObject function = car();
+        List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
+
         if (function instanceof LispSymbol) {
             LispSymbol fun = (LispSymbol) function;
             LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
@@ -123,14 +125,12 @@ public class LispList implements LispSequence {
                 if (symbol == null || !symbol.isFunction())
                     throw new VoidFunctionException(fun.getName());
             }
-            List<LispObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
-            return symbol.evaluateFunction(environment, data);
+            return symbol.evaluateFunction(environment, args);
         } 
         if (function instanceof LispList) {
             function = new Lambda((LispList) function);            
         } 
         if (function instanceof Lambda) {
-            List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
             if (!environment.areArgumentsEvaluated()) {
                 for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
                     args.set(i, args.get(i).evaluate(environment));
@@ -141,8 +141,7 @@ public class LispList implements LispSequence {
             return ((Lambda)function).evaluate(environment, args);
         }
         if (function instanceof Primitive) {
-            List<LispObject> data = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
-            return LispSubroutine.evaluate(((Primitive)function).getName(), environment, data);
+            return LispSubroutine.evaluate(((Primitive)function).getName(), environment, args);
         }
         throw new InvalidFunctionException(function.toString());
     }

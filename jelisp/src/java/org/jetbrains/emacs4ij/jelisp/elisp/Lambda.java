@@ -17,7 +17,7 @@ import java.util.List;
  * Time: 5:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Lambda implements FunctionCell, LispCommand {
+public class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
     private List<LambdaArgument> myArgumentList = new LinkedList<>();
     private LispObject myDocumentation = null;
     private LispList myInteractive = null;

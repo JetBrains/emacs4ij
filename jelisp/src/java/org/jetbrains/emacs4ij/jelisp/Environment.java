@@ -25,7 +25,8 @@ public abstract class Environment {
     protected boolean isRecording = false;
     protected List<String> myRecordedSymbols = new ArrayList<>();
     protected Map<String, LispSymbol> mySymbols = new HashMap<>();
-    protected boolean myArgumentsEvaluated = false;
+    private boolean myArgumentsEvaluated = false;
+    private boolean mySpecFormsAndMacroAllowed = true;
     protected Environment myOuterEnv = null;
     protected LispBuffer myBufferCurrentForEditing = null;
     protected boolean mySelectionManagedBySubroutine = false;
@@ -58,6 +59,14 @@ public abstract class Environment {
 
     public boolean isSelectionManagedBySubroutine () {
         return mySelectionManagedBySubroutine;
+    }
+
+    public boolean areSpecFormsAndMacroAllowed() {
+        return mySpecFormsAndMacroAllowed;
+    }
+
+    public void setSpecFormsAndMacroAllowed(boolean mySpecFormsAndMacroAllowed) {
+        this.mySpecFormsAndMacroAllowed = mySpecFormsAndMacroAllowed;
     }
 
     public void setBufferCurrentForEditing (LispBuffer buffer) {
