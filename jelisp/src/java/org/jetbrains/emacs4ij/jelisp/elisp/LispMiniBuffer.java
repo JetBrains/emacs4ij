@@ -12,19 +12,14 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispMiniBuffer extends LispBuffer {
-//    void startRead();
     void readParameter(InteractiveReader interactive);
     void addCharListener();
     int getActivationsDepth();
-//    void open(LispBuffer parent);
-//    boolean wasInteractiveFormResult();
-//    void setReadCommandStatus();
     void setInputStartValue (String startValue);
     void updateEditorText();
 
     void onReadInput();
     void onInteractiveNoIoInput(InteractiveReader interactive);
-//    void onInteractiveCall(Environment environment, LispCommand command);
 
     //todo: as in emacs
     String readInputString();
@@ -32,6 +27,4 @@ public interface LispMiniBuffer extends LispBuffer {
     //it's for completer interface
     List<String> getCompletions (String parameter);
     void setNoMatch(String input);
-
-    InteractiveReader getInteractiveReader();
 }

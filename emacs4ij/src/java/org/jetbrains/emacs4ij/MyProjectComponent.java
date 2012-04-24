@@ -41,12 +41,12 @@ public class MyProjectComponent implements ProjectComponent {
 
     public MyProjectComponent(Project project) {
         myProject = project;
+        IdeaBuffer.setProject(project);
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
                 myEchoArea = new EchoArea(myProject);
             } });
-        IdeaBuffer.setProject(project);
     }
 
     public EchoArea getEchoArea() {
@@ -155,7 +155,7 @@ public class MyProjectComponent implements ProjectComponent {
     }
 
     public void disposeComponent() {
-        // TODO: insert component disposal logic here
+        myEchoArea.dispose();
     }
 
     public void projectClosed() {

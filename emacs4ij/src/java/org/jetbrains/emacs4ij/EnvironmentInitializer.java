@@ -65,7 +65,7 @@ public abstract class EnvironmentInitializer {
             return true;
         Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
         try {
-            GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(),new FrameManagerImpl());
+            GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new FrameManagerImpl());
             isGlobalInitialized = true;
         } catch (LispException e) {
             ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(userKeymap);

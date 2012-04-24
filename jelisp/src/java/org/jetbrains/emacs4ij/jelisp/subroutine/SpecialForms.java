@@ -10,7 +10,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.Error;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.interactive.EmptyReader;
 import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
@@ -219,19 +218,16 @@ public abstract class SpecialForms {
         return f;
     }
 
-    private static LambdaOrSymbolWithFunction getInvoker() {
-        LambdaOrSymbolWithFunction invoker = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
-        return invoker.equals(LispSymbol.ourNil) ? null : invoker;
-    }
-    
     private static LispList interactivePrepare (Environment environment, @Nullable LispObject... args) {
-        if (!environment.isMainOrGlobal() || args == null || args.length == 0)
+        if (args == null || args.length == 0)
             return LispList.list();
+
         LispObject arg = args[0];
         if (Predicate.isNil(arg))
-            return arg instanceof LispList && ((LispList) arg).isEmpty()
-                    ? (LispList) arg
-                    : LispList.list(LispSymbol.ourNil);
+            return LispList.list();
+//            return arg instanceof LispList && ((LispList) arg).isEmpty()
+//                    ? (LispList) arg
+//                    : LispList.list(LispSymbol.ourNil);
 
         if (arg instanceof LispList) {
             arg = arg.evaluate(environment);
@@ -239,8 +235,10 @@ public abstract class SpecialForms {
                 return (LispList) arg;
             throw new WrongTypeArgumentException("listp", arg.toString());
         }
+
         if (arg instanceof LispString) {
-            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, getInvoker(), ((LispString) arg).getData());
+            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, Core.getInvoker(),
+                    ((LispString) arg).getData());
             LispMiniBuffer miniBuffer = environment.getMiniBuffer();
             miniBuffer.onInteractiveNoIoInput(interactive);
             return null;
@@ -249,12 +247,8 @@ public abstract class SpecialForms {
     }
 
     @Subroutine("interactive")
-    public static void interactive(Environment environment, @Optional LispObject... args) {
-            LispList result = interactivePrepare(environment, args);
-        if (result == null)
-            return;
-        EmptyReader reader = new EmptyReader(environment, getInvoker(), result);
-        environment.getMiniBuffer().onInteractiveNoIoInput(reader);
+    public static LispList interactive(Environment environment, @Optional LispObject... args) {
+        return environment.isMainOrGlobal() ? interactivePrepare(environment, args) : LispList.list();
     }
 
     @Subroutine("progn")

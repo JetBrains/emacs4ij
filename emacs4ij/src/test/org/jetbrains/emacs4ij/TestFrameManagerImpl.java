@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij;
 
+import junit.framework.Assert;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.BufferManager;
 import org.jetbrains.emacs4ij.jelisp.FrameManager;
@@ -35,7 +36,7 @@ public class TestFrameManagerImpl implements FrameManager {
 
     @Override
     public void setSelectedFrame(LispFrame frame) {
-        throw new UnsupportedOperationException();
+        Assert.assertEquals("At test we have the only frame and it must be selected", myFrame, frame);
     }
 
     @Override

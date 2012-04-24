@@ -154,11 +154,11 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetMark () throws Throwable {
         try {
-            //GlobalEnvironment.INSTANCE.findAndRegisterEmacsFunction(GlobalEnvironment.ourEmacsSource + "/lisp/simple.el", "set-mark");
             LispObject mark = evaluateString("(set-mark 5)");
             Assert.assertEquals("#<marker at 5 in 3.txt>", mark.toString());
             mark = evaluateString("(set-mark 50)");
-            Assert.assertEquals("#<marker at 9 in 3.txt>", mark.toString());
+            LispInteger pointMax = (LispInteger) evaluateString("(point-max)");
+            Assert.assertEquals("#<marker at " + pointMax.getPosition() + " in 3.txt>", mark.toString());
         } catch (Exception e) {
             System.out.println(getCause(e).getMessage());
             throw getCause(e);

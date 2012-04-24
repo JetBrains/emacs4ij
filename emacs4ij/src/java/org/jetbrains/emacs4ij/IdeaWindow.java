@@ -21,12 +21,6 @@ public class IdeaWindow implements LispWindow {
     private Editor myEditor = null;
     private final String myString;
 
-//    public IdeaWindow (int id, LispBuffer buffer, Editor editor) {
-//        myId = id;
-//        myBuffer = buffer;
-//        set(editor);
-//    }
-
     public IdeaWindow (int id, String bufferName, Editor editor) {
         myString = "#<window " + id + " on " + bufferName + '>';
         set(editor);
@@ -43,7 +37,6 @@ public class IdeaWindow implements LispWindow {
     @Override
     public String toString() {
         return myString;
-//        return "#<window " + myId + " on " + myBuffer.getName() + '>';
     }
 
     @Override

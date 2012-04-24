@@ -141,6 +141,11 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
+    public LispBuffer getWindowBuffer(LispWindow window) {
+        return myBufferManager.getBufferByWindow(window);
+    }
+
+    @Override
     public JComponent getComponent() {
         return myFrame.getComponent();
     }
@@ -160,68 +165,9 @@ public class IdeaFrame implements LispFrame {
         return myBufferManager.getWindows();
     }
 
-    //    @Override
-//    public List<LispBuffer> getBuffers() {
-//        return myBufferManager.getBuffers();
-//    }
-//    @Override
-//    public List<String> getBuffersNamesList(String begin) {
-//        return myBufferManager.getBuffersNames(begin);
-//    }
-//
-//    @Override
-//    public List<String> getBuffersNamesList() {
-//        return myBufferManager.getBuffersNames();
-//    }
-//
-//
-//    @Override
-//    public void defineBufferLocalVariable(LispSymbol var) {
-//        myBufferManager.defineBufferLocalVariable(var);
-//    }
-//
-//    @Override
-//    public void closeCurrentBuffer() {
-//        closeWindow(myBufferManager.getCurrentBuffer());
-//    }
-//
-//    @Override
-//    public void closeBuffer(@NotNull LispBuffer buffer) {
-//        closeWindow(buffer);
-//    }
-//
-//    @Override
-//    public void killBuffer(@NotNull LispBuffer buffer) {
-//        myBufferManager.killBuffer(buffer);
-//    }
-//
-//    @Override
-//    public LispBuffer getCurrentBuffer() {
-//        return myBufferManager.getCurrentBuffer();
-//    }
-//
-//    @Override
-//    public LispBuffer getOtherBuffer(String bufferName) {
-//        return myBufferManager.getOtherBuffer(bufferName);
-//    }
-//
-//    @Override
-//    public LispBuffer createBuffer(String name) {
-//        return myBufferManager.createBuffer(name);
-//    }
-//
-//    @Override
-//    public LispBuffer getServiceBuffer(String name) {
-//        return myBufferManager.getServiceBuffer(name);
-//    }
-//
-//    @Override
-//    public LispBuffer switchToWindow(String bufferName, Editor editor) {
-//        return myBufferManager.switchToWindow(bufferName, editor);
-//    }
-//
-//    @Override
-//    public LispBuffer switchToBuffer(String bufferName) {
-//        return myBufferManager.switchToBuffer(bufferName);
-//    }
+    @Override
+    public void deleteOtherWindows(LispWindow window) {
+
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

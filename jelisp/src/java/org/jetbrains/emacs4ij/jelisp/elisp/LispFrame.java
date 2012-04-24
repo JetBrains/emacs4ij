@@ -25,6 +25,7 @@ public interface LispFrame extends LispObject {
     void openServiceWindow (LispBuffer buffer);
     LispWindow getSelectedWindow();
     LispWindow getBufferWindow (LispBuffer buffer);
+    LispBuffer getWindowBuffer (LispWindow window);
     void closeWindow (LispBuffer buffer);
 
     BufferManager getBufferManager();
@@ -33,6 +34,7 @@ public interface LispFrame extends LispObject {
 
     LispMiniBuffer getMinibuffer();
     List<LispWindow> getWindows();
+    void deleteOtherWindows (LispWindow window);
 
     JComponent getComponent();
 }

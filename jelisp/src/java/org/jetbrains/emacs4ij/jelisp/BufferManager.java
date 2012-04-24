@@ -48,4 +48,6 @@ public interface BufferManager {
 
     LispMiniBuffer getMinibuffer();
     List<LispWindow> getWindows();
+
+    LispBuffer getBufferByWindow(LispWindow window);
 }

@@ -3,9 +3,11 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
@@ -112,20 +114,7 @@ public class LispList implements LispSequence {
         List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
 
         if (function instanceof LispSymbol) {
-            LispSymbol fun = (LispSymbol) function;
-            LispSymbol symbol = GlobalEnvironment.INSTANCE.find(fun.getName());
-            if (symbol == null || !symbol.isFunction()) {
-                //while we are not loading all elisp code, perform search on request
-                System.out.println("FUN " + fun.getName());
-                try {
-                    symbol = environment.findAndRegisterEmacsFunction(fun.getName());
-                } catch (LispException e) {
-                    throw new VoidFunctionException(fun.getName());
-                }
-                if (symbol == null || !symbol.isFunction())
-                    throw new VoidFunctionException(fun.getName());
-            }
-            return symbol.evaluateFunction(environment, args);
+            return ((LispSymbol)function).evaluateFunction(environment, VoidFunctionException.class, args);
         } 
         if (function instanceof LispList) {
             function = new Lambda((LispList) function);            
@@ -138,6 +127,9 @@ public class LispList implements LispSequence {
             } else {
                 environment.setArgumentsEvaluated(false);
             }
+            if (!environment.areSpecFormsAndMacroAllowed())
+                environment.setSpecFormsAndMacroAllowed(true);
+
             return ((Lambda)function).evaluate(environment, args);
         }
         if (function instanceof Primitive) {

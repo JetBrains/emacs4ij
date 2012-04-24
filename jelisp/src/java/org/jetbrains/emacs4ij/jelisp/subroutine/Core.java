@@ -7,6 +7,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.interactive.EmptyReader;
 import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 
 import java.util.ArrayList;
@@ -128,7 +129,7 @@ public abstract class Core {
         }
         return null;
     }
-    
+
     @NotNull
     private static LambdaOrSymbolWithFunction normalizeCommand (LispObject command) {
         if (command instanceof LispSymbol) {
@@ -136,7 +137,7 @@ public abstract class Core {
             LispObject function = ((LispSymbol) command).getFunction();
             if ((function instanceof Lambda || function instanceof Primitive) && ((LispCommand)function).isInteractive()) {
                 return (LispSymbol) command;
-            }            
+            }
         } else if (command instanceof LispList) {
             try {
                 Lambda f = new Lambda((LispList) command);
@@ -165,7 +166,12 @@ public abstract class Core {
         LispSymbol lastCommand = GlobalEnvironment.INSTANCE.find("last-command");
         lastCommand.setValue(thisCommand.getValue());
         thisCommand.setValue(command);
-    }   
+    }
+
+    public static LambdaOrSymbolWithFunction getInvoker() {
+        LambdaOrSymbolWithFunction invoker = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
+        return invoker.equals(LispSymbol.ourNil) ? null : invoker;
+    }
 
     @Subroutine("call-interactively")
     public static void callInteractively (Environment environment, LispObject function, @Nullable @Optional LispObject recordFlag, @Nullable LispObject keys) {
@@ -180,45 +186,11 @@ public abstract class Core {
         shiftCommandVars(normalizeCommand(function));
 
         LispObject args = getArgumentsForCall(environment, command.getInteractiveForm());
-//        GlobalEnvironment.ourCallStack.push(function.toString());
-        SpecialForms.interactive(environment, args);
-
-//        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
-
-
-
-
-//        try {
-//            if (StringUtil.isEmptyOrSpaces(command.getInteractiveString())) {
-//                shiftCommandVars(command);
-//                LispList.list(command).evaluate(environment);
-//                return;
-//            }
-//            LispObject args = getArgumentsForCall(environment, command.getInteractiveForm());
-//            if (args instanceof LispString) {
-//                miniBuffer = environment.getMiniBuffer();
-//                miniBuffer.onInteractiveCall(environment, function);
-//                return;
-//            }
-//            if (args instanceof LispList) {
-//                LispList toCall = LispList.list(function, args);
-//                toCall.evaluate(environment);
-//                return;
-//            }
-//            throw new InternalException("getArgumentsForCall can return only LispString or LispList, but got " + args.getClass().getSimpleName());
-//        } catch (LispThrow e) {
-//            //todo: check exit values. <RET> was typed
-//            //we never come here, dont'we? =)
-//            try {
-//                if (miniBuffer == null)
-//                    return;
-//                miniBuffer.onReadInput();
-//                if (result != null && miniBuffer.wasInteractiveFormResult())
-//                    GlobalEnvironment.echoMessage(result.toString());
-//            } catch (LispException exc) {
-//                GlobalEnvironment.echoError(exc.getMessage());
-//            }
-//        }
+        LispList result = SpecialForms.interactive(environment, args);
+        if (result == null)
+            return;
+        EmptyReader reader = new EmptyReader(environment, getInvoker(), result);
+        environment.getMiniBuffer().onInteractiveNoIoInput(reader);
     }
 
     @Subroutine("funcall")
@@ -245,10 +217,7 @@ public abstract class Core {
     private static void runFunction (Environment environment, LispSymbol function) {
         if (function.equals(LispSymbol.ourNil))
             return;
-        if (!function.isFunction()) {
-            throw new InvalidFunctionException(function.getName());
-        }
-        function.evaluateFunction(environment, new ArrayList<LispObject>());
+        function.evaluateFunction(environment, InvalidFunctionException.class, new ArrayList<LispObject>());
     }
 
     @Subroutine("run-hooks")
@@ -385,7 +354,7 @@ public abstract class Core {
         }
         environment.setArgumentsEvaluated(true);
         environment.setSpecFormsAndMacroAllowed(false);
-        return ((LispSymbol) function).evaluateFunction(environment, list);
+        return ((LispSymbol) function).evaluateFunction(environment, InvalidFunctionException.class, list);
     }
 
     @Subroutine(value = "purecopy")
@@ -421,17 +390,17 @@ public abstract class Core {
     public static LispSymbol atom (LispObject object) {
         return LispSymbol.bool(!(object instanceof LispList));
     }
-    
+
     @Subroutine("throw")
     public static void lispThrow (LispObject tag, LispObject value) {
         throw new LispThrow(tag, value);
     }
-    
+
     @Subroutine("identity")
     public static LispObject identity (LispObject arg) {
         return arg;
     }
-    
+
     @Subroutine("match-data")
     public static LispObject matchData(@Optional LispObject integers, LispObject reuse, LispObject reseat) {
         //todo :)
@@ -451,7 +420,7 @@ public abstract class Core {
     @Subroutine("substring")
     public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
         int length = stringOrVector.length();
-        int start = processBound(from, length);        
+        int start = processBound(from, length);
         int end = Predicate.isNil(to)
                 ? length
                 : processBound(getInt(to), length);
@@ -494,8 +463,8 @@ public abstract class Core {
 
     private static LispString print (Environment environment, LispObject object,
                                      @Optional LispObject printCharFun, boolean quoteStrings) {
-        LispString result = quoteStrings 
-                ? new LispString(object.toString()) 
+        LispString result = quoteStrings
+                ? new LispString(object.toString())
                 : object instanceof LispString ? (LispString) object : new LispString(object.toString());
         LispObject toInsert = object instanceof LispString ? result : object;
         if (isNil(printCharFun))
@@ -513,7 +482,7 @@ public abstract class Core {
         }
         return result;
     }
-    
+
     @Subroutine("prin1")
     public static LispString prin1 (Environment environment, LispObject object, @Optional LispObject printCharFun) {
         return print(environment, object, printCharFun, true);

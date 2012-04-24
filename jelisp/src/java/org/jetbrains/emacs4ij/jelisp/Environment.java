@@ -361,7 +361,7 @@ public abstract class Environment {
     
     public List<LispFrame> getFramesByBuffer (LispBuffer buffer) {
         return getFrameManager().getFramesByBuffer(buffer);
-    } 
+    }
     
     public boolean isWindowAlive (LispWindow window) {
         return getFrameManager().getFrameByWindow(window) != null;

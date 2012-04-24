@@ -110,6 +110,7 @@ public abstract class Minibuffer {
 
         LispString read = readFromMinibuffer(environment, keymapName, alreadyTyped, prompt.getData(),
                 historySymbol, historyPosition.getData(), defaultValue);
+
         LispObject result = read;
         if (read.isEmpty() && !Predicate.isNil(defaultValue))
             result = defaultValue instanceof LispList ? ((LispList) defaultValue).car() : defaultValue;
@@ -158,8 +159,8 @@ public abstract class Minibuffer {
         return result;
     }
 
-    private static LispString readFromMinibuffer (final Environment environment, String keymapName, String initialInput, String prompt,
-                                                  LispSymbol history, int historyPosition, LispObject defaults) {
+    private static LispString readFromMinibuffer (final Environment environment, String keymapName, String initialInput,
+                                                  String prompt, LispSymbol history, int historyPosition, LispObject defaults) {
         final LispKeymap oldKeymap = environment.getActiveKeymap();
         environment.setActiveKeymap(keymapName);
 
@@ -167,21 +168,6 @@ public abstract class Minibuffer {
 
         environment.setActiveKeymap(oldKeymap);
         return new LispString("");
-    }
-
-    private static boolean isMinibufferWindow (Environment environment, @Nullable LispWindow window) {
-        if (window == null)
-            window = environment.getSelectedWindow();
-        return window != null && window == environment.getMinibufferWindow();
-    }
-
-    @Subroutine("window-minibuffer-p")
-    public static LispSymbol windowMinibufferP (Environment environment, @Optional LispObject window) {
-        if (!Predicate.isNil(window) && !(window instanceof LispWindow))
-            throw new WrongTypeArgumentException("window-live-p", window);
-        if (Predicate.isNil(window))
-            window = environment.getSelectedWindow();
-        return LispSymbol.bool(isMinibufferWindow(environment, (LispWindow) window));
     }
 
     //todo: compiled lisp f
@@ -464,4 +450,10 @@ public abstract class Minibuffer {
         }
         return testCompletion(environment, toComplete, collection, predicate);
     }
+
+    @Subroutine("minibuffer-window")
+    public static LispObject minibufferWindow (Environment environment, @Optional LispFrame frame) {
+        return Core.thisOrNil(environment.getMinibufferWindow());
+    }
+
 }

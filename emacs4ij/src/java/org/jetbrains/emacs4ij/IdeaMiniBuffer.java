@@ -273,11 +273,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     }
 
     @Override
-    public InteractiveReader getInteractiveReader() {
-        return myInteractive;
-    }
-
-    @Override
     public void onReadInput () {
         myInteractive.onReadParameter(readInputString());
         if (myInteractive.isFinished()) {

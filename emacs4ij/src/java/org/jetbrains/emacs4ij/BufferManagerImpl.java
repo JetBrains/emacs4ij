@@ -267,5 +267,14 @@ public class BufferManagerImpl implements BufferManager {
         }
         return windows;
     }
+
+    @Override
+    public LispBuffer getBufferByWindow(LispWindow window) {
+        for (LispBuffer buffer: myBuffers) {
+            if (buffer.containsWindow(window))
+                return buffer;
+        }
+        return null;
+    }
 }
 

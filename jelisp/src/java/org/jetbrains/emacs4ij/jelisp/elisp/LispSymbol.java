@@ -5,11 +5,10 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -220,10 +219,37 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         }
     }
 
-    public LispObject evaluateFunction (Environment environment, @Nullable List<LispObject> args) {
+    private LispSymbol uploadFunctionDefinition (Environment environment, Class exception) {
+        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
+        if (symbol == null || !symbol.isFunction()) {
+            //while we are not loading all elisp code, perform search on request
+            System.out.println("FUN " + myName);
+            try {
+                symbol = environment.findAndRegisterEmacsFunction(myName);
+            } catch (LispException e) {
+                throw new VoidFunctionException(myName);
+            }
+            if (symbol == null || !symbol.isFunction()) {
+                try {
+                    throw (LispException) exception.getDeclaredConstructor(String.class).newInstance(myName);
+                } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |IllegalAccessException e) {
+                    e.printStackTrace();
+                    throw new LispException(e.getMessage());
+                }
+            }
+        }
+        return symbol;
+    }
+
+    public LispObject evaluateFunction (Environment environment, Class exception, @Nullable List<LispObject> args) {
+        LispSymbol trueFunction = uploadFunctionDefinition(environment, exception);
+        return trueFunction.evaluateTrueFunction(environment, exception, args);
+    }
+
+    private LispObject evaluateTrueFunction(Environment environment, Class exception,  @Nullable List<LispObject> args) {
         if (!environment.areSpecFormsAndMacroAllowed()) {
             if (isSpecialForm() || isMacro())
-                throw new InvalidFunctionException(myFunction.toString());
+                throw new InvalidFunctionException(myName);
             if (!isAlias())
                 environment.setSpecFormsAndMacroAllowed(true);
         }
@@ -244,7 +270,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             return result;
         }
         if (isAlias()) {
-            result = ((LispSymbol)myFunction).evaluateFunction(environment, args);
+            result = ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
             checkCallStack();
             return result;
         }

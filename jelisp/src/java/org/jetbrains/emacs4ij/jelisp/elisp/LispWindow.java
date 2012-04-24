@@ -11,8 +11,6 @@ import org.jetbrains.annotations.Nullable;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispWindow extends LispObject {
-//    boolean containsBuffer (LispBuffer buffer);
-//    LispBuffer getBuffer();
     void set (@Nullable Editor editor);
     Editor getEditor();
 

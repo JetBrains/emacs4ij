@@ -179,7 +179,7 @@ public class CoreTest extends BaseSubroutineTest {
         LispList list = (LispList) evaluateString("'(lambda (a b) (message \"test\") (interactive \"sFirst: \") (message \"%s\" a) (interactive \"sString2: \") (message \"%s\" b))");
         Lambda lambda = new Lambda(list);
         Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("sFirst: ")), lambda.getInteractiveForm());
-        Assert.assertEquals(4, lambda.getBodyLength());
+        Assert.assertEquals(5, lambda.getBodyLength());
     }
 
     @Test

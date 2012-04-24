@@ -52,7 +52,7 @@ public class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
                 if (bodyForm instanceof LispList && !((LispList) bodyForm).isEmpty()) {
                     if (((LispList) bodyForm).car().equals(new LispSymbol("interactive")) && myInteractive == null) {
                         myInteractive = (LispList) bodyForm;
-                        myBody.remove(bodyForm);
+//                        myBody.remove(bodyForm);
                         break;
                     }
                 }
