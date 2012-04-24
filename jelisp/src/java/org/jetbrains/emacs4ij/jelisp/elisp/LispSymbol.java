@@ -118,7 +118,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     }
 
     public void setFunction(LispObject function) {
-        // this is for strict definition of this function
+        // this is for strict definition of exit-minibuffer
         if (myName.equals("exit-minibuffer") && myFunction != null)
             return;
         myFunction = function;
@@ -214,8 +214,9 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
         if (!q.equals(myName)) {
-            System.out.println(GlobalEnvironment.ourCallStack.toString());
-            throw new InternalException(JelispBundle.message("callstack.error"));
+            System.out.println(String.format("Top of stack = %s, current symbol = %s, left stack = %s",
+                    q, myName, GlobalEnvironment.ourCallStack.toString()));
+            throw new InternalException(JelispBundle.message("call.stack.error"));
         }
     }
 

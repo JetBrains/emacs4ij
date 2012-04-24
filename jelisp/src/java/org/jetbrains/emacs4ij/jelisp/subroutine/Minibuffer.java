@@ -235,32 +235,14 @@ public abstract class Minibuffer {
      */
     @Subroutine(value = "exit-minibuffer", isCmd = true)
     public static LispObject exitMinibuffer (Environment environment) {
-//        try {
-//            final InteractiveReader reader = environment.getMiniBuffer().getInteractiveReader();
-//            List<LispObject> arguments = reader.getArguments();
-//            LambdaOrSymbolWithFunction command = reader.getCommand();
-//            if (command == null || command.equals(new LispSymbol("exit-minibuffer")) || wasInteractiveForm()) {
-//                GlobalEnvironment.echoMessage(LispList.list(arguments).toString() + '\n');
-                return LispSymbol.ourNil;
-//            }
-//            System.out.println("eval after exit: " + command.toString());
-////            Core.shiftCommandVars(command);
-//            return Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
-//        } catch (LispException exc) {
-//            GlobalEnvironment.echoError(exc.getMessage());
-//            return LispSymbol.ourNil;
-//        }
+        return LispSymbol.ourNil;
     }
 
     public static void goOn (InteractiveReader reader) {
         try {
             List<LispObject> arguments = reader.getArguments();
             LambdaOrSymbolWithFunction command = reader.getCommand();
-            LambdaOrSymbolWithFunction recentCommand = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
-
-            if (command == null ||
-                    (GlobalEnvironment.ourCallStack.isEmpty() && recentCommand.equals(new LispSymbol("exit-minibuffer"))
-                    && !command.equals(new LispSymbol("call-interactively")))) {
+            if (command == null || wasInteractiveFormWithoutRead() || wasInteractiveFormWithRead(command)) {
                 GlobalEnvironment.echoMessage(LispList.list(arguments).toString() + '\n');
                 return;
             }
@@ -274,9 +256,17 @@ public abstract class Minibuffer {
         }
     }
     
-    
-    private static boolean wasInteractiveForm() {
-        return !GlobalEnvironment.ourCallStack.isEmpty() && GlobalEnvironment.ourCallStack.getFirst().equals("interactive");
+    private static boolean wasInteractiveFormWithRead(LambdaOrSymbolWithFunction interactiveCmd) {
+        LambdaOrSymbolWithFunction recentCommand = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
+        return GlobalEnvironment.ourCallStack.isEmpty()
+                && recentCommand.equals(new LispSymbol("exit-minibuffer"))
+                && interactiveCmd.equals(new LispSymbol("eval-last-sexp"));
+    }
+
+    private static boolean wasInteractiveFormWithoutRead() {
+        return GlobalEnvironment.ourCallStack.size() == 2
+                && GlobalEnvironment.ourCallStack.getFirst().equals("interactive")
+                && GlobalEnvironment.ourCallStack.getLast().equals("eval-last-sexp");
     }
 
     @Subroutine("redisplay")
