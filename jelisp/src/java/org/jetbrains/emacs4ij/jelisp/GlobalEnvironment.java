@@ -128,10 +128,15 @@ public class GlobalEnvironment extends Environment {
     }
 
     //input parameters are nullable only for test!!!
-    public static void initialize (@Nullable LispKeymapFactory keymapFactory,
+    public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
+                                   @Nullable LispWindowFactory windowFactory,
                                    @Nullable Ide ide, @Nullable FrameManager frameManager) {
         ourKeymapManager = new EmacsKeymapManager(keymapFactory);
-        INSTANCE = new GlobalEnvironment(frameManager, ide);
+        ourBufferManager = new BufferManager(bufferFactory);
+        ourWindowManager = new WindowManager(windowFactory);
+        ourFrameManager = frameManager;
+
+        INSTANCE = new GlobalEnvironment(ide);
         Key.init();
         INSTANCE.init();
     }
@@ -151,8 +156,7 @@ public class GlobalEnvironment extends Environment {
             DefinitionLoader.loadFile(myFilesToLoad.get(i));
     }
 
-    private GlobalEnvironment (FrameManager frameManager, Ide ide) {
-        myFrameManager = frameManager;
+    private GlobalEnvironment (Ide ide) {
         myIde = ide;
         if (!testProperty(PropertyType.SOURCE)) {
             mySymbols.clear();
@@ -347,7 +351,7 @@ public class GlobalEnvironment extends Environment {
         for (String local: myBufferLocals) {
             buffer.defineLocalVariable(mySymbols.get(local), true);
         }
-        getFrameManager().openBuffer(buffer);
+        ourBufferManager.define(buffer);
     }
 
     public void defineBufferLocalVariable (LispSymbol symbol) {
@@ -356,14 +360,14 @@ public class GlobalEnvironment extends Environment {
         symbol.setBufferLocal(true);
         myBufferLocals.add(symbol.getName());
         defineSymbol(symbol);
-        getFrameManager().defineBufferLocalVariable(symbol);
+        ourBufferManager.defineBufferLocalVariable(symbol);
     }
 
-    // for test
-    public void removeBuffer(String name) {
-        LispBuffer buffer = findBufferSafe(name);
-        getFrameManager().getSelectedFrame().closeWindow(buffer);
-    }
+//    // for test
+//    public void removeBuffer(String name) {
+//        LispBuffer buffer = findBufferSafe(name);
+//        getSelectedFrame().closeWindow(buffer);
+//    }
 
     public List<String> getCommandList (String begin) {
         //todo: add data retrieved after source index

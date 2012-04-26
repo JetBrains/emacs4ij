@@ -1,18 +1,18 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.wm.IdeFrame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+//import com.intellij.openapi.wm.WindowManager;
 
 /**
  * Created by IntelliJ IDEA.
@@ -32,10 +32,9 @@ public abstract class Environment {
     protected boolean mySelectionManagedBySubroutine = false;
 
     protected static EmacsKeymapManager ourKeymapManager;
-    protected static FrameManager myFrameManager = null;
-
-    protected final List<LispBuffer> myGlobalBufferRing = new ArrayList<>();
-    protected final List<LispBuffer> myGlobalWindowRing = new ArrayList<>();
+    protected static FrameManager ourFrameManager = null;
+    protected static BufferManager ourBufferManager = null;
+    protected static WindowManager ourWindowManager = null;
 
     public boolean isMainOrGlobal() {
         return myOuterEnv == null || myOuterEnv.getOuterEnv() == null;
@@ -73,20 +72,9 @@ public abstract class Environment {
         myBufferCurrentForEditing = buffer;
     }
 
-    @NotNull
-    protected FrameManager getFrameManager() {
-        if (myFrameManager == null)
-            throw new InternalException(JelispBundle.message("frame.manager.not.initialized"));
-        return myFrameManager;
-    }
-
-    protected BufferManager getBufferManager() {
-        return getFrameManager().getCurrentBufferManager();
-    }
-
     public LispBuffer getBufferCurrentForEditing() {
         return myBufferCurrentForEditing == null
-                ? getBufferManager().getCurrentBuffer()
+                ? ourBufferManager.getCurrent()
                 : myBufferCurrentForEditing;
     }
 
@@ -133,93 +121,138 @@ public abstract class Environment {
 
     // =========== buffers =================
     public LispBuffer createBuffer (String bufferName) {
-        return getBufferManager().createBuffer(bufferName);
+        return ourBufferManager.createBuffer(bufferName);
     }
 
-    public void onTabSwitch (String bufferName, Editor editor) {
-        LispBuffer buffer = getBufferManager().switchToWindow(bufferName, editor);
-        if (buffer != null)
-            setBufferCurrentForEditing(buffer);
+    public LispWindow getBufferLastSelectedWindow (LispBuffer buffer) {
+        return ourWindowManager.getBufferLastSelectedWindow(buffer);
     }
-    
-    public void switchToBuffer(String bufferName) {
-        LispBuffer buffer = getBufferManager().switchToBuffer(bufferName);
-        if (buffer != null)
-            setBufferCurrentForEditing(buffer);
+
+    public void onTabSwitch (Editor editor) {
+        switchToWindow(editor, true);
     }
-    
-    public void switchToWindow (Editor editor) {
-        LispBuffer buffer = getBufferManager().findBuffer(editor);
-        if (buffer == null)
-            throw new InternalException(JelispBundle.message("unregistered.editor"));
-        buffer.switchToEditor(editor);
-        setBufferCurrentForEditing(buffer);
+
+    /**
+     * this method switches only for "buffer ring", but doesn't perform visual switch and doesn't set current
+     * corresponding window & frame
+     */
+    public void switchToBuffer(LispBuffer buffer) {
+        ourBufferManager.switchTo(buffer);
+    }
+
+    /**
+     * this method switches only for "window ring", but doesn't perform visual switch
+     * also the displayed buffer is made current and frame which holds window with given editor
+     */
+    public void switchToWindow(Editor editor, boolean switchBuffer) {
+        LispWindow window = ourWindowManager.getEditorWindow(editor);
+        ourWindowManager.switchTo(window);
+        switchToFrame(window.getFrame());
+        setBufferCurrentForEditing(window.getBuffer());
+        if (switchBuffer)
+            ourBufferManager.switchTo(window.getBuffer());
+    }
+
+    public void switchToWindow (LispWindow window) {
+        ourWindowManager.switchTo(window);
+        setBufferCurrentForEditing(ourBufferManager.switchTo(window.getBuffer()));
+    }
+
+    /**
+     * this method switches only for "frame ring", but doesn't perform visual switch
+     */
+    public void switchToFrame (LispFrame frame) {
+        ourFrameManager.switchTo(frame);
     }
 
     public LispList getBufferList() {
-        return LispList.list((List<LispObject>) getFrameManager().getBuffers());
+        List<LispBuffer> data = new ArrayList<>(ourBufferManager.getData());
+        return LispList.list(data.toArray(new LispObject[data.size()]));
+    }
+    
+    /**
+     * 
+     * @param frame 
+     * @return list of buffers where buffers displayed on frame come first (in order of opening) and then the rest 
+     */
+    public LispList getBufferList (LispFrame frame) {
+        List<LispBuffer> all = ourBufferManager.getData();
+        List<LispBuffer> frameBuffers = Arrays.asList(ourWindowManager.getFrameBuffers(frame));
+        List<LispObject> list = new ArrayList<>();
+        for (LispBuffer buffer: all) {
+            if (frameBuffers.contains(buffer))
+                list.add(buffer);
+        }
+        for (LispBuffer buffer: all) {
+            if (!list.contains(buffer))
+                list.add(buffer);
+        }
+        return LispList.list(list);
     }
 
-    public LispList getBufferList(LispFrame frame) {
-        return LispList.list((List<LispObject>) getFrameManager().getBuffers(frame));
+    public boolean containsBuffer (String bufferName) {
+        return ourBufferManager.containsBuffer(bufferName);
     }
 
     public void buryBuffer (LispBuffer buffer) {
-        getBufferManager().buryBuffer(buffer);
-    }
-
-    public void defineServiceBuffer (LispBuffer buffer) {
-        getFrameManager().openServiceBuffer(buffer);
+        ourBufferManager.bury(buffer);
     }
 
     public void defineBuffer (LispBuffer buffer) {
         GlobalEnvironment.INSTANCE.defineBuffer(buffer);
     }
 
-    public void killBuffer (String bufferName) {
-        getFrameManager().killBuffer(findBufferSafe(bufferName));
+    public void hideBuffer (String bufferName) {
+        ourWindowManager.hideBufferOnFrame(findBufferSafe(bufferName), getSelectedFrame());
     }
 
     public void killBuffer (LispBuffer buffer) {
-        killBuffer(buffer.getName());
+        if (buffer instanceof LispMinibuffer)
+            buffer.kill();
+        else ourBufferManager.killBuffer(buffer);
+        ourWindowManager.onKillBuffer(buffer);
+    }
+
+    public void hideBuffer (LispBuffer buffer) {
+        ourWindowManager.hideBufferOnFrame(buffer, getSelectedFrame());
     }
 
     public List<LispBuffer> getBuffers () {
-        return getFrameManager().getBuffers();
+        return ourBufferManager.getData();
     }
 
     public int getBuffersSize() {
-        return getBufferManager().getBuffersSize();
+        return ourBufferManager.getSize();
     }
 
+    //for test
     public void closeCurrentBuffer () {
-        getBufferManager().closeCurrentBuffer();
+        killBuffer(ourBufferManager.getCurrent());
+        myBufferCurrentForEditing = ourBufferManager.isEmpty() ? null : ourBufferManager.getCurrent();
     }
 
+    //test
     public void closeAllBuffers () {
-        getBufferManager().closeAllBuffers();
+        ourBufferManager.clear();
+        myBufferCurrentForEditing = null;
     }
 
     //test
     public LispBuffer getBufferByIndex (int index) {
-        return getBufferManager().getBufferByIndex(index);
+        return ourBufferManager.getBufferByIndex(index);
     }
 
     //test
     public String[] getBuffersNames () {
-        return getBufferManager().getBuffersNames().toArray(new String[getBuffersSize()]);
+        return ourBufferManager.getBuffersNames().toArray(new String[getBuffersSize()]);
     }
 
     public List<String> getBufferNamesList(String begin) {
-        return getBufferManager().getBuffersNames(begin);
+        return ourBufferManager.getBuffersNames(begin);
     }
 
-    public boolean isBufferDead (String bufferName) {
-        return getBufferManager().isDead(bufferName);
-    }
-
-    public boolean containsBuffer (String bufferName) {
-        return getBufferManager().containsBuffer(bufferName);
+    public boolean isBufferAlive(LispBuffer buffer) {
+        return ourBufferManager.isAlive(buffer);
     }
 
     protected boolean containsSymbol (String name) {
@@ -239,54 +272,40 @@ public abstract class Environment {
         myOuterEnv.setVariable(symbol);
     }
 
-    public LispBuffer getServiceBuffer (String bufferName) {
-        return getBufferManager().getServiceBuffer(bufferName);
-    }
-
+    @NotNull
     public LispBuffer findBufferSafe(String bufferName) {
-        return getBufferManager().findBufferSafe(bufferName);
+        return ourBufferManager.findBufferSafe(bufferName);
     }
 
+    @Nullable
     public LispBuffer findBuffer(String bufferName) {
-        return getBufferManager().findBuffer(bufferName);
+        return ourBufferManager.findBuffer(bufferName);
     }
 
-    public LispBuffer lastBuffer (String bufferName) {
-        return getBufferManager().lastBuffer(bufferName);
+    @Nullable
+    public LispBuffer getOtherBuffer (LispBuffer buffer, LispFrame frame, boolean invisibleBuffersPreferred) {
+        return ourWindowManager.getFrameOtherBuffer(buffer, frame, invisibleBuffersPreferred);
     }
 
-    public LispBuffer getOtherBuffer () {
-        return getBufferManager().getOtherBuffer(getBufferCurrentForEditing().getName());
-    }
-
-    public LispBuffer getOtherBuffer (LispBuffer buffer) {
-        return getBufferManager().getOtherBuffer(buffer.getName());
+    public LispBuffer getEditorBuffer (Editor editor) {
+        return ourWindowManager.getEditorWindow(editor).getBuffer();
     }
 
     //========== mini buffer ==========================
 
-    public LispMiniBuffer getMiniBuffer () {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer)getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
+    public LispMinibuffer getMinibuffer() {
+        LispMinibuffer miniBuffer = ourBufferManager.getMinibuffer();
         if (miniBuffer == null)
-            throw new NoBufferException("minibuffer");
+            throw new UnregisteredBufferException("minibuffer");
         return miniBuffer;
     }
 
     public int getMiniBufferActivationsDepth() {
         try {
-            return getMiniBuffer().getActivationsDepth();
-        } catch (NoBufferException e) {
+            return getMinibuffer().getActivationsDepth();
+        } catch (UnregisteredBufferException e) {
             return 0;
         }
-    }
-    
-    public LispWindow getMinibufferWindow() {
-        LispMiniBuffer miniBuffer = (LispMiniBuffer)getServiceBuffer(GlobalEnvironment.ourMiniBufferName);
-        if (miniBuffer == null)
-            return null;
-        if (!miniBuffer.hasWindows())
-            return null;
-        return miniBuffer.getWindows().get(0);
     }
     
     //========= keymaps ===========
@@ -310,61 +329,97 @@ public abstract class Environment {
         return ourKeymapManager.isKeymapActive(keymap);
     }
 
-    //========= frames ===================
+    //========= frames & windows ===================
+    public void onWindowOpened (LispBuffer buffer, Editor editor) {
+        ourWindowManager.onOpenWindow(buffer, getSelectedFrame(), editor);
+    }
+
     public void onFrameOpened (LispFrame newFrame) {
-        getFrameManager().onFrameOpened(newFrame);
+        ourFrameManager.onFrameOpened(newFrame);
     }
 
     public void onFrameReleased (LispFrame frame) {
-        getFrameManager().onFrameReleased(frame);
+        ourFrameManager.onFrameReleased(frame);
     }
 
     public void setSelectedFrame (LispFrame frame) {
-        getFrameManager().setSelectedFrame(frame);
+        ourFrameManager.switchTo(frame);
     }
 
+    @NotNull
+    public LispFrame getFrame (IdeFrame ideFrame) {
+        return ourFrameManager.getFrame(ideFrame);
+    }
+
+    @NotNull
     public LispFrame getSelectedFrame() {
-        return getFrameManager().getSelectedFrame();
+        return ourFrameManager.getCurrent();
     }
     
     public LispWindow getSelectedWindow() {
-        return getFrameManager().getSelectedWindow();
-    }
-
-    public void setFrameVisible (LispFrame frame, boolean status) {
-        getFrameManager().setFrameVisible(frame, status);
-    }
-
-    public void setFrameIconified (LispFrame frame, boolean status) {
-        getFrameManager().setFrameIconified(frame, status);
+        return ourWindowManager.getCurrent();
     }
 
     public boolean isFrameAlive (LispFrame frame) {
-        return getFrameManager().isFrameAlive(frame);
+        return ourFrameManager.isAlive(frame);
     }
 
     public List<LispFrame> getVisibleFrames () {
-        return getFrameManager().getVisibleFrames();
+        return ourFrameManager.getVisibleFrames();
     }
 
     public List<LispFrame> getVisibleAndIconifiedFrames () {
-        return getFrameManager().getVisibleAndIconifiedFrames();
+        return ourFrameManager.getVisibleAndIconifiedFrames();
     }
 
     public List<LispFrame> getAllFrames () {
-        return getFrameManager().getAllFrames();
-    }
-
-    public LispFrame getFrameByWindow (LispWindow window) {
-        return getFrameManager().getFrameByWindow(window);
+        return ourFrameManager.getData();
     }
     
-    public List<LispFrame> getFramesByBuffer (LispBuffer buffer) {
-        return getFrameManager().getFramesByBuffer(buffer);
+    public LispFrame[] getBufferFrames(LispBuffer buffer) {
+        return ourWindowManager.getBufferFrames(buffer);
+    }
+
+    public LispWindow getBufferWindowOnFrame(LispFrame frame, LispBuffer buffer) {
+        return ourWindowManager.getBufferWindowOnFrame(frame, buffer);
+    }
+
+    public void deleteFrameOtherWindows (LispFrame frame, LispWindow window) {
+        ourWindowManager.deleteFrameOtherWindows(frame, window);
     }
     
     public boolean isWindowAlive (LispWindow window) {
-        return getFrameManager().getFrameByWindow(window) != null;
+        return ourWindowManager.isAlive(window);
+    }
+
+    @Nullable
+    public LispMinibuffer getFrameMinibuffer (LispFrame frame) {
+        LispWindow window = ourWindowManager.getFrameMinibufferWindow(frame);
+        if (window == null)
+            return null;
+//            throw new NoFrameMinibuffer(frame.toString());
+        return (LispMinibuffer) window.getBuffer();
+    }
+
+    public LispWindow getFrameMinibufferWindow (LispFrame frame) {
+        return ourWindowManager.getFrameMinibufferWindow(frame);
+    }
+
+    public LispWindow getMinibufferWindow () {
+        return getFrameMinibufferWindow(getSelectedFrame());
+    }
+
+    public List<LispWindow> getFrameWindows (LispFrame frame) {
+        return ourWindowManager.getFrameWindows(frame);
+    }
+
+    public LispBuffer[] getFrameBuffers(LispFrame frame) {
+        return ourWindowManager.getFrameBuffers(frame);
+    }
+
+    @NotNull
+    public LispWindow getFrameSelectedWindow (LispFrame frame) {
+        return ourWindowManager.getFrameSelectedWindow(frame);
     }
 
     //upload

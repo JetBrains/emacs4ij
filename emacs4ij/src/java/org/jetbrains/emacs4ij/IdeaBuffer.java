@@ -1,21 +1,22 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
@@ -36,12 +37,12 @@ public class IdeaBuffer implements LispBuffer {
     protected final String myName;
     protected final Environment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
-    protected final WindowManager myWindowManager;
-    protected boolean isChangedByMe = false;
-
+//    protected boolean isChangedByMe = false;
     protected static Project ourProject;
-    private LispMarker myMark = new LispMarker();
-    private Map<String, LispSymbol> myLocalVariables = new HashMap<>();
+    protected LispMarker myMark = new LispMarker();
+    protected Map<String, LispSymbol> myLocalVariables = new HashMap<>();
+    protected Document myDocument;
+    private VirtualFile myVirtualFile = null;
 
     private LispSyntaxTable mySyntaxTable;
 
@@ -54,10 +55,10 @@ public class IdeaBuffer implements LispBuffer {
 
         @Override
         public void documentChanged(DocumentEvent documentEvent) {
-            if (isChangedByMe) {
-                isChangedByMe = false;
-                return;
-            }
+//            if (isChangedByMe) {
+//                isChangedByMe = false;
+//                return;
+//            }
             int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
             if (shift < 0) {   //delete
                 updateMarkersPositions(point(), shift, false);
@@ -69,38 +70,64 @@ public class IdeaBuffer implements LispBuffer {
         }
     };
 
-    protected IdeaBuffer (Environment environment, String name, Editor editor) {
+    protected IdeaBuffer (Environment environment, String name, @Nullable Editor editor) {
         myEnvironment = environment;
         myName = name;
-        myWindowManager = new WindowManager(myName, editor);
         mySyntaxTable = SyntaxTable.getStandardSyntaxTable();
         //todo: set fundamental mode, it has StandardSyntaxTable set
-    }
 
-    public IdeaBuffer(Environment environment, String name, String path, Editor editor) {
-        myEnvironment = environment;
-        myName = name;
-        myWindowManager = new WindowManager(name, editor);
-        Document document = getDocument();
-        if (document != null)
-            document.addDocumentListener(myDocumentListener);
         myEnvironment.defineBuffer(this);
-        setLocalVariable("default-directory", new LispString(path));
+        if (editor == null)
+            return;
+        myEnvironment.onWindowOpened(this, editor);
     }
 
     public IdeaBuffer(Environment environment, FileEditorManager fileEditorManager, VirtualFile file) {
-        myEnvironment = environment;
-        myName = file.getName();
-        myWindowManager = new WindowManager(fileEditorManager, file);
-        Document document = getDocument();
-        if (document != null)
-            document.addDocumentListener(myDocumentListener);
-        myEnvironment.defineBuffer(this);
+        this(environment, file.getName(), null);
+        myVirtualFile = file;
         setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
+        for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
+            myEnvironment.onWindowOpened(this, ((TextEditor)fileEditor).getEditor());
+        }
+        FileEditor selected = fileEditorManager.getSelectedEditor(file);
+        if (selected != null)
+            myEnvironment.switchToWindow(((TextEditor)selected).getEditor(), true);
+    }
+
+    public IdeaBuffer(Environment environment, VirtualFile file, @Nullable Editor editor) {
+        this(environment, file.getName(), editor);
+        myVirtualFile = file;
+        setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
+    }
+
+    public VirtualFile getFile() {
+        return myVirtualFile;
+    }
+
+    @Override
+    public void onOpen (Document document) {
+        if (myDocument != null && myDocument != document)
+            throw new BufferOpenException(myName);
+        if (document == null)
+            throw new AssignNullDocument(myName);
+        if (myDocument != null)
+            return;
+        myDocument = document;
+        myDocument.addDocumentListener(myDocumentListener);
+    }
+
+    @Override
+    public void reopen (Editor editor, VirtualFile file) {
+        assert file == myVirtualFile;
+        myEnvironment.onWindowOpened(this, editor);
     }
 
     public static void setProject(Project project) {
         ourProject = project;
+    }
+
+    public static Project getProject() {
+        return ourProject;
     }
 
     private void setLocalVariable (String name, LispObject value) {
@@ -130,6 +157,13 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
+    public Document getDocument() {
+        if (myDocument == null)
+            throw new NullBufferDocument(myName);
+        return myDocument;
+    }
+
+    @Override
     public LispObject evaluateLastForm() {
         String[] code = getDocument().getText().split("\n");
         int line = getEditor().getCaretModel().getVisualPosition().getLine();
@@ -148,31 +182,31 @@ public class IdeaBuffer implements LispBuffer {
         return parsed.evaluate(myEnvironment);
     }
 
-    @Override
-    public LispWindow getSelectedWindow() {
-        return myWindowManager.getSelectedWindow();
-    }
-
+    //    @Override
+//    public LispWindow getSelectedWindow() {
+//        return myWindowManager.getSelectedWindow();
+//    }
+//
     @Override
     public Editor getEditor() {
-        return myWindowManager.getSelectedWindow().getEditor();
+        return myEnvironment.getBufferLastSelectedWindow(this).getEditor();
     }
+//
+//    @Override
+//    public boolean containsEditor(Editor editor) {
+//        return myWindowManager.contains(editor);
+//    }
 
-    @Override
-    public boolean containsEditor(Editor editor) {
-        return myWindowManager.contains(editor);
-    }
-
-    @Override
-    public void mergeEditors(LispBuffer other) {
-        boolean isDuplicate = true;
-        for (LispWindow window: other.getWindows()) {
-            Editor editor = window.getEditor();
-            isDuplicate = !myWindowManager.tryAppend(editor);
-        }
-        if (isDuplicate)
-            throw new DoubleBufferException(myName);
-    }
+//    @Override
+//    public void mergeEditors(LispBuffer other) {
+//        boolean isDuplicate = true;
+//        for (LispWindow window: other.getWindows()) {
+//            Editor editor = window.getEditor();
+//            isDuplicate = !myWindowManager.tryAppend(editor);
+//        }
+//        if (isDuplicate)
+//            throw new DoubleBufferException(myName);
+//    }
 
     @Override
     public void setSyntaxTable(LispSyntaxTable table) {
@@ -184,24 +218,21 @@ public class IdeaBuffer implements LispBuffer {
         return mySyntaxTable;
     }
 
-    @Override
-    public List<LispWindow> getWindows() {
-        return myWindowManager.getWindows();
-    }
+//    @Override
+//    public List<LispWindow> getWindows() {
+//        return myWindowManager.getWindows();
+//    }
 
-    @Override
-    public void setEditor(@Nullable Editor editor) {
-        if (myWindowManager.size() > 1)
-            throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
-        if (editor == null && myWindowManager.size() == 1 && getDocument() != null && !(this instanceof IdeaMiniBuffer)) {
-            try {
-                getDocument().removeDocumentListener(myDocumentListener);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-        myWindowManager.setActiveEditor(editor);
-    }
+//    @Override
+//    public void setEditor(@Nullable Editor editor) {
+//        //todo: set this buffer's current window editor
+//        if (myWindowManager.size() > 1)
+//            throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
+//        if (editor == null && myWindowManager.size() == 1 && getDocument() != null && !(this instanceof IdeaMiniBuffer)) {
+//            getDocument().removeDocumentListener(myDocumentListener);
+//        }
+//        myWindowManager.setActiveEditor(editor);
+//    }
 
     public String toString() {
         return "#<buffer " + myName + ">";
@@ -219,32 +250,82 @@ public class IdeaBuffer implements LispBuffer {
 
     @Override
     public int getSize() {
-        return myWindowManager.getSelectedWindow().getSize();
+        return getDocument().getTextLength();
     }
 
     @Override
     public int point() {
-        return myWindowManager.getSelectedWindow().point();
+        Editor editor = getEditor();
+        return editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition()) + 1;
     }
 
     @Override
+    public int followingCharacter() {
+        if (point() == pointMax())
+            return 0;
+        return (int)getDocument().getText().charAt(point()-1);
+    }
+
+    @Override
+    public int precedingCharacter() {
+        if (point() == pointMin())
+            return 0;
+        return (int)getDocument().getText().charAt(point()-2);
+    }
+
     public void setPoint(int position) {
-        myWindowManager.getSelectedWindow().setPoint(position);
+        getEditor().getCaretModel().moveToOffset(position);
     }
 
-    @Override
     public int pointMin() {
-        return myWindowManager.getSelectedWindow().pointMin();
+        return 1;
     }
 
-    @Override
     public int pointMax() {
-        return myWindowManager.getSelectedWindow().pointMax();
+        return getSize()+1;
     }
 
-    @Override
     public String gotoChar (int position) {
-        return myWindowManager.getSelectedWindow().gotoChar(position);
+        String message = "";
+        if (position < pointMin()) {
+            position = pointMin();
+            message = "Beginning of buffer";
+        }
+        else if (position > pointMax()) {
+            position = pointMax();
+            message = "End of buffer";
+        }
+        getEditor().getCaretModel().moveToOffset(position-1);
+        return message;
+    }
+
+    public void write (final String text) {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        getDocument().setText(text);
+                        gotoChar(pointMax());
+                    }
+                });
+            }
+        });
+    }
+
+    public void insertAt (final int position, final String insertion) {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        getDocument().insertString(position, insertion);
+                    }
+                });
+            }
+        });
     }
 
     @Override
@@ -252,25 +333,25 @@ public class IdeaBuffer implements LispBuffer {
         return gotoChar(point() + shift);
     }
 
-    protected void write (final String text) {
-        myWindowManager.getSelectedWindow().write(text);
-    }
-    
-    private void insertAt (final int position, final String insertion) {
-        isChangedByMe = true;
-        myWindowManager.getSelectedWindow().insertAt(position, insertion);
-    }
-
     @Override
     public void setActive() {
+        myEnvironment.setBufferCurrentForEditing(this);
+
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(ourProject);
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
             if (file.getName().equals(myName)) {
-                fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true);
-                myWindowManager.switchToEditor(fileEditorManager.getSelectedTextEditor());
+                myEnvironment.switchToWindow(
+                        fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true),
+                        false);
+                return;
             }
         }
+        //it is not in opened files, open it.
+        assert myVirtualFile != null;
+        Editor editor = ((TextEditor)fileEditorManager.openFile(myVirtualFile, true)[0]).getEditor();
+        myEnvironment.onWindowOpened(this, editor);
+        myEnvironment.switchToWindow(editor, false);
     }
 
     @Override
@@ -283,14 +364,19 @@ public class IdeaBuffer implements LispBuffer {
             }
         }
         getDocument().removeDocumentListener(myDocumentListener);
-        myWindowManager.closeAll();
+        myDocument = null;
     }
 
     @Override
     public void closeHeader () {
         try {
-            myWindowManager.getSelectedWindow().closeHeader();
-        } catch (NullPointerException e) {
+            Editor editor = getEditor();
+            if (editor == null)
+                return;
+            if (editor.getHeaderComponent() == null)
+                return;
+            editor.setHeaderComponent(null);
+        } catch (LispException e) {
             //the buffer was killed, skip
         }
     }
@@ -333,10 +419,10 @@ public class IdeaBuffer implements LispBuffer {
         if (StringUtil.isEmpty(insertion))
             return;
         insertAt(where - 1, insertion);
-        updateMarkersPositions(where, insertion.length(), true);
+//        updateMarkersPositions(where, insertion.length(), true);
         gotoChar(where + insertion.length());
     }
-    
+
     private void updateMarkersPositions (int point, int shift, boolean moveAnyway) {
         for (LispMarker marker: myMarkers) {
             if (!marker.isSet())
@@ -366,31 +452,11 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public void switchToEditor(Editor editor) {
-        myWindowManager.switchToEditor(editor);
-    }
-
-    @Override
     public void insert(String insertion) {
         insert(insertion, point());
     }
 
     private LispObject kbd (Environment environment, LispString keys) {
         return LispList.list(new LispSymbol("kbd"), keys).evaluate(environment);
-    }
-
-    @Override
-    public Document getDocument() {
-        return myWindowManager.getDocument();
-    }
-
-    @Override
-    public boolean hasWindows() {
-        return !myWindowManager.isEmpty();
-    }
-
-    @Override
-    public boolean containsWindow(LispWindow window) {
-        return myWindowManager.containsWindow(window);
     }
 }

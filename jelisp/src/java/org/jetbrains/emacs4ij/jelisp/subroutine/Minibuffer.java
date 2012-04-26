@@ -174,7 +174,7 @@ public abstract class Minibuffer {
     @Subroutine(value = "minibuffer-complete", isCmd = true)
     public static void minibufferComplete (Environment environment) {
         try {
-            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+            LispMinibuffer miniBuffer = environment.getMinibuffer();
             String parameter = miniBuffer.readInputString();
             List<String> completions = miniBuffer.getCompletions(parameter);
             if (completions.isEmpty()) {
@@ -450,10 +450,4 @@ public abstract class Minibuffer {
         }
         return testCompletion(environment, toComplete, collection, predicate);
     }
-
-    @Subroutine("minibuffer-window")
-    public static LispObject minibufferWindow (Environment environment, @Optional LispFrame frame) {
-        return Core.thisOrNil(environment.getMinibufferWindow());
-    }
-
 }

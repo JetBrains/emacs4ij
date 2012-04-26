@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,19 +11,12 @@ import org.jetbrains.annotations.Nullable;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispWindow extends LispObject {
-    void set (@Nullable Editor editor);
     Editor getEditor();
-
-    void closeHeader();
-    int getSize();
-    int point();
-    int followingCharacter();
-    int precedingCharacter();
-    int pointMax();
-    int pointMin();
-    void setPoint(int position);
-    String gotoChar (int position);
-    void write(String text);
-    void insertAt(int position, String text);
-    boolean hasEditor();
+    LispFrame getFrame();
+    LispBuffer getBuffer();
+    void setActive();
+    boolean isVisible();
+    void close();
+    void open (@NotNull Editor editor);
+    void closeTab();
 }

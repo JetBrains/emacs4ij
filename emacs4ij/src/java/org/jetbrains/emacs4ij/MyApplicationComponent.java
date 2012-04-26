@@ -7,6 +7,7 @@ import com.intellij.openapi.wm.WindowManagerListener;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -26,22 +27,28 @@ public class MyApplicationComponent implements ApplicationComponent {
             @Override
             public void windowGainedFocus(WindowEvent e) {
                 super.windowGainedFocus(e);
-                if (EnvironmentInitializer.isGlobalInitialized())
-                    GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) e.getWindow()));
+                if (!EnvironmentInitializer.isGlobalInitialized())
+                    return;
+                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
+                GlobalEnvironment.INSTANCE.setSelectedFrame(frame);
             }
 
             @Override
             public void windowIconified(WindowEvent e) {
                 super.windowIconified(e);
-                if (EnvironmentInitializer.isGlobalInitialized())
-                    GlobalEnvironment.INSTANCE.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), true);
+                if (!EnvironmentInitializer.isGlobalInitialized())
+                    return;
+                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
+                frame.setIconified(true);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
                 super.windowDeiconified(e);
-                if (EnvironmentInitializer.isGlobalInitialized())
-                    GlobalEnvironment.INSTANCE.setFrameIconified(new IdeaFrame((IdeFrameImpl) e.getWindow()), false);
+                if (!EnvironmentInitializer.isGlobalInitialized())
+                    return;
+                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
+                frame.setIconified(false);
             }
         };
     }
@@ -62,7 +69,8 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void beforeFrameReleased(IdeFrame ideFrame) {
                 if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
-                GlobalEnvironment.INSTANCE.onFrameReleased(new IdeaFrame((IdeFrameImpl) ideFrame));
+                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame(ideFrame);
+                GlobalEnvironment.INSTANCE.onFrameReleased(frame);
             }
         });
     }

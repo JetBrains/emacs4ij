@@ -137,7 +137,7 @@ public class SpecialFormInteractive extends InteractiveReader {
                 myPromptDefaultValue = " (default " + myParameterDefaultValue + "): ";
                 break;
             case 'c':
-                myEnvironment.getMiniBuffer().addCharListener();
+                myEnvironment.getMinibuffer().addCharListener();
                 break;
             case 'd': // -- Value of point as number. Does not do I/O.
                 addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));

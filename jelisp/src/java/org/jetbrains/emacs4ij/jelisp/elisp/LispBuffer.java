@@ -2,9 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,6 +13,8 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LispObject {
+    void onOpen (Document document);
+    void reopen (Editor editor, VirtualFile file);
     LispObject getLocalVariableValue (String name);
     LispSymbol getLocalVariable (String name);
     void defineLocalVariable (LispSymbol variable, boolean noValue);
@@ -27,6 +28,8 @@ public interface LispBuffer extends LispObject {
     int pointMax();
     String gotoChar(int position);
     String forwardChar (int shift);
+    int followingCharacter();
+    int precedingCharacter();
 
     void kill();
     LispObject evaluateLastForm ();
@@ -44,16 +47,16 @@ public interface LispBuffer extends LispObject {
     void insert(LispObject insertion, @Nullable LispMarker where);
     void insert(LispObject insertion);
 
-    void setEditor(@Nullable Editor editor);
-    void switchToEditor (Editor editor);
+//    void setEditor(@Nullable Editor editor);
+//    void switchToEditor (Editor editor);
     Editor getEditor();
-    LispWindow getSelectedWindow();
-    boolean containsEditor (Editor editor);
-    boolean containsWindow (LispWindow window);
-    boolean hasWindows();
+//    LispWindow getSelectedWindow();
+//    boolean containsEditor (Editor editor);
+//    boolean containsWindow (LispWindow window);
+//    boolean hasWindows();
     Document getDocument();
-    List<LispWindow> getWindows();
-    void mergeEditors (LispBuffer other);
+//    List<LispWindow> getWindows();
+//    void mergeEditors (LispBuffer other);
 
     void setSyntaxTable(LispSyntaxTable table);
     LispSyntaxTable getSyntaxTable ();

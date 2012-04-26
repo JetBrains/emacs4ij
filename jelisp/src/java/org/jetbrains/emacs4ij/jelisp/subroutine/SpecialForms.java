@@ -239,7 +239,7 @@ public abstract class SpecialForms {
         if (arg instanceof LispString) {
             SpecialFormInteractive interactive = new SpecialFormInteractive(environment, Core.getInvoker(),
                     ((LispString) arg).getData());
-            LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+            LispMinibuffer miniBuffer = environment.getMinibuffer();
             miniBuffer.onInteractiveNoIoInput(interactive);
             return null;
         }

@@ -3,14 +3,14 @@ package org.jetbrains.emacs4ij.jelisp.exception;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 
 /**
- * Created by IntelliJ IDEA.
+ * Created with IntelliJ IDEA.
  * User: kate
- * Date: 10/31/11
- * Time: 10:30 AM
+ * Date: 4/24/12
+ * Time: 5:19 PM
  * To change this template use File | Settings | File Templates.
  */
 public class NoOpenedBufferException extends LispException {
     public NoOpenedBufferException() {
-        super(JelispBundle.message("no.opened.buffer"));
+        super(JelispBundle.message("no.opened", "buffer"));
     }
 }

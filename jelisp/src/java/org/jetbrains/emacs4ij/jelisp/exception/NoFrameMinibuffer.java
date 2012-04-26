@@ -6,11 +6,11 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
  * Created with IntelliJ IDEA.
  * User: kate
  * Date: 4/25/12
- * Time: 12:48 PM
+ * Time: 2:25 PM
  * To change this template use File | Settings | File Templates.
  */
-public class NoBufferException extends LispException {
-    public NoBufferException (String bufferName) {
-        super(JelispBundle.message("no.buffer", bufferName));
+public class NoFrameMinibuffer extends LispException {
+    public NoFrameMinibuffer (String frame) {
+        super(JelispBundle.message("no.frame.minibuffer", frame));
     }
 }

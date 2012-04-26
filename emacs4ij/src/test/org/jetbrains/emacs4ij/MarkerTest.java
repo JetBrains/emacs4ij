@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -13,7 +14,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,21 +30,25 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     CustomEnvironment myEnvironment;
     ForwardParser myForwardParser = new ForwardParser();
     String myTestsPath;
-    HashMap<String, IdeaBuffer> myTests;
+    HashMap<String, IdeaBuffer> myTests = new HashMap<>();
     String[]  myTestFiles;
 
     @Before
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        myTestFiles = (new File(myTestsPath)).list();
-        myTests = new HashMap<>();
-        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
+        List<String> list = Arrays.asList((new File(myTestsPath)).list());
+        Collections.reverse(list);
+        myTestFiles = list.toArray(new String[list.size()]);
+
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
+                new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        // GlobalEnvironment.getInstance().clearRecorded();
-        for (String fileName: myTestFiles) {
-            myFixture.configureByFile(myTestsPath + fileName);
-            myTests.put(fileName, new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor()));
+        for (int i = myTestFiles.length - 1; i > -1; i--) {
+            String fileName = myTestFiles[i];
+            PsiFile psiFile = myFixture.configureByFile(myTestsPath + fileName);
+            IdeaBuffer buffer = new IdeaBuffer(myEnvironment, psiFile.getVirtualFile(), getEditor());
+            myTests.put(fileName, buffer);
         }
         evaluateString("(switch-to-buffer \"3.txt\")");
     }
@@ -232,12 +240,12 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testInsertNil() {
         evaluateString("(setq m (make-marker))");
-        evaluateString("(set-marker m 3)");
+        evaluateString("(set-marker m 2)");
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
         evaluateString("(prin1 1 m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        Assert.assertEquals("4", m.getPosition().toString());
-
         System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        Assert.assertEquals("3", m.getPosition().toString());
     }
 
     @Test
@@ -245,21 +253,22 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 3)");
         evaluateString("(set-marker-insertion-type m t)");
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
         evaluateString("(prin1 1 m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        Assert.assertEquals("4", m.getPosition().toString());
-
         System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        Assert.assertEquals("4", m.getPosition().toString());
     }
 
     @Test
     public void testInsertKey() {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 3)");
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
         evaluateString("(prin1 \"hello\" m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        Assert.assertEquals("10", m.getPosition().toString());
         System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        Assert.assertEquals("10", m.getPosition().toString());
     }
 
     @Test

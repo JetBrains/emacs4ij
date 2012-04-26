@@ -1,16 +1,15 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
-import org.jetbrains.emacs4ij.jelisp.BufferManager;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import javax.swing.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,22 +21,23 @@ import java.util.Map;
  */
 public class IdeaFrame implements LispFrame {
     private final IdeFrameImpl myFrame;
-    private final FileEditorManager myFileEditorManager;
-    private final BufferManager myBufferManager = new BufferManagerImpl();
     private Map<String, LispObject> myParameters = new HashMap<>();
 
     public IdeaFrame(IdeFrameImpl frame) {
         myFrame = frame;
         myParameters.put("visibility", LispSymbol.ourT);
-        myFileEditorManager = FileEditorManager.getInstance(frame.getProject());
         initParameters();
     }
 
     //for test
     IdeaFrame () {
         myFrame = null;
-        myFileEditorManager = null;
         initParameters();
+    }
+
+    @Override
+    public IdeFrame getIdeFrame() {
+        return myFrame;
     }
 
     private void initParameters() {
@@ -94,80 +94,12 @@ public class IdeaFrame implements LispFrame {
     }
 
     @Override
-    public boolean areIdeFramesEqual(LispFrame frame) {
-        return myFrame.equals(((IdeaFrame)frame).myFrame);
-    }
-
-    @Override
     public boolean isVisible() {
         return myParameters.get("visibility").equals(LispSymbol.ourT);
     }
 
     @Override
-    public void openServiceWindow (LispBuffer buffer) {
-        myBufferManager.defineServiceBuffer(buffer);
-    }
-
-    @Override
-    public void openWindow (LispBuffer buffer) {
-        myBufferManager.defineBuffer(buffer);
-    }
-
-    @Override
-    public LispWindow getSelectedWindow() {
-        //todo: if focus not in editor?
-        if (myFileEditorManager == null)
-            return myBufferManager.getCurrentBuffer().getSelectedWindow();
-        Editor e = myFileEditorManager.getSelectedTextEditor();
-        return myBufferManager.findBuffer(myFileEditorManager.getSelectedTextEditor()).getSelectedWindow();
-    }
-
-    @Override
-    public void closeWindow(LispBuffer buffer) {
-        myBufferManager.removeBuffer(buffer);
-    }
-
-    @Override
-    public BufferManager getBufferManager() {
-        return myBufferManager;
-    }
-
-    @Override
-    public LispWindow getBufferWindow (LispBuffer buffer) {
-        LispBuffer my = myBufferManager.findBuffer(buffer.getName());
-        if (my == null)
-            return null;
-        return my.getSelectedWindow();
-    }
-
-    @Override
-    public LispBuffer getWindowBuffer(LispWindow window) {
-        return myBufferManager.getBufferByWindow(window);
-    }
-
-    @Override
     public JComponent getComponent() {
         return myFrame.getComponent();
-    }
-
-    @Override
-    public boolean containsWindow(LispWindow window) {
-        return myBufferManager.containsWindow(window);
-    }
-
-    @Override
-    public LispMiniBuffer getMinibuffer() {
-        return myBufferManager.getMinibuffer();
-    }
-
-    @Override
-    public List<LispWindow> getWindows() {
-        return myBufferManager.getWindows();
-    }
-
-    @Override
-    public void deleteOtherWindows(LispWindow window) {
-
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 }

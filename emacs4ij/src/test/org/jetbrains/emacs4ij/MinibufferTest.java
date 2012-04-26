@@ -13,10 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -28,27 +24,16 @@ public class MinibufferTest extends CodeInsightFixtureTestCase {
     private IdeaMiniBuffer myMiniBuffer;
     private Environment myEnvironment;
     String myTestsPath;
-    String[] myTestFiles;
-    Map<String, IdeaBuffer> myTests = new HashMap<>();
 
     @Before
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
+        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
+                new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EditorTextField t = new EditorTextField();
         myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment, null);
-
-        myTestFiles = (new File(myTestsPath)).list();
-        GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new TestFrameManagerImpl());
-        myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        for (String fileName: myTestFiles) {
-            myFixture.configureByFile(myTestsPath + fileName);
-            IdeaBuffer buffer = new IdeaBuffer(myEnvironment, fileName, myTestsPath, getEditor());
-            myTests.put(fileName, buffer);
-        }
-//        myFileEditorManager = FileEditorManager.getInstance(getProject());
     }
 
     private LispObject evaluateString (String lispCode) throws LispException {

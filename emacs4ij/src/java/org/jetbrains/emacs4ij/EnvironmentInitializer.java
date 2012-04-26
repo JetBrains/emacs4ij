@@ -65,7 +65,8 @@ public abstract class EnvironmentInitializer {
             return true;
         Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
         try {
-            GlobalEnvironment.initialize(new KeymapCreator(), new IdeProvider(), new FrameManagerImpl());
+            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
+                    new IdeProvider(), new FrameManagerImpl());
             isGlobalInitialized = true;
         } catch (LispException e) {
             ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(userKeymap);
@@ -77,14 +78,15 @@ public abstract class EnvironmentInitializer {
     public static void initProjectEnv (final Project project, final Environment environment) {
         WindowManager windowManager = WindowManager.getInstance();
         for (IdeFrame frame: windowManager.getAllFrames()) {
-            IdeaFrame ideaFrame = new IdeaFrame((IdeFrameImpl) frame);
-            GlobalEnvironment.INSTANCE.onFrameOpened(ideaFrame);
-            if (((IdeFrameImpl) frame).isFocused())
-                GlobalEnvironment.INSTANCE.setSelectedFrame(ideaFrame);
+            GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
         }
+        if (GlobalEnvironment.INSTANCE.getAllFrames().size() != 1) {
+            GlobalEnvironment.INSTANCE.setSelectedFrame(GlobalEnvironment.INSTANCE.getFrame(windowManager.getIdeFrame(project)));
+        }
+        //todo index project directory and init buffers
+//        String root = project.getBaseDir().getUrl();
 
-        if (GlobalEnvironment.INSTANCE.getSelectedFrame() == null && windowManager.getAllFrames().length > 0)
-            GlobalEnvironment.INSTANCE.setSelectedFrame(new IdeaFrame((IdeFrameImpl) WindowManager.getInstance().getAllFrames()[0]));
+
 
         new IdeaMiniBuffer(0, null, environment, null);
         UIUtil.invokeLaterIfNeeded(new Runnable() {
@@ -94,6 +96,7 @@ public abstract class EnvironmentInitializer {
                     @Override
                     public void run() {
                         final FileEditorManager fileEditorManager = FileEditorManager.getInstance(project);
+
                         for (final VirtualFile virtualFile : fileEditorManager.getOpenFiles()) {
                             ApplicationManager.getApplication().runReadAction(new Runnable() {
                                 @Override
@@ -108,7 +111,7 @@ public abstract class EnvironmentInitializer {
                         }
                         Editor editor = fileEditorManager.getSelectedTextEditor();
                         if (editor != null) {
-                            environment.switchToWindow(fileEditorManager.getSelectedTextEditor());
+                            environment.switchToWindow(fileEditorManager.getSelectedTextEditor(), true);
                             return;
                         }
                         if (fileEditorManager.getOpenFiles().length != 0)

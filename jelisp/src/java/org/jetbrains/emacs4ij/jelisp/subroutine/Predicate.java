@@ -83,7 +83,7 @@ public abstract class Predicate {
     @Subroutine("buffer-live-p")
     public static LispSymbol bufferLivePredicate (Environment environment, LispObject object) {
         if (object instanceof LispBuffer) {
-            return LispSymbol.bool(!environment.isBufferDead(((LispBuffer) object).getName()));
+            return LispSymbol.bool(environment.isBufferAlive((LispBuffer) object));
         }
         return LispSymbol.ourNil;
     }
@@ -197,7 +197,10 @@ public abstract class Predicate {
     public static LispSymbol numberP (LispObject object) {
         return LispSymbol.bool(object instanceof LispNumber);
     }
-    
+
+    public static boolean isNil (LispObject object) {
+        return object == null || object.equals(LispSymbol.ourNil);
+    }
     public static boolean isWholeNumber(LispObject object) {
         return (object instanceof LispInteger) && (((LispInteger) object).getData() > -1);
     }
@@ -207,10 +210,6 @@ public abstract class Predicate {
         return LispSymbol.bool(isWholeNumber(object));
     }
 
-    public static boolean isNil (LispObject object) {
-        return object == null || object.equals(LispSymbol.ourNil);
-    }
-    
     @Subroutine("window-live-p")
     public static LispSymbol windowLiveP (Environment environment, LispWindow window) {
         return LispSymbol.bool(environment.isWindowAlive(window));
@@ -219,7 +218,7 @@ public abstract class Predicate {
     @Subroutine("minibufferp")
     public static LispSymbol minibufferP (Environment environment, @Optional LispObject bufferOrName) {
         LispBuffer buffer = Buffer.getBufferByBufferNameOrNil(environment, bufferOrName);
-        return LispSymbol.bool(buffer instanceof LispMiniBuffer);
+        return LispSymbol.bool(buffer instanceof LispMinibuffer);
     }
 
     @Subroutine("input-pending-p")

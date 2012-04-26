@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Minibuffer;
@@ -31,7 +31,7 @@ import java.util.List;
  * Time: 4:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
+public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
     private int myActivationsDepth = 0;
     private InteractiveReader myInteractive;
     private Integer myCharCode = null;
@@ -45,7 +45,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         super(environment, " *Minibuf-" + number + '*', editor);
         myParent = parent;
         myAlarm = new Alarm();
-        myEnvironment.defineServiceBuffer(this);
     }
 
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
@@ -151,7 +150,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
         if (!isOpened) {
             open(myEnvironment.getBufferCurrentForEditing());
             if (myActivationsDepth > 1) {
-                kill();
+                myEnvironment.killBuffer(this);
                 GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
                 return;
             }
@@ -224,7 +223,6 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 //        myPrompt = ourEvalPrompt;
         exitOnSuccess = false;
         cancelNoMatchMessageUpdate();
-        setEditor(null);
 //        write(myPrompt);
 //        myWindowManager.closeAll();
         myActivationsDepth = 0;
@@ -233,6 +231,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
             myParent = null;
         }
         isOpened = false;
+        myDocument = null;
         System.out.println("kill minibuffer");
 //        todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
 //        myActivationsDepth--;
@@ -246,17 +245,15 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
     private void open(final LispBuffer parent) {
         final EditorTextField input = new EditorTextField("", ourProject, FileTypes.PLAIN_TEXT);
         parent.getEditor().setHeaderComponent(input);
-
         myParent = parent;
         input.setEnabled(true);
         Editor editor = input.getEditor();
         if (editor != null) {
             ((EditorEx) editor).addFocusListener(myFocusListener);
-            setEditor(editor);
+            myEnvironment.onWindowOpened(this, editor);
             editor.getContentComponent().setForeground(Color.GREEN);
             editor.getComponent().setForeground(Color.BLUE);
         }
-
         myActivationsDepth++;
         isOpened = true;
         setActive();
@@ -302,7 +299,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     private void runInteractive() {
         if (isOpened && exitOnSuccess) {
-            kill();
+            myEnvironment.killBuffer(this);
         }
         InteractiveReader current = myInteractive;
         myInteractive = !myInteractiveStack.isEmpty() ? myInteractiveStack.removeFirst() : null;
@@ -311,11 +308,14 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMiniBuffer {
 
     @Override
     public void setActive() {
-        if (myEnvironment.getServiceBuffer(myName) == null)
-            throw new NoBufferException(myName);
-        if (myWindowManager.getSelectedWindow() == null || !myWindowManager.getSelectedWindow().hasEditor())
+        if (myEnvironment.findBuffer(myName) == null)
+            throw new UnregisteredBufferException(myName);
+        try {
+//            myEnvironment.setBufferCurrentForEditing(this);
+            getEditor().getContentComponent().grabFocus();
+        } catch (NullPointerException e) {
             throw new Emacs4ijFatalException("Null editor!");
-        getEditor().getContentComponent().grabFocus();
+        }
     }
 
     public void message (final String text) {

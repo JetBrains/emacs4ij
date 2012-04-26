@@ -69,11 +69,11 @@ public abstract class InteractiveReader implements Completer {
     }
 
     protected void putArgument() {
-        myEnvironment.getMiniBuffer().readParameter(this);
+        myEnvironment.getMinibuffer().readParameter(this);
     }
 
     protected void notifyMiniBuffer() {
-        myEnvironment.getMiniBuffer().onInteractiveNoIoInput(this);
+        myEnvironment.getMinibuffer().onInteractiveNoIoInput(this);
     }
 
     public String getInitialInput() {

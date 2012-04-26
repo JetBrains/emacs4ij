@@ -11,7 +11,7 @@ import java.util.List;
  * Time: 3:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface LispMiniBuffer extends LispBuffer {
+public interface LispMinibuffer extends LispBuffer {
     void readParameter(InteractiveReader interactive);
     void addCharListener();
     int getActivationsDepth();

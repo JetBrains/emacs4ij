@@ -182,7 +182,7 @@ public abstract class Key {
 
         LispSymbol mblMustMatchMap = makeKeymap("minibuffer-local-must-match-map", mblCompletionMap);
         setKey(mblMustMatchMap, "minibuffer-completion-help", "?");
-        setKey(mblMustMatchMap, "minibuffer-complete-word", "<SPC>");
+//        setKey(mblMustMatchMap, "minibuffer-complete-word", "<SPC>");
         setKey(mblMustMatchMap, "minibuffer-complete", "<TAB>");
         setKey(mblMustMatchMap, "minibuffer-complete-and-exit", "<RET>");
 

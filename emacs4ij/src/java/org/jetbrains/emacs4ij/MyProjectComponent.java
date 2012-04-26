@@ -20,8 +20,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
 
 import javax.swing.event.HyperlinkEvent;
@@ -66,10 +68,17 @@ public class MyProjectComponent implements ProjectComponent {
                     return;
                 try {
                     Editor editor = ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor();
-                    new IdeaBuffer(myEnvironment, virtualFile.getName(),
-                        virtualFile.getParent().getPath() + '/',
-                            editor);
-                    myEnvironment.switchToWindow(editor);
+                    try {
+                        myEnvironment.getEditorBuffer(editor);
+                    } catch (UnregisteredEditorException e) {//new buffer or reopen closed
+                        LispBuffer existing = myEnvironment.findBuffer(virtualFile.getName());
+                        if (existing == null)
+                            new IdeaBuffer(myEnvironment, virtualFile, editor);
+                        else
+                            existing.reopen(editor, virtualFile);
+                    } finally {
+                        myEnvironment.switchToWindow(editor, true);
+                    }
                 } catch (DoubleBufferException e) {
                     //opened 1 file in 2 or more editors.
                 }
@@ -81,8 +90,8 @@ public class MyProjectComponent implements ProjectComponent {
                     return;
                 if (!myEnvironment.isSelectionManagedBySubroutine())  {
                     try {
-                        myEnvironment.killBuffer(virtualFile.getName());
-                    } catch (NoBufferException e) {
+                        myEnvironment.hideBuffer(virtualFile.getName());
+                    } catch (UnregisteredBufferException e) {
                         //probably the buffer was killed from code but the "selection changed" event ate the flag :)
                     }
                 } else myEnvironment.setSelectionManagedBySubroutine(false);
@@ -99,8 +108,9 @@ public class MyProjectComponent implements ProjectComponent {
                 }
                 if (!(myEnvironment.isSelectionManagedBySubroutine())) {
                     try {
-                        myEnvironment.onTabSwitch(fileEditorManagerEvent.getNewFile().getName(),
-                                FileEditorManager.getInstance(myProject).getSelectedTextEditor());
+                        myEnvironment.onTabSwitch(FileEditorManager.getInstance(myProject).getSelectedTextEditor());
+//                        myEnvironment.onTabSwitch(fileEditorManagerEvent.getNewFile().getName(),
+//                                FileEditorManager.getInstance(myProject).getSelectedTextEditor());
                     } catch (NoBufferException | UnregisteredEditorException e) {
                         //the file/editor will be opened by next event, so skip
                     }

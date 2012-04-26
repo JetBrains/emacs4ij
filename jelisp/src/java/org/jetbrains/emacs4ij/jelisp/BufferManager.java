@@ -1,53 +1,117 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMiniBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
+ * Created by IntelliJ IDEA.
  * User: kate
- * Date: 4/3/12
- * Time: 2:10 PM
+ * Date: 12/19/11
+ * Time: 8:15 PM
  * To change this template use File | Settings | File Templates.
  */
-public interface BufferManager {
-    boolean defineBuffer (LispBuffer buffer);
-    void defineServiceBuffer (LispBuffer buffer);
+public class BufferManager extends CyclicManager<LispBuffer> {
+    private final LispBufferFactory myFactory;
 
-    List<String> getBuffersNames(String begin);
-    List<String> getBuffersNames();
-    void defineBufferLocalVariable(LispSymbol var);
-    void closeCurrentBuffer();
-    void killBuffer (LispBuffer buffer);
-    LispBuffer getCurrentBuffer();
-    LispBuffer getOtherBuffer (String name);
-    LispBuffer getServiceBuffer (String name);
-    LispBuffer createBuffer (String name);
-    LispBuffer switchToWindow (String bufferName, Editor editor);
-    void switchToWindow (LispWindow window);
-    LispBuffer switchToBuffer (String bufferName);
+    public BufferManager(LispBufferFactory factory) {
+        myFactory = factory;
+    }
 
-    List<LispBuffer> getBuffers();
-    int getBuffersSize();
-    void closeAllBuffers();
-    LispBuffer getBufferByIndex(int index);
-    boolean isDead(String bufferName);
-    boolean containsBuffer (String bufferName);
-    boolean containsWindow(LispWindow window);
-    LispBuffer findBufferSafe(String bufferName);
-    LispBuffer findBuffer(String bufferName);
-    LispBuffer findBuffer(Editor editor);
-    LispBuffer lastBuffer (String bufferName);
-    void buryBuffer (LispBuffer buffer);
-    void removeBuffer (LispBuffer buffer);
+    public LispBuffer createBuffer (String bufferName) {
+        String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing()
+                .getLocalVariableValue("default-directory")).getData();
 
-    LispMiniBuffer getMinibuffer();
-    List<LispWindow> getWindows();
+        VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(baseDir + bufferName);
+        if (file == null)
+            throw new InternalException("create buffer failed");
 
-    LispBuffer getBufferByWindow(LispWindow window);
+        return myFactory.createBuffer(GlobalEnvironment.INSTANCE, file, null);
+    }
+
+    public LispBuffer findBuffer (String bufferName) {
+        for (LispBuffer buffer: myData) {
+            if (buffer.getName().equals(bufferName))
+                return buffer;
+        }
+        return null;
+    }
+
+    public boolean containsBuffer (String bufferName) {
+        return findBuffer(bufferName) != null;
+    }
+
+    public LispBuffer findBufferSafe (String bufferName) {
+        LispBuffer buffer = findBuffer(bufferName);
+        if (buffer == null)
+            throw new UnregisteredBufferException(bufferName);
+        return buffer;
+    }
+
+    public void killBuffer (LispBuffer buffer) {
+        buffer.kill();
+        remove(buffer);
+    }
+
+    public List<String> getBuffersNames () {
+        List<String> list = new ArrayList<>();
+        for (LispBuffer buffer: myData) {
+            list.add(buffer.getName());
+        }
+        return list;
+    }
+
+    public List<String> getBuffersNames (String begin) {
+        List<String> bufferNamesList = new ArrayList<>();
+        for (LispBuffer buffer: myData) {
+            String bufferName = buffer.getName();
+            if (bufferName.length() >= begin.length()) {
+                if (bufferName.substring(0, begin.length()).equals(begin)) {
+                    bufferNamesList.add(bufferName);
+                }
+            }
+        }
+        return bufferNamesList;
+    }
+
+    public void defineBufferLocalVariable (LispSymbol symbol) {
+        for (LispBuffer buffer: myData) {
+            buffer.defineLocalVariable(symbol, true);
+        }
+    }
+
+    public LispMinibuffer getMinibuffer() {
+        for (LispBuffer buffer: myData) {
+            if (buffer instanceof LispMinibuffer)
+                return (LispMinibuffer) buffer;
+        }
+        return null;
+    }
+
+    @Override
+    protected void throwNoOpenedItem() {
+        throw new NoOpenedBufferException();
+    }
+
+    @Override
+    protected void throwItemIsNotInDataSet(LispBuffer buffer) {
+        throw new UnregisteredBufferException(buffer.getName());
+    }
+
+    @Override
+    protected void throwDuplicateItem(LispBuffer item) {
+        throw new DoubleBufferException(item.getName());
+    }
+
+    public LispBuffer getBufferByIndex (int index) {
+        return myData.get(index);
+    }
 }
+

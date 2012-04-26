@@ -190,7 +190,7 @@ public abstract class Core {
         if (result == null)
             return;
         EmptyReader reader = new EmptyReader(environment, getInvoker(), result);
-        environment.getMiniBuffer().onInteractiveNoIoInput(reader);
+        environment.getMinibuffer().onInteractiveNoIoInput(reader);
     }
 
     @Subroutine("funcall")
@@ -436,7 +436,7 @@ public abstract class Core {
         environment.setVariable(new LispSymbol("prefix-arg", prefixArg));
         SpecialFormInteractive interactive = new SpecialFormInteractive(environment,
                 new LispSymbol("call-interactively"), "CM-x ");
-        LispMiniBuffer miniBuffer = environment.getMiniBuffer();
+        LispMinibuffer miniBuffer = environment.getMinibuffer();
         miniBuffer.onInteractiveNoIoInput(interactive);
 
 
@@ -496,7 +496,7 @@ public abstract class Core {
     @Subroutine("abort-recursive-edit")
     public static void abortRecursiveEdit (Environment environment) {
         if (environment.getMiniBufferActivationsDepth() > 0)
-            environment.getMiniBuffer().kill();
+            environment.killBuffer(environment.getMinibuffer());
     }
 
     @Subroutine("recursion-depth")

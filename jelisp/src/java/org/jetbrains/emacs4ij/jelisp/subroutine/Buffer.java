@@ -84,12 +84,16 @@ public abstract class Buffer {
     }
 
     @Subroutine("other-buffer")
-    public static LispBuffer otherBuffer (Environment environment,
-                                          @Optional LispObject buffer, LispObject visibleOk, LispFrame frame) {
-        //todo use visibleOk, frame
-        if (buffer == null || !(buffer instanceof LispBuffer))
-            return environment.getOtherBuffer();
-        return environment.getOtherBuffer((LispBuffer)buffer);
+    public static LispObject otherBuffer (Environment environment,
+                                          @Optional @Nullable LispObject buffer, @Optional @Nullable LispObject visibleOk,
+                                          @Optional @Nullable LispObject frame) {
+        LispBuffer b = buffer == null || !(buffer instanceof LispBuffer)
+                ? environment.getBufferCurrentForEditing()
+                : (LispBuffer)buffer;
+        boolean invisiblePreferred = Predicate.isNil(visibleOk);
+        LispFrame f = Frame.getLiveFrame(environment, frame);
+
+        return Core.thisOrNil(environment.getOtherBuffer(b, f, invisiblePreferred));
     }
 
     @Subroutine("set-buffer")
@@ -102,45 +106,6 @@ public abstract class Buffer {
             environment.setBufferCurrentForEditing((LispBuffer)lispObject);
         }
         return lispObject;
-    }
-
-    @Subroutine(value = "switch-to-buffer", isCmd = true, interactive = "BSwitch to buffer", key = "\\C-xb")
-    public static LispObject switchToBuffer (Environment environment,
-                                             LispObject bufferOrName,
-                                             @Nullable @Optional LispObject noRecordObject) {
-        boolean noRecord = false;
-        if (noRecordObject != null) {
-            if (!(noRecordObject.equals(LispSymbol.ourNil)))
-                noRecord = true;
-        }
-        environment.setSelectionManagedBySubroutine(true);
-        if (bufferOrName.equals(LispSymbol.ourNil)) {
-            LispBuffer buffer = environment.getOtherBuffer();
-            buffer.setActive();
-            if (!noRecord) {
-                environment.switchToBuffer(buffer.getName());
-            }
-            return buffer;
-        }
-        if (bufferOrName instanceof LispString) {
-            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
-            if (buffer == null) {
-                return new LispString(JelispBundle.message("cannot.create.buffer"));
-            }
-            buffer.setActive();
-            if (!noRecord) {
-                environment.switchToBuffer(buffer.getName());
-            }
-            return buffer;
-        }
-        if (bufferOrName instanceof LispBuffer) {
-             ((LispBuffer)bufferOrName).setActive();
-            if (!noRecord) {
-                environment.switchToBuffer(((LispBuffer) bufferOrName).getName());
-            }
-            return bufferOrName;
-        }
-        throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
     @Subroutine("point")
@@ -192,9 +157,9 @@ public abstract class Buffer {
 
     @Subroutine("buffer-list")
     public static LispObject bufferList (Environment environment, @Optional LispObject frame) {
-        return (Predicate.isNil(frame) || !(frame instanceof LispFrame))
+        return Predicate.isNil(frame) || !(frame instanceof LispFrame)
                 ? environment.getBufferList()
-                : environment.getBufferList((LispFrame)frame);
+                : environment.getBufferList((LispFrame) frame);
     }
 
     @Subroutine(value = "bury-buffer", isCmd = true)
@@ -211,7 +176,7 @@ public abstract class Buffer {
         }
 
         if (environment.getBufferCurrentForEditing().equals(buffer)) {
-            switchToBuffer(environment, LispSymbol.ourNil, null);
+            Switch.switchToBuffer(environment, LispSymbol.ourNil, null);
         }
 
         environment.buryBuffer(buffer);
@@ -230,12 +195,20 @@ public abstract class Buffer {
         }
     }
 
+    /**
+     * just close all windows displaying given (or current if no given) buffer
+     */
     @Subroutine(value = "replace-buffer-in-windows", isCmd = true, interactive = "bReplace buffer in windows")
     public static LispObject replaceBufferInWindows (Environment environment, @Optional LispObject bufferOrName) {
-        //todo: replace given buffer in all windows where it is opened
         if (bufferOrName == null)
             bufferOrName = environment.getBufferCurrentForEditing();
-        switchToBuffer(environment, otherBuffer(environment, bufferOrName, null, null), null);
+
+        LispBuffer buffer = getBufferByBufferNameOrNil(environment, bufferOrName);
+        environment.hideBuffer(buffer);
+        Switch.switchToBuffer(environment,
+                environment.getOtherBuffer(buffer, environment.getSelectedFrame(), false),
+                LispSymbol.ourNil);
+
         return LispSymbol.ourNil;
     }
 
@@ -252,13 +225,10 @@ public abstract class Buffer {
             }
         }
         //todo: run hooks
-        //todo: Any processes that have this buffer as the `process-buffer' are killed with SIGHUP.
+        //todo: Any processes that have this buffer as the `process-buffer' are killed
 
         LispBuffer buffer = getBufferByBufferNameOrNil(environment, bufferOrName);
         //todo: check if modified. If user decides not to kill the buffer, return nil
-
-        // environment.getMainEnvironment().setSelectionManagedBySubroutine(true);
-        // environment.getMainEnvironment().killBuffer(buffer);
 
         environment.setSelectionManagedBySubroutine(true);
         environment.killBuffer(buffer);
@@ -295,19 +265,19 @@ public abstract class Buffer {
 
     @Subroutine("set-buffer-major-mode")
     public static LispObject setBufferMajorMode (Environment environment, LispBuffer buffer) {
-        //if buffer == scratch => set value from "initial-major-mode". But I have no scratch :)
+        //todo: if buffer == scratch => set value from "initial-major-mode". But I have no scratch :)
         LispSymbol mode = environment.find("major-mode");
         return Core.functionCall(environment, mode.getValue());
     }
 
     @Subroutine("following-char")
     public static LispInteger followingChar (Environment environment) {
-        return new LispInteger(environment.getBufferCurrentForEditing().getSelectedWindow().followingCharacter());
+        return new LispInteger(environment.getBufferCurrentForEditing().followingCharacter());
     }
 
     @Subroutine("preceding-char")
     public static LispInteger precedingChar (Environment environment) {
-        return new LispInteger(environment.getBufferCurrentForEditing().getSelectedWindow().precedingCharacter());
+        return new LispInteger(environment.getBufferCurrentForEditing().precedingCharacter());
     }
 
 }
