@@ -106,6 +106,11 @@ abstract class Parser extends Observable {
         return LispList.list(new LispSymbol("quote"), lispObject);
     }
 
+    protected LispObject parseFunctionQuote (boolean isBackQuote) {
+        LispObject lispObject = parseObject(isBackQuote);
+        return LispList.list(new LispSymbol("function"), lispObject);
+    }
+
     protected LispObject parseBackQuote() {
         LispObject lispObject = parseObject(true);
         return LispList.list(new LispSymbol("\\`"), lispObject);

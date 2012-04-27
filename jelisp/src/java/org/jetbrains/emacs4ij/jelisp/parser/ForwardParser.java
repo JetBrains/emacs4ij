@@ -440,6 +440,12 @@ public class ForwardParser extends Parser {
     @Override
     protected LispObject tryToParse(boolean isBackQuote) {
         switch (getCurrentChar()) {
+            case '#':
+                if (hasNextChar() && getNextChar() == '\'') {
+                    advance(); advance();
+                    return parseFunctionQuote(isBackQuote);
+                }
+                throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex));
             case '\'':
                 advance();
                 skipWhitespaces();

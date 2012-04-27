@@ -4,10 +4,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Assert;
 import org.junit.Before;
@@ -274,5 +271,35 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testKbdEscQuit() {
         evaluateString("(keyboard-escape-quit)");
+    }
+
+    @Test
+    public void testMatchDataReuseListWithMarker() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+
+        evaluateString("(setq reuse (list 1 2 m))");
+        LispObject data = evaluateString("reuse");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), m), data);
+
+        evaluateString("(string-match \"quick\" \"The quick fox jumped quickly.\")");
+        data = evaluateString("(match-data nil reuse)");
+        Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+        data = evaluateString("reuse");
+        Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+        data = evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), data);
+
+        evaluateString("(setq reuse (list 1 2 m))");
+        data = evaluateString("(match-data nil reuse t)");
+        Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+        data = evaluateString("reuse");
+        Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+        data = evaluateString("m");
+        Assert.assertFalse(m.isSet());
+        Assert.assertEquals(m, data);
     }
 }
