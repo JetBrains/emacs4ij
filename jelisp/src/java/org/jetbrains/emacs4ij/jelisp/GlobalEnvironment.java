@@ -5,16 +5,12 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
+import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,29 +34,7 @@ public class GlobalEnvironment extends Environment {
     //temporary solution while i'm not loading all sources
     private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
 
-    public static final String ourMiniBufferName = " *Minibuf-0*";
-
-    private LinkedList<SearchItem> mySearchHistory = new LinkedList<>();
-
     public static GlobalEnvironment INSTANCE = null;
-
-    private class SearchItem {
-        private LispObject mySource; //may be a LispString or LispBuffer
-        private Matcher myResult;
-
-        public SearchItem (LispString string, Matcher matcher) {
-            mySource = string;
-            myResult = matcher;
-        }
-
-        public Matcher getResult() {
-            return myResult;
-        }
-    }
-
-    public static String getEmacsHome() {
-        return ourEmacsHome;
-    }
 
     public static String getEmacsSource() {
         return ourEmacsSource;
@@ -422,19 +396,7 @@ public class GlobalEnvironment extends Environment {
     @Override
     public void clearRecorded() {
         super.clearRecorded();
-        mySearchHistory.clear();
+        Search.clearHistory();
         ourCallStack.clear();
-    }
-
-    public void registerSearchResult (LispString src, Matcher result) {
-        mySearchHistory.add(new SearchItem(src, result));
-    }
-
-    public Matcher getLastSearchResult() {
-        try {
-            return mySearchHistory.getLast().getResult();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
     }
 }

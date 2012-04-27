@@ -189,71 +189,6 @@ public class BStringTest extends BaseSubroutineTest {
         r = evaluateString("(capitalize \"EVERY day and\")");
         Assert.assertEquals(new LispString("Every Day And"), r);
     }
-    
-    @Test
-    public void testMatchBeginningNil() {
-        LispObject r = evaluateString("(match-beginning 0)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-    
-    @Test
-    public void testMatchBeginningOutOfRange() {
-        try {
-            evaluateString("(match-beginning -10)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range -10 0)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testMatchBeginningZero() {
-        evaluateString("(string-match \"quick\" \"The quick fox jumped quickly.\")");
-        LispObject r = evaluateString("(match-beginning 0)");
-        Assert.assertEquals(new LispInteger(4), r);
-        r = evaluateString("(match-beginning 1)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testMatchBeginningTwo() {
-        evaluateString("(string-match \"one\" \"Test string one.\")");
-        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
-        LispObject r = evaluateString("(match-beginning 0)");
-        Assert.assertEquals(new LispInteger(4), r);
-        r = evaluateString("(match-beginning 1)");
-        Assert.assertEquals(new LispInteger(4), r);
-        r = evaluateString("(match-beginning 2)");
-        Assert.assertEquals(new LispInteger(6), r);
-        r = evaluateString("(match-beginning 3)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testMatchEnd() {
-        evaluateString("(string-match \"one\" \"Test string one.\")");
-        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
-        LispObject r = evaluateString("(match-end 0)");
-        Assert.assertEquals(new LispInteger(9), r);
-        r = evaluateString("(match-end 1)");
-        Assert.assertEquals(new LispInteger(6), r);
-        r = evaluateString("(match-end 2)");
-        Assert.assertEquals(new LispInteger(9), r);
-        r = evaluateString("(match-end 3)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testMatchStringOutOfRange() {
-        try {
-            evaluateString("(match-string -1)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range -1 0)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
 
     @Test
     public void testSubstringOutOfRange1() {
@@ -308,21 +243,7 @@ public class BStringTest extends BaseSubroutineTest {
         r = evaluateString("(substring \"hello\" 0 4)");
         Assert.assertEquals(new LispString("hell"), r);
     }
-    
-    @Test
-    public void testMatchString() {
-        LispObject r = evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
-        Assert.assertEquals(new LispInteger(4), r);
-        r = evaluateString("(match-string 0 \"The quick fox jumped quickly.\")");
-        Assert.assertEquals(new LispString("quick"), r);
-        r = evaluateString("(match-string 1 \"The quick fox jumped quickly.\")");
-        Assert.assertEquals(new LispString("qu"), r);
-        r = evaluateString("(match-string 2 \"The quick fox jumped quickly.\")");
-        Assert.assertEquals(new LispString("ick"), r);
-        r = evaluateString("(match-string 3 \"The quick fox jumped quickly.\")");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-    
+
     @Test
     public void testToNumber() {
         LispObject n = evaluateString("(string-to-number \"0.0110101\" 10)");

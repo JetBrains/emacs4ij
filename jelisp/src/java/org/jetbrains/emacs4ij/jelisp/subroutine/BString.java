@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
@@ -12,7 +11,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
 import java.util.*;
-import java.util.regex.Matcher;
 
 /**
  * Created by IntelliJ IDEA.
@@ -102,36 +100,6 @@ public abstract class BString {
             return new LispInteger(data);
         }
         throw new WrongTypeArgumentException("char-or-string-p", object);
-    }
-
-    @Subroutine("match-beginning")
-    public static LispObject matchBeginning (LispInteger subExp) {
-        int index = subExp.getData();
-        if (index < 0)
-            throw new ArgumentOutOfRange(subExp, 0);
-        Matcher m = GlobalEnvironment.INSTANCE.getLastSearchResult();
-        if (m == null)
-            return LispSymbol.ourNil;
-        if (index == 0)
-            return new LispInteger(m.start());
-        if (index > m.groupCount())
-            return LispSymbol.ourNil;
-        return new LispInteger(m.start(index));
-    }
-
-    @Subroutine("match-end")
-    public static LispObject matchEnd (LispInteger subExp) {
-        int index = subExp.getData();
-        if (index < 0)
-            throw new ArgumentOutOfRange(subExp, 0);
-        Matcher m = GlobalEnvironment.INSTANCE.getLastSearchResult();
-        if (m == null)
-            return LispSymbol.ourNil;
-        if (index == 0)
-            return new LispInteger(m.end());
-        if (index > m.groupCount())
-            return LispSymbol.ourNil;
-        return new LispInteger(m.end(index));
     }
 
     @Subroutine("string-to-number")

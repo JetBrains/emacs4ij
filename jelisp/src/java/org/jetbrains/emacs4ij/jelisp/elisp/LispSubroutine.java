@@ -19,23 +19,11 @@ import java.util.List;
 * To change this template use File | Settings | File Templates.
 */
 public abstract class LispSubroutine {
-    private static Class[] myBuiltIns = new Class[] {Arithmetic.class,
-                                                    Predicate.class,
-                                                    Buffer.class,
-                                                    Minibuffer.class,
-                                                    Core.class,
-                                                    Frame.class,
-                                                    Key.class,
-                                                    BList.class,
-                                                    Marker.class,
-                                                    Sequence.class,
-                                                    SyntaxTable.class,
-                                                    BString.class,
-                                                    Scan.class,
-                                                    Switch.class,
-                                                    Symbol.class,
-                                                    BVector.class,
-                                                    Window.class};
+
+    private static Class[] myBuiltIns = new Class[] {Arithmetic.class, Predicate.class, Buffer.class, Minibuffer.class,
+            Core.class, Frame.class, Key.class, BList.class, Marker.class, Sequence.class, SyntaxTable.class,
+            BString.class, Scan.class, Search.class, Switch.class, Symbol.class, BVector.class, Window.class};
+
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 
     private LispSubroutine() {}

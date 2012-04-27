@@ -3,11 +3,11 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Search;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +127,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
                 : Pattern.compile(s, Pattern.MULTILINE);
         m = p.matcher(myData);
         if (m.find(from)) {
-            GlobalEnvironment.INSTANCE.registerSearchResult(this, m);
+            Search.registerSearchResult(m);
             return m.start();
         }
         return -1;

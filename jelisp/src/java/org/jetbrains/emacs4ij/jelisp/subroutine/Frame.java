@@ -110,11 +110,6 @@ public abstract class Frame {
         return LispList.list(frames.toArray(new LispObject[frames.size()]));
     }
 
-    @Subroutine("selected-window")
-    public static LispObject selectedWindow (Environment environment) {
-        return Core.thisOrNil(environment.getSelectedWindow());
-    }
-
     @Subroutine("frame-selected-window")
     public static LispWindow frameSelectedWindow (Environment environment, @Optional LispObject frame) {
         return environment.getFrameSelectedWindow(getLiveFrame(environment, frame));

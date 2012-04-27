@@ -115,10 +115,10 @@ public class LispList implements LispSequence {
 
         if (function instanceof LispSymbol) {
             return ((LispSymbol)function).evaluateFunction(environment, VoidFunctionException.class, args);
-        } 
+        }
         if (function instanceof LispList) {
-            function = new Lambda((LispList) function);            
-        } 
+            function = new Lambda((LispList) function);
+        }
         if (function instanceof Lambda) {
             if (!environment.areArgumentsEvaluated()) {
                 for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
@@ -233,8 +233,10 @@ public class LispList implements LispSequence {
             return o.equals(LispSymbol.ourNil) && isEmpty();
         }
         LispList lispList = (LispList) o;
-        if (myCar != null ? !myCar.equals(lispList.myCar) : lispList.myCar != null) return false;
-        if (myCdr != null ? !myCdr.equals(lispList.myCdr) : lispList.myCdr != null) return false;
+        if (myCar != null ? !myCar.equals(lispList.myCar) : lispList.myCar != null)
+            return false;
+        if (myCdr != null ? !myCdr.equals(lispList.myCdr) : lispList.myCdr != null)
+            return false;
 
         return true;
     }
@@ -387,5 +389,45 @@ public class LispList implements LispSequence {
         }
         myCdr = this;
         myCar = object;
+    }
+
+    private void setCar (LispObject car) {
+        myCar = car;
+    }
+
+    /**
+     * current list values are reset with values from given list. This list is enlarged if needed.
+     * If some list.length() < length(), the odd cells are set to nil.
+     * @param list the list to reset with
+     */
+    public void resetWith (LispList list) {
+        LispObject tail = list;
+        LispObject current = this;
+        while (tail instanceof LispList) {
+            if (((LispList)current).realCar() == null)
+                ((LispList)current).setCar(((LispList)tail).realCar());
+            else ((LispList)current).setCar(((LispList)tail).car());
+
+            if (!(((LispList)current).realCdr() instanceof LispList)) {
+                ((LispList)current).setCdr(((LispList)tail).realCdr());
+                return;
+            }
+
+            tail = ((LispList)tail).realCdr();
+
+            current = ((LispList)current).realCdr();
+
+            if (tail instanceof LispList)
+                continue;
+
+            ((LispList)current).setCar(Core.thisOrNil(tail));
+            while (((LispList)current).realCdr() instanceof LispList) {
+
+                ((LispList)current).setCar(LispSymbol.ourNil);
+                current = ((LispList)current).realCdr();
+            }
+            ((LispList)current).setCar(LispSymbol.ourNil);
+            ((LispList)current).setCdr(LispSymbol.ourNil);
+        }
     }
 }

@@ -401,12 +401,6 @@ public abstract class Core {
         return arg;
     }
 
-    @Subroutine("match-data")
-    public static LispObject matchData(@Optional LispObject integers, LispObject reuse, LispObject reseat) {
-        //todo :)
-        return LispSymbol.ourNil;
-    }
-
     private static LispInteger getInt (LispObject object) {
         if (!(object instanceof LispInteger))
             throw new WrongTypeArgumentException("integerp", object);

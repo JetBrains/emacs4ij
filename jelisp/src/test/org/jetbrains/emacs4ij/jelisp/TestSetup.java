@@ -10,10 +10,14 @@ package org.jetbrains.emacs4ij.jelisp;
 public abstract class TestSetup {
 
     public static void runBeforeClass() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
-        GlobalEnvironment.initialize(null, null, null, null, null);
-        GlobalEnvironment.INSTANCE.startRecording();
+        try {
+            GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
+            GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+            GlobalEnvironment.initialize(null, null, null, null, null);
+            GlobalEnvironment.INSTANCE.startRecording();
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
     }
 
     public static String getCause (Throwable e) {

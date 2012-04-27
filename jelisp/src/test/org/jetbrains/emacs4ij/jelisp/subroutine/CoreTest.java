@@ -728,7 +728,7 @@ public class CoreTest extends BaseSubroutineTest {
                 LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
     }
 
-    @Ignore
+//    @Ignore
     @Test
     public void testDefineMinorMode() {
         LispObject r = evaluateString("(define-minor-mode m1 \"doc\")");

@@ -917,7 +917,11 @@ public class ForwardParserTest {
         Assert.assertTrue(list instanceof LispList);
     }
 
-
+    @Test
+    public void testParseFunctionSpecialFormShortcut() {
+        LispObject list = p.parseLine("#'a");
+        Assert.assertEquals(LispList.list(new LispSymbol("function"), new LispSymbol("a")), list);
+    }
 }
 
 
