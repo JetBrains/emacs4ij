@@ -302,4 +302,21 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         Assert.assertFalse(m.isSet());
         Assert.assertEquals(m, data);
     }
+
+    @Test
+    public void setMatchDataInteger() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+
+        LispObject data = evaluateString("(set-match-data '(1 2 m))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), m), data);
+
+        data = evaluateString("(match-data t)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), data);
+
+        evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), data);
+    }
 }

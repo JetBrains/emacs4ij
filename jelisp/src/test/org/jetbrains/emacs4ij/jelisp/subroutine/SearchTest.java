@@ -186,7 +186,5 @@ public class SearchTest extends BaseSubroutineTest {
             return;
         }
         Assert.fail();
-
     }
-
 }

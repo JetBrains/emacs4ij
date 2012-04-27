@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 
 /**
@@ -80,6 +81,13 @@ public abstract class Search {
     public static LispList matchData(@Optional LispObject integers, LispObject reuse, LispObject reset) {
         if (myLastMatch == null)
             throw new NoMatchData();
+        if (!Predicate.isNil(integers)) {
+            for (ListIterator<LispObject> iterator = myLastMatch.listIterator(); iterator.hasNext(); ) {
+                LispObject object = iterator.next();
+                if (object instanceof LispMarker)
+                    iterator.set(new LispInteger(((LispMarker) object).getPosition()));
+            }
+        }
         LispList reuseList = reuse instanceof LispList ? (LispList) reuse : null;
         if (reuseList == null)
             return LispList.list(myLastMatch);
