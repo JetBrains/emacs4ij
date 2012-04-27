@@ -728,14 +728,12 @@ public class CoreTest extends BaseSubroutineTest {
                 LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
     }
 
-//    @Ignore
     @Test
     public void testDefineMinorMode() {
         LispObject r = evaluateString("(define-minor-mode m1 \"doc\")");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
-    @Ignore
     @Test
     public void testSimple() {
         LispObject r = GlobalEnvironment.INSTANCE.find("defface");

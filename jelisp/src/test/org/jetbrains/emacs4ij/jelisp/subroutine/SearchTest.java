@@ -17,8 +17,7 @@ public class SearchTest extends BaseSubroutineTest {
 
     @Test (expected = NoMatchData.class)
     public void testMatchBeginningNil() {
-        LispObject r = evaluateString("(match-beginning 0)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
+        evaluateString("(match-beginning 0)");
     }
 
     @Test
@@ -144,6 +143,8 @@ public class SearchTest extends BaseSubroutineTest {
     @Test
     public void setEmptyMatchDataToNil() {
         LispObject data = evaluateString("(set-match-data nil)");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(), data);
     }
 
@@ -153,12 +154,16 @@ public class SearchTest extends BaseSubroutineTest {
         LispObject data = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9)), data);
         data = evaluateString("(set-match-data nil)");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(), data);
     }
 
     @Test
     public void setEmptyMatchDataToWrongStartList() {
         LispObject data = evaluateString("(set-match-data '(a 1 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(), data);
     }
 

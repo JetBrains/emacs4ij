@@ -304,19 +304,164 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     }
 
     @Test
-    public void setMatchDataInteger() {
+    public void testSetMatchDataInteger() {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 3)");
         LispMarker m = (LispMarker) evaluateString("m");
         Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
 
-        LispObject data = evaluateString("(set-match-data '(1 2 m))");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), m), data);
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
 
+        evaluateString("(set-match-data (list m 1 m2))");
+        LispObject data = evaluateString("(match-data)");
+        LispMarker marker = new LispMarker(1, myEnvironment.getBufferCurrentForEditing());
+        Assert.assertEquals(LispList.list(m, marker), data);
         data = evaluateString("(match-data t)");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), data);
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(1), myEnvironment.getBufferCurrentForEditing()), data);
 
-        evaluateString("(match-data)");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(m, marker), data);
+    }
+
+    @Test
+    public void testSetMatchDataNowhereMarker() {
+        LispObject data = evaluateString("(set-match-data (list (make-marker) 1 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(1)), data);
+    }
+
+    @Test
+    public void testSetMatchDataMarkerFirst() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+
+        LispObject data = evaluateString("(set-match-data (list m 1))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        LispMarker m2 = new LispMarker(1, myEnvironment.getBufferCurrentForEditing());
+        Assert.assertEquals(LispList.list(m, m2), data);
+
+    }
+
+    @Test
+    public void testSetMatchDataMarkerSecond() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+
+        LispObject data = evaluateString("(set-match-data (list 1 m))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(3)), data);
+    }
+
+    @Test
+    public void testSetMatchDataB1B2() {
+        evaluateString("(setq m1 (make-marker))");
+        evaluateString("(set-marker m1 3 (get-buffer \"1.txt\"))");
+        LispMarker m1 = (LispMarker) evaluateString("m1");
+        Assert.assertEquals(new LispMarker(3, myTests.get("1.txt")), m1);
+
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
+
+        LispObject data = evaluateString("(set-match-data (list m1 1 m2 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
+                 m2, new LispMarker(2, myTests.get("2.txt"))), data);
+    }
+
+    @Test
+    public void testSetMatchDataB1() {
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
+
+        LispObject data = evaluateString("(set-match-data (list 3 1 m2 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
+                m2, new LispMarker(2, myTests.get("2.txt"))), data);
+    }
+
+    @Test
+    public void testSetMatchDataN() {
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
+
+        LispObject data = evaluateString("(set-match-data (list 3 1 2 m2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(1), new LispInteger(2), new LispInteger(4)), data);
+    }
+
+    @Test
+    public void testSetMatchDataB1B1B2() {
+        evaluateString("(setq m1 (make-marker))");
+        evaluateString("(set-marker m1 3 (get-buffer \"1.txt\"))");
+        LispMarker m1 = (LispMarker) evaluateString("m1");
+        Assert.assertEquals(new LispMarker(3, myTests.get("1.txt")), m1);
+
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
+
+        LispObject data = evaluateString("(set-match-data (list m1 1 m1 5 m2 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
+                new LispMarker(3, myTests.get("2.txt")), new LispMarker(5, myTests.get("2.txt")),
+                m2, new LispMarker(2, myTests.get("2.txt"))), data);
+    }
+
+    @Test
+    public void testSetMatchDataB1B1E() {
+        evaluateString("(setq m1 (make-marker))");
+        evaluateString("(set-marker m1 3 (get-buffer \"1.txt\"))");
+        LispMarker m1 = (LispMarker) evaluateString("m1");
+        Assert.assertEquals(new LispMarker(3, myTests.get("1.txt")), m1);
+
+        evaluateString("(setq m2 (make-marker))");
+        evaluateString("(set-marker m2 4 (get-buffer \"2.txt\"))");
+        LispMarker m2 = (LispMarker) evaluateString("m2");
+        Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
+
+        evaluateString("(setq e (make-marker))");
+
+        LispObject data = evaluateString("(set-match-data (list m1 1 m2 5 e 2))");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
+                m2, new LispMarker(5, myTests.get("2.txt")),
+                new LispMarker(1, myTests.get("2.txt")), new LispMarker(2, myTests.get("2.txt"))), data);
+    }
+
+    @Test
+    public void testSetMatchDataResetMarker() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 3)");
+        LispMarker m = (LispMarker) evaluateString("m");
+        Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
+
+        LispObject data = evaluateString("(set-match-data (list m 1) t)");
+        Assert.assertEquals(LispSymbol.ourNil, data);
+        data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()),
+                new LispMarker(1, myEnvironment.getBufferCurrentForEditing())), data);
+        Assert.assertFalse(m.isSet());
     }
 }
