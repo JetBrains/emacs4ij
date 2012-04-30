@@ -721,6 +721,15 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         completion = evaluateString("(internal-complete-buffer \"1\" nil 5)");
         Assert.assertEquals(LispSymbol.ourT, completion); //todo: emacs shows nil
     }
+
+    @Test
+    public void testSubstring () {
+        LispObject substring = evaluateString("(buffer-substring 1 2)");
+        Assert.assertEquals(new LispString("l"), substring);
+        //todo: buffer text properties
+        substring = evaluateString("(buffer-substring-no-properties 1 2)");
+        Assert.assertEquals(new LispString("l"), substring);
+    }
 }
 
 

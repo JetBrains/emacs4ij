@@ -224,6 +224,8 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + myName);
+            if (myName.equals("derived-mode-make-docstring"))
+                System.out.print(1);
             try {
                 symbol = environment.findAndRegisterEmacsFunction(myName);
             } catch (LispException e) {

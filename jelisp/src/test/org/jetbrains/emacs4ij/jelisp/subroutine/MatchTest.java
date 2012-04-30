@@ -13,7 +13,7 @@ import org.junit.Test;
  * Time: 11:06 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SearchTest extends BaseSubroutineTest {
+public class MatchTest extends BaseSubroutineTest {
 
     @Test (expected = NoMatchData.class)
     public void testMatchBeginningNil() {
@@ -191,5 +191,155 @@ public class SearchTest extends BaseSubroutineTest {
             return;
         }
         Assert.fail();
+    }
+
+    @Test
+    public void testReplaceMatchInStringNilNil () {
+        evaluateString("(set-match-data (list 10 2))");
+        try {
+            evaluateString("(replace-match \"anna\" nil nil \"qwasqwas\" 10)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range -1 -1)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testMatchStringOutOfStringRange () {
+        evaluateString("(set-match-data (list 10 2))");
+        try {
+            evaluateString("(match-string 0 \"qwasqwas\")");
+        } catch (Exception e) {
+            Assert.assertEquals("'(args-out-of-range \"qwasqwas\" 10 2)", TestSetup.getCause(e));
+//            Assert.assertEquals("'(args-out-of-range 10 2)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testReplaceMatchInStringWrong () {
+        evaluateString("(set-match-data (list 10 2))");
+        try {
+            evaluateString("(replace-match \"anna\" nil nil \"qwasqwas\")");
+        } catch (Exception e) {
+//            Assert.assertEquals("'(args-out-of-range \"qwasqwas\" 10 2)", TestSetup.getCause(e));
+            Assert.assertEquals("'(args-out-of-range 10 2)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testReplaceMatchInStringLonger () {
+        evaluateString("(set-match-data (list 1 3))");
+        LispObject replaced = evaluateString("(replace-match \"anna\" nil nil \"qwasqwas\")");
+        Assert.assertEquals(new LispString("qannasqwas"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchInStringShorter () {
+        evaluateString("(set-match-data (list 0 6))");
+        LispObject replaced = evaluateString("(replace-match \"anna\" nil nil \"qwasqwas\")");
+        Assert.assertEquals(new LispString("annaas"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchAsIs() {
+        evaluateString("(set-match-data '(0 10))");
+        LispObject replaced = evaluateString("(replace-match \"hello\" nil nil \"ThE wORLd6 is Big\")");
+        Assert.assertEquals(new LispString("hello is Big"), replaced);
+        replaced = evaluateString("(replace-match \"hello\" nil nil \"12345678987654321\")");
+        Assert.assertEquals(new LispString("hello7654321"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchCapitalized() {
+        evaluateString("(set-match-data '(0 10))");
+        LispObject replaced = evaluateString("(replace-match \"hello\" nil nil \"THE WORLd6 is Big\")");
+        Assert.assertEquals(new LispString("Hello is Big"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchUppercase() {
+        evaluateString("(set-match-data '(0 10))");
+        LispObject replaced = evaluateString("(replace-match \"hello\" nil nil \"THE WORLD6is Big\")");
+        Assert.assertEquals(new LispString("HELLOis Big"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchWithBackslashLiterally() {
+        evaluateString("(set-match-data '(0 10 1 3))");
+        LispObject replaced = evaluateString("(replace-match \"he\\llo\" nil t \"1234567890\")");
+        Assert.assertEquals(new LispString("he\\llo"), replaced);
+    }
+
+    @Test
+    public void testReplaceMatchWithBackslashNonLiterally() {
+        try {
+            evaluateString("(set-match-data '(0 10 1 3))");
+            evaluateString("(replace-match \"he\\llo\" nil nil \"1234567890\")");
+        } catch (Exception e) {
+            Assert.assertEquals("Invalid use of `\\\\' in replacement text", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testReplaceMatchFirstGroup () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\1two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one12two123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchSecondGroup () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\2two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one45two123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchThirdGroup () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\3two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01onetwo123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchOverGroupN () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\45two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one5two123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchAmpersand () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\&two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one23456789two123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchDoubleAmpersand () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\&two\\&three\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one23456789two23456789three123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchAmpersandAndNumber () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\&two\\2three\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one23456789two45three123"), r);
+    }
+
+    @Test
+    public void testReplaceMatchEscapedBackslash () {
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        LispObject r = evaluateString("(replace-match \"one\\\\two\" nil nil \"0123456789123\")");
+        Assert.assertEquals(new LispString("01one\\two123"), r);
     }
 }

@@ -37,7 +37,6 @@ public class IdeaBuffer implements LispBuffer {
     protected final String myName;
     protected final Environment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
-//    protected boolean isChangedByMe = false;
     protected static Project ourProject;
     protected LispMarker myMark = new LispMarker();
     protected Map<String, LispSymbol> myLocalVariables = new HashMap<>();
@@ -55,10 +54,6 @@ public class IdeaBuffer implements LispBuffer {
 
         @Override
         public void documentChanged(DocumentEvent documentEvent) {
-//            if (isChangedByMe) {
-//                isChangedByMe = false;
-//                return;
-//            }
             int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
             if (shift < 0) {   //delete
                 updateMarkersPositions(point(), shift, false);
@@ -182,31 +177,10 @@ public class IdeaBuffer implements LispBuffer {
         return parsed.evaluate(myEnvironment);
     }
 
-    //    @Override
-//    public LispWindow getSelectedWindow() {
-//        return myWindowManager.getSelectedWindow();
-//    }
-//
     @Override
     public Editor getEditor() {
         return myEnvironment.getBufferLastSelectedWindow(this).getEditor();
     }
-//
-//    @Override
-//    public boolean containsEditor(Editor editor) {
-//        return myWindowManager.contains(editor);
-//    }
-
-//    @Override
-//    public void mergeEditors(LispBuffer other) {
-//        boolean isDuplicate = true;
-//        for (LispWindow window: other.getWindows()) {
-//            Editor editor = window.getEditor();
-//            isDuplicate = !myWindowManager.tryAppend(editor);
-//        }
-//        if (isDuplicate)
-//            throw new DoubleBufferException(myName);
-//    }
 
     @Override
     public void setSyntaxTable(LispSyntaxTable table) {
@@ -218,21 +192,11 @@ public class IdeaBuffer implements LispBuffer {
         return mySyntaxTable;
     }
 
-//    @Override
-//    public List<LispWindow> getWindows() {
-//        return myWindowManager.getWindows();
-//    }
-
-//    @Override
-//    public void setEditor(@Nullable Editor editor) {
-//        //todo: set this buffer's current window editor
-//        if (myWindowManager.size() > 1)
-//            throw new InternalException(Emacs4ijBundle.message("reset.not.single.editor"));
-//        if (editor == null && myWindowManager.size() == 1 && getDocument() != null && !(this instanceof IdeaMiniBuffer)) {
-//            getDocument().removeDocumentListener(myDocumentListener);
-//        }
-//        myWindowManager.setActiveEditor(editor);
-//    }
+    @Override
+    public LispString substring(int start, int end, boolean withProperties) {
+        //todo: get text properties if any and store them in string
+        return new LispString(getDocument().getText().substring(start - 1, end - 1));
+    }
 
     public String toString() {
         return "#<buffer " + myName + ">";
@@ -299,7 +263,7 @@ public class IdeaBuffer implements LispBuffer {
         return message;
     }
 
-    public void write (final String text) {
+    protected void write (final String text) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {
@@ -314,7 +278,7 @@ public class IdeaBuffer implements LispBuffer {
         });
     }
 
-    public void insertAt (final int position, final String insertion) {
+    private void insertAt (final int position, final String insertion) {
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {
@@ -327,6 +291,23 @@ public class IdeaBuffer implements LispBuffer {
             }
         });
     }
+
+    @Override
+    public void replace(final int from, final int to, final String text) {
+        UIUtil.invokeLaterIfNeeded(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationManager.getApplication().runWriteAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        getDocument().replaceString(from - 1, to - 1, text);
+                        gotoChar(from + text.length());
+                    }
+                });
+            }
+        });
+    }
+
 
     @Override
     public String forwardChar (int shift) {
@@ -419,7 +400,6 @@ public class IdeaBuffer implements LispBuffer {
         if (StringUtil.isEmpty(insertion))
             return;
         insertAt(where - 1, insertion);
-//        updateMarkersPositions(where, insertion.length(), true);
         gotoChar(where + insertion.length());
     }
 

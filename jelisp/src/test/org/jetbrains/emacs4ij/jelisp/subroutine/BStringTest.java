@@ -274,4 +274,21 @@ public class BStringTest extends BaseSubroutineTest {
         }
         Assert.fail();
     }
+
+    @Test
+    public void testRegexpQuote() {
+        LispObject regexp = evaluateString("(regexp-quote \"^hello$\")");
+        Assert.assertEquals(new LispString("\\\\^hello\\\\$"), regexp);
+    }
+
+    @Test
+    public void testStringMatchStrange () {
+        evaluateString("(string-match \"\\\\\\\\[{[]\" \"hello\")");
+    }
+
+
+    /*
+    "Parent major mode from which special major modes should inherit.\n\nThis mode runs the hook `special-mode-hook', as the final step\nduring initialization."
+    "\\\\[{[]"
+     */
 }

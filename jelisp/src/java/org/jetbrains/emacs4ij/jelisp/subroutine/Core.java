@@ -432,27 +432,6 @@ public abstract class Core {
                 new LispSymbol("call-interactively"), "CM-x ");
         LispMinibuffer miniBuffer = environment.getMinibuffer();
         miniBuffer.onInteractiveNoIoInput(interactive);
-
-
-//            LispBuffer buffer = environment.getBufferCurrentForEditing();
-//            buffer.setActive();
-//            miniBuffer = environment.getMiniBuffer();
-//            miniBuffer.onInteractiveCall();
-//
-//            miniBuffer.setReadCommandStatus();
-//            miniBuffer.open(buffer);
-//        } catch (LispThrow e) {
-//            //todo: check exit values. <RET> was typed
-//            try {
-//                if (miniBuffer == null)
-//                    return;
-//                LispObject result = miniBuffer.onReadInput();
-//                if (result != null && miniBuffer.wasInteractiveFormResult())
-//                    GlobalEnvironment.echoMessage(result.toString());
-//            } catch (LispException exc) {
-//                GlobalEnvironment.echoError(exc.getMessage());
-//            }
-//        }
     }
 
     private static LispString print (Environment environment, LispObject object,

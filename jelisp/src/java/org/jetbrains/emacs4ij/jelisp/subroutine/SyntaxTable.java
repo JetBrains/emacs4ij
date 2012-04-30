@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
@@ -73,7 +74,11 @@ public abstract class SyntaxTable {
 
     @Subroutine("syntax-table")
     public static LispSyntaxTable getSyntaxTable (Environment environment) {
-        return environment.getSyntaxTable();
+        try {
+            return environment.getSyntaxTable();
+        } catch (NoOpenedBufferException e) {
+            return myStandardSyntaxTable;
+        }
     }
 
     @Subroutine("standard-syntax-table")
@@ -115,5 +120,32 @@ public abstract class SyntaxTable {
             throw new WrongTypeArgumentException("syntax-table-p", syntaxTable);
         ((LispSyntaxTable)syntaxTable).modifyEntry(character, stringToSyntax(newEntry));
         return LispSymbol.ourNil;
+    }
+
+    public static int getCharFullSyntaxCode (Environment environment, int c) {
+        LispObject car = getSyntaxTable(environment).getCharSyntax(c).car();
+        return  car instanceof LispInteger
+                ? ((LispInteger) car).getData()
+                : SyntaxDescriptor.getSyntaxClass(SyntaxDescriptor.ClassType.WHITESPACE);
+    }
+
+    public static SyntaxDescriptor.ClassType getSyntaxClass (Environment environment, char c) {
+        LispObject car = getSyntaxTable(environment).getCharSyntax(c).car();
+        if (!(car instanceof LispInteger))
+            return SyntaxDescriptor.ClassType.WHITESPACE;
+        return SyntaxDescriptor.classBySyntaxCode(((LispInteger) car).getData());
+    }
+
+    public static boolean isWord (Environment environment, char c) {
+        return getSyntaxClass(environment, c) == SyntaxDescriptor.ClassType.WORD;
+    }
+
+    /**
+     *
+     * @param environment taken
+     * @return String of all characters from current syntax table which are marked as WHITESPACE
+     */
+    public static String getWhitespaces (Environment environment) {
+        return getSyntaxTable(environment).getAllCharsOfType(SyntaxDescriptor.ClassType.WHITESPACE);
     }
 }

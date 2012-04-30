@@ -464,4 +464,43 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
                 new LispMarker(1, myEnvironment.getBufferCurrentForEditing())), data);
         Assert.assertFalse(m.isSet());
     }
+
+    @Test
+    public void testMatchStringInBuffer() {
+        evaluateString("(set-match-data (list 1 2))");
+        LispObject match = evaluateString("(match-string 0)");
+        Assert.assertEquals(new LispString("l"), match);
+    }
+
+    @Test
+    public void testReplaceMatchInStringShorter () {
+        evaluateString("(set-match-data (list 1 2))");
+        String init = myEnvironment.getBufferCurrentForEditing().getDocument().getText();
+        LispObject replaced = evaluateString("(replace-match \"anna\")");
+        Assert.assertEquals(LispSymbol.ourNil, replaced);
+        String expected ="anna" + init.substring(1);
+        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getDocument().getText());
+        Assert.assertEquals(5, myEnvironment.getBufferCurrentForEditing().point());
+    }
+
+    @Test
+    public void testEql() {
+        evaluateString("(setq m (make-marker))");
+        evaluateString("(set-marker m 1)");
+        LispObject eq = evaluateString("(eql m 1)");
+        Assert.assertEquals(LispSymbol.ourNil, eq);
+    }
+
+    @Test
+    public void testReplaceMatchInBuffer () {
+        evaluateString("(switch-to-buffer \"1.txt\")");
+        evaluateString("(set-match-data '(2 10 1 3 4 6))");
+        String init = myEnvironment.getBufferCurrentForEditing().getDocument().getText();
+        evaluateString("(replace-match \"one\\2two\")");
+        String expected = init.substring(0, 1) + "one" + init.substring(3, 5) + "two" + init.substring(9);
+        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getDocument().getText());
+        Assert.assertEquals(10, myEnvironment.getBufferCurrentForEditing().point());
+    }
+
+
 }

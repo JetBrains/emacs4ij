@@ -110,4 +110,18 @@ public class LispSyntaxTable implements LispObject, LispSequence {
             throw new WrongTypeArgumentException("characterp", character);
         }
     }
+
+    public String getAllCharsOfType (SyntaxDescriptor.ClassType type) {
+        StringBuilder result = new StringBuilder("");
+        for (Map.Entry<Integer, LispList> entry: myData.entrySet()) {
+            LispObject car = entry.getValue().car();
+            SyntaxDescriptor.ClassType current = car instanceof LispInteger
+                    ? SyntaxDescriptor.classBySyntaxCode(((LispInteger)car).getData())
+                    : SyntaxDescriptor.ClassType.WHITESPACE;
+            if (current == type) {
+                result.append((char)(int)entry.getKey());
+            }
+        }
+        return result.toString();
+    }
 }

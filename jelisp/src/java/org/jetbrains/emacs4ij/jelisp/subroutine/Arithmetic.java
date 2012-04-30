@@ -96,6 +96,17 @@ public abstract class Arithmetic {
         return LispSymbol.bool(n1 == n2);
     }
 
+    @Subroutine("eql")
+    public static LispSymbol eql (LispObject one, LispObject two) {
+        if (one == two)
+            return LispSymbol.ourT;
+        if (one.getClass() != two.getClass())
+            return LispSymbol.ourNil;
+        if (!(one instanceof LispNumber))
+            return LispSymbol.ourNil;
+        return LispSymbol.bool(((LispNumber)one).getData().equals(((LispNumber)two).getData()));
+    }
+
     @Subroutine("/=")
     public static LispSymbol notEqualNumbersOrMarkers (LispObject num1, LispObject num2) {
         double n1 = numberOrMarkerToNumber(num1).getDoubleData();

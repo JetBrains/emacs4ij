@@ -21,11 +21,9 @@ import java.util.Observable;
 abstract class Parser extends Observable {
     protected int myCurrentIndex = 0;
     protected String myLispCode;
-//    private static SyntaxTable myDefaultElispSyntaxTable;
-//    protected final SyntaxTable mySyntaxTable;
 
-    protected static final List<Character> mySeparators = Arrays.asList(']', ')', '"', ' ', ';', '\n', '\t', '(', '[');
-    protected static final List<Character> myWhitespaces = Arrays.asList('\n', ' ', '\t');
+    protected static final List<Character> mySeparators = Arrays.asList(']', ')', '"', ' ', ';', '\n', '\t', '\f', '(', '[');
+    protected static final List<Character> myWhitespaces = Arrays.asList('\n', ' ', '\t', '\f');
     protected abstract void advance();
     protected abstract int getMyCurrentIndex();
     protected abstract char getNextChar();
@@ -35,10 +33,6 @@ abstract class Parser extends Observable {
 
     public abstract void append (String lispCode);
     public abstract LispObject parseLine (String lispCode);
-//
-//    public Parser (SyntaxTable table) {
-//        mySyntaxTable = table;
-//    }
 
     protected void advanceTo(int newValue) {
         myCurrentIndex = newValue;

@@ -25,7 +25,7 @@ public abstract class DefinitionLoader {
     private static Map<String, File> myUploadHistory = new HashMap<>();
     private static Map<Identifier, List<String>> myIndex = new HashMap<>();
     //for test
-    private static List<LispSymbol> mySkipFunctions = new ArrayList<>();
+    private static String[] mySkipForms = null;
 
     static { //index Emacs lisp sources
         scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
@@ -47,9 +47,8 @@ public abstract class DefinitionLoader {
     }
 
     //for test
-    public static void addSkipFunctions (String... names) {
-        for (String name: names)
-            mySkipFunctions.add(new LispSymbol(name));
+    public static void addSkipForms(String... forms) {
+        mySkipForms = forms;
     }
 
     //for test
@@ -58,6 +57,17 @@ public abstract class DefinitionLoader {
     //for test
     public static List<String> getFileName(String name, DefType type) {
         return myIndex.get(new Identifier(name, type));
+    }
+
+    //for test skip
+    public static boolean skip (String line) {
+        if (mySkipForms == null)
+            return false;
+        for (String form: mySkipForms) {
+            if (line.startsWith(form))
+                return true;
+        }
+        return false;
     }
 
     public static void loadFile (String fileName) {
@@ -81,13 +91,10 @@ public abstract class DefinitionLoader {
             if (line == null)
                 break;
 
+            boolean skip = skip(line);
             LispObject parsed = p.parse(line, index);
             index = p.getLine();
-            if (Predicate.isNil(parsed))
-                continue;
-            if (parsed instanceof LispList &&
-                    ((LispList) parsed).car() instanceof LispSymbol
-                    && mySkipFunctions.contains(((LispList) parsed).car()))
+            if (Predicate.isNil(parsed) || skip)
                 continue;
             try {
                 parsed.evaluate(GlobalEnvironment.INSTANCE);
@@ -156,11 +163,17 @@ public abstract class DefinitionLoader {
                 throw new VoidFunctionException(name);
             throw new VoidVariableException(name);
         }
-        LispList definition = getDefFromInvokersSrc(id);
-        if (definition == null) {
-            definition = lookInSubrFirst(id);
-            if (definition == null)
-                definition = lookExceptSubr(id);
+        LispList definition;
+        List<String> files = myIndex.get(id);
+        if (files.size() == 1) {
+            definition = FileScanner.getDefFromFile(new File(files.get(0)), id);
+        } else {
+            definition = getDefFromInvokersSrc(id);
+            if (definition == null) {
+                definition = lookInSubrFirst(id);
+                if (definition == null)
+                    definition = lookExceptSubr(id);
+            }
         }
         return processDef(definition, name, type);
     }

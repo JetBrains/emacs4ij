@@ -2,7 +2,6 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -488,8 +487,8 @@ public class CoreTest extends BaseSubroutineTest {
         Assert.assertEquals("((ch (aref --cl-vec-- --cl-idx--)))", b.toString());
         LispObject r = evaluateString("(apply 'nconc '((ch (aref --cl-vec-- --cl-idx--))))");
         Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
-        r = evaluateString("(apply 'nconc (nreverse '((ch (#<subr aref> --cl-vec-- --cl-idx--)))))");
-        Assert.assertEquals("(ch (#<subr aref> --cl-vec-- --cl-idx--))", r.toString());
+        r = evaluateString("(apply 'nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
+        Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
     }
 
     @Test
@@ -736,11 +735,7 @@ public class CoreTest extends BaseSubroutineTest {
 
     @Test
     public void testSimple() {
-        LispObject r = GlobalEnvironment.INSTANCE.find("defface");
-        Assert.assertNotNull(r);
-        r = GlobalEnvironment.INSTANCE.find("defgroup");
-        Assert.assertNotNull(r);
-        DefinitionLoader.addSkipFunctions("eval-when-compile", "declare-function");
+        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");//, "declare-function");
         DefinitionLoader.loadFile("simple.el");
     }
 

@@ -396,7 +396,7 @@ public class GlobalEnvironment extends Environment {
     @Override
     public void clearRecorded() {
         super.clearRecorded();
-        Search.clearHistory();
+        Match.clearHistory();
         ourCallStack.clear();
     }
 }

@@ -280,4 +280,23 @@ public abstract class Buffer {
         return new LispInteger(environment.getBufferCurrentForEditing().precedingCharacter());
     }
 
+    private static LispString bufferSubstring (Environment environment, MarkerOrInteger start, MarkerOrInteger end,
+                                               boolean withProperties) {
+        Integer begin = start.getPosition();
+        Integer finish = end.getPosition();
+        if (begin == null || finish == null)
+            throw new MarkerPointsNowhereException();
+        return environment.getBufferCurrentForEditing().substring(begin, finish, withProperties);
+    }
+
+    @Subroutine("buffer-substring")
+    public static LispString bufferSubstring (Environment environment, MarkerOrInteger start, MarkerOrInteger end) {
+        return bufferSubstring(environment, start, end, true);
+    }
+
+    @Subroutine("buffer-substring-no-properties")
+    public static LispString bufferSubstringNoProperties (Environment environment, MarkerOrInteger start, MarkerOrInteger end) {
+        return bufferSubstring(environment, start, end, false);
+    }
+
 }

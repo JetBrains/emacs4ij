@@ -65,7 +65,8 @@ public abstract class BString {
     }
 
     @Subroutine(value = "string-match")
-    public static LispObject stringMatch (Environment environment, LispString regexp, LispString string, @Optional LispInteger start) {
+    public static LispObject stringMatch (Environment environment, LispString regexp, LispString string,
+                                          @Optional LispInteger start) {
         int from = 0;
         if (start != null) {
             from = start.getData();
@@ -88,9 +89,9 @@ public abstract class BString {
     }
 
     @Subroutine("capitalize")
-    public static LispObject capitalize (LispObject object) {
+    public static LispObject capitalize (Environment environment, LispObject object) {
         if (object instanceof LispString) {
-            return ((LispString)object).capitalize();
+            return new LispString(((LispString)object).capitalize(environment));
         }
         if (object instanceof LispInteger) {
             int data = ((LispInteger)object).getData();
@@ -129,5 +130,10 @@ public abstract class BString {
         } catch (StringIndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(string, begin, end);
         }
+    }
+
+    @Subroutine("regexp-quote")
+    public static LispString regexpQuote (LispString target) {
+        return target.getExactRegexp();
     }
 }

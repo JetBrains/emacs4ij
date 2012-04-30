@@ -2,7 +2,10 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
 /**
@@ -41,12 +44,13 @@ public abstract class Scan {
         return LispSymbol.ourNil;
     }
 
-    private static int getCharFullSyntaxCode (Environment environment, int c) {
-        LispObject car = SyntaxTable.getSyntaxTable(environment).getCharSyntax(c).car();
-        return  car instanceof LispInteger
-                ? ((LispInteger) car).getData()
-                : SyntaxDescriptor.getSyntaxClass(SyntaxDescriptor.ClassType.WHITESPACE);
-    }
+    //MOVED TO SyntaxTable
+//    private static int getCharFullSyntaxCode (Environment environment, int c) {
+//        LispObject car = SyntaxTable.getSyntaxTable(environment).getCharSyntax(c).car();
+//        return  car instanceof LispInteger
+//                ? ((LispInteger) car).getData()
+//                : SyntaxDescriptor.getSyntaxClass(SyntaxDescriptor.ClassType.WHITESPACE);
+//    }
 
     private static LispObject scanForward (Environment environment, int from, int depth, int minDepth,
                                            int count, boolean sexpFlag, boolean ignoreComments) {

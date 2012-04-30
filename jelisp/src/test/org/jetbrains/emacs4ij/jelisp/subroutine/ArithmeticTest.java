@@ -192,5 +192,16 @@ public class ArithmeticTest extends BaseSubroutineTest {
     public void testLeftShift () {
         Assert.assertEquals(new LispInteger(65536), evaluateString("(lsh 1 16)"));
     }
-    
+
+    @Test
+    public void testEql() {
+        LispObject eq = evaluateString("(eql 1 1.0)");
+        Assert.assertEquals(LispSymbol.ourNil, eq);
+        eq = evaluateString("(eql 1.0 1.0)");
+        Assert.assertEquals(LispSymbol.ourT, eq);
+        eq = evaluateString("(eql (make-marker) 1.0)");
+        Assert.assertEquals(LispSymbol.ourNil, eq);
+        eq = evaluateString("(eql 'a 1.0)");
+        Assert.assertEquals(LispSymbol.ourNil, eq);
+    }
 }

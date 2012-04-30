@@ -1,15 +1,17 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
-import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
+import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Match;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Search;
+import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +26,9 @@ import java.util.regex.Pattern;
  * elisp string = "anything between double quotation marks"
  */
 public class LispString implements LispAtom, LispSequence, LispArray, StringOrVector {
-    private String myData;    
+    private static List<Character> myCharsToRegexpQuote = Arrays.asList('*', '?', '^', '$', '+', '\\', '.', '[');
+
+    private String myData;
 
     public LispString (String data) {
         if (data == null) {
@@ -110,10 +114,19 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
         return myData == null || myData.equals("");
     }
 
-    public LispString capitalize() {
-        return new LispString(StringUtil.capitalizeWords(myData.toLowerCase(), true));
+    public String capitalize (Environment environment) {
+        StringBuilder capitalized = new StringBuilder();
+        for (int i = 0; i < myData.length(); i++) {
+            char c = myData.charAt(i);
+            if (i == 0 || (i > 0 && !SyntaxTable.isWord(environment, myData.charAt(i - 1)))) {
+                capitalized.append(Character.toUpperCase(c));
+                continue;
+            }
+            capitalized.append(Character.toLowerCase(c));
+        }
+        return capitalized.toString();
     }
-    
+
     public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
         String regexp = regexpStr.getData();
         Pattern p1 = Pattern.compile("(\\\\)+\\(");
@@ -127,7 +140,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
                 : Pattern.compile(s, Pattern.MULTILINE);
         m = p.matcher(myData);
         if (m.find(from)) {
-            Search.registerSearchResult(m);
+            Match.registerSearchResult(m);
             return m.start();
         }
         return -1;
@@ -150,7 +163,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
     public List<Shortcut> toKeyboardShortcutList() {
         return ShortcutStringUtil.toKeyboardShortcutList(this);
     }
-    
+
     public LispNumber toNumber (int base) {
         try {
             return new LispInteger(Integer.valueOf(myData, base));
@@ -163,5 +176,25 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
                 return new LispInteger(0);
             }
         }
+    }
+
+    public LispString replace (int from, int to, String text) {
+        try {
+            String data = myData.substring(0, from) + text + myData.substring(to);
+            return new LispString(data);
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(from, to);
+        }
+    }
+
+    public LispString getExactRegexp () {
+        StringBuilder regexp = new StringBuilder();
+        for (int i = 0; i < myData.length(); i++) {
+            char c = myData.charAt(i);
+            if (myCharsToRegexpQuote.contains(c))
+                regexp.append("\\\\");
+            regexp.append(c);
+        }
+        return new LispString(regexp.toString());
     }
 }
