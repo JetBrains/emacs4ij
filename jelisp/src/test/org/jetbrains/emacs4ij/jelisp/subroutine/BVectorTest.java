@@ -32,6 +32,11 @@ public class BVectorTest extends BaseSubroutineTest {
         LispObject v = evaluateString("(vector)");
         Assert.assertEquals(new LispVector(), v);
     }
-    
+
+    @Test
+    public void testMakeVector() {
+        LispObject vector = evaluateString("(make-vector 3 0)");
+        Assert.assertEquals(new LispVector(new LispInteger(0), new LispInteger(0), new LispInteger(0)), vector);
+    }
     
 }

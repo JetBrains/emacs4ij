@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
@@ -18,9 +19,9 @@ public abstract class SyntaxTable {
         myStandardSyntaxTable = new LispSyntaxTable();
         for (char i = 0; i < ' '; i++)
             myStandardSyntaxTable.setCharSyntax(i, SyntaxDescriptor.ClassType.PUNCTUATION);
-        String punct = ".,;:?!#@~^'`";
-        for (int i = 0; i < punct.length(); i++) {
-            myStandardSyntaxTable.setCharSyntax(punct.charAt(i), SyntaxDescriptor.ClassType.PUNCTUATION);
+        String punctuation = ".,;:?!#@~^'`";
+        for (int i = 0; i < punctuation.length(); i++) {
+            myStandardSyntaxTable.setCharSyntax(punctuation.charAt(i), SyntaxDescriptor.ClassType.PUNCTUATION);
         }
         myStandardSyntaxTable.setCharSyntax(' ', SyntaxDescriptor.ClassType.WHITESPACE);
         myStandardSyntaxTable.setCharSyntax('\t', SyntaxDescriptor.ClassType.WHITESPACE);
@@ -73,10 +74,10 @@ public abstract class SyntaxTable {
     }
 
     @Subroutine("syntax-table")
-    public static LispSyntaxTable getSyntaxTable (Environment environment) {
+    public static LispSyntaxTable getSyntaxTable (@Nullable Environment environment) {
         try {
             return environment.getSyntaxTable();
-        } catch (NoOpenedBufferException e) {
+        } catch (NoOpenedBufferException | NullPointerException e) {
             return myStandardSyntaxTable;
         }
     }
@@ -129,7 +130,7 @@ public abstract class SyntaxTable {
                 : SyntaxDescriptor.getSyntaxClass(SyntaxDescriptor.ClassType.WHITESPACE);
     }
 
-    public static SyntaxDescriptor.ClassType getSyntaxClass (Environment environment, char c) {
+    public static SyntaxDescriptor.ClassType getSyntaxClass (@Nullable Environment environment, char c) {
         LispObject car = getSyntaxTable(environment).getCharSyntax(c).car();
         if (!(car instanceof LispInteger))
             return SyntaxDescriptor.ClassType.WHITESPACE;

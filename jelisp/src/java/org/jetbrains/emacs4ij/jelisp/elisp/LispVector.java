@@ -7,7 +7,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -131,14 +134,26 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     public boolean isEmpty() {
         return myData.isEmpty();
     }
-    
-    public void setFirst (LispObject first) {
-        myData.set(0, first);
+
+    /**
+     * assume this is an object array, set symbol at first position if no 0-items or at position before first 0
+     * @param symbol to set
+     */
+    public void defineSymbol (LispSymbol symbol) {
+        LispInteger zero = new LispInteger(0);
+        for (int i = 0; i < myData.size() - 1; ++i) {
+            if (myData.get(i + 1).equals(zero)) {
+                myData.set(i, symbol);
+                return;
+            }
+        }
+        myData.set(0, symbol);
     }
     
     public static LispVector make (int length, LispObject value) {
         ArrayList<LispObject> list = new ArrayList<>(length);
-        Collections.fill(list, value);
+        for (int i = 0; i < length; i++)
+            list.add(value);
         return new LispVector(list);
     }
 

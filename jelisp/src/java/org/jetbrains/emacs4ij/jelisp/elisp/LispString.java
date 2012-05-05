@@ -6,15 +6,11 @@ import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
-import org.jetbrains.emacs4ij.jelisp.subroutine.Match;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -26,8 +22,6 @@ import java.util.regex.Pattern;
  * elisp string = "anything between double quotation marks"
  */
 public class LispString implements LispAtom, LispSequence, LispArray, StringOrVector {
-    private static List<Character> myCharsToRegexpQuote = Arrays.asList('*', '?', '^', '$', '+', '\\', '.', '[');
-
     private String myData;
 
     public LispString (String data) {
@@ -127,23 +121,8 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
         return capitalized.toString();
     }
 
-    public int match (LispString regexpStr, int from, boolean isCaseFoldSearch) {
-        String regexp = regexpStr.getData();
-        Pattern p1 = Pattern.compile("(\\\\)+\\(");
-        Matcher m = p1.matcher(regexp);
-        String s = m.replaceAll("(");
-        p1 = Pattern.compile("(\\\\)+\\)");
-        m = p1.matcher(s);
-        s = m.replaceAll(")");
-        Pattern p = isCaseFoldSearch ?
-                Pattern.compile(s, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-                : Pattern.compile(s, Pattern.MULTILINE);
-        m = p.matcher(myData);
-        if (m.find(from)) {
-            Match.registerSearchResult(m);
-            return m.start();
-        }
-        return -1;
+    public int match (Environment environment, LispString regexpStr, int from, boolean isCaseFoldSearch) {
+        return StringRegexpUtil.match(environment, regexpStr.getData(), myData, from, isCaseFoldSearch);
     }
 
     @Override
@@ -188,13 +167,6 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
     }
 
     public LispString getExactRegexp () {
-        StringBuilder regexp = new StringBuilder();
-        for (int i = 0; i < myData.length(); i++) {
-            char c = myData.charAt(i);
-            if (myCharsToRegexpQuote.contains(c))
-                regexp.append("\\\\");
-            regexp.append(c);
-        }
-        return new LispString(regexp.toString());
+        return new LispString(StringRegexpUtil.getExactRegexp(myData));
     }
 }

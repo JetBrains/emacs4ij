@@ -167,37 +167,45 @@ public abstract class Symbol {
         return new LispSymbol(name.getData());
     }
 
-    private static LispSymbol getSymbol (final String name, LispVector objectArray) {
+    private static LispSymbol getSymbol (final String name, @Nullable LispVector objectArray) {
+        if (objectArray == null) {
+            return GlobalEnvironment.INSTANCE.find(name);
+        }
         return (LispSymbol) CollectionUtils.find(objectArray.toLispObjectList(), new org.apache.commons.collections.Predicate() {
             @Override
             public boolean evaluate(Object o) {
-                if (!(o instanceof LispSymbol)) {
-                    Core.error(JelispBundle.message("wrong.obarray"));
-                }
-                return ((LispSymbol) o).getName().equals(name);
+                if (o.equals(new LispInteger(0)))
+                    return false;
+                if (o instanceof LispSymbol)
+                    return ((LispSymbol) o).getName().equals(name);
+                Core.error(JelispBundle.message("wrong.obarray"));
+                return false;
             }
         });
     }
 
     @Subroutine("intern")
-    public static LispSymbol intern (LispString name, @Optional LispObject objectArray) {
-        //tODO you cannot intern a given symbol in more than one obarray
-        if (objectArray == null || objectArray.equals(LispSymbol.ourNil)) {
-            LispSymbol symbol = GlobalEnvironment.INSTANCE.find(name.getData());
-            if (symbol != null)
-                return symbol;
-            symbol = new LispSymbol(name.getData());
-            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
-            return symbol;
-        }
-        if (!(objectArray instanceof LispVector) || ((LispVector) objectArray).isEmpty())
+    public static LispSymbol intern (Environment environment, LispString name, @Optional LispObject objectArray) {
+        //TODO? you cannot intern a given symbol in more than one obarray
+
+        if (Predicate.isNil(objectArray))
+            objectArray = null;
+        if (objectArray != null && (!(objectArray instanceof LispVector) || ((LispVector) objectArray).isEmpty()))
             throw new WrongTypeArgumentException("vectorp", objectArray);
 
         LispSymbol symbol = getSymbol(name.getData(), (LispVector) objectArray);
         if (symbol != null)
             return symbol;
+
         symbol = new LispSymbol(name.getData());
-        ((LispVector) objectArray).setFirst(symbol);
+
+        if (objectArray == null)
+            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
+        else {
+            environment.defineSymbol(symbol);
+            ((LispVector)objectArray).defineSymbol(symbol);
+        }
+
         return symbol;
     }
 

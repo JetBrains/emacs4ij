@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoMatchData;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -44,7 +45,7 @@ public class MatchTest extends BaseSubroutineTest {
     @Test
     public void testMatchBeginningTwo() {
         evaluateString("(string-match \"one\" \"Test string one.\")");
-        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        evaluateString("(string-match \"\\\\(qu\\\\)\\\\(ick\\\\)\" \"The quick fox jumped quickly.\")");
         LispObject r = evaluateString("(match-beginning 0)");
         Assert.assertEquals(new LispInteger(4), r);
         r = evaluateString("(match-beginning 1)");
@@ -58,7 +59,7 @@ public class MatchTest extends BaseSubroutineTest {
     @Test
     public void testMatchEnd() {
         evaluateString("(string-match \"one\" \"Test string one.\")");
-        evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        evaluateString("(string-match \"\\\\(qu\\\\)\\\\(ick\\\\)\" \"The quick fox jumped quickly.\")");
         LispObject r = evaluateString("(match-end 0)");
         Assert.assertEquals(new LispInteger(9), r);
         r = evaluateString("(match-end 1)");
@@ -83,7 +84,7 @@ public class MatchTest extends BaseSubroutineTest {
 
     @Test
     public void testMatchString() {
-        LispObject r = evaluateString("(string-match \"\\(qu\\)\\(ick\\)\" \"The quick fox jumped quickly.\")");
+        LispObject r = evaluateString("(string-match \"\\\\(qu\\\\)\\\\(ick\\\\)\" \"The quick fox jumped quickly.\")");
         Assert.assertEquals(new LispInteger(4), r);
         r = evaluateString("(match-string 0 \"The quick fox jumped quickly.\")");
         Assert.assertEquals(new LispString("quick"), r);
@@ -342,4 +343,14 @@ public class MatchTest extends BaseSubroutineTest {
         LispObject r = evaluateString("(replace-match \"one\\\\two\" nil nil \"0123456789123\")");
         Assert.assertEquals(new LispString("01one\\two123"), r);
     }
+
+    @Ignore
+    @Test
+    public void testMatchWordBound() {
+        evaluateString("(string-match \"\\\\bword\\\\b\" \"word bound\")");
+        LispObject data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(4)), data);
+    }
+
+
 }

@@ -74,7 +74,7 @@ public abstract class BString {
                 throw new ArgumentOutOfRange(string.toString(), start.toString());
         }
         LispSymbol s = environment.find("case-fold-search");
-        int r = string.match(regexp, from, (s != null && !s.getValue().equals(LispSymbol.ourNil)));
+        int r = string.match(environment, regexp, from, (s != null && !s.getValue().equals(LispSymbol.ourNil)));
         if (r == -1)
             return LispSymbol.ourNil;
         return new LispInteger(r);

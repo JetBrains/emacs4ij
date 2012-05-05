@@ -112,11 +112,17 @@ public abstract class Environment {
         myRecordedSymbols.clear();
     }
 
+    protected void putSymbol (LispSymbol symbol) {
+        if (symbol.getName().startsWith(":"))
+            symbol.setConstant();
+        mySymbols.put(symbol.getName(), symbol);
+    }
+
     public void defineSymbol (LispSymbol symbol) {
         if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
         }
-        mySymbols.put(symbol.getName(), symbol);
+        putSymbol(symbol);
     }
 
     // =========== buffers =================

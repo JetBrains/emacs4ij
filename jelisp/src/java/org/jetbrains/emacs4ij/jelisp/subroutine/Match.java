@@ -37,8 +37,13 @@ public abstract class Match {
             myLastMatch.add(matcher.start());
             myLastMatch.add(matcher.end());
             for (int i = 1; i <= matcher.groupCount(); i++) {
-                myLastMatch.add(matcher.start(i));
-                myLastMatch.add(matcher.end(i));
+                int start = matcher.start(i);
+                int end = matcher.end(i);
+//                if (start < 0 || end < 0 || (start == myLastMatch.get(0) && end == myLastMatch.get(1)))
+//                    continue;
+                myLastMatch.add(start);
+                myLastMatch.add(end);
+//                System.out.println(matcher.group(i));
             }
         } catch (IllegalStateException e) {
             myLastMatch.clear();

@@ -150,6 +150,12 @@ public class GlobalEnvironment extends Environment {
         return symbol;
     }
 
+    public LispSymbol defineConstant (String name, @Nullable LispObject value) {
+        LispSymbol symbol = new LispSymbol(true, name, Core.thisOrNil(value));
+        defineSymbol(symbol);
+        return symbol;
+    }
+
     public void defineSymbol (String name) {
         defineSymbol(new LispSymbol(name, LispSymbol.ourNil));
     }
@@ -162,21 +168,21 @@ public class GlobalEnvironment extends Environment {
         else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
         }
-        mySymbols.put(symbol.getName(), symbol);
+        putSymbol(symbol);
     }
 
     private void addBufferLocalVariable(String name) {
         LispSymbol symbol = new LispSymbol(name, LispSymbol.ourNil, true);
         symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
         myBufferLocals.add(name);
-        mySymbols.put(name, symbol);
+        putSymbol(symbol);
     }
 
     private void addBufferLocalVariable(String name, LispObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
         symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
         myBufferLocals.add(name);
-        mySymbols.put(name, symbol);
+        putSymbol(symbol);
     }
 
     private void defineDefForms () {
@@ -260,9 +266,9 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void setConstants() {
-        defineSymbol("nil", LispSymbol.ourNil);
-        defineSymbol("nil", LispSymbol.ourNil);
-        defineSymbol("t", LispSymbol.ourT);
+        defineConstant("nil", LispSymbol.ourNil);
+        defineConstant("t", LispSymbol.ourT);
+
         defineSymbol("void", LispSymbol.ourVoid);
         String docDir = ourEmacsHome + "/etc/";
         File file = new File (docDir);

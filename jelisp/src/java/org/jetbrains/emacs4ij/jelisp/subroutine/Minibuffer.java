@@ -338,7 +338,7 @@ public abstract class Minibuffer {
         for (LispObject regexp: ((LispList)regexps).toLispObjectList()) {
             if (!(regexp instanceof LispString))
                 throw new WrongTypeArgumentException("stringp",regexp);
-            if (value.match((LispString) regexp, 0, isCaseFold) == -1)
+            if (value.match(environment, (LispString) regexp, 0, isCaseFold) == -1)
                 return false;
         }
         return true;

@@ -124,4 +124,12 @@ public class LispSyntaxTable implements LispObject, LispSequence {
         }
         return result.toString();
     }
+
+    public String getAllChars () {
+        StringBuilder chars = new StringBuilder();
+        for (int key: myData.keySet()) {
+            chars.append((char)key);
+        }
+        return chars.toString();
+    }
 }

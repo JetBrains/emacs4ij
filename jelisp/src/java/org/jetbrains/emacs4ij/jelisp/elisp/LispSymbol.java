@@ -33,9 +33,15 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     private LispObject myFunction = null;
     private boolean isBufferLocal = false;
     private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
+    private boolean isConstant = false;
 
-    public LispSymbol(String myName) {
-        this.myName = myName;
+    public LispSymbol(String name) {
+        myName = name;
+    }
+
+    public LispSymbol(boolean constant, String name) {
+        isConstant = constant;
+        myName = name;
     }
     
     public LispSymbol (LispSymbol symbol) {
@@ -44,6 +50,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         myFunction = symbol.myFunction;
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
+        isConstant = symbol.isConstant;
     }
 
     public LispSymbol (LispSymbol symbol, LispObject value) {
@@ -52,6 +59,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         myFunction = symbol.myFunction;
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
+        isConstant = symbol.isConstant;
     }
 
     public static LispSymbol bool (boolean value) {
@@ -64,18 +72,24 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         return !this.equals(ourNil);
     }
 
-    public LispSymbol(String myName, boolean bufferLocal) {
-        this.myName = myName;
+    public LispSymbol(String name, boolean bufferLocal) {
+        myName = name;
         isBufferLocal = bufferLocal;
     }
 
-    public LispSymbol (String myName, LispObject value) {
-        this.myName = myName;
+    public LispSymbol (String name, LispObject value) {
+        myName = name;
         myValue = value;
     }
 
-    public LispSymbol (String myName, LispObject value, boolean bufferLocal) {
-        this.myName = myName;
+    public LispSymbol (boolean constant, String name, LispObject value) {
+        isConstant = constant;
+        myName = name;
+        myValue = value;
+    }
+
+    public LispSymbol (String name, LispObject value, boolean bufferLocal) {
+        myName = name;
         myValue = value;
         isBufferLocal = bufferLocal;
     }
@@ -87,6 +101,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     public void setBufferLocal (boolean bufferLocal) {
         isBufferLocal = bufferLocal;
     }
+
+    public void setConstant() {
+        isConstant = true;
+    }
     
     public String getName() {
         return myName;
@@ -96,8 +114,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         return myValue;
     }
 
-    public void setValue(LispObject myValue) {
-        this.myValue = myValue;
+    public void setValue(LispObject value) {
+        if (isConstant)
+            throw new SetConstException(myName);
+        myValue = value;
     }
 
     public void castToLambda () {
@@ -188,7 +208,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
      * takes Environment
      */
     public LispObject evaluate(Environment environment) {
-        if (equals(ourNil) || equals(ourT) || equals(ourVoid) || isKeyword())
+        if (isConstant)
             return this;
         if (myName.equals("obarray")) {
             return GlobalEnvironment.INSTANCE.getObjectArray();
@@ -197,6 +217,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             return getValue();
         }
         LispSymbol symbol = environment.find(myName);
+        if (symbol == null && myName.startsWith(":"))
+            return this;
+        if (symbol != null && symbol.isConstant)
+            return symbol;
         if (symbol == null || (!symbol.hasValue())) {
             System.out.println("VAR " + myName);
             symbol = environment.findAndRegisterEmacsVariable(myName);
@@ -224,8 +248,6 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + myName);
-            if (myName.equals("derived-mode-make-docstring"))
-                System.out.print(1);
             try {
                 symbol = environment.findAndRegisterEmacsFunction(myName);
             } catch (LispException e) {
@@ -366,10 +388,6 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
 
     public void setGlobalVariableDocumentation (LispObject value) {
         setProperty(JelispBundle.message("var.doc"), value);
-    }
-
-    public boolean isKeyword () {
-        return myName.startsWith(":");
     }
 
     @Override

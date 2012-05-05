@@ -282,13 +282,133 @@ public class BStringTest extends BaseSubroutineTest {
     }
 
     @Test
-    public void testStringMatchStrange () {
-        evaluateString("(string-match \"\\\\\\\\[{[]\" \"hello\")");
+    public void testStringMatchBackslashAlternative() {
+        LispObject match = evaluateString("(string-match \"foo\\\\|bar\" \"bar\")");
+        Assert.assertEquals(new LispInteger(0), match);
+        match = evaluateString("(string-match \"foo\\\\|bar\" \"foobar\")");
+        Assert.assertEquals(new LispInteger(0), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(3)), matchData);
+        match = evaluateString("(string-match \"foo\\\\|\\\\(bar*q\\\\)k\" \"barrrqk\")");
+        Assert.assertEquals(new LispInteger(0), match);
     }
 
+    @Test
+    public void testStringMatchBrackets() {
+        Assert.assertEquals(new LispInteger(0), evaluateString("(string-match \"ba\\\\(na\\\\)*\" \"banana\")"));
+    }
 
-    /*
-    "Parent major mode from which special major modes should inherit.\n\nThis mode runs the hook `special-mode-hook', as the final step\nduring initialization."
-    "\\\\[{[]"
-     */
+    @Test
+    public void testStringMatchShyGroup() {
+        evaluateString("(string-match \"\\\\(?:foo\\\\|bar*q\\\\)\" \"qbarrrrrrq\")");
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(10)), matchData);
+
+        evaluateString("(string-match \"\\\\(foo\\\\|bar*q\\\\)\" \"qbarrrrrrq\")");
+        matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(10), new LispInteger(1), new LispInteger(10)),
+                matchData);
+
+        evaluateString("(string-match \"\\\\(?:he\\\\|lo\\\\)\" \"hello world\")");
+        matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(2)), matchData);
+    }
+
+    @Test
+    public void testRoundBracketAlternative() {
+        Assert.assertEquals(new LispInteger(0), evaluateString("(string-match \"\\\\(b(ar\\\\)\" \"b(ar\")"));
+    }
+
+    @Test
+    public void testStringMatchBackReferenceFromPrevGroup() {
+        LispObject match = evaluateString("(string-match \"\\\\(bar*q\\\\|hi\\\\)anna\\\\1\\\\(test\\\\1\\\\)\" \"hiannahitesthi\")");
+        Assert.assertEquals(new LispInteger(0), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(14), new LispInteger(0), new LispInteger(2),
+                new LispInteger(8), new LispInteger(14)), matchData);
+    }
+
+    @Test
+    public void testStringMatchBackReference() {
+        LispObject match = evaluateString("(string-match \"\\\\(bar*q\\\\)anna\\\\1\" \"qbarrrrrrqannabarrrrrrq\")");
+        Assert.assertEquals(new LispInteger(1), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(23), new LispInteger(1), new LispInteger(10)),
+                matchData);
+    }
+
+    @Test
+    public void testStringMatchBackReferenceNoMatch() {
+        LispObject match = evaluateString("(string-match \"\\\\(bar*q\\\\)anna\\\\1\" \"qbarrrrrrqannabarrrrrq\")");
+        Assert.assertEquals(LispSymbol.ourNil, match);
+    }
+
+    @Test
+    public void testStringMatchBackReferenceInvalid() {
+        try {
+            evaluateString("(string-match \"\\\\(bar*q\\\\)anna\\\\2\" \"qbarrrrrrqannabarrrrrrq\")");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-regexp \"Invalid back reference\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testStringMatchBackReferenceInvalidSimple() {
+        try {
+            evaluateString("(string-match \"\\\\2\" \"\\\\2\")");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-regexp \"Invalid back reference\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testStringMatchZeroNotRef() {
+        Assert.assertEquals(new LispInteger(1), evaluateString("(string-match \"\\\\0\" \"\\\\0\")"));
+    }
+
+    @Test
+    public void testStringMatchCannotBackRefShyGroup() {
+        LispObject match = evaluateString("(string-match \"\\\\(he\\\\)\\\\(?:ek\\\\|ll\\\\)\\\\1\" \"qhellheo\")");
+        Assert.assertEquals(new LispInteger(1), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(7), new LispInteger(1), new LispInteger(3)),
+                matchData);
+    }
+
+    @Test
+    public void testMatchEnd() {
+        LispObject match = evaluateString("(string-match \"\\\\'\" \"hei\")");
+        Assert.assertEquals(new LispInteger(3), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(3)), matchData);
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-match \"\\\\'hei\" \"hei\")"));
+        Assert.assertEquals(LispList.list(), evaluateString("(match-data)"));
+    }
+
+    @Test
+    public void testMatchBeginning() {
+        LispObject match = evaluateString("(string-match \"\\\\`\" \"hei\")");
+        Assert.assertEquals(new LispInteger(0), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), matchData);
+    }
+
+    @Test
+    public void testMatchBeginningAndEnd() {
+        LispObject match = evaluateString("(string-match \"\\\\`\\\\'\" \"\")");
+        Assert.assertEquals(new LispInteger(0), match);
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), matchData);
+    }
+
+    @Test
+    public void testStringMatchStrange () {
+        evaluateString("(string-match \"\\\\[{[]\" \"\\{\")");
+        LispObject matchData = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(2)), matchData);
+    }
 }

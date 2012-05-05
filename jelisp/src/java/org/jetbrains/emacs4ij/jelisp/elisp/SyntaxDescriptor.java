@@ -1,10 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -27,7 +29,7 @@ public class SyntaxDescriptor {
     private static final Map<Character, Integer> ourSyntaxClassMap;
     private static final Map<Character, Integer> ourFlagMap;
     static {
-        ourSyntaxClassMap = new HashMap<>();
+        ourSyntaxClassMap = new LinkedHashMap<>();
         ourSyntaxClassMap.put(' ', 0);
         ourSyntaxClassMap.put('-', 0);
         String classes = ".w_()\'\"$\\/<>@!|";
@@ -92,5 +94,13 @@ public class SyntaxDescriptor {
         int syntaxClass = syntax & 255;
         assert syntaxClass < SyntaxDescriptor.ClassType.values().length;
         return ClassType.values()[syntaxClass];
+    }
+
+    public static char getSyntaxClassChar(ClassType type) {
+        for (Map.Entry<Character, Integer> entry: ourSyntaxClassMap.entrySet()) {
+            if (ClassType.values()[entry.getValue()] == type)
+                return entry.getKey();
+        }
+        throw new InternalException(JelispBundle.message("nonexistent.syntax.class", type.toString()));
     }
 }

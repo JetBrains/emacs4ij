@@ -662,4 +662,11 @@ default-directory
         LispObject r = evaluateString("(f)");
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
+
+    @Test
+    public void testLet() {
+        evaluateString("(defun f (table) (intern \"qwas\" table))");
+        LispObject table = evaluateString("(let ((table (make-vector 10 0))) (f table) table)");
+        Assert.assertTrue(table instanceof LispVector);
+    }
 }

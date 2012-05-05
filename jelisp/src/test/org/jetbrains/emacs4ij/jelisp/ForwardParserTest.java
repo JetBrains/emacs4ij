@@ -922,6 +922,12 @@ public class ForwardParserTest {
         LispObject list = p.parseLine("#'a");
         Assert.assertEquals(LispList.list(new LispSymbol("function"), new LispSymbol("a")), list);
     }
+
+    @Test
+    public void test() {
+        LispString s = (LispString) p.parseLine("\"\\\\b\"");
+        Assert.assertEquals(2, s.length());
+    }
 }
 
 

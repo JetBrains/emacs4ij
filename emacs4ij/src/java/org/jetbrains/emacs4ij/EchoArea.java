@@ -53,9 +53,11 @@ public class EchoArea extends SimpleToolWindowPanel implements DataProvider, Dis
 
     @Override
     public void dispose() {
-        EditorFactory.getInstance().releaseEditor(myEditor);
+        if (myEditor != null) {
+            EditorFactory.getInstance().releaseEditor(myEditor);
+            myEditor = null;
+        }
         myProject = null;
-        myEditor = null;
     }
 
     public void print (final String message, final TextAttributesKey key) {

@@ -390,4 +390,32 @@ public class SymbolTest extends BaseSubroutineTest {
     public void testCCGAValue() {
         Assert.assertEquals(LispSymbol.ourNil, evaluateString("custom-current-group-alist"));
     }
+
+    @Test
+    public void testResetConst() {
+        try {
+            evaluateString("(setq t 5)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(setting-constant t)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testInternConst() {
+        try {
+            evaluateString("(setq table '[a b c d 0 f g h])");
+            evaluateString("(intern \":q\" table)");
+            LispVector table = (LispVector) evaluateString("table");
+            Assert.assertEquals(new LispSymbol(true, ":q"), table.getItem(3));
+            evaluateString("(set :q 5)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(setting-constant :q)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+
+    }
+
 }
