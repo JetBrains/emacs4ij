@@ -5,7 +5,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,6 +17,8 @@ import java.util.Map;
  */
 
 public class SyntaxDescriptor {
+    public static enum CommentStyle {A, B, GENERIC}
+
     public static enum ClassType {WHITESPACE, PUNCTUATION, WORD, SYMBOL, OPEN_PARENTHESIS, CLOSE_PARENTHESIS,
         EXPRESSION_PREFIX, STRING_QUOTE, PAIRED_DELIMITER, ESCAPE, CHARACTER_QUOTE, COMMENT_START, COMMENT_END, INHERIT,
         GENERIC_COMMENT, GENERIC_STRING}
@@ -36,7 +37,7 @@ public class SyntaxDescriptor {
         for (int i = 0; i < classes.length(); i++) {
             ourSyntaxClassMap.put(classes.charAt(i), i + 1);
         }
-        ourFlagMap = new HashMap<>();
+        ourFlagMap = new LinkedHashMap<>();
         String flags = "1234pbn";
         for (int i = 0; i < flags.length(); i++) {
             ourFlagMap.put(flags.charAt(i), 1 << (16 + i));
@@ -86,8 +87,11 @@ public class SyntaxDescriptor {
     }
 
     public static boolean is(FlagType type, int code) {
-        int i = (code >> getFlagShift(type)) & 1;
-        return i == 1;
+        return  ((code >> getFlagShift(type)) & 1) == 1;
+    }
+
+    public static CommentStyle commentStyle (int code) {
+        return  ((code >> 21) & 1) == 1 ? CommentStyle.A : CommentStyle.B;
     }
 
     public static ClassType classBySyntaxCode (int syntax) {

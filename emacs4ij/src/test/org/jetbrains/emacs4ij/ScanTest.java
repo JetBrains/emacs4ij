@@ -62,4 +62,32 @@ public class ScanTest extends CodeInsightFixtureTestCase {
         LispObject result = evaluateString("(eval-last-sexp nil)");
         Assert.assertEquals(new LispInteger(8), result);
     }
+
+    @Test
+    public void testScanSexpsForward() {
+        LispBuffer buffer1 = myEnvironment.findBufferSafe("4.txt");
+        myEnvironment.switchToBuffer(buffer1);
+        myEnvironment.setBufferCurrentForEditing(buffer1);
+        LispObject sexpEnd = evaluateString("(scan-sexps 1 1)");
+        Assert.assertEquals(new LispInteger(7), sexpEnd);
+    }
+
+    @Test
+    public void testScanSexpsForwardString() {
+        LispBuffer buffer1 = myEnvironment.findBufferSafe("4.txt");
+        myEnvironment.switchToBuffer(buffer1);
+        myEnvironment.setBufferCurrentForEditing(buffer1);
+        LispObject sexpEnd = evaluateString("(scan-sexps 30 1)");
+        Assert.assertEquals(new LispInteger(38), sexpEnd);
+    }
+
+    @Test
+    public void testScanSexpsForwardStringWithEscaped() {
+        LispBuffer buffer1 = myEnvironment.findBufferSafe("4.txt");
+        myEnvironment.switchToBuffer(buffer1);
+        myEnvironment.setBufferCurrentForEditing(buffer1);
+        LispObject sexpEnd = evaluateString("(scan-sexps 47 1)");
+        Assert.assertEquals(new LispInteger(70), sexpEnd);
+    }
+
 }

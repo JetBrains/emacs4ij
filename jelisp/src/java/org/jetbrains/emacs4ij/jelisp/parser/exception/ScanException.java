@@ -13,4 +13,8 @@ public class ScanException extends ParserException {
     public ScanException (String message) {
         super("'(scan-error " + message + ')');
     }
+
+    public ScanException (String message, int lastOkPosition, int from) {
+        super("'(scan-error " + message + " " + lastOkPosition + " " + from + ")");
+    }
 }

@@ -157,4 +157,12 @@ public class SyntaxDescriptorTest {
         int code = SyntaxDescriptor.makeFullSyntaxCode("| 123bn");
         Assert.assertEquals(SyntaxDescriptor.ClassType.GENERIC_STRING, SyntaxDescriptor.classBySyntaxCode(code));
     }
+
+    @Test
+    public void testIsStart2CharCommentStart() {
+        int code = SyntaxDescriptor.makeFullSyntaxCode("| 123bn");
+        Assert.assertTrue(SyntaxDescriptor.is(SyntaxDescriptor.FlagType.START_2CHAR_COMMENT_START, code));
+        code = SyntaxDescriptor.makeFullSyntaxCode("| 23bn");
+        Assert.assertFalse(SyntaxDescriptor.is(SyntaxDescriptor.FlagType.START_2CHAR_COMMENT_START, code));
+    }
 }

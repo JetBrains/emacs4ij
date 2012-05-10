@@ -123,8 +123,8 @@ public abstract class SyntaxTable {
         return LispSymbol.ourNil;
     }
 
-    public static int getCharFullSyntaxCode (Environment environment, int c) {
-        LispObject car = getSyntaxTable(environment).getCharSyntax(c).car();
+    public static int getCharFullSyntaxCode (Environment environment, char c) {
+        LispObject car = getSyntaxTable(environment).getCharSyntax((int)c).car();
         return  car instanceof LispInteger
                 ? ((LispInteger) car).getData()
                 : SyntaxDescriptor.getSyntaxClass(SyntaxDescriptor.ClassType.WHITESPACE);
