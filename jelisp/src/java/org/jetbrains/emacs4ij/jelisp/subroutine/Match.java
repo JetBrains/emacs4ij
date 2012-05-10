@@ -10,6 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoMatchData;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 
@@ -31,19 +32,35 @@ public abstract class Match {
         myBuffer = null;
     }
 
-    public static void registerSearchResult (@NotNull Matcher matcher) {
+    private static void addMatch (Matcher matcher, int group, List<Integer> insertions, int max) {
+        if (insertions.isEmpty()) {
+            myLastMatch.add(matcher.start(group));
+            myLastMatch.add(matcher.end(group));
+            return;
+        }
+        int nInsertionsBefore = 0;
+        //add start
+        int value = matcher.start(group);
+        for (; nInsertionsBefore < insertions.size() && insertions.get(nInsertionsBefore) < value; nInsertionsBefore++) {}
+        int i = value - nInsertionsBefore;
+        myLastMatch.add(i < 0 ? 0 : (i >= max ? max : i));
+
+        //add end
+        value = matcher.end(group);
+        for (; nInsertionsBefore < insertions.size() && insertions.get(nInsertionsBefore) <= value; nInsertionsBefore++) {}
+        i = value - nInsertionsBefore;
+        myLastMatch.add(i < 0 ? 0 : (i >= max ? max : i));
+
+    }
+
+    public static void registerSearchResult (@NotNull Matcher matcher, List<Integer> insertions, int max) {
         clearHistory();
+        if (!insertions.isEmpty()) {
+            Collections.sort(insertions);
+        }
         try {
-            myLastMatch.add(matcher.start());
-            myLastMatch.add(matcher.end());
-            for (int i = 1; i <= matcher.groupCount(); i++) {
-                int start = matcher.start(i);
-                int end = matcher.end(i);
-//                if (start < 0 || end < 0 || (start == myLastMatch.get(0) && end == myLastMatch.get(1)))
-//                    continue;
-                myLastMatch.add(start);
-                myLastMatch.add(end);
-//                System.out.println(matcher.group(i));
+            for (int i = 0; i <= matcher.groupCount(); i++) {
+                addMatch(matcher, i, insertions, max);
             }
         } catch (IllegalStateException e) {
             myLastMatch.clear();
@@ -178,10 +195,6 @@ public abstract class Match {
         return -1;
     }
 
-    private static int matchLength() {
-        return myLastMatch.size()/2;
-    }
-
     @Subroutine("replace-match")
     public static LispObject replaceMatch (Environment environment, LispString newText,
                                            @Optional LispObject fixedCase, LispObject literal,
@@ -197,8 +210,7 @@ public abstract class Match {
                     ? ((LispString)string).getData()
                     : environment.getBufferCurrentForEditing().getDocument().getText();
 
-
-            text = applyLiteral(literal, text, index, source, !(string instanceof LispString));
+            text = applyLiteral(literal, text, index, source, string instanceof LispString ? 0 : -1);
 
             if (Predicate.isNil(string)) {
                 environment.getBufferCurrentForEditing().replace(from, to, text);
@@ -249,7 +261,7 @@ public abstract class Match {
         return newText.getData();
     }
 
-    private static String applyLiteral (LispObject literal, String replacement, LispInteger index, String source, boolean isBuffer) {
+    private static String applyLiteral (LispObject literal, String replacement, LispInteger index, String source, int add) {
         if (!Predicate.isNil(literal))
             return replacement;
 
@@ -269,7 +281,6 @@ public abstract class Match {
                     previousSubgroupIndex = i;
                     continue;
                 }
-
                 String head = "";
                 String tail = "";
                 if (i >= previousSubgroupIndex)
@@ -279,7 +290,6 @@ public abstract class Match {
                     tail = source.substring(getMatchIndex(index, true), getMatchIndex(index, false));
                 } else if (next >= '1' && next <= '9') {
                     if (next <= myLastMatch.size() / 2 + '0' && getMatchIndex(next - '0', true) >= 0) {
-                        int add = isBuffer ? -1 : 0;
                         tail = source.substring(getMatchIndex(next - '0', true) + add, getMatchIndex(next - '0', false) + add);
                     }
                 } else

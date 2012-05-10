@@ -4,7 +4,6 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoMatchData;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -130,15 +129,6 @@ public class MatchTest extends BaseSubroutineTest {
         LispObject res = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), new LispInteger(4), new LispInteger(6),
                 new LispInteger(6), new LispInteger(9)), res);
-
-        //todo: how to get this result ?
-        //(#<marker at 4 in *scratch*>
-        // #<marker at 9 in *scratch*>
-        // #<marker at 4 in *scratch*>
-        // #<marker at 6 in *scratch*>
-        // #<marker at 6 in *scratch*>
-        // #<marker at 9 in *scratch*>)
-
     }
 
     @Test
@@ -344,13 +334,17 @@ public class MatchTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispString("01one\\two123"), r);
     }
 
-    @Ignore
+    @Test
+    public void testMatchWord() {
+        evaluateString("(string-match \"1\" \"11\")");
+        LispObject data = evaluateString("(match-data)");
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(1)), data);
+    }
+
     @Test
     public void testMatchWordBound() {
-        evaluateString("(string-match \"\\\\bword\\\\b\" \"word bound\")");
+        evaluateString("(string-match \"\\bword\\b\" \"word bound\")");
         LispObject data = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(4)), data);
     }
-
-
 }

@@ -2,11 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Match;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -44,14 +40,14 @@ public class StringRegexpUtilTest {
 
     @Test
     public void testTransformToRegexpClassEnd() {
-        String s = StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\'", "hei");
-        Assert.assertEquals("\\z", s);
+        StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\'", "hei");
+        Assert.assertEquals("\\z", StringRegexpUtil.myTransformedRegex);
     }
 
     @Test
     public void testTransformToRegexpClassBegin() {
-        String s = StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\`", "hei");
-        Assert.assertEquals("\\A", s);
+        StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\`", "hei");
+        Assert.assertEquals("\\A", StringRegexpUtil.myTransformedRegex);
     }
 
     @Test
@@ -62,42 +58,17 @@ public class StringRegexpUtilTest {
 
     @Test
     public void testTransform() {
-        String s = StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\\\\\[{[]", "");
-        Assert.assertEquals("\\\\\\\\[\\{\\[]", s);
+        StringRegexpUtil.transformEmacsRegexpToJava(null, "\\\\\\\\[{[]", "");
+        Assert.assertEquals("\\\\\\\\[\\{\\[]", StringRegexpUtil.myTransformedRegex);
     }
 
-    @Ignore
-    @Test
-    public void testWordBound() {
-        StringRegexpUtil.match(null, "\\b", ";word bound", 0, false);
-        LispList data = Match.matchData(null, null, null);
-        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), data);
-    }
-
-    @Ignore
     @Test
     public void testWordContentBound() {
+        String dataString = StringRegexpUtil.markBounds(null, "\\b", "word bound");
+        Assert.assertEquals("1word2 1bound2", dataString);
         StringRegexpUtil.match(null, "\\bword\\b", "word bound", 0, false);
         LispList data = Match.matchData(null, null, null);
         Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(4)), data);
-    }
-
-    @Ignore
-    @Test
-    public void test() {
-        String ofType = "wordbunk";
-        String notType = "; ";
-        String regexp = "(([" + ofType + "](\\z|[" + notType + "]))|((\\A|[" + notType + "])([" + ofType + "]))|(\\A\\z))";
-        Pattern p = Pattern.compile(regexp);
-        Pattern.compile("[; ][abc]");
-        Matcher m  = p.matcher(";word boundk");
-        int from = 0;
-        while (m.find(from)) {
-            System.out.println(m.start() + "; " + m.end() + " = " + m.group());
-            from = m.end();
-            if (from - 1 > m.start())
-                from--;
-        }
     }
 
     @Test
@@ -110,6 +81,13 @@ public class StringRegexpUtilTest {
     @Test
     public void testNotWord() {
         StringRegexpUtil.match(null, "\\W", "not word", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), data);
+    }
+
+    @Test
+    public void testNotWord2() {
+        StringRegexpUtil.match(null, "\\Sw", "not word", 0, false);
         LispList data = Match.matchData(null, null, null);
         Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), data);
     }
@@ -131,7 +109,7 @@ public class StringRegexpUtilTest {
 
     @Test
     public void testNotPunctuationClass() {
-        StringRegexpUtil.match(null, "\\S.", "not word", 0, false);
+        StringRegexpUtil.match(null, "\\S.", "not word?", 0, false);
         LispList data = Match.matchData(null, null, null);
         Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(1)), data);
     }
@@ -141,5 +119,86 @@ public class StringRegexpUtilTest {
         StringRegexpUtil.match(null, "\\\\s.", "\\s.", 0, false);
         LispList data = Match.matchData(null, null, null);
         Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(3)), data);
+    }
+
+    @Test
+    public void testMarkWordStart() {
+        String data = StringRegexpUtil.markBounds(null, "\\<", "word start");
+        Assert.assertEquals("1word 1start", data);
+        Assert.assertEquals("1", StringRegexpUtil.myTransformedRegex);
+    }
+
+    @Test
+    public void testMarkWordEnd() {
+        String data = StringRegexpUtil.markBounds(null, "\\>", "word start");
+        Assert.assertEquals("word2 start2", data);
+        Assert.assertEquals("2", StringRegexpUtil.myTransformedRegex);
+    }
+
+    @Test
+    public void testMarkSymbolStart() {
+        String data = StringRegexpUtil.markBounds(null, "\\_<", "symbol _start");
+        Assert.assertEquals("3symbol 3_start", data);
+        Assert.assertEquals("3", StringRegexpUtil.myTransformedRegex);
+    }
+
+    @Test
+    public void testMarkSymbolEnd() {
+        String data = StringRegexpUtil.markBounds(null, "\\_>", "symbol_ end");
+        Assert.assertEquals("symbol_4 end4", data);
+        Assert.assertEquals("4", StringRegexpUtil.myTransformedRegex);
+    }
+
+    @Test
+    public void testMarkWordBounds() {
+        String data = StringRegexpUtil.markBounds(null, "\\b", "word start");
+        Assert.assertEquals("1word2 1start2", data);
+        Assert.assertEquals("[012]", StringRegexpUtil.myTransformedRegex);
+    }
+
+    @Test
+    public void testMatchWordStart() {
+        StringRegexpUtil.match(null, "\\<", "word start", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), data);
+    }
+
+    @Test
+    public void testMatchWordEnd() {
+        StringRegexpUtil.match(null, "\\>", "word start", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(4)), data);
+    }
+
+    @Test
+    public void testMatchWordEnd2() {
+        StringRegexpUtil.match(null, "\\>", "$bound", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(6), new LispInteger(6)), data);
+    }
+
+    @Test
+    public void testMatchWordBound() {
+        StringRegexpUtil.match(null, "\\b", "$bound", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), data);
+    }
+
+    @Test
+    public void testMatchEmptyWordBounds() {
+        StringRegexpUtil.match(null, "\\b", "", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(0)), data);
+        Assert.assertEquals(-1, StringRegexpUtil.match(null, "\\<", "", 0, false));
+        Assert.assertEquals(-1, StringRegexpUtil.match(null, "\\>", "", 0, false));
+    }
+
+    @Test
+    public void testMatchNotWordBounds() {
+        Assert.assertEquals(-1, StringRegexpUtil.match(null, "\\B", "", 0, false));
+        Assert.assertEquals(-1, StringRegexpUtil.match(null, "\\B", "a", 0, false));
+        StringRegexpUtil.match(null, "\\B", "ab", 0, false);
+        LispList data = Match.matchData(null, null, null);
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(1)), data);
     }
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidRegexpException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Match;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
@@ -19,9 +20,12 @@ import java.util.regex.Pattern;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class StringRegexpUtil {
+    private static List<Integer> myDataInsertions = new ArrayList<>();
+    protected static String myTransformedRegex;
+
     private static List<Character> myCharsToRegexpQuote = Arrays.asList('*', '?', '^', '$', '+', '\\', '.', '[');
     private static Map<String, String> ourRegexReplacement = new LinkedHashMap<>();
-    private static List<String> mySpecialEscaped = Arrays.asList("b", "B", "<", ">", "w", "W", "_<", "_>");
+    private static List<String> mySpecialEscaped = Arrays.asList("w", "W");
     static {
         ourRegexReplacement.put("\\\\\\\\\\|", "|");
         ourRegexReplacement.put("\\\\\\\\'", "\\\\z");
@@ -32,11 +36,11 @@ public abstract class StringRegexpUtil {
     private StringRegexpUtil () {}
 
     public static int match (Environment environment, final String regexp, final String data, int from, boolean isCaseFoldSearch) {
-        String s = transformEmacsRegexpToJava(environment, regexp, data);
+        String transformedData = transformEmacsRegexpToJava(environment, regexp, data);
         Pattern p = isCaseFoldSearch
-                ? Pattern.compile(s, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
-                : Pattern.compile(s, Pattern.MULTILINE);
-        Matcher m = p.matcher(data);
+                ? Pattern.compile(myTransformedRegex, Pattern.MULTILINE | Pattern.CASE_INSENSITIVE)
+                : Pattern.compile(myTransformedRegex, Pattern.MULTILINE);
+        Matcher m = p.matcher(transformedData);
         m.find(from);
         try {
             m.start();
@@ -44,7 +48,7 @@ public abstract class StringRegexpUtil {
             Match.clearHistory();
             return -1;
         }
-        Match.registerSearchResult(m);
+        Match.registerSearchResult(m, myDataInsertions, data.length());
         return m.start();
     }
 
@@ -66,7 +70,7 @@ public abstract class StringRegexpUtil {
         int from = 0;
         while (m.find(from)) {
             unquotedPlace.add(m.end() - 1);
-            from = m.end() - 1;
+            from = from < m.end() - 1 ? m.end() - 1 : m.end();
         }
         // unquote quoted
         p = Pattern.compile("(\\\\\\\\)+[" + toInvert + "]");
@@ -110,68 +114,55 @@ public abstract class StringRegexpUtil {
         return sb.toString();
     }
 
+    @Nullable
     private static String escapeToRegexp (StringBuilder data) {
         if (data.length() == 0)
-            return "";
+            return null;
         return StringUtil.escapeToRegexp(data.toString());
     }
 
-    private static String syntaxClassBound (Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
+    @Nullable
+    private static String syntaxClassesStartBound (Environment environment, final String interestingChars,
+                                                 SyntaxDescriptor.ClassType... type ) {
         StringBuilder sbOfType = new StringBuilder();
         StringBuilder sbNotOfType = new StringBuilder();
-        analyzeSyntaxClasses(environment, type, interestingChars, sbOfType, sbNotOfType);
-        String ofType  = escapeToRegexp(sbOfType);
-        String notType = escapeToRegexp(sbNotOfType);
-        if (StringUtil.isEmpty(ofType) && StringUtil.isEmpty(notType))
-            return "\\\\A\\\\z";
-        if (StringUtil.isEmpty(ofType))
-            return "\\\\A";
-        if (StringUtil.isEmpty(notType))
-            return "\\\\A";
-        return  "(([" + ofType + "](\\\\z|[" + notType + "]))|((\\\\A|[" + notType + "])[" + ofType + "])|(\\\\A\\\\z))";
-    }
-
-    private static String syntaxClassStartBound (Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
-        StringBuilder sbOfType = new StringBuilder();
-        StringBuilder sbNotOfType = new StringBuilder();
-        analyzeSyntaxClasses(environment, type, interestingChars, sbOfType, sbNotOfType);
+        analyzeSyntaxClasses(environment, interestingChars, sbOfType, sbNotOfType, type);
         String ofType  = escapeToRegexp(sbOfType);
         String notType = escapeToRegexp(sbNotOfType);
         if (StringUtil.isEmpty(ofType))
-            return ""; //nothing matches
+            return null; //nothing matches
         if (StringUtil.isEmpty(notType))
-            return "\\\\A";
-        return "((\\\\A|[" + notType + "])[" + ofType + "])";
+            return "\\A";
+        return "((\\A|[" + notType + "])[" + ofType + "])";
     }
 
-    private static String syntaxClassEndBound (Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
+    @Nullable
+    private static String syntaxClassesEndBound (Environment environment, final String interestingChars,
+                                                 SyntaxDescriptor.ClassType... type) {
         StringBuilder sbOfType = new StringBuilder();
         StringBuilder sbNotOfType = new StringBuilder();
-        analyzeSyntaxClasses(environment, type, interestingChars, sbOfType, sbNotOfType);
+        analyzeSyntaxClasses(environment, interestingChars, sbOfType, sbNotOfType, type);
         String ofType  = escapeToRegexp(sbOfType);
         String notType = escapeToRegexp(sbNotOfType);
         if (StringUtil.isEmpty(ofType))
-            return ""; //nothing matches
+            return null; //nothing matches
         if (StringUtil.isEmpty(notType))
-            return "\\\\z)";
-        return "([" + ofType + "](\\\\z|[" + notType + "]))";
+            return "\\z";
+        return "([" + ofType + "](\\z|[" + notType + "]))";
     }
 
-    private static String notSyntaxClassBound (Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
-        String s = syntaxClassBound(environment, type, interestingChars);
-        return s.isEmpty() ? s : "[^" + s + "]";
-    }
-
-    private static void analyzeSyntaxClasses(Environment environment, SyntaxDescriptor.ClassType type,
-                                             final String interestingChars, StringBuilder ofType, StringBuilder notOfType) {
+    private static void analyzeSyntaxClasses(Environment environment, final String interestingChars,
+                                             StringBuilder ofType, StringBuilder notOfType, SyntaxDescriptor.ClassType... type) {
+        List<SyntaxDescriptor.ClassType> types = Arrays.asList(type);
         for (int i = 0; i < interestingChars.length(); i++) {
             char c = interestingChars.charAt(i);
-            if (type == SyntaxTable.getSyntaxClass(environment, c))
+            if (types.contains(SyntaxTable.getSyntaxClass(environment, c)))
                 ofType.append(c);
             else notOfType.append(c);
         }
     }
 
+    @Nullable
     private static String ofSyntaxClass(Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
         StringBuilder ofType = new StringBuilder();
         for (int i = 0; i < interestingChars.length(); i++) {
@@ -180,9 +171,10 @@ public abstract class StringRegexpUtil {
                 ofType.append(c);
         }
         String s = ofType.toString();
-        return s.isEmpty() ? s : "[" + s + "]";
+        return s.isEmpty() ? null : "[" + s + "]";
     }
 
+    @Nullable
     private static String notOfSyntaxClass(Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
         StringBuilder notOfType = new StringBuilder();
         for (int i = 0; i < interestingChars.length(); i++) {
@@ -191,7 +183,23 @@ public abstract class StringRegexpUtil {
                 notOfType.append(c);
         }
         String s = notOfType.toString();
-        return s.isEmpty() ? s : "[" + s + "]";
+        return s.isEmpty() ? null : "[" + s + "]";
+    }
+
+    @Nullable
+    private static String notSyntaxClassBound (Environment environment, SyntaxDescriptor.ClassType type, final String interestingChars) {
+        StringBuilder sbOfType = new StringBuilder();
+        StringBuilder sbNotOfType = new StringBuilder();
+        analyzeSyntaxClasses(environment, interestingChars, sbOfType, sbNotOfType, type);
+        String ofType = escapeToRegexp(sbOfType);
+        String notType = escapeToRegexp(sbNotOfType);
+        if (StringUtil.isEmpty(ofType) && StringUtil.isEmpty(notType))
+            return null;
+        if (StringUtil.isEmpty(ofType))
+            return  "(([" + notType + "](\\z|[" + notType + "]))|((\\A|[" + notType + "])[" + notType + "]))";
+        if (StringUtil.isEmpty(notType))
+            return "([" + ofType + "][" + ofType + "])";
+        return "(([" + notType + "](\\z|[" + notType + "]))|((\\A|[" + notType + "])[" + notType + "])|([" + ofType + "][" + ofType + "]))";
     }
 
     private static String getCharacters (final String data) {
@@ -205,7 +213,6 @@ public abstract class StringRegexpUtil {
     }
 
     private static Matcher containsUnescaped (final String data, final String what) {
-//                    Pattern.compile("([^\\\\]|^)\\\\(\\\\\\\\)*?a");
         Pattern p = Pattern.compile("([^\\\\]|^)\\\\(\\\\\\\\)*?" + StringUtil.escapeToRegexp(what));
         Matcher m = p.matcher(data);
         m.find();
@@ -241,9 +248,9 @@ public abstract class StringRegexpUtil {
             else if (key.startsWith("S"))
                 replacement = notOfSyntaxClass(environment, type, content);
         }
-        return replacement == null
+        return matcher == null
                 ? data
-                : replaceSpecialChar(matcher, data, key, replacement.isEmpty() ? unreachable : replacement);
+                : replaceSpecialChar(matcher, data, key, replacement == null ? unreachable : replacement);
     }
 
     private static String doSyntaxTableReplacement (final String key, final String data, Environment environment,
@@ -252,38 +259,17 @@ public abstract class StringRegexpUtil {
         Matcher matcher = containsUnescaped(data, key);
         if (matcher != null) {
             switch (key) {
-                case "b":  //word bound
-                    // todo: If in buffer, matches buffer start & end regardless of neighbour char syntax class
-                    replacement = syntaxClassBound(environment, SyntaxDescriptor.ClassType.WORD, content);
-                    break;
-                case "\\B":  //not word bound
-                    replacement = notSyntaxClassBound(environment, SyntaxDescriptor.ClassType.WORD, content);
-                    break;
-                case "\\<":  //strict word start bound (at buffer too)
-                    replacement = syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.WORD, content);
-                    break;
-                case "\\>":  //strict word end bound (at buffer too)
-                    replacement = syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.WORD, content);
-                    break;
                 case "w":  //word
                     replacement = ofSyntaxClass(environment, SyntaxDescriptor.ClassType.WORD, content);
                     break;
-                case "\\W":  //not word
+                case "W":  //not word
                     replacement = notOfSyntaxClass(environment, SyntaxDescriptor.ClassType.WORD, content);
-                    break;
-                case "\\_<":
-                    replacement =  "(" + syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.WORD, content) + "|" +
-                            syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.SYMBOL, content) + ")";
-                    break;
-                case "\\_>":
-                    replacement =  "(" + syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.WORD, content) + "|" +
-                            syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.SYMBOL, content) + ")";
                     break;
             }
         }
-        return replacement == null
+        return matcher == null
                 ? data
-                : replaceSpecialChar(matcher, data, key, replacement.isEmpty() ? unreachable : replacement);
+                : replaceSpecialChar(matcher, data, key, replacement == null ? unreachable : replacement);
     }
 
 
@@ -303,60 +289,139 @@ public abstract class StringRegexpUtil {
         return result;
     }
 
-    /*
-    if (transformed.contains("\\b")) { //word bound
-            // todo: If in buffer, matches buffer start & end regardless of neighbour char syntax class
-            putReplacement(replacementMap, "\\\\\\\\b", syntaxClassBound(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\B")) { //not word bound
-            putReplacement(replacementMap, "\\\\\\\\B", notSyntaxClassBound(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\<")) { //strict word start bound (at buffer too)
-            putReplacement(replacementMap, "\\<", syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\>")) { //strict word end bound (at buffer too)
-            putReplacement(replacementMap, "\\>", syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\w")) { //word
-            putReplacement(replacementMap, "\\\\\\\\w", ofSyntaxClass(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\W")) { //not word
-            putReplacement(replacementMap, "\\\\\\\\W", notOfSyntaxClass(environment, SyntaxDescriptor.ClassType.WORD, content), unreachable);
-        }
-        if (transformed.contains("\\_<")) { //strict symbol start bound (at buffer too). Symbol syntax class = {‘w’ or ‘_’}
-            String s = "(" + syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.WORD, content) + "|" +
-                    syntaxClassStartBound(environment, SyntaxDescriptor.ClassType.SYMBOL, content) + ")";
-            putReplacement(replacementMap, "\\_<", s, unreachable);
-        }
-        if (transformed.contains("\\_>")) { //strict symbol end bound (at buffer too)
-            String s = "(" + syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.WORD, content) + "|" +
-                    syntaxClassEndBound(environment, SyntaxDescriptor.ClassType.SYMBOL, content) + ")";
-            putReplacement(replacementMap, "\\_>", s, unreachable);
-        }
+    protected static String markBounds (Environment environment, final String emacsRegexp, String data) {
+        myDataInsertions.clear();
 
-        for (SyntaxDescriptor.ClassType type: SyntaxDescriptor.ClassType.values()) {
-            char syntaxClassChar = SyntaxDescriptor.getSyntaxClassChar(type);
-            if (transformed.contains("\\s" + syntaxClassChar)) { //chars of syntax class 'type'
-                putReplacement(replacementMap, "\\\\\\\\s" + syntaxClassChar, ofSyntaxClass(environment, type, content), unreachable);
-            }
-            if (transformed.contains("\\S" + syntaxClassChar)) { //chars of syntax class !'type'
-                putReplacement(replacementMap, "\\\\\\\\S" + syntaxClassChar, notOfSyntaxClass(environment, type, content), unreachable);
+        myTransformedRegex = emacsRegexp;
+        String transformedData = data;
+        final String content = getCharacters(data);
+        for (BoundType boundType: BoundType.getTypes()) {
+
+            Matcher matcher = containsUnescaped(myTransformedRegex, boundType.getRepresentation().substring(1));
+            if (matcher != null) {
+                // transform regexp
+                StringBuilder sb = new StringBuilder();
+                int from = 0;
+                do {
+                    int index = matcher.end() - boundType.getRepresentation().length();
+                    sb.append(myTransformedRegex.substring(from, index))
+                            .append(boundType.getRegexReplacement());
+                    from = matcher.end();
+                } while (matcher.find(from));
+                sb.append(myTransformedRegex.substring(from));
+                myTransformedRegex = sb.toString();
+
+
+                //transform data
+                if (boundType == BoundType.WORD_START || boundType == BoundType.WORD_END) {
+                    transformedData = markBound(environment, boundType, content, transformedData);
+                } else if (boundType == BoundType.WORD_BOUND) {
+                    transformedData = markBound(environment, BoundType.WORD_START, content, transformedData);
+                    transformedData = markBound(environment, BoundType.WORD_END, content, transformedData);
+                    if (transformedData.isEmpty()) {
+                        transformedData = boundType.getDataReplacement();
+                        addToDataInsertions(0);
+                    }
+                } else if (boundType == BoundType.SYMBOL_START) {
+//                    transformedData = markBound(environment, BoundType.WORD_START, content, transformedData);
+                    transformedData = markBound(environment, BoundType.SYMBOL_START, content, transformedData);
+                } else if (boundType == BoundType.SYMBOL_END) {
+//                    transformedData = markBound(environment, BoundType.WORD_END, content, transformedData);
+                    transformedData = markBound(environment, BoundType.SYMBOL_END, content, transformedData);
+                } else { // NOT_WORD_BOUND
+//                    transformedData = markBound(environment, BoundType.SYMBOL_START, content, transformedData);
+//                    transformedData = markBound(environment, BoundType.SYMBOL_END, content, transformedData);
+                    transformedData = markBound(environment, boundType, content, transformedData);
+                }
             }
         }
-     */
+        return transformedData;
+    }
+
+    protected static String markBound (Environment environment, BoundType boundType, final String content, final String data) {
+        String regex = null;
+        switch (boundType.getRepresentation()) {
+            case "\\<":
+                regex = syntaxClassesStartBound(environment, content, SyntaxDescriptor.ClassType.WORD);
+                break;
+            case "\\>":
+                regex = syntaxClassesEndBound(environment, content, SyntaxDescriptor.ClassType.WORD);
+                break;
+            case "\\_<":
+                regex = syntaxClassesStartBound(environment, content, SyntaxDescriptor.ClassType.WORD, SyntaxDescriptor.ClassType.SYMBOL);
+                break;
+            case "\\_>":
+                regex = syntaxClassesEndBound(environment, content, SyntaxDescriptor.ClassType.WORD, SyntaxDescriptor.ClassType.SYMBOL);
+                break;
+            case "\\B":
+                regex = notSyntaxClassBound(environment, SyntaxDescriptor.ClassType.WORD, content);
+                break;
+        }
+        if (regex == null) //no match
+            return data;
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(data);
+        StringBuilder sb = new StringBuilder();
+        int from = 0;
+        while (from < data.length() && m.find(from)) {
+            sb.append(data.substring(from, m.start()));
+            switch (m.end() - m.start()) {
+                case 2:
+                    addToDataInsertions(m.start() + 1);
+                    sb.append(m.group().charAt(0)).append(boundType.getDataReplacement()).append(m.group().charAt(1));
+                    break;
+                case 0:
+                    addToDataInsertions(m.start());
+                    sb.append(boundType.getDataReplacement());
+                    if (m.start() < data.length()) {
+                        sb.append(data.substring(m.start(), m.start() + 1));
+                    }
+                    from = m.end() + 1;
+                    continue;
+                case 1:
+                    if (m.start() == 0) {
+                        addToDataInsertions(0);
+                        sb.append(boundType.getDataReplacement()).append(m.group().charAt(0));
+                        break;
+                    }
+                    if (m.end() == data.length()) {
+                        addToDataInsertions(m.end());
+                        sb.append(m.group().charAt(0)).append(boundType.getDataReplacement());
+                        break;
+                    }
+                default:
+                    throw new InternalException("Regex bound replacement error");
+            }
+            from = m.end();
+        }
+        if (from < data.length())
+            sb.append(data.substring(from));
+        return sb.toString();
+    }
+
+    protected static void addToDataInsertions (int position) {
+        int before = 0;
+        for (ListIterator<Integer> iterator = myDataInsertions.listIterator(); iterator.hasNext(); ) {
+            Integer index = iterator.next();
+            if (index < position) {
+                before++;
+                continue;
+            }
+            iterator.set(index + 1);
+        }
+        myDataInsertions.add(position + before);
+    }
 
     protected static String transformEmacsRegexpToJava (Environment environment, final String emacsRegexp, final String data) {
-        String transformed = invertQuotation(emacsRegexp, "(){}");
-        transformed = quoteOpeningSquareBracketInSquareBrackets(transformed);
+        String transformedData = markBounds(environment, emacsRegexp, data);
+        myTransformedRegex = invertQuotation(myTransformedRegex, "(){}");
+        myTransformedRegex = quoteOpeningSquareBracketInSquareBrackets(myTransformedRegex);
         for (Map.Entry<String, String> replacement: ourRegexReplacement.entrySet()) {
-            transformed = replace(transformed, replacement.getKey(), replacement.getValue());
+            myTransformedRegex = replace(myTransformedRegex, replacement.getKey(), replacement.getValue());
         }
-        transformed = doSyntaxTableReplacement(environment, transformed, data);
-//        for (Map.Entry<String, String> replacement: doSyntaxTableReplacement(environment, transformed, data).entrySet()) {
-//            transformed = replace(transformed, replacement.getKey(), replacement.getValue());
-//        }
-        System.out.println(transformed);
-        return substituteBackReferences(transformed, data);
+        myTransformedRegex = doSyntaxTableReplacement(environment, myTransformedRegex, transformedData);
+        myTransformedRegex = substituteBackReferences(myTransformedRegex, transformedData);
+        return transformedData;
     }
 
     private static String substituteBackReferences (final String regexp, final String data) {
@@ -380,7 +445,7 @@ public abstract class StringRegexpUtil {
 
     /*
     * returns the matched string of nth group for last alternative in ()
-    * or null id none
+    * or null if none
      */
     protected static String getNthMatchAlternative (String regexp, int n, int end, final String data) {
         String reviewed = regexp.substring(0, end);
@@ -438,5 +503,40 @@ public abstract class StringRegexpUtil {
             regexp.append(c);
         }
         return regexp.toString();
+    }
+
+    private static class BoundType {
+        public static final BoundType WORD_START   = new BoundType("\\<",  "1", "1");
+        public static final BoundType WORD_END     = new BoundType("\\>",  "2", "2");
+        public static final BoundType SYMBOL_START = new BoundType("\\_<", "3", "3");
+        public static final BoundType SYMBOL_END   = new BoundType("\\_>", "4", "4");
+        public static final BoundType WORD_BOUND   = new BoundType("\\b",  "0", "[012]");
+        public static final BoundType NOT_WORD_BOUND   = new BoundType("\\B", "5", "5");
+
+        private final String myRepresentation;
+        private final String myDataReplacement;
+        private final String myRegexReplacement;
+
+        private BoundType (String view, String dataReplacement, final String regexReplacement) {
+            myRepresentation = view;
+            myDataReplacement = dataReplacement;
+            myRegexReplacement = regexReplacement;
+        }
+
+        public String getRepresentation() {
+            return myRepresentation;
+        }
+
+        public String getDataReplacement() {
+            return myDataReplacement;
+        }
+
+        public String getRegexReplacement() {
+            return myRegexReplacement;
+        }
+
+        public static List<BoundType> getTypes() {
+            return Arrays.asList(WORD_START, WORD_END, SYMBOL_START, SYMBOL_END, WORD_BOUND, NOT_WORD_BOUND);
+        }
     }
 }
