@@ -26,6 +26,11 @@ public class Range implements Comparable<Range> {
         swapIfNeeded();
     }
 
+    public Range (Range range) {
+        myStart = range.myStart;
+        myEnd = range.myEnd;
+    }
+
     private void swapIfNeeded() {
         if (myStart > myEnd) {
             int tmp = myStart;
@@ -36,6 +41,11 @@ public class Range implements Comparable<Range> {
 
     private static int normalize(int what, int min, int max) {
         return what > max ? max : what < min ? min : what;
+    }
+
+    public void set (Range range) {
+        myStart = range.myStart;
+        myEnd = range.myEnd;
     }
 
     public void setStart (int start) {

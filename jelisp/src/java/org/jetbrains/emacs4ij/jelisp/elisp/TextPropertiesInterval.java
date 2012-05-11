@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +8,7 @@ import java.util.Map;
 public class TextPropertiesInterval implements Comparable<TextPropertiesInterval> {
     private Range myRange;
     private Map<LispObject, LispObject> myProperties;
+    public static enum Action {ADD, SET, REMOVE, REMOVE_LIST}
 
     public TextPropertiesInterval (int from, int to, int min, int max, LispList properties) {
         myRange = new Range(from, to, min, max);
@@ -113,61 +115,34 @@ public class TextPropertiesInterval implements Comparable<TextPropertiesInterval
         return changed;
     }
 
-
     /**
-     * we assume that this interval contains start
-     * @param start = left bound of interval to change/create
-     * @param end = right bound of interval to change/create
-     * @param propertyList to add
+     * we assume that this interval contains range start
+     * @param propertyList to work with
      * @param result = resulting intervals, born from this
      * @return true if this interval was changed and/or new interval(s) created
      */
-    public boolean extractIntervalAndAddProperties (int start, int end, LispList propertyList,
+    public boolean extractIntervalAndPerformAction (Range range, LispList propertyList, Action action,
                                                     List<TextPropertiesInterval> result) {
-        boolean changed = extractInterval(start, end, result);
-        return addOrChangeProperties(propertyList) || changed;
-    }
-
-    /**
-     * we assume that this interval contains start
-     * @param start = left bound of interval to change/create
-     * @param end = right bound of interval to change/create
-     * @param propertyList to set
-     * @param result = resulting intervals, born from this
-     * @return true if this interval was changed and/or new interval(s) created
-     */
-    public boolean extractIntervalAndSetProperties (int start, int end, LispList propertyList,
-                                                    List<TextPropertiesInterval> result) {
-        boolean changed = extractInterval(start, end, result);
-        return resetOrRemoveProperties(propertyList) || changed;
-    }
-
-    /**
-     * we assume that this interval contains start
-     * @param start = left bound of interval to change/create
-     * @param end = right bound of interval to change/create
-     * @param propertyList = list of properties to be removed
-     * @param result = resulting intervals, born from this
-     * @return true if this interval was changed and/or new interval(s) created
-     */
-    public boolean extractIntervalAndRemoveProperties (int start, int end, LispList propertyList,
-                                                    List<TextPropertiesInterval> result) {
-        boolean changed = extractInterval(start, end, result);
-        return removeProperties(propertyList) || changed;
-    }
-
-    /**
-     * we assume that this interval contains start
-     * @param start = left bound of interval to change/create
-     * @param end = right bound of interval to change/create
-     * @param propertyNames = list of property names to be removed
-     * @param result = resulting intervals, born from this
-     * @return true if this interval was changed and/or new interval(s) created
-     */
-    public boolean extractIntervalAndRemovePropertiesWithNames (int start, int end, LispList propertyNames,
-                                                       List<TextPropertiesInterval> result) {
-        boolean changed = extractInterval(start, end, result);
-        return removePropertiesWithNames(propertyNames) || changed;
+        Range oldRange = new Range(myRange);
+        List<TextPropertiesInterval> additional = extractInterval(range);
+        boolean changed = false;
+        switch (action) {
+            case ADD:
+                changed = addOrChangeProperties(propertyList);
+                break;
+            case SET:
+                changed = resetOrRemoveProperties(propertyList);
+                break;
+            case REMOVE:
+                changed = removeProperties(propertyList);
+                break;
+            case REMOVE_LIST:
+                changed = removePropertiesWithNames(propertyList);
+        }
+        if (changed)
+            result.addAll(additional);
+        else myRange.set(oldRange);
+        return changed;
     }
 
     public TextPropertiesInterval extract (int start, int end) {
@@ -175,25 +150,20 @@ public class TextPropertiesInterval implements Comparable<TextPropertiesInterval
     }
 
     /**
-     * Extract [start; end) from given range, assuming that this interval contains start
-     * @param start = left bound of interval to change/create
-     * @param end = right bound of interval to change/create
-     * @param result = resulting intervals, born from this
+     * Extract interval of given range, assuming that this interval contains start
      * @return true if this interval was changed and/or new interval(s) created
      */
-    private boolean extractInterval (int start, int end, List<TextPropertiesInterval> result) {
-        boolean changed = false;
-        if (myRange.getStart() < start) {
-            result.add(new TextPropertiesInterval(myRange.getStart(), start, myProperties));
-            myRange.setStart(start);
-            changed = true;
+    private List<TextPropertiesInterval> extractInterval (Range range) {
+        List<TextPropertiesInterval> result = new ArrayList<>();
+        if (myRange.getStart() < range.getStart()) {
+            result.add(new TextPropertiesInterval(myRange.getStart(), range.getStart(), myProperties));
+            myRange.setStart(range.getStart());
         }
-        if (end < myRange.getEnd()) {
-            result.add(new TextPropertiesInterval(end, myRange.getEnd(), myProperties));
-            myRange.setEnd(end);
-            changed = true;
+        if (range.getEnd() < myRange.getEnd()) {
+            result.add(new TextPropertiesInterval(range.getEnd(), myRange.getEnd(), myProperties));
+            myRange.setEnd(range.getEnd());
         }
-        return changed;
+        return result;
     }
 
     public boolean hasNoProperties() {

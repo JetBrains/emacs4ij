@@ -14,13 +14,13 @@ import org.junit.Test;
  */
 public class TextPropertiesTest extends BaseSubroutineTest {
     @Test
-    public void testPropertize() throws Exception {
+    public void testPropertize() {
         LispObject s = evaluateString("(setq s (propertize \"hello\" 1 2 3 4))");
         Assert.assertEquals("#(\"hello\" 0 5 (3 4 1 2))", s.toString());
     }
 
     @Test
-    public void testPutTextProperty() throws Exception {
+    public void testPutTextProperty() {
         evaluateString("(setq s (propertize \"hello\" 1 2 3 4))");
         LispObject n = evaluateString("(put-text-property 1 3 'test 5 s)");
         Assert.assertEquals(LispSymbol.ourNil, n);
@@ -28,10 +28,31 @@ public class TextPropertiesTest extends BaseSubroutineTest {
     }
 
     @Test
-    public void testAddTextProperties() throws Exception {
+    public void testAddTextProperties() {
         evaluateString("(setq s (propertize \"hello\" 1 2 3 4))");
         Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 0 2 '(\"test\" 1) s)"));
         Assert.assertEquals("#(\"hello\" 0 2 (3 4 1 2 \"test\" 1) 2 5 (3 4 1 2))", evaluateString("s").toString());
+    }
+
+    @Test
+    public void testAddTextPropertiesWhenEmpty()  {
+        evaluateString("(setq s \"hello\")");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 0 2 '(\"test\" 1) s)"));
+        Assert.assertEquals("#(\"hello\" 0 2 (\"test\" 1))", evaluateString("s").toString());
+    }
+
+    @Test
+    public void testSetTextPropertiesWhenEmpty()  {
+        evaluateString("(setq s \"hello\")");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(set-text-properties 0 2 '(\"test\" 1) s)"));
+        Assert.assertEquals("#(\"hello\" 0 2 (\"test\" 1))", evaluateString("s").toString());
+    }
+
+    @Test
+    public void testRemoveTextPropertiesWhenEmpty()  {
+        evaluateString("(setq s \"hello\")");
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(remove-text-properties 0 2 '(\"test\" 1) s)"));
+        Assert.assertEquals("\"hello\"", evaluateString("s").toString());
     }
 
     @Test
