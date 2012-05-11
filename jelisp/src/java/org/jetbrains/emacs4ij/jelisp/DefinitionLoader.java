@@ -99,6 +99,8 @@ public abstract class DefinitionLoader {
             try {
                 parsed.evaluate(GlobalEnvironment.INSTANCE);
             } catch (LispException e) {
+                if (line.equals("(let ((m (make-sparse-keymap)))"))
+                    continue;
                 throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
             }
         }
