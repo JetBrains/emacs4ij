@@ -415,7 +415,18 @@ public class SymbolTest extends BaseSubroutineTest {
             return;
         }
         Assert.fail();
+    }
 
+    @Test
+    public void testAliasDocumentation() {
+        LispObject f = evaluateString("(fset 'f '(lambda () \"doc1\"))");
+        Assert.assertEquals(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("doc1")), f);
+        f = evaluateString("(defalias 'g 'f \"doc2\")");
+        Assert.assertEquals(new LispSymbol("f"), f);
+        LispObject doc = evaluateString("(documentation 'f)");
+        Assert.assertEquals(new LispString("doc1"), doc);
+        doc = evaluateString("(documentation 'g)");
+        Assert.assertEquals(new LispString("doc2"), doc);
     }
 
 }

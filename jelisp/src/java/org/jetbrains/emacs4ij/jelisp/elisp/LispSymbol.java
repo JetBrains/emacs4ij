@@ -382,6 +382,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     public void setFunctionDocumentation (LispObject doc) {
         if (myFunction == null)
             return;
+        if (myFunction instanceof LispSymbol) {
+            setProperty("function-documentation", doc);
+            return;
+        }
         castFunctionCell();
         ((FunctionCell) myFunction).setDocumentation(doc);
     }
