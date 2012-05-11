@@ -307,14 +307,14 @@ public class LispList implements LispSequence {
     }
 
     @Override
-    public int length() {
+    public int size() {
         if (isEmpty())
             return 0;
         if (myCdr == null)
             return 1;
         if (!(myCdr instanceof LispList))
             throw new WrongTypeArgumentException("listp", myCdr);
-        return 1 + ((LispList) myCdr).length();
+        return 1 + ((LispList) myCdr).size();
     }
 
     public void setCdr (@Nullable LispObject cdr) {

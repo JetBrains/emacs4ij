@@ -30,6 +30,6 @@ public class SyntaxTableTest extends BaseSubroutineTest {
     @Test
     public void testStandardSyntaxTableLength () {
         LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
-        Assert.assertEquals(LispInteger.MAX_CHAR, standard.length());
+        Assert.assertEquals(LispInteger.MAX_CHAR, standard.size());
     }
 }

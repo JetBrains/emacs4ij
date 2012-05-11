@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
@@ -21,7 +22,7 @@ import java.util.List;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString implements LispAtom, LispSequence, LispArray, StringOrVector {
+public class LispString extends TextPropertiesHolder implements LispAtom, LispSequence, LispArray, StringOrVector {
     private String myData;
 
     public LispString (String data) {
@@ -32,13 +33,20 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
         myData = data.replaceAll("\\\\\"", "\"");
     }
 
+    public LispString (String data, List<TextPropertiesInterval> textProperties) {
+        this(data);
+        setTextProperties(textProperties);
+    }
+
     public String getData() {
         return myData;
     }
 
     @Override
     public String toString() {
-        return '"' + myData + '"';
+        if (noTextProperties())
+            return '"' + myData + '"';
+        return "#(\"" + myData + "\" " + intervalsString() + ")";
     }
 
     @Override
@@ -66,7 +74,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
     }
 
     @Override
-    public int length() {
+    public int size() {
         return myData.length();
     }
 
@@ -105,7 +113,7 @@ public class LispString implements LispAtom, LispSequence, LispArray, StringOrVe
 
     @Override
     public boolean isEmpty() {
-        return myData == null || myData.equals("");
+        return StringUtil.isEmpty(myData);
     }
 
     public String capitalize (Environment environment) {

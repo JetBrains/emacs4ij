@@ -40,7 +40,7 @@ public class LispSyntaxTable implements LispObject, LispSequence {
     }
 
     @Override
-    public int length() {
+    public int size() {
         if (isEmpty())
             return 0;
         return Collections.max(myData.keySet());

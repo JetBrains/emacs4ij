@@ -33,7 +33,7 @@ import java.util.Map;
  * Time: 11:10 AM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaBuffer implements LispBuffer {
+public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     protected final String myName;
     protected final Environment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
@@ -194,8 +194,9 @@ public class IdeaBuffer implements LispBuffer {
 
     @Override
     public LispString substring(int start, int end, boolean withProperties) {
-        //todo: get text properties if any and store them in string
-        return new LispString(getDocument().getText().substring(start - 1, end - 1));
+        return withProperties
+                ? new LispString(getDocument().getText().substring(start - 1, end - 1), getTextPropertiesInRange(start, end))
+                : new LispString(getDocument().getText().substring(start - 1, end - 1));
     }
 
     public String toString() {
@@ -213,7 +214,7 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     @Override
-    public int getSize() {
+    public int size() {
         return getDocument().getTextLength();
     }
 
@@ -246,7 +247,7 @@ public class IdeaBuffer implements LispBuffer {
     }
 
     public int pointMax() {
-        return getSize()+1;
+        return size()+1;
     }
 
     public String gotoChar (int position) {

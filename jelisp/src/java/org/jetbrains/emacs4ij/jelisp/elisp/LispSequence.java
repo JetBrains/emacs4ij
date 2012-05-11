@@ -12,7 +12,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispSequence extends LispObject {
-    int length();
+    int size();
     List<LispObject> toLispObjectList();
     List<LispObject> mapCar (Environment environment, LispObject method);
     LispObject copy();

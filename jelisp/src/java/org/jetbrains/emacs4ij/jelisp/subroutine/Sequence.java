@@ -35,7 +35,7 @@ public abstract class Sequence {
             throw new WrongTypeArgumentException("sequencep", sequence);
         if (sequence.equals(LispSymbol.ourNil))
             return new LispInteger(0);
-        return new LispInteger(((LispSequence)sequence).length());
+        return new LispInteger(((LispSequence)sequence).size());
     }
 
     @Subroutine(value = "append")

@@ -12,4 +12,8 @@ public class WrongNumberOfArgumentsException extends LispException {
     public WrongNumberOfArgumentsException(String functionName, int nArgs) {
         super("'(wrong-number-of-arguments " + functionName + " " + nArgs + ')');
     }
+
+    public WrongNumberOfArgumentsException(String functionName) {
+        super("'(wrong-number-of-arguments " + functionName + ')');
+    }
 }

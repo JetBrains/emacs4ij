@@ -359,7 +359,7 @@ public class SymbolTest extends BaseSubroutineTest {
                 "  :version \"21.1\")");
         LispObject properties = evaluateString("(symbol-plist 'myc)");
         Assert.assertTrue(properties instanceof LispList);
-        Assert.assertEquals(10, ((LispList) properties).length());
+        Assert.assertEquals(10, ((LispList) properties).size());
         String prop = properties.toString();
         Assert.assertTrue(prop.contains("standard-value (t)"));
         Assert.assertTrue(prop.contains("custom-requests nil"));

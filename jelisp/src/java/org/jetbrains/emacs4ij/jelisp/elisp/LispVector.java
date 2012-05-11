@@ -97,7 +97,7 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     }
 
     @Override
-    public int length() {
+    public int size() {
         return myData.size();
     }
 

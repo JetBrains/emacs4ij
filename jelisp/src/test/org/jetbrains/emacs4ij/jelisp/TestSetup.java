@@ -15,6 +15,7 @@ public abstract class TestSetup {
             GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
             GlobalEnvironment.initialize(null, null, null, null, null);
             GlobalEnvironment.INSTANCE.startRecording();
+            GlobalEnvironment.TEST = true;
         } catch (RuntimeException e) {
             e.printStackTrace();
         }

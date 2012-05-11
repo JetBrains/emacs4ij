@@ -13,6 +13,6 @@ import java.util.List;
  */
 public interface StringOrVector extends LispObject {
     List<Shortcut> toKeyboardShortcutList();
-    int length();
+    int size();
     StringOrVector substring (int from, int to);
 }

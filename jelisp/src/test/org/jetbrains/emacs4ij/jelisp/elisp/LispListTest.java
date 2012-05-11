@@ -131,16 +131,16 @@ public class LispListTest {
     }
 
     @Test
-    public void testLength() {
+    public void testSize() {
         LispList list = LispList.list();
-        Assert.assertEquals(0, list.length());
+        Assert.assertEquals(0, list.size());
         list = LispList.cons(LispSymbol.ourNil, null);
-        Assert.assertEquals(1, list.length());
+        Assert.assertEquals(1, list.size());
         list = LispList.list(new LispInteger(1), new LispInteger(1), new LispInteger(1), new LispInteger(1), new LispInteger(1));
-        Assert.assertEquals(5, list.length());
+        Assert.assertEquals(5, list.size());
         try {
             list = LispList.cons(new LispInteger(1), new LispInteger(2));
-            list.length();
+            list.size();
         } catch (Exception e) {
             Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
             return;

@@ -735,7 +735,7 @@ public class CoreTest extends BaseSubroutineTest {
 
     @Test
     public void testSimple() {
-        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");//, "declare-function");
+        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
         DefinitionLoader.loadFile("simple.el");
     }
 

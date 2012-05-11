@@ -70,7 +70,7 @@ public abstract class BString {
         int from = 0;
         if (start != null) {
             from = start.getData();
-            if (from < 0 || from >= string.length())
+            if (from < 0 || from >= string.size())
                 throw new ArgumentOutOfRange(string.toString(), start.toString());
         }
         LispSymbol s = environment.find("case-fold-search");
@@ -121,7 +121,7 @@ public abstract class BString {
     public static LispList readFromString (LispString string, @Optional @Nullable LispObject start,
                                              @Optional @Nullable LispObject finish) {
         int begin = getInt(start, 0);
-        int end = getInt(finish, string.length());
+        int end = getInt(finish, string.size());
         try {
             String code = string.getData().substring(begin, end);
             ForwardParser forwardParser = new ForwardParser();

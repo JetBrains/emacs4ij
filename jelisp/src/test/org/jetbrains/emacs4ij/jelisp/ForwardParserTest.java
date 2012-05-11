@@ -924,9 +924,9 @@ public class ForwardParserTest {
     }
 
     @Test
-    public void test() {
+    public void testBackSlash() {
         LispString s = (LispString) p.parseLine("\"\\\\b\"");
-        Assert.assertEquals(2, s.length());
+        Assert.assertEquals(3, s.size());
     }
 }
 

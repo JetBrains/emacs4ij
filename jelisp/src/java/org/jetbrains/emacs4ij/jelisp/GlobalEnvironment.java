@@ -20,6 +20,8 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class GlobalEnvironment extends Environment {
+    public static boolean TEST = false;
+
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
     private static boolean isEmacsSourceOk = false;

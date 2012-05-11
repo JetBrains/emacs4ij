@@ -44,7 +44,7 @@ public abstract class Buffer {
             buffer = environment.getBufferCurrentForEditing();
         if (!(buffer instanceof LispBuffer))
             throw new WrongTypeArgumentException("bufferp", buffer);
-        return new LispInteger(((LispBuffer)buffer).getSize());
+        return new LispInteger(((LispBuffer)buffer).size());
     }
 
     @Subroutine("buffer-name")

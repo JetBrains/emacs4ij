@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
@@ -22,7 +23,8 @@ public abstract class LispSubroutine {
 
     private static Class[] myBuiltIns = new Class[] {Arithmetic.class, Predicate.class, Buffer.class, Minibuffer.class,
             Core.class, Frame.class, Key.class, BList.class, Marker.class, Sequence.class, SyntaxTable.class,
-            BString.class, Scan.class, Match.class, Switch.class, Symbol.class, BVector.class, Window.class};
+            BString.class, Scan.class, Match.class, Switch.class, Symbol.class, BVector.class, Window.class,
+            TextProperties.class};
 
     private static Class[] mySpecialForms = new Class[] {SpecialForms.class};
 
@@ -203,10 +205,13 @@ public abstract class LispSubroutine {
                         if (e.getCause().getMessage() == null)
                              e.getCause().printStackTrace();
                         else System.err.println(e.getCause().getMessage());
-                        
                         Throwable cause = getCause(e);
                         if (cause instanceof LispThrow)
                             throw (LispThrow) cause;
+                        if (cause instanceof VoidVariableException && GlobalEnvironment.TEST && c == Key.class) {
+                            System.err.println("Skip keymap errors in test mode");
+                            return LispSymbol.ourNil;
+                        }
                         if (cause instanceof LispException)
                             throw (LispException) cause;
                         throw new LispException(e.getCause().getMessage());

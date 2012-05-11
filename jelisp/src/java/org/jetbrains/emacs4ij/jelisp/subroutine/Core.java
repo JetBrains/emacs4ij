@@ -209,7 +209,7 @@ public abstract class Core {
 //        LispObject errorMessage = errorSymbol.getProperty("error-message");
         String msg = "";// '[' + ((errorMessage instanceof LispString) ? ((LispString) errorMessage).getData() : "peculiar error") + "] ";
         msg += '(' + errorSymbol.getName() + ' ';
-        msg += (data.length() == 1 ? data.car().toString() : data.toString()) + ')';
+        msg += (data.size() == 1 ? data.car().toString() : data.toString()) + ')';
 //        System.out.println(msg);
         throw new LispException(msg);
     }
@@ -369,6 +369,8 @@ public abstract class Core {
 
     @Subroutine("defalias")
     public static LispObject defineAlias (LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
+        if (symbol.equals(new LispSymbol("advertised-undo")))
+            System.out.print(1);
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
             real = new LispSymbol(symbol.getName());
@@ -413,7 +415,7 @@ public abstract class Core {
 
     @Subroutine("substring")
     public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
-        int length = stringOrVector.length();
+        int length = stringOrVector.size();
         int start = processBound(from, length);
         int end = Predicate.isNil(to)
                 ? length
