@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -34,6 +35,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     private boolean isBufferLocal = false;
     private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
     private boolean isConstant = false;
+    private boolean isAlias = false;
 
     public LispSymbol(String name) {
         myName = name;
@@ -111,12 +113,41 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     }
 
     public LispObject getValue() {
-        return myValue;
+        if (!isAlias)
+            return myValue;
+        LispSymbol symbol = this;
+        String met = "";
+        while (symbol.isAlias) {
+            if (met.contains(symbol.getName() + ";"))
+                throw new CyclicVariableIndirectionException(this);
+            met += symbol.getName() + ";";
+            symbol = (LispSymbol)symbol.myValue;
+        }
+        return symbol.getValue();
     }
 
     public void setValue(LispObject value) {
         if (isConstant)
             throw new SetConstException(myName);
+        if (!isAlias) {
+            myValue = value;
+            return;
+        }
+        LispSymbol symbol = this;
+        String met = "";
+        while (symbol.isAlias) {
+            if (met.contains(symbol.getName() + ";"))
+                throw new CyclicVariableIndirectionException(this);
+            met += symbol.getName() + ";";
+            symbol = (LispSymbol)symbol.myValue;
+        }
+        symbol.setValue(value);
+    }
+
+    public void setValue(LispSymbol value, boolean alias) {
+        if (isConstant)
+            throw new SetConstException(myName);
+        isAlias = true;
         myValue = value;
     }
 
@@ -174,7 +205,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
                 || myFunction instanceof LispMacro);
     }
     
-    public boolean isAlias() {
+    public boolean isFunctionAlias() {
         return myFunction instanceof LispSymbol && ((LispSymbol) myFunction).isFunction();
     }
 
@@ -207,6 +238,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         return myName.startsWith(":");
     }
 
+    @NotNull
     @Override
     /**
      * takes Environment
@@ -217,9 +249,8 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (myName.equals("obarray")) {
             return GlobalEnvironment.INSTANCE.getObjectArray();
         }
-        if (hasValue()) {
+        if (hasValue())
             return getValue();
-        }
         LispSymbol symbol = environment.find(myName);
         if (symbol == null && isKeyword())
             return this;
@@ -232,7 +263,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
                 throw new VoidVariableException(myName);
             }
         }
-        return symbol.getValue();
+        LispObject value = symbol.getValue();
+        if (value == null) //it was alias and the alias root is not set
+            throw new VoidVariableException(myName);
+        return value;
     }
 
     private void checkCallStack () {
@@ -278,7 +312,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (!environment.areSpecFormsAndMacroAllowed()) {
             if (isSpecialForm() || isMacro())
                 throw new InvalidFunctionException(myName);
-            if (!isAlias())
+            if (!isFunctionAlias())
                 environment.setSpecFormsAndMacroAllowed(true);
         }
 
@@ -297,7 +331,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             checkCallStack();
             return result;
         }
-        if (isAlias()) {
+        if (isFunctionAlias()) {
             result = ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
             checkCallStack();
             return result;

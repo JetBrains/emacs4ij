@@ -32,21 +32,6 @@ public abstract class Core {
         return object == null ? LispSymbol.ourNil : object;
     }
 
-//    public static void error (String message) {
-//        error(message, new LispObject[0]);
-//    }
-//
-//    public static void error (String message, LispObject... args) {
-//        ArrayList<LispObject> data = new ArrayList<>();
-//        data.add(new LispSymbol("error"));
-//        data.add(new LispString(message));
-//        if (args.length > 0) {
-//            data.addAll(Arrays.asList(args));
-//        }
-//        GlobalEnvironment.INSTANCE.setArgumentsEvaluated(true);
-//        LispList.list(data).evaluate(GlobalEnvironment.INSTANCE);
-//    }
-
     public static void error (String message) {
         ArrayList<LispObject> data = new ArrayList<>();
         data.add(new LispSymbol("error"));
@@ -376,7 +361,7 @@ public abstract class Core {
     }
 
     @Subroutine("defalias")
-    public static LispObject defineAlias (LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
+    public static LispObject defineFunctionAlias(LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
             real = new LispSymbol(symbol.getName());
@@ -483,6 +468,25 @@ public abstract class Core {
     @Subroutine("recursion-depth")
     public static LispInteger recursionDepth (Environment environment) {
         return new LispInteger(environment.getMiniBufferActivationsDepth());
+    }
+
+    @Subroutine("defvaralias")
+    public static LispObject defineVariableAlias(Environment environment, LispSymbol aliasVar, LispSymbol baseVar,
+                                                 @Optional LispObject docString) {
+        LispSymbol alias = environment.find(aliasVar.getName());
+        if (alias == null)
+            alias = new LispSymbol(aliasVar.getName());
+        LispSymbol base = environment.find(baseVar.getName());
+        if (base == null) {
+            base = new LispSymbol(baseVar.getName());
+            environment.defineSymbol(base);
+        }
+        alias.setValue(base, true);
+        if (docString != null && !(docString instanceof LispNumber)) {
+            alias.setVariableDocumentation(docString);
+        }
+        environment.defineSymbol(alias);
+        return base;
     }
 
 }

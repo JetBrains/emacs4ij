@@ -733,6 +733,7 @@ public class CoreTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
+    @Ignore
     @Test
     public void testSimple() {
         DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
@@ -763,5 +764,192 @@ public class CoreTest extends BaseSubroutineTest {
     @Test
     public void testEvalExpression() {
         evaluateString("(eval-expression '(+ 5 5))");
+    }
+
+    @Test
+    public void testVarAliasSimple() {
+        evaluateString("(setq a 5)");
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("(symbol-value 'b)"));
+        evaluateString("(setq b 10)");
+        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+        evaluateString("(setq a 15)");
+        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+
+        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("doc")),
+                evaluateString("(symbol-plist 'b)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    }
+
+    @Test
+    public void testVarAliasVoid() {
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
+        try {
+            evaluateString("b");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-variable b)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testVarTwoAliases() {
+        evaluateString("(setq a 5)");
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'c 'a \"c\")"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+
+        evaluateString("(setq c 10)");
+        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+
+        evaluateString("(setq a 15)");
+        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+
+        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
+                evaluateString("(symbol-plist 'b)"));
+        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
+                evaluateString("(symbol-plist 'c)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    }
+
+    @Test
+    public void testVarAliasForAlias() {
+        evaluateString("(setq a 5)");
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
+        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'c 'b \"c\")"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+
+        evaluateString("(setq c 10)");
+        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+
+        evaluateString("(setq a 15)");
+        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+
+        evaluateString("(setq b 1)");
+        Assert.assertEquals(new LispInteger(1), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("c"));
+
+        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
+                evaluateString("(symbol-plist 'b)"));
+        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
+                evaluateString("(symbol-plist 'c)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    }
+
+    @Test
+    public void testCyclicAliasGet() {
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
+        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
+        try {
+            evaluateString("a");
+        } catch (Exception e) {
+            Assert.assertEquals("(cyclic-variable-indirection a)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testCyclicAliasSet() {
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
+        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
+        try {
+            evaluateString("(setq b 5)");
+        } catch (Exception e) {
+            Assert.assertEquals("(cyclic-variable-indirection b)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testUniqueAliasBase() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq d 2)");
+        evaluateString("(defvaralias 'b 'a)");
+        evaluateString("(defvaralias 'c 'a)");
+        evaluateString("(defvaralias 'c 'd)");
+
+        evaluateString("(setq b 3)");
+        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("d"));
+
+        evaluateString("(setq c 4)");
+        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+    }
+
+    @Test
+    public void testVarAliasTree1() {
+        evaluateString("(setq a 1)");
+        evaluateString("(defvaralias 'b 'a)");
+        evaluateString("(defvaralias 'c 'b)");
+        evaluateString("(defvaralias 'd 'b)");
+        Assert.assertEquals(new LispInteger(1), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("d"));
+
+        evaluateString("(setq a 2)");
+        Assert.assertEquals(new LispInteger(2), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("d"));
+
+        evaluateString("(setq b 3)");
+        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(3), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(3), evaluateString("d"));
+
+        evaluateString("(setq c 4)");
+        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+
+        evaluateString("(setq d 5)");
+        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("d"));
+    }
+
+    @Test
+    public void testVarAliasTree2() {
+        evaluateString("(setq a 1)");
+        evaluateString("(setq d 4)");
+        evaluateString("(defvaralias 'b 'a)");
+        evaluateString("(defvaralias 'c 'b)");
+        evaluateString("(defvaralias 'b 'd)");
+        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+        evaluateString("(setq a 2)");
+        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("a"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
     }
 }
