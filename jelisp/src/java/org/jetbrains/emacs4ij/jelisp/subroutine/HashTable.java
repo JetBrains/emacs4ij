@@ -20,7 +20,7 @@ public abstract class HashTable {
         LispSymbol weakness = null;
         int initialCapacity = -1;
         double rehashSize = -1;
-        double rehashThreshold = -1;
+        LispNumber rehashThreshold = null;
 
         for (int i = 0; i < keywordArguments.length; i += 2) {
             LispObject keyword = keywordArguments[i];
@@ -57,11 +57,11 @@ public abstract class HashTable {
                     rehashSize = ((LispNumber) value).getDoubleData();
                     break;
                 case ":rehash-threshold":
-                    if (rehashThreshold != -1)
+                    if (rehashThreshold != null)
                         throw new InvalidArgumentListException(keyword);
                     if (!Predicate.isNumber(value))
                         throw new InvalidHashTableParameterException("rehash threshold", value);
-                    rehashThreshold = ((LispNumber) value).getDoubleData();
+                    rehashThreshold = (LispNumber) value;
                     break;
                 default:
                     throw new InvalidArgumentListException(keyword);
@@ -76,8 +76,8 @@ public abstract class HashTable {
             initialCapacity = 65;
         if (rehashSize == -1)
             rehashSize = 1.5;
-        if (rehashThreshold == -1)
-            rehashThreshold = 0.8;
+        if (rehashThreshold == null)
+            rehashThreshold = new LispFloat(0.8);
 
         return new LispHashTable(equalityMethod, initialCapacity, rehashThreshold, weakness, rehashSize);
     }

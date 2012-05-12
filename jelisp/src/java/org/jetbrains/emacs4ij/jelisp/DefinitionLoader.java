@@ -99,8 +99,11 @@ public abstract class DefinitionLoader {
             try {
                 parsed.evaluate(GlobalEnvironment.INSTANCE);
             } catch (LispException e) {
-                if (line.equals("(let ((m (make-sparse-keymap)))"))
+                if (line.equals("(let ((m (make-sparse-keymap)))") || line.equals("(defvar universal-argument-map")
+                        || line.equals("(defvar minibuffer-local-shell-command-map")
+                        || line.equals("(defvar visual-line-mode-map"))
                     continue;
+
                 throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
             }
         }

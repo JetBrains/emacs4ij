@@ -25,7 +25,7 @@ public class LispHashTable implements LispObject {
     private final double myRehashSize;
     private final float myRehashThreshold;
 
-    public LispHashTable (String equalityMethod, int initialCapacity, double loadFactor, LispSymbol weakness,
+    public LispHashTable (String equalityMethod, int initialCapacity, LispNumber loadFactor, LispSymbol weakness,
                              double rehashSize) {
         try {
             myEqualityMethod = EqualityMethod.valueOf(equalityMethod.toUpperCase());
@@ -46,13 +46,15 @@ public class LispHashTable implements LispObject {
         if (initialCapacity == 0)
             initialCapacity = 1;
 
-        if (loadFactor > 1 || loadFactor <= 0)
-            throw new InvalidHashTableParameterException("rehash threshold", (float)loadFactor);
+        double dblLoadFactor = loadFactor.getDoubleData();
+        if (dblLoadFactor <= 0 || (loadFactor instanceof LispFloat && dblLoadFactor > 1)
+                || (loadFactor instanceof LispInteger && dblLoadFactor >= 1))
+            throw new InvalidHashTableParameterException("rehash threshold", loadFactor);
 
         if (rehashSize <= 1)
             throw new InvalidHashTableParameterException("rehash size", (float)rehashSize);
 
-        myRehashThreshold = (float)loadFactor;
+        myRehashThreshold = (float)dblLoadFactor;
         myData = new HashMap<>(initialCapacity, myRehashThreshold);
         myCapacity = initialCapacity;
         myRehashSize = rehashSize;
@@ -74,6 +76,12 @@ public class LispHashTable implements LispObject {
     }
 
     public void put (LispObject key, LispObject value) {
+        while (myCapacity * myRehashThreshold < myData.size()) {
+            if (myRehashSize == (int) myRehashSize)
+                myCapacity += myRehashSize;
+            else myCapacity = (int)(myCapacity * myRehashSize) + 1;
+        }
+
         myData.put(key, value);
     }
 
@@ -120,11 +128,6 @@ public class LispHashTable implements LispObject {
     }
 
     public int getCapacity() {
-        while (myCapacity * myRehashThreshold < myData.size()) {
-            if (myRehashSize == (int) myRehashSize)
-                myCapacity += myRehashSize;
-            else myCapacity = (int)(myCapacity * myRehashSize);
-        }
         return myCapacity;
     }
 
