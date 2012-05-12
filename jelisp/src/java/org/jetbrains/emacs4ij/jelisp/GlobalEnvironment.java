@@ -125,7 +125,6 @@ public class GlobalEnvironment extends Environment {
         setSubroutines();
 
         //note: it's important to load backquote before defsubst
-//        DefinitionLoader.init();
         DefinitionLoader.loadFile(myFilesToLoad.get(0));
         defineDefForms();
         for (int i = 1; i < myFilesToLoad.size(); ++i)

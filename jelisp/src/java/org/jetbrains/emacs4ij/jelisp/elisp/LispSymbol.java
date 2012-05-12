@@ -203,6 +203,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         return myValue != null;
     }
 
+    public boolean isKeyword() {
+        return myName.startsWith(":");
+    }
+
     @Override
     /**
      * takes Environment
@@ -217,7 +221,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             return getValue();
         }
         LispSymbol symbol = environment.find(myName);
-        if (symbol == null && myName.startsWith(":"))
+        if (symbol == null && isKeyword())
             return this;
         if (symbol != null && symbol.isConstant)
             return symbol;

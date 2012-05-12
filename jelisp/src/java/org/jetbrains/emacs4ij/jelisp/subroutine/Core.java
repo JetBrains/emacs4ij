@@ -32,17 +32,25 @@ public abstract class Core {
         return object == null ? LispSymbol.ourNil : object;
     }
 
-    public static void error (String message) {
-        error(message, new LispObject[0]);
-    }
+//    public static void error (String message) {
+//        error(message, new LispObject[0]);
+//    }
+//
+//    public static void error (String message, LispObject... args) {
+//        ArrayList<LispObject> data = new ArrayList<>();
+//        data.add(new LispSymbol("error"));
+//        data.add(new LispString(message));
+//        if (args.length > 0) {
+//            data.addAll(Arrays.asList(args));
+//        }
+//        GlobalEnvironment.INSTANCE.setArgumentsEvaluated(true);
+//        LispList.list(data).evaluate(GlobalEnvironment.INSTANCE);
+//    }
 
-    public static void error (String message, LispObject... args) {
+    public static void error (String message) {
         ArrayList<LispObject> data = new ArrayList<>();
         data.add(new LispSymbol("error"));
         data.add(new LispString(message));
-        if (args.length > 0) {
-            data.addAll(Arrays.asList(args));
-        }
         LispList.list(data).evaluate(GlobalEnvironment.INSTANCE);
     }
 
@@ -369,8 +377,6 @@ public abstract class Core {
 
     @Subroutine("defalias")
     public static LispObject defineAlias (LispSymbol symbol, LispObject functionDefinition, @Optional LispObject docString) {
-        if (symbol.equals(new LispSymbol("advertised-undo")))
-            System.out.print(1);
         LispSymbol real = GlobalEnvironment.INSTANCE.find(symbol.getName());
         if (real == null)
             real = new LispSymbol(symbol.getName());

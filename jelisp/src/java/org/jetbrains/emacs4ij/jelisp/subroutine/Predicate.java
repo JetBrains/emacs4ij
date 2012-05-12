@@ -38,9 +38,13 @@ public abstract class Predicate {
         return LispSymbol.bool(arg instanceof LispSymbol);
     }
 
+    public static boolean isInteger (LispObject arg) {
+        return arg instanceof LispInteger;
+    }
+
     @Subroutine("integerp")
     public static LispSymbol integerp (LispObject arg) {
-        return LispSymbol.bool(arg instanceof LispInteger);
+        return LispSymbol.bool(isInteger(arg));
     }
 
     @Subroutine("subrp")
@@ -195,14 +199,28 @@ public abstract class Predicate {
     
     @Subroutine("numberp")
     public static LispSymbol numberP (LispObject object) {
-        return LispSymbol.bool(object instanceof LispNumber);
+        return LispSymbol.bool(isNumber(object));
     }
 
     public static boolean isNil (LispObject object) {
         return object == null || object.equals(LispSymbol.ourNil);
     }
+
     public static boolean isWholeNumber(LispObject object) {
-        return (object instanceof LispInteger) && (((LispInteger) object).getData() > -1);
+        return object instanceof LispInteger && ((LispInteger) object).getData() >= 0;
+    }
+
+    public static boolean isNumber(LispObject object) {
+        return object instanceof LispNumber;
+    }
+
+    public static boolean isNumberGreaterThanOne(LispObject object) {
+        return object instanceof LispNumber && ((LispNumber) object).getDoubleData() > 1;
+    }
+
+    public static boolean isNumberFromZeroToOne (LispObject object) {
+        return object instanceof LispNumber && ((LispNumber) object).getDoubleData() >= 0
+                && ((LispNumber) object).getDoubleData() <= 1;
     }
     
     @Subroutine("wholenump")
@@ -243,5 +261,10 @@ public abstract class Predicate {
     @Subroutine("user-variable-p")
     public static LispSymbol userOptionP (LispObject var) {
         return LispSymbol.bool(isUserOption(var));
+    }
+
+    @Subroutine("hash-table-p")
+    public static LispSymbol hashTableP (LispObject object) {
+        return LispSymbol.bool(object instanceof LispHashTable);
     }
 }
