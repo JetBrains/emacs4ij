@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -195,4 +196,14 @@ public class HashTableTest extends BaseSubroutineTest {
         Assert.assertEquals(expected, table);
     }
 
+    @Ignore
+    @Test
+    public void testReadFromPrintNotation() {
+        evaluateString("(setq table #s(hash-table test eql rehash-size 1.5 size 65 data (key1 1 2 \"two\") rehash-threshold 0.8))");
+        LispObject table = evaluateString("table");
+        LispHashTable expected = new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5);
+        expected.put(new LispSymbol("key1"), new LispInteger(1));
+        expected.put(new LispInteger(2), new LispString("two"));
+        Assert.assertEquals(expected, table);
+    }
 }
