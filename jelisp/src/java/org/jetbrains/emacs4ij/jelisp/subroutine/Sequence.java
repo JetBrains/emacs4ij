@@ -58,12 +58,8 @@ public abstract class Sequence {
         }
         return args[args.length-1];
     }
-    
-    @Subroutine("mapcar")
-    public static LispList mapCar (Environment environment, LispObject function, LispObject sequence) {
-        int length = length(sequence).getData();
-        if (length == 0)
-            return LispList.list();
+
+    private static LispObject verifyFunction(Environment environment, LispObject function) {
         if (function instanceof LispSymbol) {
             function = environment.find(((LispSymbol) function).getName());
             if (!((LispSymbol) function).isFunction())
@@ -73,7 +69,14 @@ public abstract class Sequence {
                 throw new VoidFunctionException(function.toString());
         } else
             throw new InvalidFunctionException(function.toString());
-        return LispList.list(((LispSequence)sequence).mapCar(environment, function));
+        return function;
+    }
+
+    @Subroutine("mapcar")
+    public static LispList mapCar (Environment environment, LispObject function, LispObject sequence) {
+        if (length(sequence).getData() == 0)
+            return LispList.list();
+        return LispList.list(((LispSequence)sequence).mapCar(environment, verifyFunction(environment, function)));
     }
 
     @Subroutine("copy-sequence")
@@ -142,4 +145,11 @@ public abstract class Sequence {
         return concat(toConcat.toArray(new LispObject[toConcat.size()]));
     }
 
+    @Subroutine("mapc")
+    public static LispObject mapc (Environment environment, LispObject function, LispObject sequence) {
+        if (length(sequence).getData() == 0)
+            return sequence;
+        ((LispSequence)sequence).mapCar(environment, verifyFunction(environment, function));
+        return sequence;
+    }
 }

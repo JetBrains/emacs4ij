@@ -193,5 +193,22 @@ public class SequenceTest extends BaseSubroutineTest{
         r = evaluateString("(mapconcat 'identity '(nil nil) \" \")");
         Assert.assertEquals(new LispString(" "), r);
     }
-    
+
+    @Test
+    public void testMapC() {
+        evaluateString("(defun f (n) (message \"%d\" n))");
+        LispObject sequence = evaluateString("(mapc 'f '(1 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), sequence);
+        sequence = evaluateString("(mapc 'f '())");
+        Assert.assertEquals(LispSymbol.ourNil, sequence);
+    }
+
+    @Test
+    public void testMapCar2() {
+        evaluateString("(defun f (n) (message \"%d\" n))");
+        LispObject sequence = evaluateString("(setq seq '(1 2))");
+        LispObject mapping = evaluateString("(mapcar 'f seq)");
+        Assert.assertEquals(LispList.list(new LispString("1"), new LispString("2")), mapping);
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), sequence);
+    }
 }
