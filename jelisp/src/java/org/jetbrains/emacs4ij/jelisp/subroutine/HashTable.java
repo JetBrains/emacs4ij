@@ -131,7 +131,8 @@ public abstract class HashTable {
 
     @Subroutine("sxhash")
     public static LispInteger hashCode (LispObject object) {
-        return new LispInteger(object.hashCode());
+        throw new UnsupportedOperationException("FUN sxhash");
+//        return new LispInteger(object.hashCode());
     }
 
     @Subroutine("copy-hash-table")

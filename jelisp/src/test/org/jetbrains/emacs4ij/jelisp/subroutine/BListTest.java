@@ -478,4 +478,20 @@ public class BListTest extends BaseSubroutineTest {
         }
         Assert.fail();
     }
+
+    @Test
+    public void testSortSimple() {
+        evaluateString("(setq a '(9 5 6 4 1))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(4), new LispInteger(5),
+                new LispInteger(6), new LispInteger(9)), evaluateString("(sort a '<)"));
+        Assert.assertEquals(LispList.list(new LispInteger(9)), evaluateString("a"));
+    }
+
+    @Test
+    public void testSortGenericPredicate() {
+        evaluateString("(setq a '(9 5 1 4 6))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(4), new LispInteger(5),
+                new LispInteger(6), new LispInteger(9)), evaluateString("(sort a '(lambda (v u) (< v u)))"));
+        Assert.assertEquals(LispList.list(new LispInteger(9)), evaluateString("a"));
+    }
 }

@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
@@ -429,5 +430,56 @@ public class LispList implements LispSequence {
             ((LispList)current).setCar(LispSymbol.ourNil);
             ((LispList)current).setCdr(LispSymbol.ourNil);
         }
+    }
+
+    public LispList sort (final LispObject predicate) {
+        LispList sorted = unchangingSort(predicate);
+        myCdr = null;
+        return sorted;
+    }
+
+    private LispList unchangingSort (final LispObject predicate) {
+        int size = size();
+        if (size < 2)
+            return this;
+        List<LispObject> left = new ArrayList<>();
+        int middle = size / 2;
+        LispList list = this;
+        for (int i = 0; i < middle; i++, list = list.getListCdr()) {
+            left.add(list.car());
+        }
+        List<LispObject> right = new ArrayList<>();
+        for (int i = middle; i < size; i++, list = list.getListCdr()) {
+            right.add(list.car());
+        }
+        return merge(LispList.list(left).unchangingSort(predicate), LispList.list(right).unchangingSort(predicate), predicate);
+    }
+
+    private static LispList merge (LispList left, LispList right, final LispObject predicate) {
+        List<LispObject> list = new ArrayList<>();
+        while (left != null && right != null) {
+            LispObject predicateValue = Core.functionCall(GlobalEnvironment.INSTANCE, predicate, left.car(), right.car());
+            if (predicateValue.equals(LispSymbol.ourNil)) {
+                list.add(right.car());
+                right = right.getListCdr();
+            } else {
+                list.add(left.car());
+                left = left.getListCdr();
+            }
+        }
+        LispList merged = LispList.list(list);
+        if (left != null) {
+            merged.append(left);
+        }
+        if (right != null) {
+            merged.append(right);
+        }
+        return merged;
+    }
+
+    private LispList getListCdr () {
+        if (myCdr == null || myCdr instanceof LispList)
+            return (LispList) myCdr;
+        throw new WrongTypeArgumentException("listp", myCdr);
     }
 }

@@ -223,11 +223,16 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
 
     @Override
     public int hashCode() {
+        try {
         int result = myName != null ? myName.hashCode() : 0;
-        result = 31 * result + (myValue != null ? myValue.hashCode() : 0);
-        result = 31 * result + (myFunction != null ? myFunction.hashCode() : 0);
-        result = 31 * result + (myProperties != null ? myProperties.hashCode() : 0);
+//        result = 31 * result + (myValue != null ? myValue.hashCode() : 0);
+//        result = 31 * result + (myFunction != null ? myFunction.hashCode() : 0);
+//        result = 31 * result + (myProperties != null ? myProperties.hashCode() : 0);
         return result;
+        } catch (StackOverflowError e) {
+            System.out.print(1);
+            return 0;
+        }
     }
 
     public boolean hasValue () {

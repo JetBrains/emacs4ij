@@ -59,7 +59,7 @@ public abstract class Sequence {
         return args[args.length-1];
     }
 
-    private static LispObject verifyFunction(Environment environment, LispObject function) {
+    public static LispObject verifyFunction(Environment environment, LispObject function) {
         if (function instanceof LispSymbol) {
             function = environment.find(((LispSymbol) function).getName());
             if (!((LispSymbol) function).isFunction())

@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -169,4 +170,8 @@ public abstract class BList {
         return ((LispList)list).assq(key);
     }
 
+    @Subroutine("sort")
+    public static LispList sort (Environment environment, LispList list, LispObject predicate) {
+        return list.sort(Sequence.verifyFunction(environment, predicate));
+    }
 }

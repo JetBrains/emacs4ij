@@ -736,7 +736,7 @@ public class CoreTest extends BaseSubroutineTest {
     @Ignore
     @Test
     public void testSimple() {
-        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
+//        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
         DefinitionLoader.loadFile("simple.el");
     }
 
@@ -951,5 +951,20 @@ public class CoreTest extends BaseSubroutineTest {
         Assert.assertEquals(new LispInteger(2), evaluateString("a"));
         Assert.assertEquals(new LispInteger(4), evaluateString("c"));
         Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+    }
+
+    @Test
+    public void testLoadLispMode() {
+        DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
+    }
+
+    @Test
+    public void testSetLispMode() {
+        evaluateString("(emacs-lisp-mode)");
+    }
+
+    @Test
+    public void testDefineDerivedMode() {
+        evaluateString("(define-derived-mode my-mode nil \"doc\" ())");
     }
 }

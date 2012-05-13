@@ -191,6 +191,7 @@ public class GlobalEnvironment extends Environment {
         findAndRegisterEmacsFunction("defsubst");
         findAndRegisterEmacsFunction("defgroup");
         findAndRegisterEmacsFunction("defface");
+        findAndRegisterEmacsFunction("define-derived-mode");
     }
 
     private void defineUserOptions() {
@@ -231,6 +232,8 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("completion-ignore-case");
         defineSymbol("completion-regexp-list", LispList.list());
         defineSymbol("minibuffer-history", LispList.list());
+        defineSymbol("read-expression-map");
+        defineSymbol("minibuffer-history-position");
     }
 
     public LispVector getObjectArray() {

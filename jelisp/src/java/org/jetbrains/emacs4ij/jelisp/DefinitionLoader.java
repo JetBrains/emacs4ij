@@ -20,8 +20,8 @@ import java.util.*;
 public abstract class DefinitionLoader {
     static enum DefType {VAR, FUN} //todo: not private for test only
     private static enum SymbolType {VAR, FUN, CMD}
-    protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface");
-    protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias");
+    protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
+    protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode");
     private static Map<String, File> myUploadHistory = new HashMap<>();
     private static Map<Identifier, List<String>> myIndex = new HashMap<>();
     //for test
