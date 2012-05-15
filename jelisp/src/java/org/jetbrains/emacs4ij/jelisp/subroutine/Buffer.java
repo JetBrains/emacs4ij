@@ -2,12 +2,18 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isCharOrString;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
@@ -297,6 +303,86 @@ public abstract class Buffer {
     @Subroutine("buffer-substring-no-properties")
     public static LispString bufferSubstringNoProperties (Environment environment, MarkerOrInteger start, MarkerOrInteger end) {
         return bufferSubstring(environment, start, end, false);
+    }
+
+    private static LispSymbol getExistingVar (Environment environment, LispSymbol variable) {
+        LispSymbol existing = environment.find(variable.getName());
+        return existing == null ? variable : existing;
+    }
+
+    @Subroutine(value = "make-variable-buffer-local", isCmd = true, interactive = "vMake Variable Buffer Local: ")
+    public static LispObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
+        LispSymbol existing = getExistingVar(environment, variable);
+        GlobalEnvironment.INSTANCE.setVariableBufferLocal(existing);
+        return existing.getSource();
+    }
+
+    @Subroutine(value = "make-local-variable", isCmd = true, interactive = "vMake Local Variable: ")
+    public static LispObject makeVariableLocal (Environment environment, LispSymbol variable) {
+        LispSymbol existing = getExistingVar(environment, variable);
+        environment.getBufferCurrentForEditing().defineVariable(existing);
+        return existing.getSource();
+    }
+
+    private static LispBuffer currentBufferOrGiven (Environment environment, @Nullable LispObject buffer) {
+        if (Predicate.isNil(buffer))
+            return environment.getBufferCurrentForEditing();
+        if (!(buffer instanceof LispBuffer))
+            throw new WrongTypeArgumentException("bufferp", buffer);
+        return (LispBuffer) buffer;
+    }
+
+    @Subroutine("local-variable-p")
+    public static LispSymbol isVariableLocal (Environment environment, LispSymbol variable, @Optional LispObject bufferObject) {
+        LispBuffer buffer = currentBufferOrGiven(environment, bufferObject);
+        return LispSymbol.bool(buffer.hasVariable(variable.getName()));
+    }
+
+    @Subroutine("local-variable-if-set-p")
+    public static LispSymbol isVariableLocalIfSet (Environment environment, LispSymbol variable, @Optional LispObject bufferObject) {
+        LispBuffer buffer = currentBufferOrGiven(environment, bufferObject);
+        LispSymbol symbol = environment.find(variable.getName());
+        return LispSymbol.bool(symbol != null && symbol.isBufferLocal() && !buffer.hasVariable(variable.getName()));
+    }
+
+    @Subroutine("buffer-local-value")
+    public static LispObject bufferLocalValue (Environment environment, LispSymbol variable, LispBuffer buffer) {
+        String name = variable.getName();
+        if (buffer.hasVariable(name)) {
+            return buffer.getVariableValue(name);
+        }
+        LispSymbol symbol = environment.find(name);
+        if (symbol == null)
+            throw new VoidVariableException(name);
+        return symbol.getValue();
+    }
+
+    @Subroutine("buffer-local-variables")
+    public static LispList bufferLocalVariables (Environment environment, @Optional LispObject bufferObject) {
+        LispBuffer buffer = currentBufferOrGiven(environment, bufferObject);
+        Map<LispSymbol, LispObject> map = buffer.getAllLocalVarValues();
+        List<LispObject> alist = new ArrayList<>();
+        for (Map.Entry<LispSymbol, LispObject> entry: map.entrySet()) {
+            if (entry.getValue() == null) {
+                alist.add(entry.getKey());
+                continue;
+            }
+            alist.add(LispList.cons(entry.getKey(), entry.getValue()));
+        }
+        return LispList.list(alist);
+    }
+
+    @Subroutine(value = "kill-local-variable", isCmd = true, interactive = "vKill Local Variable: ")
+    public static LispSymbol killLocalVariable (Environment environment, LispSymbol variable) {
+        environment.getBufferCurrentForEditing().killVariable(variable.getName());
+        return variable;
+    }
+
+    @Subroutine("kill-all-local-variables")
+    public static LispSymbol killAllLocalVars (Environment environment) {
+        Core.runHooks(environment, new LispSymbol("change-major-mode-hook"));
+        environment.getBufferCurrentForEditing().reset();
+        return LispSymbol.ourNil;
     }
 
 }

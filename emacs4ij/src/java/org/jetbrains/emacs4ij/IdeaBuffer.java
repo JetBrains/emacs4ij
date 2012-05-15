@@ -14,7 +14,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
@@ -22,7 +24,6 @@ import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,11 +36,10 @@ import java.util.Map;
  */
 public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     protected final String myName;
-    protected final Environment myEnvironment;
+    protected final BufferEnvironment myEnvironment;
     protected List<LispMarker> myMarkers = new ArrayList<>();
     protected static Project ourProject;
     protected LispMarker myMark = new LispMarker();
-    protected Map<String, LispSymbol> myLocalVariables = new HashMap<>();
     protected Document myDocument;
     private VirtualFile myVirtualFile = null;
 
@@ -66,7 +66,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     };
 
     protected IdeaBuffer (Environment environment, String name, @Nullable Editor editor) {
-        myEnvironment = environment;
+        myEnvironment = new BufferEnvironment(environment);
         myName = name;
         mySyntaxTable = SyntaxTable.getStandardSyntaxTable();
         //todo: set fundamental mode, it has StandardSyntaxTable set
@@ -117,6 +117,72 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         myEnvironment.onWindowOpened(this, editor);
     }
 
+    @Override
+    public LispObject getVariableValue(String name) {
+        LispSymbol var = myEnvironment.find(name);
+        if (var == null)
+            throw new VoidVariableException(name);
+        return var.getValue();
+    }
+
+    @Override
+    public LispSymbol getVariable(String name) {
+        return myEnvironment.find(name);
+    }
+
+    @Override
+    public void defineVariable(LispSymbol variable) {
+        for (LispSymbol symbol = variable, previous = variable; symbol != null; previous = symbol, symbol = symbol.next())  {
+            myEnvironment.defineSymbol(new LispSymbol(symbol));
+            List<LispSymbol> aliases = symbol.getAliases();
+            if (aliases == null)
+                continue;
+            for (LispSymbol alias: aliases) {
+                if (alias == previous)
+                    continue;
+                defineVariableAliases(alias);
+            }
+        }
+    }
+
+    public void defineVariableAliases(LispSymbol variable) {
+        myEnvironment.defineSymbol(new LispSymbol(variable));
+        List<LispSymbol> aliases = variable.getAliases();
+        if (aliases == null)
+            return;
+        for (LispSymbol alias: aliases)
+            defineVariableAliases(alias);
+    }
+
+    @Override
+    public boolean hasVariable(String variable) {
+        return myEnvironment.containsSymbol(variable);
+    }
+
+    @Override
+    public Map<LispSymbol, LispObject> getAllLocalVarValues() {
+        Map<LispSymbol, LispObject> bufferLocalVariables = GlobalEnvironment.INSTANCE.getBufferLocalVariables();
+        myEnvironment.getVariableEntries(bufferLocalVariables);
+        return bufferLocalVariables;
+    }
+
+    @Override
+    public void killVariable(String name) {
+        myEnvironment.remove(name);
+    }
+
+    @Override
+    public void reset() {
+        myEnvironment.clear();
+        //todo: set local keymap = nil; case table = standard-case-table; abbrev table = fundamental-mode-abbrev-table.value
+        mySyntaxTable = SyntaxTable.getStandardSyntaxTable();
+    }
+
+    @Override
+    public Environment getEnvironment() {
+        return myEnvironment;
+    }
+
     public static void setProject(Project project) {
         ourProject = project;
     }
@@ -126,29 +192,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     }
 
     private void setLocalVariable (String name, LispObject value) {
-        LispSymbol var = myLocalVariables.get(name);
-        if (var == null)
-            throw new VoidVariableException(name);
-        var.setValue(value);
-    }
-
-    @Override
-    public LispObject getLocalVariableValue (String name) {
-        LispSymbol localVar = getLocalVariable(name);
-        return localVar.getValue();
-    }
-
-    @Override
-    public LispSymbol getLocalVariable(String name) {
-        LispSymbol var = myLocalVariables.get(name);
-        if (var == null)
-            throw new VoidVariableException(name);
-        return var;
-    }
-
-    @Override
-    public void defineLocalVariable(LispSymbol variable, boolean noValue) {
-        myLocalVariables.put(variable.getName(), new LispSymbol(variable, null));
+        myEnvironment.setVariable(new LispSymbol(name, value));
     }
 
     @Override

@@ -34,19 +34,18 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        List<String> list = Arrays.asList((new File(myTestsPath)).list());
-        Collections.reverse(list);
-        myTestFiles = list.toArray(new String[list.size()]);
-
         GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                 new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        for (int i = myTestFiles.length - 1; i > -1; i--) {
-            String fileName = myTestFiles[i];
+        List<String> list = Arrays.asList((new File(myTestsPath)).list());
+        Collections.sort(list);
+        for (String fileName: list) {
             PsiFile psiFile = myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, psiFile.getVirtualFile(), getEditor());
             myTests.put(fileName, buffer);
         }
+        Collections.reverse(list);
+        myTestFiles = list.toArray(new String[list.size()]);
         evaluateString("(switch-to-buffer \"3.txt\")");
     }
 
@@ -62,6 +61,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testSetMarker() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         LispObject marker = evaluateString("(setq m (point-marker))");
         Assert.assertEquals("#<marker at 1 in 3.txt>", marker.toString());
         marker = evaluateString("(set-marker m 5)");
@@ -83,6 +83,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMarkerMoving() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         evaluateString("(setq m1 (make-marker))");
         LispObject m = evaluateString("(set-marker m1 5)");
         Assert.assertEquals("#<marker at 5 in 3.txt>", m.toString());
@@ -98,6 +99,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMarkerEquality() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         evaluateString("(setq m1 (make-marker))");
         evaluateString("(set-marker m1 6)");
         LispObject m2 = evaluateString("(setq m2 (copy-marker m1))");
@@ -159,6 +161,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testSetMark () throws Throwable {
         try {
+            evaluateString("(switch-to-buffer \"3.txt\")");
             LispObject mark = evaluateString("(set-mark 5)");
             Assert.assertEquals("#<marker at 5 in 3.txt>", mark.toString());
             mark = evaluateString("(set-mark 50)");
@@ -172,6 +175,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMarkMarker() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         LispObject m = evaluateString("(setq m (mark-marker))");
         Assert.assertEquals("#<marker in no buffer>", m.toString());
         m = evaluateString("(set-marker m 5)");
@@ -467,6 +471,7 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testMatchStringInBuffer() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         evaluateString("(set-match-data (list 1 2))");
         LispObject match = evaluateString("(match-string 0)");
         Assert.assertEquals(new LispString("l"), match);

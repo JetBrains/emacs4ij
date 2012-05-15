@@ -186,6 +186,15 @@ public class GlobalEnvironment extends Environment {
         putSymbol(symbol);
     }
 
+    public Map<LispSymbol, LispObject> getBufferLocalVariables() {
+        Map<LispSymbol, LispObject> map = new HashMap<>();
+        for (String key: myBufferLocals) {
+            LispSymbol symbol = mySymbols.get(key);
+            map.put(new LispSymbol(symbol.getName()), symbol.getValue());
+        }
+        return map;
+    }
+
     private void defineDefForms () {
         findAndRegisterEmacsFunction("defcustom");
         findAndRegisterEmacsFunction("defsubst");
@@ -204,6 +213,7 @@ public class GlobalEnvironment extends Environment {
         addBufferLocalVariable("default-directory");  //BUFFER.C
         addBufferLocalVariable("enable-multibyte-characters");
         addBufferLocalVariable("major-mode", new LispSymbol("fundamental-mode"));
+        addBufferLocalVariable("change-major-mode-hook");
     }
 
     private void defineGlobalVariables() {
@@ -333,25 +343,26 @@ public class GlobalEnvironment extends Environment {
     @Override
     public void defineBuffer (LispBuffer buffer) {
         for (String local: myBufferLocals) {
-            buffer.defineLocalVariable(mySymbols.get(local), true);
+            buffer.defineVariable(mySymbols.get(local));
         }
         ourBufferManager.define(buffer);
     }
 
-    public void defineBufferLocalVariable (LispSymbol symbol) {
-        if (myBufferLocals.contains(symbol.getName()))
+    public void setVariableBufferLocal(final LispSymbol var) {
+        if (myBufferLocals.contains(var.getName()))
             return;
-        symbol.setBufferLocal(true);
-        myBufferLocals.add(symbol.getName());
-        defineSymbol(symbol);
-        ourBufferManager.defineBufferLocalVariable(symbol);
+        LispSymbol symbol = var;
+        do {
+            myBufferLocals.add(symbol.getName());
+            LispSymbol existing = find(symbol.getName());
+            if (existing == null) {
+                symbol.setBufferLocal(true);
+                defineSymbol(symbol);
+            } else {
+                existing.setBufferLocal(true);
+            }
+        } while ((symbol = symbol.next()) != null);
     }
-
-//    // for test
-//    public void removeBuffer(String name) {
-//        LispBuffer buffer = findBufferSafe(name);
-//        getSelectedFrame().closeWindow(buffer);
-//    }
 
     public List<String> getCommandList (String begin) {
         //todo: add data retrieved after source index
@@ -408,5 +419,9 @@ public class GlobalEnvironment extends Environment {
         super.clearRecorded();
         Match.clearHistory();
         ourCallStack.clear();
+    }
+
+    public boolean isVariableBufferLocal (String name) {
+        return myBufferLocals.contains(name);
     }
 }

@@ -105,11 +105,6 @@ public abstract class DefinitionLoader {
                     parsed.evaluate(GlobalEnvironment.INSTANCE);
                 } catch (LispException e) {
                     System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
-    //                if (line.equals("(let ((m (make-sparse-keymap)))") || line.equals("(defvar universal-argument-map")
-    //                        || line.equals("(defvar minibuffer-local-shell-command-map")
-    //                        || line.equals("(defvar visual-line-mode-map"))
-    //                    continue;
-
     //                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
                 }
                 if (p.isFinished())
@@ -218,8 +213,10 @@ public abstract class DefinitionLoader {
     private static LispList getDefFromInvokersSrc(Identifier id) {
         HashMap<String, Integer> map = myIndex.get(id);
         for (String invoker: GlobalEnvironment.ourCallStack) {
+            if (!myUploadHistory.containsKey(invoker))
+                continue;
             String key = myUploadHistory.get(invoker).getAbsolutePath();
-            if (myUploadHistory.containsKey(invoker) && map.containsKey(key)) {
+            if (map.containsKey(key)) {
                 LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), map.get(key),  id);
                 if (def != null)
                     return def;

@@ -30,12 +30,14 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     public static final LispSymbol ourVoid = new LispSymbol("void");
 
     private String myName = null;
+    private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
     private LispObject myValue = null;
+    private boolean isAlias = false;
+
+    private List<LispSymbol> myAliases = null;
     private LispObject myFunction = null;
     private boolean isBufferLocal = false;
-    private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
     private boolean isConstant = false;
-    private boolean isAlias = false;
 
     public LispSymbol(String name) {
         myName = name;
@@ -53,6 +55,8 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
         isConstant = symbol.isConstant;
+        isAlias = symbol.isAlias;
+        myAliases = symbol.myAliases;
     }
 
     public LispSymbol (LispSymbol symbol, LispObject value) {
@@ -62,6 +66,8 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         isBufferLocal = symbol.isBufferLocal;
         myProperties = symbol.myProperties;
         isConstant = symbol.isConstant;
+        isAlias = symbol.isAlias;
+        myAliases = symbol.myAliases;
     }
 
     public static LispSymbol bool (boolean value) {
@@ -149,6 +155,21 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             throw new SetConstException(myName);
         isAlias = true;
         myValue = value;
+        isBufferLocal = value.isBufferLocal();
+        value.addAlias(this);
+    }
+
+    protected void addAlias(LispSymbol alias) {
+        if (myAliases == null)
+            myAliases = new ArrayList<>();
+        if (myAliases.contains(alias))
+            return;
+        myAliases.add(alias);
+    }
+
+    @Nullable
+    public List<LispSymbol> getAliases() {
+        return myAliases;
     }
 
     public void castToLambda () {
@@ -480,4 +501,17 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         }
         return null;
     }
+
+    //for variable alias -- get all variables in alias chain, step by step
+    public LispSymbol next() {
+        return isAlias ? (LispSymbol) myValue : null;
+    }
+
+    //returns this or root symbol for variable alias
+    public LispSymbol getSource() {
+        if (myValue == null || !(myValue instanceof LispSymbol) || !isAlias)
+            return this;
+        return ((LispSymbol)myValue).getSource();
+    }
+
 }

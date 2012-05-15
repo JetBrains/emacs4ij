@@ -123,7 +123,7 @@ public class SpecialFormInteractive extends InteractiveReader {
     }
 
     private String defaultDirectory()  {
-        return ((LispString) myEnvironment.getBufferCurrentForEditing().getLocalVariableValue("default-directory")).getData();
+        return ((LispString) myEnvironment.getBufferCurrentForEditing().getVariableValue("default-directory")).getData();
     }
 
     private void prepare () {

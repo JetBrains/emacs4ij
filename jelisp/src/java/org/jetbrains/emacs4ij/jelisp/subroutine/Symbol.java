@@ -150,30 +150,6 @@ public abstract class Symbol {
         return value;
     }
 
-    @Subroutine(value = "make-variable-buffer-local", isCmd = true, interactive = "vMake Variable Buffer Local: ")
-    public static LispObject makeVariableBufferLocal (Environment environment, LispSymbol variable) {
-        if (!(environment instanceof GlobalEnvironment)) {
-            LispObject var = environment.find(variable.getName());
-            if (var == null)
-                environment.defineSymbol(variable);
-        } else {
-            ((GlobalEnvironment) environment).defineBufferLocalVariable(variable);
-        }
-        return variable;
-    }
-
-    @Subroutine(value = "make-local-variable", isCmd = true, interactive = "vMake Local Variable: ")
-    public static LispObject makeVariableLocal (Environment environment, LispSymbol variable) {
-        if (!(environment instanceof GlobalEnvironment)) {
-            LispObject var = environment.find(variable.getName());
-            if (var == null)
-                environment.defineSymbol(variable);
-        } else {
-            ((GlobalEnvironment) environment).defineBufferLocalVariable(variable);
-        }
-        return variable;
-    }
-
     @Subroutine("make-symbol")
     public static LispObject makeSymbol (LispString name) {
         return new LispSymbol(name.getData());

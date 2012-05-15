@@ -4,6 +4,9 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.Environment;
+
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,9 +18,14 @@ import org.jetbrains.annotations.Nullable;
 public interface LispBuffer extends LispObject {
     void onOpen (Document document);
     void reopen (Editor editor, VirtualFile file);
-    LispObject getLocalVariableValue (String name);
-    LispSymbol getLocalVariable (String name);
-    void defineLocalVariable (LispSymbol variable, boolean noValue);
+    LispObject getVariableValue (String name);
+    LispSymbol getVariable (String name);
+    void defineVariable (LispSymbol variable);
+    boolean hasVariable (String variable);
+    Map<LispSymbol, LispObject> getAllLocalVarValues();
+    void killVariable (String name);
+    void reset();
+    Environment getEnvironment();
 
     String getName();
 

@@ -5,10 +5,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import java.util.*;
 
@@ -81,17 +78,17 @@ public abstract class Environment {
     public LispSymbol find(String name) {
         LispSymbol symbol = mySymbols.get(name);
         if (symbol != null) {
-            if (!symbol.isFunction() && symbol.isBufferLocal()) {
-                try {
-                    LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
-                    if (local.getValue() != null)
-                        symbol = local;
-                } catch (NoOpenedBufferException | InternalException e) {
-                    return symbol;
-                } catch (VoidVariableException e1) {
-                    return null;
-                }
-            }
+//            if (!symbol.isFunction() && symbol.isBufferLocal()) {
+//                try {
+//                    LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
+//                    if (local.getValue() != null)
+//                        symbol = local;
+//                } catch (NoOpenedBufferException | InternalException e) {
+//                    return symbol;
+//                } catch (VoidVariableException e1) {
+//                    return null;
+//                }
+//            }
             return symbol;
         }
         if (myOuterEnv != null) {
@@ -109,6 +106,17 @@ public abstract class Environment {
         for (String name: myRecordedSymbols) {
             mySymbols.remove(name);
         }
+        myRecordedSymbols.clear();
+    }
+
+    public void remove (String name) {
+        mySymbols.remove(name);
+        myRecordedSymbols.remove(name);
+    }
+
+    public void clear() {
+        //todo: don't erase "permanent" vars and hooks with permanent-local-hook property != nil
+        mySymbols.clear();
         myRecordedSymbols.clear();
     }
 
@@ -261,13 +269,15 @@ public abstract class Environment {
         return ourBufferManager.isAlive(buffer);
     }
 
-    protected boolean containsSymbol (String name) {
+    public boolean containsSymbol (String name) {
         return mySymbols.containsKey(name);
     }
 
     public void setVariable(LispSymbol symbol) {
-        if (myOuterEnv == null || containsSymbol(symbol.getName())) {
-            LispSymbol variable = mySymbols.get(symbol.getName());
+        String name = symbol.getName();
+        if (myOuterEnv == null || containsSymbol(name) ||
+                (this instanceof BufferEnvironment && GlobalEnvironment.INSTANCE.isVariableBufferLocal(name))) {
+            LispSymbol variable = mySymbols.get(name);
             if (variable == null) {
                 defineSymbol(symbol);
                 return;

@@ -34,14 +34,13 @@ public class ScanTest extends CodeInsightFixtureTestCase {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
         List<String> list = Arrays.asList((new File(myTestsPath)).list());
-        Collections.reverse(list);
+        Collections.sort(list);
         myTestFiles = list.toArray(new String[list.size()]);
 
         GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                 new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        for (int i = myTestFiles.length - 1; i > -1; i--) {
-            String fileName = myTestFiles[i];
+        for (String fileName: myTestFiles) {
             PsiFile psiFile = myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, psiFile.getVirtualFile(), getEditor());
             myTests.put(fileName, buffer);

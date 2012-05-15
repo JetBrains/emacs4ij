@@ -84,7 +84,7 @@ public abstract class SyntaxTable {
 
     @Subroutine("standard-syntax-table")
     public static LispSyntaxTable getStandardSyntaxTable () {
-        return myStandardSyntaxTable;
+        return myStandardSyntaxTable;//.copy();
     }
 
     private static LispSyntaxTable syntaxTable (LispObject table) {

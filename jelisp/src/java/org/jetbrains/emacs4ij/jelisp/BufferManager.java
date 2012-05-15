@@ -2,7 +2,10 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
@@ -27,7 +30,7 @@ public class BufferManager extends CyclicManager<LispBuffer> {
 
     public LispBuffer createBuffer (String bufferName) {
         String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing()
-                .getLocalVariableValue("default-directory")).getData();
+                .getVariableValue("default-directory")).getData();
 
         VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(baseDir + bufferName);
         if (file == null)
@@ -81,11 +84,11 @@ public class BufferManager extends CyclicManager<LispBuffer> {
         return bufferNamesList;
     }
 
-    public void defineBufferLocalVariable (LispSymbol symbol) {
-        for (LispBuffer buffer: myData) {
-            buffer.defineLocalVariable(symbol, true);
-        }
-    }
+//    public void setVariableBufferLocal(LispSymbol symbol) {
+//        for (LispBuffer buffer: myData) {
+//            buffer.defineVariable(symbol);
+//        }
+//    }
 
     public LispMinibuffer getMinibuffer() {
         for (LispBuffer buffer: myData) {

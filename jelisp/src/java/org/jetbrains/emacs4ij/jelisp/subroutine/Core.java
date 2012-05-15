@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
@@ -479,13 +480,15 @@ public abstract class Core {
         LispSymbol base = environment.find(baseVar.getName());
         if (base == null) {
             base = new LispSymbol(baseVar.getName());
-            environment.defineSymbol(base);
+            GlobalEnvironment.INSTANCE.defineSymbol(base);
         }
-        alias.setValue(base, true);
+        alias.setAsAlias(base);
         if (docString != null && !(docString instanceof LispNumber)) {
             alias.setVariableDocumentation(docString);
         }
-        environment.defineSymbol(alias);
+        GlobalEnvironment.INSTANCE.defineSymbol(alias);
+        if (environment instanceof BufferEnvironment && environment.containsSymbol(base.getName()))
+            environment.defineSymbol(alias);
         return base;
     }
 

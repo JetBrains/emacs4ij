@@ -4,6 +4,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
@@ -11,9 +12,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.SpecialForms;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.util.*;
@@ -37,19 +39,19 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        List<String> list = Arrays.asList((new File(myTestsPath)).list());
-        Collections.reverse(list);
-        myTestFiles = list.toArray(new String[list.size()]);
-
         GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                 new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        for (int i = myTestFiles.length - 1; i > -1; i--) {
-            String fileName = myTestFiles[i];
+
+        List<String> list = Arrays.asList((new File(myTestsPath)).list());
+        Collections.sort(list);
+        for (String fileName: list) {
             PsiFile psiFile = myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, psiFile.getVirtualFile(), getEditor());
             myTests.put(fileName, buffer);
         }
+        Collections.reverse(list);
+        myTestFiles = list.toArray(new String[list.size()]);
         myFileEditorManager = FileEditorManager.getInstance(getProject());
     }
 
@@ -57,7 +59,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         return myForwardParser.parseLine(lispCode).evaluate(myEnvironment);
     }
 
-    @Test
     public void testSetBufferNoBuffer() {
         try {
             Buffer.setBuffer(myEnvironment, new LispString("hello.lisp"));
@@ -68,19 +69,16 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
     public void testCurrentBuffer() {
         LispObject lispObject = evaluateString("(current-buffer)");
         Assert.assertEquals(myTests.get(myTestFiles[0]), lispObject);
     }
 
-    @Test
     public void testBufferp() {
         LispObject lispObject = evaluateString("(bufferp (current-buffer))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
-    @Test
     public void testBufferpWrongNargs() {
         try {
             evaluateString("(bufferp)");
@@ -91,25 +89,24 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
     public void testGetBufferByName() {
         LispObject lispObject = evaluateString("(get-buffer \"1.txt\")");
         Assert.assertEquals(myTests.get("1.txt"), lispObject);
     }
 
-    @Test
+
     public void testGetBufferByBuffer() {
         LispObject lispObject = evaluateString("(get-buffer (current-buffer))");
         Assert.assertEquals(myTests.get(myTestFiles[0]), lispObject);
     }
 
-    @Test
+
     public void testGetBuffer_NonExistent() {
         LispObject lispObject = evaluateString("(get-buffer \"test.txt\")");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
-    @Test
+
     public void testGetBuffer_Nil() {
         try {
             evaluateString("(get-buffer nil)");
@@ -121,7 +118,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
+
     public void testSetBufferWrongType() {
         try {
             evaluateString("(set-buffer 5)");
@@ -133,27 +130,27 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
+
     public void testBufferSize() {
         LispObject currentBufferSizeAnonymous = evaluateString("(buffer-size)");
         LispObject currentBufferSize = evaluateString("(buffer-size (current-buffer))");
         Assert.assertEquals(currentBufferSize, currentBufferSizeAnonymous);
     }
 
-    @Test
+
     public void testBufferSizeNil() {
         LispObject currentBufferSizeAnonymous = evaluateString("(buffer-size nil)");
         LispObject currentBufferSize = evaluateString("(buffer-size (current-buffer))");
         Assert.assertEquals(currentBufferSize, currentBufferSizeAnonymous);
     }
 
-    @Test
+
     public void testBufferName () {
         LispObject lispObject = evaluateString("(buffer-name (get-buffer \"1.txt\"))");
         Assert.assertEquals(new LispString("1.txt"), lispObject);
     }
 
-    @Test
+
     public void testBufferName_Nil () {
         LispObject currentBufferName = evaluateString("(buffer-name (current-buffer))");
         LispObject lispObject = evaluateString("(buffer-name)");
@@ -162,7 +159,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(currentBufferName, lispObject);
     }
 
-    @Test
+
     public void testOtherBuffer_SingleBuffer () {
         while (myEnvironment.getBuffersSize() != 1)
             myEnvironment.closeCurrentBuffer();
@@ -170,7 +167,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
     }
 
-    @Test
+
     public void testOtherBuffer_NoBuffers () {
         myEnvironment.closeAllBuffers();
         try {
@@ -182,32 +179,32 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(1, 0);
     }
 
-    @Test
+
     public void testOtherBuffer_NoParameters3buffers () {
         LispObject lispObject = evaluateString("(other-buffer)");
         Assert.assertEquals(myEnvironment.getBufferByIndex(1), lispObject);
     }
 
-    @Test
+
     public void testOtherBuffer_NotBufferParameter () {
         LispObject lispObject = evaluateString("(other-buffer 1)");
         Assert.assertEquals(myEnvironment.getBufferByIndex(1), lispObject);
     }
 
-    @Test
+
     public void testOtherBuffer_BufferParameter () {
         LispObject lispObject = evaluateString("(other-buffer (get-buffer \"" + myTestFiles[1] + "\" ))");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
     }
 
-    @Test
+
     public void testEnvironment_GetBuffersNames() {
         String[] buffersNames = myEnvironment.getBuffersNames();
 
         Assert.assertArrayEquals(myTestFiles, buffersNames);
     }
 
-    @Test
+
     public void testSwitchToBuffer_NoArgs() {
         try {
             evaluateString("(switch-to-buffer)");
@@ -218,54 +215,53 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(0, 1);
     }
 
-    @Test
+
     public void testSwitchToBuffer_Nil() {
         LispObject lispObject = evaluateString("(switch-to-buffer nil)");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
-    @Test
     public void testSwitchToBuffer_ExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\")");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
-    @Test
+
     public void testSwitchToBuffer_NonExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"test.txt\")");
         Assert.assertEquals(new LispString("It is not allowed to create files this way."), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
-    @Test
+
     public void testSwitchToBuffer_Buffer() {
         LispObject lispObject = evaluateString("(switch-to-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
-    @Test
+
     public void testSwitchToBuffer_ExistentString_NoRecord() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\" 5)");
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
         Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
-    @Test
+
     public void testSetBuffer_String () {
         LispObject lispObject = evaluateString("(set-buffer \"" + myTestFiles[0] + "\")");
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
     }
 
-    @Test
+
     public void testSetBuffer_Buffer () {
         LispObject lispObject = evaluateString("(set-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
     }
 
-    @Test
+
     public void testSetBuffer_InProgn () {
         LispObject buffer = evaluateString("(progn (set-buffer \"" + myTestFiles[1] + "\") (buffer-name))");
         Assert.assertEquals(new LispString(myTestFiles[1]), buffer);
@@ -274,48 +270,41 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispString(myTestFiles[0]), buffer);
     }
 
-    @Test
     public void testPoint() {
         LispObject lispObject = evaluateString("(point)");
         int point = myFileEditorManager.getSelectedTextEditor().logicalPositionToOffset(myFileEditorManager.getSelectedTextEditor().getCaretModel().getLogicalPosition()) + 1;
         Assert.assertEquals(new LispInteger(point), lispObject);
     }
 
-    @Test
     public void testPointMin() {
         LispObject lispObject = evaluateString("(point-min)");
         Assert.assertEquals(new LispInteger(1), lispObject);
     }
 
-    @Test
     public void testPointMax() {
         LispObject lispObject = evaluateString("(point-max)");
         int pointMax = myFileEditorManager.getSelectedTextEditor().getDocument().getTextLength()+1;
         Assert.assertEquals(new LispInteger(pointMax), lispObject);
     }
 
-    @Test
     public void testGoToChar () {
         LispObject lispObject = evaluateString("(goto-char 5)");
         Assert.assertEquals(new LispInteger(5), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().point(), 5);
     }
 
-    @Test
     public void testGoToChar_End () {
         LispObject lispObject = evaluateString("(goto-char 200)");
         Assert.assertEquals(new LispInteger(200), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testGoToChar_Begin () {
         LispObject lispObject = evaluateString("(goto-char -50)");
         Assert.assertEquals(new LispInteger(-50), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMin(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testForwardChar_NoParam () {
         int from = myEnvironment.getBufferCurrentForEditing().point();
         LispObject lispObject = evaluateString("(forward-char)");
@@ -323,7 +312,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(from+1, myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testForwardChar () {
         int from = myEnvironment.getBufferCurrentForEditing().point();
         LispObject lispObject = evaluateString("(forward-char 5)");
@@ -331,21 +319,18 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(from+5, myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testForwardChar_End () {
         LispObject lispObject = evaluateString("(forward-char 200)");
         Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testForwardChar_Begin () {
         LispObject lispObject = evaluateString("(forward-char -50)");
         Assert.assertEquals(new LispSymbol("Beginning of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMin(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testBackwardChar_NoParam () {
         myEnvironment.getBufferCurrentForEditing().forwardChar(2);
         int from = myEnvironment.getBufferCurrentForEditing().point();
@@ -354,7 +339,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(from-1, myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testBackwardChar () {
         myEnvironment.getBufferCurrentForEditing().forwardChar(3);
         int from = myEnvironment.getBufferCurrentForEditing().point();
@@ -363,25 +347,20 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(from-2, myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testBackwardChar_End () {
         LispObject lispObject = evaluateString("(backward-char 50)");
         Assert.assertEquals(new LispSymbol("Beginning of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMin(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    @Test
     public void testBackwardChar_Begin () {
         LispObject lispObject = evaluateString("(backward-char -500)");
         Assert.assertEquals(new LispSymbol("End of buffer"), lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().pointMax(), myEnvironment.getBufferCurrentForEditing().point());
     }
 
-    //todo:: test mySymbols.put("buffer-end", new LispSymbol("buffer-end", LispSymbol.FunctionType.BuiltIn)); //note: it is compiled lisp function in emacs
-
     //==== markers ====
 
-    @Test
     public void testPointMarkerOk() {
         LispObject lispObject = evaluateString("(point-marker)");
         LispBuffer currentBuffer = (LispBuffer) evaluateString("(current-buffer)");
@@ -389,7 +368,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(marker, lispObject);
     }
 
-    @Test
     public void testPointMarkerInvalid () {
         try {
             evaluateString("(point-marker)");
@@ -398,21 +376,18 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
     }
 
-    @Test
     public void testPointMinMarker () {
         LispObject lispObject = evaluateString("(point-min-marker)");
         LispBuffer currentBuffer = (LispBuffer) evaluateString("(current-buffer)");
         Assert.assertEquals(new LispMarker(currentBuffer.pointMin(), currentBuffer), lispObject);
     }
 
-    @Test
     public void testPointMaxMarker () {
         LispObject lispObject = evaluateString("(point-max-marker)");
         LispBuffer currentBuffer = (LispBuffer) evaluateString("(current-buffer)");
         Assert.assertEquals(new LispMarker(currentBuffer.pointMax(), currentBuffer), lispObject);
     }
 
-    @Test
     public void testCopyMarker_Marker () {
         evaluateString("(defvar m1 (make-marker))");
         LispObject lispObject = evaluateString("(copy-marker m1)");
@@ -433,7 +408,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(m1, lispObject);
     }
 
-    @Test
+
     public void testEq() {
         LispObject lispObject = evaluateString("(eq (point-marker) (point-marker))");
         junit.framework.Assert.assertEquals(LispSymbol.ourNil, lispObject);
@@ -441,27 +416,29 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         junit.framework.Assert.assertEquals(LispSymbol.ourT, lispObject);
     }
 
-    @Test
+
     public void testDefaultDirectory () {
-        LispString lispObject = (LispString) evaluateString("default-directory");
+        LispString lispObject = (LispString) new LispSymbol("default-directory")
+                .evaluate(myEnvironment.getBufferCurrentForEditing().getEnvironment());
+        //evaluateString("default-directory");
         Assert.assertTrue(lispObject.getData().endsWith(myTestsPath));
     }
 
-    @Test
+
     public void testBufferList () {
         LispObject lispObject = evaluateString("(buffer-list)");
         Assert.assertEquals(myEnvironment.getBufferList(), lispObject);
         Assert.assertEquals(myTests.get(myTestFiles[0]), ((LispList)lispObject).car());
     }
 
-    @Test
+
     public void testBufferListFrame () {
         LispObject lispObject = evaluateString("(buffer-list (selected-frame))");
         Assert.assertEquals(myEnvironment.getBufferList(), lispObject);
         Assert.assertEquals(myTests.get(myTestFiles[0]), ((LispList) lispObject).car());
     }
 
-    @Test
+
     public void testBuryBuffer_Current () {
         LispBuffer current = myEnvironment.getBufferCurrentForEditing();
         List<LispBuffer> buffers = myEnvironment.getBuffers();
@@ -471,7 +448,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(buffers, myEnvironment.getBuffers());
     }
 
-    @Test
+
     public void testBuryBuffer_String () {
         LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
         List<LispBuffer> buffers = myEnvironment.getBuffers();
@@ -481,7 +458,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(buffers, myEnvironment.getBuffers());
     }
 
-    @Test
+
     public void testBuryBuffer_Buffer () {
         LispBuffer current = myEnvironment.findBufferSafe(myTestFiles[1]);
         List<LispBuffer> buffers = myEnvironment.getBuffers();
@@ -491,7 +468,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(buffers, myEnvironment.getBuffers());
     }
 
-    @Test
+
     public void testGetNextValidBuffer() {
         myEnvironment.hideBuffer(myTests.get(myTestFiles[1]));
 
@@ -503,21 +480,21 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myTests.get(myTestFiles[1]), buffer);
     }
 
-    @Test
+
     public void testGetNextValidBufferNil() {
         LispObject buffer = evaluateString("(get-next-valid-buffer (buffer-list))");
         Assert.assertEquals(LispSymbol.ourNil, buffer);
     }
 
-    @Test
+
     public void testGetNextValidBufferVisibleOk() {
         LispObject buffer = evaluateString("(get-next-valid-buffer (buffer-list) 1 t)");
         Assert.assertEquals(myTests.get(myTestFiles[0]), buffer);
         buffer = evaluateString("(get-next-valid-buffer (nreverse (buffer-list)) 1 t)");
         Assert.assertEquals(myTests.get(myTestFiles[myTestFiles.length - 1]), buffer);
     }
-    
-    @Test
+
+
     public void testLastBuffer () {
         myEnvironment.hideBuffer(myTests.get(myTestFiles[1]));
         LispObject lastBuffer = evaluateString("(last-buffer)");
@@ -525,14 +502,14 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myTests.get(myTestFiles[1]), lastBuffer);
     }
 
-    @Test
+
     public void testLastBuffer_Integer () {
         LispObject lastBuffer = evaluateString("(last-buffer 1 t)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
         Assert.assertEquals(myTestFiles[myTestFiles.length - 1], ((LispBuffer) lastBuffer).getName());
     }
 
-    @Test
+
     public void testLastBuffer_Other () {
         LispObject lastBuffer = evaluateString("(last-buffer (get-buffer \"" + myTestFiles[myTestFiles.length - 1] + "\") t)");
         Assert.assertTrue(lastBuffer instanceof LispBuffer);
@@ -541,7 +518,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(myTestFiles[myTestFiles.length-1], ((LispBuffer) lastBuffer).getName());
     }
 
-    @Test
+
     public void testUnburyBuffer () {
         myEnvironment.hideBuffer(myTests.get(myTestFiles[1]));
         LispObject lastBuffer = evaluateString("(last-buffer)");
@@ -549,26 +526,25 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(lastBuffer, unburiedBuffer);
     }
 
-    @Test
+
     public void testGetBufferCreateByName() {
         LispObject lispObject = evaluateString("(get-buffer-create \"1.txt\")");
         Assert.assertEquals(myTests.get("1.txt"), lispObject);
     }
 
-    @Test
+
     public void testGetBufferCreateByBuffer() {
         LispObject lispObject = evaluateString("(get-buffer-create (current-buffer))");
         Assert.assertEquals(myTests.get(myTestFiles[0]), lispObject);
     }
 
-//    @Test
+//    
 //    public void testGetBufferCreate_NonExistent() {
 //        LispObject lispObject = evaluateString("(get-buffer-create \"test.txt\")");
 //        myEnvironment.createBuffer("test.txt");
 //        Assert.assertEquals(myEnvironment.createBuffer("test.txt"), lispObject);
 //    }
 
-    @Test
     public void testGenerateNewBufferName () {
         LispObject name = evaluateString("(generate-new-buffer-name \"1.txt\")");
         Assert.assertEquals(new LispString("1.txt<2>"), name);
@@ -578,7 +554,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(new LispString("1.txt"), name);
     }
 
-    @Test
     public void testGenerateNewBuffer () {
         int n = myEnvironment.getFrameBuffers(myEnvironment.getSelectedFrame()).length;
         LispObject buffer = evaluateString("(generate-new-buffer \"1.txt\")");
@@ -587,7 +562,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(n + 1, myEnvironment.getFrameBuffers(myEnvironment.getSelectedFrame()).length);
     }
 
-    @Test
     public void testGenerateNewBufferDouble () {
         try {
             evaluateString("(generate-new-buffer \"1.txt\")");
@@ -597,7 +571,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
     }
 
-    @Test
     public void testAlivePredicate () {
         LispObject lispObject = evaluateString("(buffer-live-p (get-buffer \"1.txt\"))");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
@@ -609,25 +582,21 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
     }
 
-    @Test
     public void testReplaceBufferInWindows () {
         LispObject lispObject = evaluateString("(replace-buffer-in-windows)");
         Assert.assertEquals(LispSymbol.ourNil, lispObject);
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), myTests.get(myTestFiles[1]));
     }
 
-    @Test
     public void testKillBuffer () {
-        LispObject lispObject = evaluateString("(kill-buffer \"3.txt\")");
+        LispObject lispObject = evaluateString("(kill-buffer \"4.txt\")");
         Assert.assertEquals(LispSymbol.ourT, lispObject);
         lispObject = myEnvironment.getBufferCurrentForEditing();
         Assert.assertEquals(myEnvironment.findBufferSafe(myTestFiles[1]), lispObject);
-        Assert.assertEquals(myEnvironment.getBuffersSize(), 2);
-
-        Assert.assertNull(myEnvironment.findBuffer("3.txt"));
+        Assert.assertEquals(myEnvironment.getBuffersSize(), 3);
+        Assert.assertNull(myEnvironment.findBuffer("4.txt"));
     }
 
-    @Test
     public void testBufferEnd () {
         LispObject bufferEnd = evaluateString("(buffer-end 1)");
         LispObject pos = evaluateString("(point-max)");
@@ -639,7 +608,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(pos, bufferEnd);
     }
 
-    @Test
     public void testBufferEndWrongArg () {
         try {
             evaluateString("(buffer-end 'a)");
@@ -650,7 +618,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
     public void testDefaultValueGlobals() {
         LispObject r = evaluateString("(default-value 'default-directory)");
         Assert.assertEquals(LispSymbol.ourNil, r);
@@ -658,14 +625,12 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
-    //todo:simple.el required
-//    @Test
+    //simple.el required
 //    public void testDefaultValueExtern() {
 //        LispObject r = evaluateString("(default-value 'mark-ring)");
 //        Assert.assertEquals(LispSymbol.ourNil, r);
 //    }
 
-    @Test
     public void testDefaultValueBufferLocals() {
         try {
             evaluateString("(default-value 'is-alive)");
@@ -675,8 +640,8 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         }
         Assert.fail();
     }
-    
-    @Test
+
+
     public void testInsertWrongType() {
         try {
             evaluateString("(insert 1 2 1.2)");
@@ -687,7 +652,6 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.fail();
     }
 
-    @Test
     public void testInsertInts() {
         evaluateString("(push-mark 3 t t)");
         LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
@@ -706,13 +670,11 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(3 + insertion.length(), (int)buffer.getMark().getPosition());
     }
 
-    @Test
     public void testGetBufferWindows() {
         LispObject windows = evaluateString("(get-buffer-window-list)");
         System.out.println(windows.toString());
     }
 
-    @Test
     public void testInternalCompleteBuffer () {
         LispObject completion = evaluateString("(internal-complete-buffer \"1\" nil t)");
         Assert.assertEquals(LispList.list(new LispString("1.txt")), completion);
@@ -722,13 +684,101 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourT, completion); //todo: emacs shows nil
     }
 
-    @Test
     public void testSubstring () {
+        evaluateString("(switch-to-buffer \"3.txt\")");
         LispObject substring = evaluateString("(buffer-substring 1 2)");
         Assert.assertEquals(new LispString("l"), substring);
         //todo: buffer text properties
         substring = evaluateString("(buffer-substring-no-properties 1 2)");
         Assert.assertEquals(new LispString("l"), substring);
+    }
+
+    public void testMakeVarBufferLocal() {
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(make-variable-buffer-local 'a)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-p 'a)"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-if-set-p 'a)"));
+
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        SpecialForms.setq(current.getEnvironment(), new LispSymbol("a"), new LispInteger(5));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'a)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-if-set-p 'a)"));
+
+        Assert.assertEquals(new LispInteger(5), evaluateString("(buffer-local-value 'a (current-buffer))"));
+    }
+
+    public void testBufferLocalityVoid() {
+        try {
+            evaluateString("(buffer-local-value 'b (current-buffer))");
+        } catch (Exception e) {
+            Assert.assertEquals("'(void-variable b)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    public void testBufferLocalityNotLocal() {
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        SpecialForms.setq(current.getEnvironment(), new LispSymbol("a"), new LispInteger(1));
+        Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'a (current-buffer))"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-p 'a)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-if-set-p 'a)"));
+    }
+
+    public void testBufferLocalityLocal() {
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        Environment e = current.getEnvironment();
+        SpecialForms.setq(e, new LispSymbol("a"), new LispInteger(1));
+        LispSymbol var = (LispSymbol) evaluateString("(make-local-variable 'a)");
+        Core.set(e, var, new LispInteger(5));
+        LispBuffer other = (LispBuffer) evaluateString("(other-buffer)");
+        Assert.assertNotSame(current, other);
+        String otherName = other.getName();
+        Assert.assertEquals(new LispInteger(5), evaluateString("(buffer-local-value 'a (current-buffer))"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'a (get-buffer \"" + otherName + "\"))"));
+    }
+
+    public void testBufferLocalityAlias() {
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        SpecialForms.setq(current.getEnvironment(), new LispSymbol("q"), new LispInteger(1));
+        Core.defineVariableAlias(current.getEnvironment(), new LispSymbol("w"), new LispSymbol("q"), null);
+        Assert.assertEquals(new LispSymbol("q"), evaluateString("(make-local-variable 'w)"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'w (current-buffer))"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'w)"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'q)"));
+
+        LispBuffer other = (LispBuffer) evaluateString("(other-buffer)");
+        Assert.assertNotSame(current, other);
+        String otherName = other.getName();
+        Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'w (get-buffer \"" + otherName + "\"))"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'q (get-buffer \"" + otherName + "\"))"));
+    }
+
+    public void testLocalityAlias2() {
+        evaluateString("(setq q 1)");
+        evaluateString("(defvaralias 'w 'q)");
+        evaluateString("(make-local-variable 'q)");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'q)"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'w)"));
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        Core.defineVariableAlias(current.getEnvironment(), new LispSymbol("a"), new LispSymbol("w"), null);
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'a)"));
+    }
+
+    public void testKillVar() {
+        LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
+        Environment e = current.getEnvironment();
+        Core.set(e, new LispSymbol("a"), new LispInteger(1));
+        LispSymbol var = (LispSymbol) evaluateString("(make-local-variable 'a)");
+        Core.set(e, var, new LispInteger(5));
+
+//        evaluateString("(set (make-local-variable 'a) 5)");
+        Map<LispSymbol, LispObject> varMap = current.getAllLocalVarValues();
+        Assert.assertTrue(varMap.containsKey(new LispSymbol("a")));
+        Assert.assertEquals(new LispInteger(5), varMap.get(new LispSymbol("a")));
+
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(kill-local-variable 'a)"));
+        varMap = current.getAllLocalVarValues();
+        Assert.assertFalse(varMap.containsKey(new LispSymbol("a")));
     }
 }
 

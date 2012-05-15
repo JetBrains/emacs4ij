@@ -30,19 +30,19 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
     public void setUp() throws Exception {
         myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        List<String> list = Arrays.asList((new File(myTestsPath)).list());
-        Collections.reverse(list);
-        myTestFiles = list.toArray(new String[list.size()]);
-
         GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                 new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-        for (int i = myTestFiles.length - 1; i > -1; i--) {
-            String fileName = myTestFiles[i];
+        List<String> list = Arrays.asList((new File(myTestsPath)).list());
+        Collections.sort(list);
+        for (String fileName: list) {
             PsiFile psiFile = myFixture.configureByFile(myTestsPath + fileName);
             IdeaBuffer buffer = new IdeaBuffer(myEnvironment, psiFile.getVirtualFile(), getEditor());
             myTests.put(fileName, buffer);
         }
+        Collections.reverse(list);
+        myTestFiles = list.toArray(new String[list.size()]);
+
     }
 
     @Test
