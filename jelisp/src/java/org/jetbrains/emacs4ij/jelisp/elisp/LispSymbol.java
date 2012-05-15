@@ -144,7 +144,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         symbol.setValue(value);
     }
 
-    public void setValue(LispSymbol value, boolean alias) {
+    public void setAsAlias(LispSymbol value) {
         if (isConstant)
             throw new SetConstException(myName);
         isAlias = true;

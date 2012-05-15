@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.parser;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.ReadException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.InvalidReadSyntax;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
 import java.io.BufferedReader;
@@ -23,19 +24,43 @@ public class ForwardMultilineParser implements Observer {
     private final String myFilename;
     private int myLine = 0;
 
+    public boolean isFinished() {
+        return myForwardParser.isFinished();
+    }
+
     public ForwardMultilineParser(BufferedReader reader, String filename) {
         myReader = reader;
         myFilename = filename;
         myForwardParser.addObserver(this);
     }
 
-    public LispObject parse (String firstLine, int index) throws ParserException {
+    public LispObject parse (String firstLine, int line, int index) throws ParserException {
         try {
-            myLine = index;
-            return myForwardParser.parseLine(firstLine);
+            myLine = line;
+            return myForwardParser.parseLine(firstLine, index);
         } catch (ParserException e) {
-            throw new ParserException(myFilename, myLine, e.getMessage(), myForwardParser.getCode());
+            return processException(e);
         }
+    }
+
+    public LispObject parseNext () throws ParserException {
+        try {
+            return myForwardParser.parseNext();
+        } catch (ParserException e) {
+            return processException(e);
+        }
+    }
+
+    private LispObject processException (Throwable e) {
+        if (e instanceof InvalidReadSyntax) {
+            System.err.println(myFilename + ", ln " + myLine + ": " + e.getMessage() + "\n   " + myForwardParser.getCode());
+            return null;
+        }
+        throw new ParserException(myFilename, myLine, e.getMessage(), myForwardParser.getCode());
+    }
+
+    public LispObject parse (String firstLine, int line) throws ParserException {
+        return parse(firstLine, line, 0);
     }
 
     public void update(Observable o, Object arg) {

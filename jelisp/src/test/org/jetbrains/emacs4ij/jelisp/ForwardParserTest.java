@@ -928,6 +928,18 @@ public class ForwardParserTest {
         LispString s = (LispString) p.parseLine("\"\\\\b\"");
         Assert.assertEquals(3, s.size());
     }
+
+    @Test
+    public void testParseLineWithManyDefs() {
+        LispObject o = p.parseLine("(defvar problems)       (defvar qlist)        (defvar random-adjective)");
+        Assert.assertEquals(LispList.list(new LispSymbol("defvar"), new LispSymbol("problems")), o);
+        o = p.parseNext();
+        Assert.assertEquals(LispList.list(new LispSymbol("defvar"), new LispSymbol("qlist")), o);
+        o = p.parseNext();
+        Assert.assertEquals(LispList.list(new LispSymbol("defvar"), new LispSymbol("random-adjective")), o);
+        Assert.assertTrue(p.isFinished());
+    }
+
 }
 
 

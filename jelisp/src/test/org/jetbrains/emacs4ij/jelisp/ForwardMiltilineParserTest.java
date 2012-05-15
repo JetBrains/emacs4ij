@@ -79,6 +79,19 @@ public class ForwardMiltilineParserTest {
         Assert.assertTrue(lispObject instanceof LispList);
     }
 
-
-
+    @Test
+    public void testParseStringWithManyDefs() throws IOException {
+        StringReader r = new StringReader("(defvar problems)       (defvar \nqlist) a");
+        BufferedReader br = new BufferedReader(r);
+        ForwardMultilineParser p = new ForwardMultilineParser(br, "test");
+        String s;
+        s = br.readLine();
+        LispObject lispObject = p.parse(s, 0);
+        Assert.assertEquals(LispList.list(new LispSymbol("defvar"), new LispSymbol("problems")), lispObject);
+        lispObject = p.parseNext();
+        Assert.assertEquals(LispList.list(new LispSymbol("defvar"), new LispSymbol("qlist")), lispObject);
+        lispObject = p.parseNext();
+        Assert.assertEquals(new LispSymbol("a"), lispObject);
+        Assert.assertTrue(p.isFinished());
+    }
 }

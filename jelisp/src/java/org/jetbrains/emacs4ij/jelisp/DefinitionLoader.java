@@ -8,7 +8,10 @@ import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -23,7 +26,7 @@ public abstract class DefinitionLoader {
     protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
     protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode");
     private static Map<String, File> myUploadHistory = new HashMap<>();
-    private static Map<Identifier, List<String>> myIndex = new HashMap<>();
+    protected static Map<Identifier, HashMap<String, Integer>> myIndex = new HashMap<>();
     //for test
     private static String[] mySkipForms = null;
 
@@ -55,7 +58,7 @@ public abstract class DefinitionLoader {
     public static void test () {}
 
     //for test
-    public static List<String> getFileName(String name, DefType type) {
+    public static Map<String, Integer> getFileName(String name, DefType type) {
         return myIndex.get(new Identifier(name, type));
     }
 
@@ -96,35 +99,54 @@ public abstract class DefinitionLoader {
             index = p.getLine();
             if (Predicate.isNil(parsed) || skip)
                 continue;
-            try {
-                parsed.evaluate(GlobalEnvironment.INSTANCE);
-            } catch (LispException e) {
-                System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
-//                if (line.equals("(let ((m (make-sparse-keymap)))") || line.equals("(defvar universal-argument-map")
-//                        || line.equals("(defvar minibuffer-local-shell-command-map")
-//                        || line.equals("(defvar visual-line-mode-map"))
-//                    continue;
 
-//                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
+            while (true) {
+                try {
+                    parsed.evaluate(GlobalEnvironment.INSTANCE);
+                } catch (LispException e) {
+                    System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
+    //                if (line.equals("(let ((m (make-sparse-keymap)))") || line.equals("(defvar universal-argument-map")
+    //                        || line.equals("(defvar minibuffer-local-shell-command-map")
+    //                        || line.equals("(defvar visual-line-mode-map"))
+    //                    continue;
+
+    //                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
+                }
+                if (p.isFinished())
+                    break;
+                parsed = p.parseNext();
+                index = p.getLine();
             }
         }
     }
 
     //TODO: its only for test
     public static LispList getDefFromFile(String fileName, String functionName, DefType type) {
-        return FileScanner.getDefFromFile(new File(fileName), new Identifier(functionName, type));
+        return FileScanner.getDefFromFile(new File(fileName), -1, new Identifier(functionName, type));
     }
 
-    protected static boolean containsDef (String line, String name, List<String> defForms) {
+    protected static int defStartIndex(String line, String name, List<String> defForms) {
         for (String defForm: defForms) {
-            if (line.endsWith('(' + defForm + ' ' + name)
-                    || line.endsWith('(' + defForm + " '" + name)
-                    || line.contains('(' + defForm + ' ' + name + ' ')
-                    || line.contains('(' + defForm + " '" + name + ' ')) {
-                return true;
+            List<String> middleDef = Arrays.asList('(' + defForm + ' ' + name + ' ', '(' + defForm + " '" + name + ' ',
+                    '(' + defForm + ' ' + name + ')');
+            List<String> endDef = Arrays.asList('(' + defForm + ' ' + name, '(' + defForm + " '" + name);
+            for (String def: endDef) {
+                if (line.endsWith(def))
+                    return line.lastIndexOf(def);
             }
+            for (String def: middleDef) {
+                if (line.contains(def))
+                    return line.indexOf(def);
+            }
+//            if (line.endsWith('(' + defForm + ' ' + name)
+//                    || line.endsWith('(' + defForm + " '" + name)
+//                    || line.contains('(' + defForm + ' ' + name + ' ')
+//                    || line.contains('(' + defForm + " '" + name + ' ')
+//                    || line.contains('(' + defForm + ' ' + name + ')')) {
+//                return true;
+//            }
         }
-        return false;
+        return -1;
     }
 
     private static LispSymbol processDef (LispList definition, String name, DefType type) {
@@ -141,20 +163,20 @@ public abstract class DefinitionLoader {
     }
 
     private static LispList lookInSubrFirst (Identifier id) {
-        for (String filename: myIndex.get(id)) {
+        for (String filename: myIndex.get(id).keySet()) {
             if (filename.endsWith("/lisp/subr.el")) {
-                return FileScanner.getDefFromFile(new File(filename), id);
+                return FileScanner.getDefFromFile(new File(filename), myIndex.get(id).get(filename), id);
             }
         }
         return null;
     }
 
     private static LispList lookExceptSubr (Identifier id) {
-        for (String filename: myIndex.get(id)) {
+        for (String filename: myIndex.get(id).keySet()) {
             if (filename.endsWith("/lisp/subr.el")) {
                 continue;
             }
-            LispList def = FileScanner.getDefFromFile(new File(filename), id);
+            LispList def = FileScanner.getDefFromFile(new File(filename), myIndex.get(id).get(filename), id);
             if (def != null)
                 return def;
         }
@@ -170,9 +192,10 @@ public abstract class DefinitionLoader {
             throw new VoidVariableException(name);
         }
         LispList definition;
-        List<String> files = myIndex.get(id);
-        if (files.size() == 1) {
-            definition = FileScanner.getDefFromFile(new File(files.get(0)), id);
+        HashMap<String, Integer> map = myIndex.get(id);
+        if (map.size() == 1) {
+            Map.Entry<String, Integer> entry = map.entrySet().iterator().next();
+            definition = FileScanner.getDefFromFile(new File(entry.getKey()), entry.getValue(), id);
         } else {
             definition = getDefFromInvokersSrc(id);
             if (definition == null) {
@@ -193,10 +216,11 @@ public abstract class DefinitionLoader {
     }
 
     private static LispList getDefFromInvokersSrc(Identifier id) {
-        List<String> files = myIndex.get(id);
+        HashMap<String, Integer> map = myIndex.get(id);
         for (String invoker: GlobalEnvironment.ourCallStack) {
-            if (myUploadHistory.containsKey(invoker) && files.contains(myUploadHistory.get(invoker).getAbsolutePath())) {
-                LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), id);
+            String key = myUploadHistory.get(invoker).getAbsolutePath();
+            if (myUploadHistory.containsKey(invoker) && map.containsKey(key)) {
+                LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), map.get(key),  id);
                 if (def != null)
                     return def;
             }
@@ -255,8 +279,8 @@ public abstract class DefinitionLoader {
         }
     }
 
-    private static class FileScanner {
-        private static int myFileIndex;
+    protected static class FileScanner {
+        private static int myFileIndex = -1;
         private static File myFile;
 
         static void scan (File file) {
@@ -267,7 +291,7 @@ public abstract class DefinitionLoader {
             } catch (FileNotFoundException e) { //don't scan =)
                 return;
             }
-            String line = "";
+            String line;
             myFileIndex = 0;
             while (true) {
                 try {
@@ -278,12 +302,11 @@ public abstract class DefinitionLoader {
                 }
                 if (line == null)
                     break;
-
                 scanLine(reader, line);
             }
         }
 
-        static LispList getDefFromFile (File file, Identifier id) {
+        static LispList getDefFromFile (File file, int lineOffset, Identifier id) {
             myFile = file;
             BufferedReader reader;
             try {
@@ -300,16 +323,28 @@ public abstract class DefinitionLoader {
                 } catch (IOException e) {
                     throw new ReadException(myFile.getName());
                 }
+
+                if (lineOffset < myFileIndex && lineOffset != -1)
+                    throw new InternalException("Didn't reach definition start!");
+
+                if (lineOffset != myFileIndex && lineOffset != -1)
+                    continue;
+
                 if (line == null)
                     return null;
-                if (containsDef(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars)))
-                    return getDef(reader, line, id.getName());
+
+                int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
+                if (defStart != -1)
+                    return getDef(reader, line, defStart, id.getName());
+                else {
+                    System.out.print(2);
+                }
             }
         }
 
-        private static LispList getDef(BufferedReader reader, String line, String name) {
+        private static LispList getDef(BufferedReader reader, String line, int index, String name) {
             ForwardMultilineParser p = new ForwardMultilineParser(reader, myFile.getAbsolutePath());
-            LispObject parsed = p.parse(line, myFileIndex);
+            LispObject parsed = p.parse(line, myFileIndex, index);
             if (parsed instanceof LispList) {
                 myUploadHistory.put(name, myFile);
                 myFileIndex = p.getLine();
@@ -319,11 +354,11 @@ public abstract class DefinitionLoader {
         }
 
         private static void scanLine(BufferedReader reader, String line) {
-            if (!scanLine(DefType.FUN, reader, line))
-                scanLine(DefType.VAR, reader, line);
+            if (!scanLine(DefType.FUN, reader, line, myFileIndex))
+                scanLine(DefType.VAR, reader, line, myFileIndex);
         }
 
-        private static boolean scanLine (DefType type, BufferedReader reader, String line) {
+        private static boolean scanLine (DefType type, BufferedReader reader, String line, int index) {
             List<String> defs = type == DefType.FUN ? myDefFuns : myDefVars;
             for (String def: defs) {
                 if (line.startsWith("(" + def + " ")) {
@@ -356,18 +391,19 @@ public abstract class DefinitionLoader {
                     if (id == null)
                         id = new Identifier(name, type);*/
                     if (myIndex.containsKey(id)) {
-                        List<String> files = myIndex.get(id);
-                        if (files.contains(myFile.getAbsolutePath()))
+                        HashMap<String, Integer> map = myIndex.get(id);
+                        if (map.containsKey(myFile.getAbsolutePath()))
                             return true;
-                        files.add(myFile.getAbsolutePath());
+                        map.put(myFile.getAbsolutePath(), index);
                         return true;
                     }
-                    myIndex.put(id, new ArrayList<>(Arrays.asList(myFile.getAbsolutePath())));
+                    HashMap<String, Integer> map = new HashMap<>();
+                    map.put(myFile.getAbsolutePath(), index);
+                    myIndex.put(id, map);
                     return true;
                 }
             }
             return false;
         }
     }
-
 }

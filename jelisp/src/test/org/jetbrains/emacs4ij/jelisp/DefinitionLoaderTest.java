@@ -7,7 +7,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.List;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,7 +72,7 @@ public class DefinitionLoaderTest {
 
     @Test
     public void testDefFormsAreInRightPlaces() {
-        List<String> filename = DefinitionLoader.getFileName("defcustom", DefinitionLoader.DefType.FUN);
+        Map<String, Integer> filename = DefinitionLoader.getFileName("defcustom", DefinitionLoader.DefType.FUN);
         Assert.assertNotNull(filename);
         Assert.assertTrue(containsStringWhichEndsWith(filename, "/lisp/custom.el"));
         Assert.assertTrue(containsStringWhichEndsWith(
@@ -81,8 +83,8 @@ public class DefinitionLoaderTest {
                 DefinitionLoader.getFileName("defface", DefinitionLoader.DefType.FUN), "/lisp/custom.el"));
     }
 
-    private boolean containsStringWhichEndsWith (List<String> list, String ending) {
-        for (String s: list)
+    private boolean containsStringWhichEndsWith (Map<String, Integer> map, String ending) {
+        for (String s: map.keySet())
             if (s.endsWith(ending))
                 return true;
         return false;
@@ -92,10 +94,26 @@ public class DefinitionLoaderTest {
     public void testContainsDef() {
         String line = "(defvar emacs-lisp-mode-syntax-table";
         DefinitionLoader.Identifier id = new DefinitionLoader.Identifier("emacs-lisp-mode-syntax-table", DefinitionLoader.DefType.VAR);
-        boolean condition = DefinitionLoader.containsDef(line, id.getName(), (id.getType() == DefinitionLoader.DefType.FUN
+        int condition = DefinitionLoader.defStartIndex(line, id.getName(), (id.getType() == DefinitionLoader.DefType.FUN
                 ? DefinitionLoader.myDefFuns : DefinitionLoader.myDefVars));
-        Assert.assertTrue(condition);
+        Assert.assertTrue(condition != -1);
     }
 
+    @Test
+    public void testDefineAll() {
+        for (Map.Entry<DefinitionLoader.Identifier, HashMap<String,Integer>> entry:  DefinitionLoader.myIndex.entrySet()) {
+            for (Map.Entry<String, Integer> location: entry.getValue().entrySet()) {
+                LispList def = DefinitionLoader.FileScanner
+                        .getDefFromFile(new File(location.getKey()), location.getValue(), entry.getKey());
+                Assert.assertNotNull(def);
+            }
+        }
+    }
 
+    @Test
+    public void testContainDef() {
+        String line = "(defvar org-id-track-globally)";
+        String name = "org-id-track-globally";
+        Assert.assertTrue(DefinitionLoader.defStartIndex(line, name, DefinitionLoader.myDefVars) == 0);
+    }
 }

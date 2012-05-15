@@ -32,7 +32,12 @@ abstract class Parser extends Observable {
     protected abstract String extractForm(int nextSeparatorIndex);
 
     public abstract void append (String lispCode);
-    public abstract LispObject parseLine (String lispCode);
+
+    public abstract LispObject parseLine (String lispCode, int startIndex);
+
+    public LispObject parseLine (String lispCode) {
+        return parseLine(lispCode, 0);
+    }
 
     protected void advanceTo(int newValue) {
         myCurrentIndex = newValue;

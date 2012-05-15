@@ -417,9 +417,13 @@ public class ForwardParser extends Parser {
     }
 
     @Override
-    public LispObject parseLine (String lispCode) {
-        myCurrentIndex = 0;
+    public LispObject parseLine (String lispCode, int startIndex) {
+        myCurrentIndex = startIndex;
         myLispCode = lispCode;
+        return parseNext();
+    }
+
+    public LispObject parseNext() {
         try {
             skipWhitespaces();
         } catch (EndOfLineException e) {
@@ -429,12 +433,15 @@ public class ForwardParser extends Parser {
         try {
             skipWhitespaces();
             getMyCurrentIndex();
+            if (getCurrentChar() == ';')
+                myCurrentIndex = myLispCode.length();
         } catch (EndOfLineException ignored) {
-            return lispObject;
         }
-        if (getCurrentChar() == ';')
-            return lispObject;
-        throw new UnknownCodeBlockException(myLispCode.substring(getMyCurrentIndex()));
+        return lispObject;
+    }
+
+    public boolean isFinished() {
+        return myCurrentIndex >= myLispCode.length();
     }
 
     @Override
