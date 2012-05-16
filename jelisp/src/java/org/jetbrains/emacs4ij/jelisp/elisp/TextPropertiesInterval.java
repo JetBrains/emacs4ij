@@ -146,7 +146,8 @@ public class TextPropertiesInterval implements Comparable<TextPropertiesInterval
     }
 
     public TextPropertiesInterval extract (int start, int end) {
-        return new TextPropertiesInterval(Math.max(myRange.getStart(), start), Math.min(myRange.getEnd(), end), myProperties);
+        int length = Math.min(myRange.getEnd(), end) - Math.max(myRange.getStart(), start);
+        return new TextPropertiesInterval(0, length, myProperties);
     }
 
     /**
@@ -168,5 +169,26 @@ public class TextPropertiesInterval implements Comparable<TextPropertiesInterval
 
     public boolean hasNoProperties() {
         return myProperties.isEmpty();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TextPropertiesInterval)) return false;
+
+        TextPropertiesInterval interval = (TextPropertiesInterval) o;
+
+        if (myProperties != null ? !myProperties.equals(interval.myProperties) : interval.myProperties != null)
+            return false;
+        if (myRange != null ? !myRange.equals(interval.myRange) : interval.myRange != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = myRange != null ? myRange.hashCode() : 0;
+        result = 31 * result + (myProperties != null ? myProperties.hashCode() : 0);
+        return result;
     }
 }

@@ -55,9 +55,8 @@ public class LispString extends TextPropertiesHolder implements LispAtom, LispSe
         if (o == null || getClass() != o.getClass()) return false;
 
         LispString that = (LispString) o;
-
+        if (myIntervals != null ? !myIntervals.equals(that.myIntervals) : that.myIntervals != null) return false;
         return !(myData != null ? !myData.equals(that.myData) : that.myData != null);
-
     }
 
     @Override
@@ -80,7 +79,14 @@ public class LispString extends TextPropertiesHolder implements LispAtom, LispSe
 
     @Override
     public LispString substring(int from, int to) {
-        return new LispString(myData.substring(from, to));
+        return substring(from, to, true);
+    }
+
+    public LispString substring(int from, int to, boolean withProperties) {
+        String data = myData.substring(from, to);
+        return !noTextProperties() && withProperties
+                ? new LispString(myData.substring(from, to), getTextPropertiesInRange(from, to))
+                : new LispString(data);
     }
 
     @Override

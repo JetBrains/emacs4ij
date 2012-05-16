@@ -151,4 +151,39 @@ public abstract class BString {
         String s2 = getDataOrName(two);
         return s1.compareTo(s2) < 0 ? LispSymbol.ourT : LispSymbol.ourNil;
     }
+
+
+    private static LispInteger getInt (LispObject object) {
+        if (!(object instanceof LispInteger))
+            throw new WrongTypeArgumentException("integerp", object);
+        return (LispInteger) object;
+    }
+
+    private static int processBound (LispInteger bound, int length) {
+        return bound.getData() < 0 ? length + bound.getData() : bound.getData();
+    }
+
+    @Subroutine("substring")
+    public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
+        int length = stringOrVector.size();
+        int start = processBound(from, length);
+        int end = Predicate.isNil(to) ? length : processBound(getInt(to), length);
+        try {
+            return stringOrVector.substring(start, end);
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(stringOrVector, start, end);
+        }
+    }
+
+    @Subroutine("substring-no-properties")
+    public static LispString substringNoProperties(LispString string, @Optional LispObject from, LispObject to) {
+        int length = string.size();
+        int start = Predicate.isNil(from) ? 0 : processBound(getInt(from), length);
+        int end = Predicate.isNil(to) ? length : processBound(getInt(to), length);
+        try {
+            return string.substring(start, end, false);
+        } catch (IndexOutOfBoundsException e) {
+            throw new ArgumentOutOfRange(string, start, end);
+        }
+    }
 }

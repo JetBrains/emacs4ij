@@ -741,20 +741,6 @@ public class CoreTest extends BaseSubroutineTest {
     }
 
     @Test
-    public void testSubstringVector() {
-        evaluateString("(defvar a '[1 2 3 4 5])");
-        evaluateString("(defvar b (substring a 2 4))");
-        LispObject r = evaluateString("b");
-        Assert.assertEquals(new LispVector(new LispInteger(3), new LispInteger(4)), r);
-        evaluateString("(aset b 0 5)");
-        r = evaluateString("b");
-        Assert.assertEquals(new LispVector(new LispInteger(5), new LispInteger(4)), r);
-        r = evaluateString("a");
-        Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
-                new LispInteger(4), new LispInteger(5)), r);
-    }
-
-    @Test
     public void testInteractiveInBody() {
         evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
         LispObject r = evaluateString("(f)");

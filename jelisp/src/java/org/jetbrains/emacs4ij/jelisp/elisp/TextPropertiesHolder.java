@@ -13,7 +13,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class TextPropertiesHolder {
-    private List<TextPropertiesInterval> myIntervals;
+    protected List<TextPropertiesInterval> myIntervals;
 
     public TextPropertiesHolder () {
         myIntervals = new ArrayList<>();

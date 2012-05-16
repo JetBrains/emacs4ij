@@ -396,30 +396,6 @@ public abstract class Core {
         return arg;
     }
 
-    private static LispInteger getInt (LispObject object) {
-        if (!(object instanceof LispInteger))
-            throw new WrongTypeArgumentException("integerp", object);
-        return (LispInteger) object;
-    }
-
-    private static int processBound (LispInteger bound, int length) {
-        return bound.getData() < 0 ? length + bound.getData() : bound.getData();
-    }
-
-    @Subroutine("substring")
-    public static LispObject substring (StringOrVector stringOrVector, LispInteger from, @Optional LispObject to) {
-        int length = stringOrVector.size();
-        int start = processBound(from, length);
-        int end = Predicate.isNil(to)
-                ? length
-                : processBound(getInt(to), length);
-        try {
-            return stringOrVector.substring(start, end);
-        } catch (IndexOutOfBoundsException e) {
-            throw new ArgumentOutOfRange(stringOrVector, start, end);
-        }
-    }
-
     @Subroutine(value = "execute-extended-command", isCmd = true, interactive = "P", key = "\\M-x")
     public static void executeExtendedCommand (Environment environment, LispObject prefixArg) {
         environment.setVariable(new LispSymbol("prefix-arg", prefixArg));

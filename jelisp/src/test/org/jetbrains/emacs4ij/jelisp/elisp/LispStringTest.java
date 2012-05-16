@@ -34,4 +34,14 @@ public class LispStringTest {
         list.add(KeyboardShortcut.fromString("SPACE"));
         Assert.assertEquals(list, s.toKeyboardShortcutList());
     }
+
+    @Test
+    public void testStringEquality() {
+        LispString a = new LispString("a");
+        a.actOnTextProperties(0, 1, LispList.list(new LispSymbol("q")), TextPropertiesInterval.Action.ADD);
+        LispString b = new LispString("a");
+        Assert.assertFalse(a.noTextProperties());
+        Assert.assertTrue(b.noTextProperties());
+        Assert.assertFalse(a.equals(b));
+    }
 }

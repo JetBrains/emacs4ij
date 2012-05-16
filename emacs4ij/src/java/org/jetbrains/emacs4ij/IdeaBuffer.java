@@ -490,4 +490,44 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     public void setKeymap (LispKeymap keymap) {
         myKeymap = keymap;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof IdeaBuffer)) return false;
+        if (!super.equals(o)) return false;
+
+        IdeaBuffer that = (IdeaBuffer) o;
+
+        if (myDocument != null ? !myDocument.equals(that.myDocument) : that.myDocument != null) return false;
+        if (myDocumentListener != null ? !myDocumentListener.equals(that.myDocumentListener) : that.myDocumentListener != null)
+            return false;
+        if (myEnvironment != null ? !myEnvironment.equals(that.myEnvironment) : that.myEnvironment != null)
+            return false;
+        if (myKeymap != null ? !myKeymap.equals(that.myKeymap) : that.myKeymap != null) return false;
+        if (myMark != null ? !myMark.equals(that.myMark) : that.myMark != null) return false;
+        if (myMarkers != null ? !myMarkers.equals(that.myMarkers) : that.myMarkers != null) return false;
+        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
+        if (mySyntaxTable != null ? !mySyntaxTable.equals(that.mySyntaxTable) : that.mySyntaxTable != null)
+            return false;
+        if (myVirtualFile != null ? !myVirtualFile.equals(that.myVirtualFile) : that.myVirtualFile != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (myName != null ? myName.hashCode() : 0);
+        result = 31 * result + (myEnvironment != null ? myEnvironment.hashCode() : 0);
+        result = 31 * result + (myMarkers != null ? myMarkers.hashCode() : 0);
+        result = 31 * result + (myMark != null ? myMark.hashCode() : 0);
+        result = 31 * result + (myDocument != null ? myDocument.hashCode() : 0);
+        result = 31 * result + (myVirtualFile != null ? myVirtualFile.hashCode() : 0);
+        result = 31 * result + (myKeymap != null ? myKeymap.hashCode() : 0);
+        result = 31 * result + (mySyntaxTable != null ? mySyntaxTable.hashCode() : 0);
+        result = 31 * result + (myDocumentListener != null ? myDocumentListener.hashCode() : 0);
+        return result;
+    }
 }

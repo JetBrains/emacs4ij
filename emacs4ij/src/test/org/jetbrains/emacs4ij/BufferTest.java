@@ -684,11 +684,30 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourT, completion); //todo: emacs shows nil
     }
 
+    public void testAddTextPropertyOutOfRange() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
+        try {
+            evaluateString("(add-text-properties 0 2 '(a b))");
+        } catch (Exception e) {
+            Assert.assertEquals("(args-out-of-range 0 2)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    public void testAddTextPropertyOk() {
+        evaluateString("(switch-to-buffer \"3.txt\")");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 1 3 '(a b))"));
+        LispObject substring = evaluateString("(buffer-substring 2 3)");
+        LispString expected = new LispString("a");
+        expected.actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")), TextPropertiesInterval.Action.ADD);
+        Assert.assertEquals(expected, substring);
+    }
+
     public void testSubstring () {
         evaluateString("(switch-to-buffer \"3.txt\")");
         LispObject substring = evaluateString("(buffer-substring 1 2)");
-        Assert.assertEquals(new LispString("l"), substring);
-        //todo: buffer text properties
+        Assert.assertEquals(new LispString("la"), substring);
         substring = evaluateString("(buffer-substring-no-properties 1 2)");
         Assert.assertEquals(new LispString("l"), substring);
     }

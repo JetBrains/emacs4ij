@@ -89,4 +89,24 @@ public class Range implements Comparable<Range> {
     public boolean contains (int index) {
         return index >= myStart && index < myEnd;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Range)) return false;
+
+        Range range = (Range) o;
+
+        if (myEnd != range.myEnd) return false;
+        if (myStart != range.myStart) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = myStart;
+        result = 31 * result + myEnd;
+        return result;
+    }
 }

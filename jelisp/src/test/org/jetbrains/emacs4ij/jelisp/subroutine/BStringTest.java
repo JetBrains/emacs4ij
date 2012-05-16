@@ -418,4 +418,35 @@ public class BStringTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'b \"b\")"));
         Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'c \"b\")"));
     }
+
+    @Test
+    public void testSubstringWithTextProps() {
+        evaluateString("(setq s (propertize \"hello\" 'a 'b))");
+        LispObject o = evaluateString("(substring s 2 4)");
+        LispString expected = new LispString("ll");
+        expected.actOnTextProperties(0, 2, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
+                TextPropertiesInterval.Action.ADD);
+        Assert.assertEquals(expected, o);
+    }
+
+    @Test
+    public void testSubstringNoTextProps() {
+        evaluateString("(setq s (propertize \"hello\" 'a 'b))");
+        LispObject o = evaluateString("(substring-no-properties s 2 4)");
+        Assert.assertEquals( new LispString("ll"), o);
+    }
+
+    @Test
+    public void testSubstringVector() {
+        evaluateString("(defvar a '[1 2 3 4 5])");
+        evaluateString("(defvar b (substring a 2 4))");
+        LispObject r = evaluateString("b");
+        Assert.assertEquals(new LispVector(new LispInteger(3), new LispInteger(4)), r);
+        evaluateString("(aset b 0 5)");
+        r = evaluateString("b");
+        Assert.assertEquals(new LispVector(new LispInteger(5), new LispInteger(4)), r);
+        r = evaluateString("a");
+        Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
+                new LispInteger(4), new LispInteger(5)), r);
+    }
 }
