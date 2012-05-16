@@ -220,14 +220,15 @@ public abstract class Core {
             return LispSymbol.ourNil;
         for (LispSymbol hook: hooks) {
             LispSymbol tHook = environment.find(hook.getName());
-            if (tHook == null || tHook.equals(LispSymbol.ourNil))
+            if (tHook == null || tHook.equals(LispSymbol.ourNil)
+                    || !tHook.hasValue() || tHook.getValue().equals(LispSymbol.ourNil))
                 continue;
-            if (hook.getValue() instanceof LispSymbol) {
-                runFunction(environment, (LispSymbol) hook.getValue());
+            if (tHook.getValue() instanceof LispSymbol) {
+                runFunction(environment, (LispSymbol) tHook.getValue());
                 continue;
             }
-            if (hook.getValue() instanceof LispList) {
-                for (LispObject function: ((LispList) hook.getValue()).toLispObjectList()) {
+            if (tHook.getValue() instanceof LispList) {
+                for (LispObject function: ((LispList) tHook.getValue()).toLispObjectList()) {
                     if (!(function instanceof LispSymbol))
                         throw new WrongTypeArgumentException("symbolp", function);
 
@@ -236,7 +237,7 @@ public abstract class Core {
                 }
                 continue;
             }
-            throw new InvalidFunctionException(hook.getValue().toString());
+            throw new InvalidFunctionException(tHook.getValue().toString());
         }
         return LispSymbol.ourNil;
     }

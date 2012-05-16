@@ -116,6 +116,14 @@ public class LispString extends TextPropertiesHolder implements LispAtom, LispSe
         return StringUtil.isEmpty(myData);
     }
 
+    @Override
+    public LispString delete(LispObject element) {
+        if (!(Predicate.isCharacter(element)))
+            return this;
+        String s = ((LispInteger)element).toCharacterString();
+        return new LispString(myData.replaceAll(s, ""));
+    }
+
     public String capitalize (Environment environment) {
         StringBuilder capitalized = new StringBuilder();
         for (int i = 0; i < myData.length(); i++) {

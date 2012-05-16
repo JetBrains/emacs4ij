@@ -8,10 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,7 +25,7 @@ public abstract class DefinitionLoader {
     private static Map<String, File> myUploadHistory = new HashMap<>();
     protected static Map<Identifier, HashMap<String, Integer>> myIndex = new HashMap<>();
     //for test
-    private static String[] mySkipForms = null;
+    private static List<String> mySkipForms = Arrays.asList("language/");
 
     static { //index Emacs lisp sources
         scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
@@ -51,7 +48,7 @@ public abstract class DefinitionLoader {
 
     //for test
     public static void addSkipForms(String... forms) {
-        mySkipForms = forms;
+        Collections.addAll(mySkipForms, forms);
     }
 
     //for test

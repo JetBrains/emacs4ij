@@ -43,6 +43,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     protected Document myDocument;
     private VirtualFile myVirtualFile = null;
 
+    private LispKeymap myKeymap = null;
     private LispSyntaxTable mySyntaxTable;
 
     protected final DocumentListener myDocumentListener = new DocumentListener() {
@@ -483,5 +484,10 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
     private LispObject kbd (Environment environment, LispString keys) {
         return LispList.list(new LispSymbol("kbd"), keys).evaluate(environment);
+    }
+
+    @Override
+    public void setKeymap (LispKeymap keymap) {
+        myKeymap = keymap;
     }
 }

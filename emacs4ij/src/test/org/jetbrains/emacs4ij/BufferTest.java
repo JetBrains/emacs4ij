@@ -780,6 +780,10 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         varMap = current.getAllLocalVarValues();
         Assert.assertFalse(varMap.containsKey(new LispSymbol("a")));
     }
+
+    public void testSetLispMode() {
+        evaluateString("(emacs-lisp-mode)");
+    }
 }
 
 

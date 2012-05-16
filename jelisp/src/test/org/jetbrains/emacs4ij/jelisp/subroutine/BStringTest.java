@@ -411,4 +411,11 @@ public class BStringTest extends BaseSubroutineTest {
         LispObject matchData = evaluateString("(match-data)");
         Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(2)), matchData);
     }
+
+    @Test
+    public void testStringLessP() {
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(string-lessp 'a \"b\")"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'b \"b\")"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'c \"b\")"));
+    }
 }

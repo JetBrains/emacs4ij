@@ -135,6 +135,13 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
         return myData.isEmpty();
     }
 
+    @Override
+    public LispVector delete(LispObject element) {
+        List<LispObject> data = new ArrayList<>(myData);
+        data.remove(element);
+        return new LispVector(data);
+    }
+
     /**
      * assume this is an object array, set symbol at first position if no 0-items or at position before first 0
      * @param symbol to set

@@ -29,7 +29,7 @@ public class GlobalEnvironment extends Environment {
     private final Ide myIde;
     private final DocumentationExtractor myDocumentationExtractor;
     private List<String> myBufferLocals = new ArrayList<>();
-    
+
     //for debug & extract definition on the fly
     public static Deque<String> ourCallStack = new ArrayDeque<>();
 

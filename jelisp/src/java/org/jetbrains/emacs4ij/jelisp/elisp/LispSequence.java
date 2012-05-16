@@ -18,4 +18,5 @@ public interface LispSequence extends LispObject {
     LispObject copy();
     String toCharString();
     boolean isEmpty();
+    LispObject delete (LispObject element);
 }

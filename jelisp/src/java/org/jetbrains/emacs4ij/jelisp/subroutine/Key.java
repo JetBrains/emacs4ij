@@ -147,6 +147,14 @@ public abstract class Key {
 
     @Subroutine("use-global-map")
     public static LispSymbol useGlobalMap (Environment environment, LispKeymap keymap) {
+        GlobalEnvironment.INSTANCE.setVariable(new LispSymbol("global-map", keymap));
+        environment.setActiveKeymap(keymap);
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("use-local-map")
+    public static LispSymbol useLocalMap (Environment environment, LispKeymap keymap) {
+        environment.getBufferCurrentForEditing().setKeymap(keymap);
         environment.setActiveKeymap(keymap);
         return LispSymbol.ourNil;
     }

@@ -63,4 +63,6 @@ public interface LispBuffer extends LispObject {
 
     LispString substring (int start, int end, boolean withProperties);
     void replace (int from, int to, String text);
+
+    void setKeymap (LispKeymap keymap);
 }

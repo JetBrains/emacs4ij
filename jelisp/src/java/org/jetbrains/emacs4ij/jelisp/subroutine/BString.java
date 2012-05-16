@@ -136,4 +136,19 @@ public abstract class BString {
     public static LispString regexpQuote (LispString target) {
         return target.getExactRegexp();
     }
+
+    private static String getDataOrName (LispObject object) {
+        if (object instanceof LispString)
+            return ((LispString) object).getData();
+        if (object instanceof LispSymbol)
+            return ((LispSymbol) object).getName();
+        throw new WrongTypeArgumentException("stringp", object);
+    }
+
+    @Subroutine("string-lessp")
+    public static LispSymbol stringLessP (LispObject one, LispObject two) {
+        String s1 = getDataOrName(one);
+        String s2 = getDataOrName(two);
+        return s1.compareTo(s2) < 0 ? LispSymbol.ourT : LispSymbol.ourNil;
+    }
 }

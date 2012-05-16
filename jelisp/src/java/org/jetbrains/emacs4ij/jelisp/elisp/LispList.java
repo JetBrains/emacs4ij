@@ -102,6 +102,23 @@ public class LispList implements LispSequence {
         return myCar == null && myCdr == null;
     }
 
+    @Override
+    public LispObject delete(LispObject element) {
+        LispObject result = this;
+        LispList prev = null;
+        for (LispObject tail = this; tail instanceof LispList; tail = ((LispList) tail).cdr()) {
+            if (((LispList) tail).car().equals(element)) {
+                if (prev == null)
+                    result = ((LispList) tail).cdr();
+                else
+                    prev.setCdr(((LispList) tail).cdr());
+            }
+            else
+                prev = (LispList) tail;
+        }
+        return result;
+    }
+
     /**
      * @param environment
      * @return the result of function execution

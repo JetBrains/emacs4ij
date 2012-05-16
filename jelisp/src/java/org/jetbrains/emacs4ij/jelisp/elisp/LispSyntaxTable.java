@@ -71,6 +71,11 @@ public class LispSyntaxTable implements LispObject, LispSequence {
         return myData.isEmpty();
     }
 
+    @Override
+    public LispSequence delete(LispObject element) {
+        throw new UnsupportedOperationException();
+    }
+
     public void setCharSyntax (char c, SyntaxDescriptor.ClassType value) {
         myData.put((int)c, SyntaxDescriptor.toSyntaxTableEntry(value));
     }

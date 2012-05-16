@@ -61,9 +61,11 @@ public abstract class Sequence {
 
     public static LispObject verifyFunction(Environment environment, LispObject function) {
         if (function instanceof LispSymbol) {
-            function = environment.find(((LispSymbol) function).getName());
-            if (!((LispSymbol) function).isFunction())
+            LispSymbol f = environment.find(((LispSymbol) function).getName());
+            if (f == null)
                 throw new VoidFunctionException(((LispSymbol) function).getName());
+            if (!f.isFunction())
+                throw new VoidFunctionException(f.getName());
         } else if (function instanceof LispList) {
             if (!((LispList) function).car().equals(new LispSymbol("lambda")))
                 throw new VoidFunctionException(function.toString());
@@ -151,5 +153,14 @@ public abstract class Sequence {
             return sequence;
         ((LispSequence)sequence).mapCar(environment, verifyFunction(environment, function));
         return sequence;
+    }
+
+    @Subroutine("delete")
+    public static LispObject delete (LispObject element, LispObject sequence) {
+        if (sequence.equals(LispSymbol.ourNil))
+            return sequence;
+        if (!(sequence instanceof LispString || sequence instanceof LispList || sequence instanceof LispVector))
+            return sequence;
+        return ((LispSequence)sequence).delete(element);
     }
 }

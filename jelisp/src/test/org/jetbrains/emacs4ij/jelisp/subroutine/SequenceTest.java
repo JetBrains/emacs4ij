@@ -211,4 +211,76 @@ public class SequenceTest extends BaseSubroutineTest{
         Assert.assertEquals(LispList.list(new LispString("1"), new LispString("2")), mapping);
         Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), sequence);
     }
+
+    @Test
+    public void testDeleteFromString() {
+        evaluateString("(setq s \"hello\")");
+        evaluateString("(setq c (delete ?l s))");
+        Assert.assertEquals(new LispString("heo"), evaluateString("c"));
+        Assert.assertEquals(new LispString("hello"), evaluateString("s"));
+
+        Assert.assertEquals(new LispString("hello"), evaluateString("(delete ?a s)"));
+        Assert.assertEquals(new LispString("hello"), evaluateString("(delete \"h\" s)"));
+    }
+
+    @Test
+    public void testDeleteFromVector() {
+        evaluateString("(setq v '[a b c d])");
+        evaluateString("(setq w (delete 'a v))");
+        Assert.assertEquals(new LispVector(new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")), evaluateString("w"));
+        Assert.assertEquals(new LispVector(new LispSymbol("a"), new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")), evaluateString("v"));
+    }
+
+    @Test
+    public void testDeleteFromList1() {
+        evaluateString("(setq a '(1 2 3 2 4))");
+        LispList expected = LispList.list(new LispInteger(1), new LispInteger(3), new LispInteger(4));
+        Assert.assertEquals(expected, evaluateString("(delete 2 a)"));
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList2() {
+        evaluateString("(setq a '(2 3 2 4))");
+        Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(4)), evaluateString("(delete 2 a)"));
+        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3), new LispInteger(4)), evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList3() {
+        evaluateString("(setq a '(1 2))");
+        LispList expected = LispList.list(new LispInteger(1));
+        Assert.assertEquals(expected, evaluateString("(delete 2 a)"));
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList4() {
+        evaluateString("(setq a '(1 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(2)), evaluateString("(delete 1 a)"));
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList5() {
+        evaluateString("(setq a '(1 . 2))");
+        Assert.assertEquals(new LispInteger(2), evaluateString("(delete 1 a)"));
+        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList6() {
+        evaluateString("(setq a '(1 . 2))");
+        LispList expected = LispList.cons(new LispInteger(1), new LispInteger(2));
+        Assert.assertEquals(expected, evaluateString("(delete 2 a)"));
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void testDeleteFromList7() {
+        evaluateString("(setq a '(1 2 1 . 2))");
+        LispList expected = LispList.testList(new LispInteger(1), new LispInteger(1), new LispInteger(2));
+        Assert.assertEquals(expected, evaluateString("(delete 2 a)"));
+        Assert.assertEquals(expected, evaluateString("a"));
+    }
 }

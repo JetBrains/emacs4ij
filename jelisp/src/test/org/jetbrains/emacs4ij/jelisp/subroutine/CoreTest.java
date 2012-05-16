@@ -958,10 +958,10 @@ public class CoreTest extends BaseSubroutineTest {
         DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
     }
 
-    @Test
-    public void testSetLispMode() {
-        evaluateString("(emacs-lisp-mode)");
-    }
+//    @Test
+//    public void testSetLispMode() {
+//        evaluateString("(emacs-lisp-mode)");
+//    }
 
     @Test
     public void testDefineDerivedMode() {
