@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.OddTextPropListLengthException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -42,7 +42,7 @@ public abstract class TextProperties {
 
     private static LispList normalizeProperties(LispObject properties, boolean revert) {
         if (properties instanceof LispList && ((LispList) properties).size() % 2 != 0)
-            Core.error(JelispBundle.message("odd.length.property.list"));
+            throw new OddTextPropListLengthException();
         if (!(properties instanceof LispList))
             return LispList.list(properties, LispSymbol.ourNil);
         if (!revert)
@@ -65,6 +65,16 @@ public abstract class TextProperties {
         if (!(holder instanceof LispString) && !(holder instanceof LispBuffer))
             throw new WrongTypeArgumentException("buffer-or-string-p", holder);
         return (TextPropertiesHolder) holder;
+    }
+
+    public static void addTextProperties (LispObject start, LispObject end, LispObject properties, LispString holder) {
+        if (!(start instanceof MarkerOrInteger))
+            throw new WrongTypeArgumentException("integer-or-marker-p", start);
+        if (!(end instanceof MarkerOrInteger))
+            throw new WrongTypeArgumentException("integer-or-marker-p", end);
+        LispList propertyList = normalizeProperties(properties, false);
+        holder.actOnTextProperties(((MarkerOrInteger)start).getPosition(), ((MarkerOrInteger)end).getPosition(),
+                propertyList, TextPropertiesInterval.Action.ADD);
     }
 
     @Subroutine("add-text-properties")

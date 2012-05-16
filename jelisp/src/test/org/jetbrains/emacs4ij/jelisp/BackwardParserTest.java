@@ -636,4 +636,9 @@ public class BackwardParserTest {
     public void testParseSpecialCharWrong4() {
         p.parseLine("?\\^\\\\\"");
     }
+
+    @Test
+    public void testParseStringWithTextPropNoProp() {
+        Assert.assertEquals(new LispString("hello"),  p.parseLine("#(\"hello\")"));
+    }
 }

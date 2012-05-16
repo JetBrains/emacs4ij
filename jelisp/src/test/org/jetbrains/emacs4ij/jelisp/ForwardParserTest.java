@@ -941,9 +941,47 @@ public class ForwardParserTest {
     }
 
     @Test
-    public void testParseStringWithTextProp() {
-        LispObject s = p.parseLine("#(\"a\\nb\" 0 1 (ses (A1 nil nil)) 2 3 (ses (A3 nil nil)))");
-        Assert.assertTrue(s instanceof LispString);
+    public void testParseStringWithTextPropNoProp() {
+        Assert.assertEquals(new LispString("hello"),  p.parseLine("#(\"hello\")"));
+    }
+
+    @Test
+    public void testParseStringWithTextPropOneProp() {
+        LispString expected = new LispString("hello");
+        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesInterval.Action.ADD);
+        Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a)"));
+    }
+
+    @Test
+    public void testParseStringWithTextPropTwoProp() {
+        LispString expected = new LispString("hello");
+        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesInterval.Action.ADD);
+        expected.actOnTextProperties(3, 5,
+                LispList.list(new LispSymbol("q"), new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")),
+                TextPropertiesInterval.Action.ADD);
+        Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a 3 5 (q b c d))"));
+    }
+
+    @Test
+    public void testParseStringWithTextPropWrongIndex() {
+        try {
+            p.parseLine("#(\"hello\" 1 a a)");
+        } catch (Exception e) {
+            Assert.assertEquals("'(wrong-type-argument integer-or-marker-p a)", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
+    }
+
+    @Test
+    public void testParseStringWithTextPropOddPropNumber() {
+        try {
+            p.parseLine("#(\"hello\" 1 2 (a b c))");
+        } catch (Exception e) {
+            Assert.assertEquals("(error \"Odd length text property list\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail();
     }
 
     @Test

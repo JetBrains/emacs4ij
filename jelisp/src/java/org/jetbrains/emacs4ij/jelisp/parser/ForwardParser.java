@@ -5,6 +5,7 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.*;
+import org.jetbrains.emacs4ij.jelisp.subroutine.TextProperties;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -446,6 +447,7 @@ public class ForwardParser extends Parser {
 
     private LispInteger parseInteger (int radix) {
         try {
+            advance();
             int from = myCurrentIndex;
             if (getCurrentChar() == '+' || getCurrentChar() == '-')
                 advance();
@@ -464,20 +466,21 @@ public class ForwardParser extends Parser {
         switch (getCurrentChar()) {
             case '#':
                 if (!hasNextChar())
+//                    throw new InvalidReadSyntax("#");
                     throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex));
                 advance();
                 switch (getCurrentChar()) {
-                    case '\'': //function spec form
+                    case '\'':
                         advance();
                         return parseFunctionQuote(isBackQuote);
-                    case 'b':case'B':
+                    case '(':
                         advance();
+                        return parseStringWithTextProperties();
+                    case 'b':case'B':
                         return parseInteger(2);
                     case 'o':case'O':
-                        advance();
                         return parseInteger(8);
                     case 'x':case'X':
-                        advance();
                         return parseInteger(16);
                     default: //integer with any radix
                         try {
@@ -490,7 +493,6 @@ public class ForwardParser extends Parser {
                                 advance();
                             }
                             if (getCurrentChar() == 'r') {
-                                advance();
                                 return parseInteger(Integer.parseInt(radix));
                             } else throw new InvalidReadSyntax("#");
                         } catch (EndOfLineException e) {
@@ -555,5 +557,23 @@ public class ForwardParser extends Parser {
      */
     public int getCurrentIndex () {
         return myCurrentIndex;
+    }
+
+    private LispString parseStringWithTextProperties() {
+        LispObject object = parseList(false);
+        if (!(object instanceof LispList))
+            throw new InvalidReadSyntax("#");
+        List<LispObject> list = ((LispList) object).toLispObjectList();
+        if (list.isEmpty() || !(list.get(0) instanceof LispString))
+            throw new InvalidReadSyntax("#");
+        LispString string = (LispString) list.get(0);
+        int index = 1;
+        while (index < list.size()) {
+            if (index + 2 >= list.size())
+                throw new InvalidReadSyntax("Invalid string property list");
+            TextProperties.addTextProperties(list.get(index), list.get(index + 1), list.get(index + 2), string);
+            index += 3;
+        }
+        return string;
     }
 }
