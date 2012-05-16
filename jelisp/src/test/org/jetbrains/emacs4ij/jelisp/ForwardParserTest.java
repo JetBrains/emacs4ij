@@ -940,6 +940,104 @@ public class ForwardParserTest {
         Assert.assertTrue(p.isFinished());
     }
 
+    @Test
+    public void testParseStringWithTextProp() {
+        LispObject s = p.parseLine("#(\"a\\nb\" 0 1 (ses (A1 nil nil)) 2 3 (ses (A3 nil nil)))");
+        Assert.assertTrue(s instanceof LispString);
+    }
+
+    @Test
+    public void testParseIntegerBinaryRadix() {
+        Assert.assertEquals(new LispInteger(-5), p.parseLine("#b-0101"));
+        Assert.assertEquals(new LispInteger(-5), p.parseLine("#B-0101"));
+        Assert.assertEquals(new LispInteger(-5), p.parseLine("#2r-0101"));
+    }
+
+    @Test
+    public void testParseIntegerBinaryRadix2() {
+        try {
+           p.parseLine("#b-01015.05");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"integer, radix 2\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail("#b-01015.05");
+    }
+
+    @Test
+    public void testParseIntegerBinaryRadix4() {
+        try {
+            p.parseLine("#b+-0101");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"integer, radix 2\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail("#b+-0101");
+    }
+
+    @Test
+    public void testParseIntegerBinaryRadix5() {
+        try {
+            p.parseLine("#b2");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"integer, radix 2\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail("#b2");
+    }
+
+    @Test
+    public void testParseIntegerBinaryRadix3() {
+        Assert.assertEquals(new LispInteger(5), p.parseLine("#b+0101.05"));
+        Assert.assertEquals(new LispFloat(0.05), p.parseNext());
+        Assert.assertTrue(p.isFinished());
+    }
+
+    @Test
+    public void testParseOctalRadix() {
+        Assert.assertEquals(new LispInteger(-110), p.parseLine("#o-156"));
+        Assert.assertEquals(new LispInteger(-110), p.parseLine("#O-156"));
+        Assert.assertEquals(new LispInteger(-110), p.parseLine("#8r-156"));
+    }
+
+    @Test
+    public void testParseHexRadix() {
+        Assert.assertEquals(new LispInteger(-87727), p.parseLine("#x-156af"));
+        Assert.assertEquals(new LispInteger(-87727), p.parseLine("#X-156af"));
+        Assert.assertEquals(new LispInteger(-87727), p.parseLine("#16r-156af"));
+    }
+
+    @Test
+    public void testParseAnyRadix() {
+        Assert.assertEquals(new LispInteger(3), p.parseLine("#3r10"));
+    }
+
+    @Test
+    public void testParseMaxRadix() {
+        Assert.assertEquals(new LispInteger(1331), p.parseLine("#36r10z"));
+    }
+
+    @Test
+    public void testParseRadix1() {
+        try {
+            p.parseLine("#1r0");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"integer, radix 1\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail("#1r");
+    }
+
+    @Test
+    public void testParseRadix37() {
+        try {
+            p.parseLine("#37r123");
+        } catch (Exception e) {
+            Assert.assertEquals("'(invalid-read-syntax \"integer, radix 37\")", TestSetup.getCause(e));
+            return;
+        }
+        Assert.fail("#37r");
+    }
 }
 
 

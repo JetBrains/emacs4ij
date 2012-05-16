@@ -111,8 +111,8 @@ public class ForwardParser extends Parser {
                 break;
             } catch (EndOfLineException | InvalidReadSyntaxDot e) {
                 LispException exception = (LispException) (e instanceof InvalidReadSyntaxDot
-                                                        ? e
-                                                        : new MissingClosingBracketException());
+                        ? e
+                        : new MissingClosingBracketException());
                 if (countObservers() == 0)
                     throw exception;
                 setChanged();
@@ -312,7 +312,7 @@ public class ForwardParser extends Parser {
 
     private void setCharKey (Char c, @Nullable Integer key, boolean asIs) {
         if (myLispCode.length() > myCurrentIndex + 1 && !mySeparators.contains(getNextChar()) // && getNextChar() != ']')
-             && getCurrentChar() != ' ' && getNextChar() != '.')
+                && getCurrentChar() != ' ' && getNextChar() != '.')
             throw new InvalidReadSyntax("?");
 //        int ch = key == null ? Character.toLowerCase(getCurrentChar()) : key; //todo: not in ascii?
         int ch = key == null ? getCurrentChar() : key;
@@ -444,15 +444,59 @@ public class ForwardParser extends Parser {
         return myCurrentIndex >= myLispCode.length();
     }
 
+    private LispInteger parseInteger (int radix) {
+        try {
+            int from = myCurrentIndex;
+            if (getCurrentChar() == '+' || getCurrentChar() == '-')
+                advance();
+            while (myCurrentIndex < myLispCode.length() && Character.isLetterOrDigit(getCurrentChar())) {
+                advance();
+            }
+            String integer = myLispCode.substring(from, myCurrentIndex);
+            return new LispInteger(Integer.parseInt(integer, radix));
+        } catch (EndOfLineException | NumberFormatException e) {
+            throw new InvalidReadSyntax("integer, radix " + radix);
+        }
+    }
+
     @Override
     protected LispObject tryToParse(boolean isBackQuote) {
         switch (getCurrentChar()) {
             case '#':
-                if (hasNextChar() && getNextChar() == '\'') {
-                    advance(); advance();
-                    return parseFunctionQuote(isBackQuote);
+                if (!hasNextChar())
+                    throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex));
+                advance();
+                switch (getCurrentChar()) {
+                    case '\'': //function spec form
+                        advance();
+                        return parseFunctionQuote(isBackQuote);
+                    case 'b':case'B':
+                        advance();
+                        return parseInteger(2);
+                    case 'o':case'O':
+                        advance();
+                        return parseInteger(8);
+                    case 'x':case'X':
+                        advance();
+                        return parseInteger(16);
+                    default: //integer with any radix
+                        try {
+                            if (!Character.isDigit(getCurrentChar()))
+                                throw new InvalidReadSyntax("#");
+                            String radix = Character.toString(getCurrentChar());
+                            advance();
+                            if (Character.isDigit(getCurrentChar())) {
+                                radix += Character.toString(getCurrentChar());
+                                advance();
+                            }
+                            if (getCurrentChar() == 'r') {
+                                advance();
+                                return parseInteger(Integer.parseInt(radix));
+                            } else throw new InvalidReadSyntax("#");
+                        } catch (EndOfLineException e) {
+                            throw new InvalidReadSyntax("#");
+                        }
                 }
-                throw new UnknownCodeBlockException(myLispCode.substring(myCurrentIndex));
             case '\'':
                 advance();
                 skipWhitespaces();
