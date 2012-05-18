@@ -95,7 +95,6 @@ public abstract class BString {
         return Core.thisOrNil(myCurrentMessage);
     }
 
-
     @Subroutine("capitalize")
     public static LispObject capitalize (Environment environment, LispObject object) {
         if (object instanceof LispString) {
@@ -160,7 +159,6 @@ public abstract class BString {
         return s1.compareTo(s2) < 0 ? LispSymbol.ourT : LispSymbol.ourNil;
     }
 
-
     private static LispInteger getInt (LispObject object) {
         if (!(object instanceof LispInteger))
             throw new WrongTypeArgumentException("integerp", object);
@@ -193,5 +191,25 @@ public abstract class BString {
         } catch (IndexOutOfBoundsException e) {
             throw new ArgumentOutOfRange(string, start, end);
         }
+    }
+
+    @Subroutine("char-to-string")
+    public static LispString charToString (LispInteger character) {
+        return new LispString(character.toCharacterString());
+    }
+
+    @Subroutine("number-to-string")
+    public static LispString numberToString (LispNumber number) {
+        return new LispString(number.toString());
+    }
+
+    @Subroutine("string-to-char")
+    public static LispInteger stringToChar(LispString string) {
+        return new LispInteger(string.getFirstCharacter());
+    }
+
+    @Subroutine("byte-to-string")
+    public static LispString byteToString (LispObject byteObject) {
+        throw new UnsupportedOperationException("byte-to-string");
     }
 }

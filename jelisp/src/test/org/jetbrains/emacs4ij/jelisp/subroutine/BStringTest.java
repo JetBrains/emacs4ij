@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -448,5 +449,41 @@ public class BStringTest extends BaseSubroutineTest {
         r = evaluateString("a");
         Assert.assertEquals(new LispVector(new LispInteger(1), new LispInteger(2), new LispInteger(3),
                 new LispInteger(4), new LispInteger(5)), r);
+    }
+
+    @Test
+    public void testCharToString () {
+        Assert.assertEquals(new LispString("a"), evaluateString("(char-to-string 97)"));
+    }
+
+    @Ignore
+    @Test
+    public void testCharToStringMultibyte () {
+        LispObject actual = evaluateString("(char-to-string ?\\C-x)");
+        Assert.assertEquals(new LispString("^X"), actual);
+        Assert.assertEquals(1, ((LispString)actual).size());
+    }
+
+    @Test
+    public void testNumberToString() {
+        Assert.assertEquals(new LispString("123"), evaluateString("(number-to-string 123)"));
+        Assert.assertEquals(new LispString("-12"), evaluateString("(number-to-string -12)"));
+        Assert.assertEquals(new LispString("-1.2"), evaluateString("(number-to-string -1.2)"));
+    }
+
+    @Test
+    public void testStringToNumber() {
+        Assert.assertEquals(new LispInteger(123), evaluateString("(string-to-number \"123\")"));
+        Assert.assertEquals(new LispInteger(-12), evaluateString("(string-to-number \" -12 is ok\")"));
+        Assert.assertEquals(new LispFloat(-1.2), evaluateString("(string-to-number \"-1.2\")"));
+        Assert.assertEquals(new LispInteger(0), evaluateString("(string-to-number \"x122\")"));
+        Assert.assertEquals(new LispInteger(0), evaluateString("(string-to-number \"anna\")"));
+        Assert.assertEquals(new LispFloat(100.0), evaluateString("(string-to-number \"1e2\")"));
+    }
+
+    @Test
+    public void testStringToChar() {
+        Assert.assertEquals(new LispInteger(0), evaluateString("(string-to-char \"\")"));
+        Assert.assertEquals(new LispInteger(97), evaluateString("(string-to-char \"a\")"));
     }
 }

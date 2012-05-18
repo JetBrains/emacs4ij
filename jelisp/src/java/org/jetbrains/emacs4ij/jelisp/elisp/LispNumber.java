@@ -29,4 +29,9 @@ public abstract class LispNumber<T> implements LispAtom {
     public LispObject evaluate(Environment environment) {
         return this;
     }
+
+    @Override
+    public String toString() {
+        return myData.toString();
+    }
 }

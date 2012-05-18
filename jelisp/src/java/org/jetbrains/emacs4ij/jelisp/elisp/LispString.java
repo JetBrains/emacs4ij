@@ -166,13 +166,22 @@ public class LispString extends TextPropertiesHolder implements LispAtom, LispSe
     }
 
     public LispNumber toNumber (int base) {
+        StringBuilder sb = new StringBuilder();
+        String source = myData.trim();
+        for (int i = 0; i < source.length(); i++) {
+            char c = source.charAt(i);
+            if (c == '+' || c == '-' || c == 'e' || c == 'E' || c == '.' || Character.isDigit(c))
+                sb.append(c);
+            else break;
+        }
+        String data = sb.toString();
         try {
-            return new LispInteger(Integer.valueOf(myData, base));
+            return new LispInteger(Integer.valueOf(data, base));
         } catch (NumberFormatException e) {
             try {
                 if (base != 10)
                     return new LispInteger(0);
-                return new LispFloat(Double.valueOf(myData));
+                return new LispFloat(Double.valueOf(data));
             } catch (NumberFormatException e2) {
                 return new LispInteger(0);
             }
@@ -190,5 +199,11 @@ public class LispString extends TextPropertiesHolder implements LispAtom, LispSe
 
     public LispString getExactRegexp () {
         return new LispString(StringRegexpUtil.getExactRegexp(myData));
+    }
+
+    public int getFirstCharacter() {
+        if (StringUtil.isEmpty(myData))
+            return 0;
+        return (int)myData.charAt(0);
     }
 }

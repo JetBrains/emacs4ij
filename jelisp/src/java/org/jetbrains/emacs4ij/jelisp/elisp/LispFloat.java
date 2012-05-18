@@ -23,11 +23,6 @@ public class LispFloat extends LispNumber<Double> {
     }
 
     @Override
-    public String toString() {
-        return Double.toString(myData);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

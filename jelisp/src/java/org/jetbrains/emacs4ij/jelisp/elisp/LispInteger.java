@@ -20,11 +20,6 @@ public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger 
     }
 
     @Override
-    public String toString() {
-        return Integer.toString(myData);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
