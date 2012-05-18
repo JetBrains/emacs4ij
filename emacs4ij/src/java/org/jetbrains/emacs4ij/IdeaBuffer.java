@@ -21,6 +21,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
 import java.util.ArrayList;
@@ -45,6 +46,9 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
     private LispKeymap myKeymap = null;
     private LispSyntaxTable mySyntaxTable;
+
+    protected int myModificationsCount = 0;
+    protected int mySaveModCount = 0;
 
     protected final DocumentListener myDocumentListener = new DocumentListener() {
         private int myOldPosition;
@@ -240,7 +244,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     @Override
     public LispString substring(int start, int end, boolean withProperties) {
         return withProperties
-                ? new LispString(getDocument().getText().substring(start - 1, end - 1), getTextPropertiesInRange(start, end))
+                ? new LispString(getDocument().getText().substring(start - 1, end - 1), getTextPropertiesInRange(start - 1, end - 1))
                 : new LispString(getDocument().getText().substring(start - 1, end - 1));
     }
 
@@ -492,6 +496,26 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     }
 
     @Override
+    @Nullable
+    public LispKeymap getKeymap() {
+        return myKeymap;
+    }
+
+    @Override
+    public void setModified (LispObject flag) {
+        if (Predicate.isNil(flag)) { //set unmodified, i.e. saved
+            mySaveModCount = myModificationsCount;
+        } else if (mySaveModCount >= myModificationsCount) { //synchronize last saved mod count and current mod count
+            mySaveModCount = myModificationsCount++;
+        }
+    }
+
+    @Override
+    public boolean isModified() {
+        return mySaveModCount < myModificationsCount;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof IdeaBuffer)) return false;
@@ -499,6 +523,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
         IdeaBuffer that = (IdeaBuffer) o;
 
+        if (myIntervals != null ? !myIntervals.equals(that.myIntervals) : that.myIntervals != null) return false;
         if (myDocument != null ? !myDocument.equals(that.myDocument) : that.myDocument != null) return false;
         if (myDocumentListener != null ? !myDocumentListener.equals(that.myDocumentListener) : that.myDocumentListener != null)
             return false;

@@ -28,6 +28,7 @@ public abstract class ShortcutStringUtil {
         myReplaceMap.put(" ", " SPACE ");
         myReplaceMap.put("<SPC>", " SPACE ");
         myReplaceMap.put("<ESC>", " ESCAPE ");
+        myReplaceMap.put("\\\\e", " ESCAPE ");
         myReplaceMap.put("<RET>", " ENTER ");
         myReplaceMap.put("<TAB>", " TAB ");
         myReplaceMap.put(regModifier('M'), " alt "); // :)

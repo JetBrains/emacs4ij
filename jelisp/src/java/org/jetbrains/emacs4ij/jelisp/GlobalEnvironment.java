@@ -214,6 +214,7 @@ public class GlobalEnvironment extends Environment {
         addBufferLocalVariable("enable-multibyte-characters");
         addBufferLocalVariable("major-mode", new LispSymbol("fundamental-mode"));
         addBufferLocalVariable("change-major-mode-hook");
+        addBufferLocalVariable("char-property-alias-alist");
     }
 
     private void defineGlobalVariables() {
@@ -423,5 +424,13 @@ public class GlobalEnvironment extends Environment {
 
     public boolean isVariableBufferLocal (String name) {
         return myBufferLocals.contains(name);
+    }
+
+    public static boolean isInteractiveCall() {
+        for (String function: ourCallStack) {
+            if (function.equals("call-interactively"))
+                return true;
+        }
+        return false;
     }
 }

@@ -385,4 +385,19 @@ public abstract class Buffer {
         return LispSymbol.ourNil;
     }
 
+    @Subroutine("set-buffer-modified-p")
+    public static LispObject setBufferModified (Environment environment, LispObject flag) {
+        environment.getBufferCurrentForEditing().setModified(flag);
+        return flag;
+    }
+
+    @Subroutine("buffer-modified-p")
+    public static LispSymbol isBufferModified(Environment environment, @Optional LispObject bufferObject) {
+        if (Predicate.isNil(bufferObject))
+            bufferObject = environment.getBufferCurrentForEditing();
+        if (!(bufferObject instanceof LispBuffer))
+            throw new WrongTypeArgumentException("bufferp", bufferObject);
+        return LispSymbol.bool(((LispBuffer) bufferObject).isModified());
+    }
+
 }

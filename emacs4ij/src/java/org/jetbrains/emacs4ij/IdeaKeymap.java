@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManager;
+import com.intellij.openapi.keymap.KeymapManagerListener;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.keymap.impl.DefaultKeymap;
 import com.intellij.openapi.keymap.impl.KeymapImpl;
@@ -53,16 +54,17 @@ public class IdeaKeymap implements LispKeymap {
         myIdeaKeymap = tmp;
         ourKeymapManager.addKeymap(myIdeaKeymap);
 
-//        ourKeymapManager.addKeymapManagerListener(new KeymapManagerListener() {
-//            @Override
-//            public void activeKeymapChanged(Keymap keymap) {
-////                System.out.println("incoming: " + keymap.getName() + " = " + keymap.toString() +
-////                        ", current: " + ourKeymapManager.getActiveKeymap().getName() + " = " + ourKeymapManager.getActiveKeymap().toString());
-//                //if user changes keymap to non-emacs?
-//                //todo: remove my bindings from old keymap. Should I add them to the new one?
-//                // or should i derive myIdeaKeymap from new one?
-//            }
-//        });
+        ourKeymapManager.addKeymapManagerListener(new KeymapManagerListener() {
+            @Override
+            public void activeKeymapChanged(Keymap keymap) {
+                System.out.println("incoming: " + keymap.getName() + " = " + keymap.toString() +
+                        ", current: " + ourKeymapManager.getActiveKeymap().getName() + " = "
+                        + ourKeymapManager.getActiveKeymap().toString());
+                //if user changes keymap to non-emacs?
+                //todo: remove my bindings from old keymap. Should I add them to the new one?
+                // or should i derive myIdeaKeymap from new one?
+            }
+        });
         ourKeymapManager.setActiveKeymap(myIdeaKeymap);
     }
     

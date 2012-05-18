@@ -396,4 +396,9 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispKeymap k = (LispKeymap) evaluateString("k");
         Assert.assertEquals(pp, k.getKeyBinding(new LispString("s")));
     }
+
+    public void testAnotherEscShortcut() {
+        evaluateString("(setq map (make-sparse-keymap))");
+        Assert.assertEquals(new LispSymbol("indent-sexp"), evaluateString("(define-key map \"\\e\\C-q\" 'indent-sexp)"));
+    }
 }

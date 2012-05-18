@@ -244,16 +244,11 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
 
     @Override
     public int hashCode() {
-        try {
         int result = myName != null ? myName.hashCode() : 0;
 //        result = 31 * result + (myValue != null ? myValue.hashCode() : 0);
 //        result = 31 * result + (myFunction != null ? myFunction.hashCode() : 0);
 //        result = 31 * result + (myProperties != null ? myProperties.hashCode() : 0);
         return result;
-        } catch (StackOverflowError e) {
-            System.out.print(1);
-            return 0;
-        }
     }
 
     public boolean hasValue () {
@@ -275,8 +270,8 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (myName.equals("obarray")) {
             return GlobalEnvironment.INSTANCE.getObjectArray();
         }
-        if (hasValue())
-            return getValue();
+//        if (hasValue())
+//            return getValue();
         LispSymbol symbol = environment.find(myName);
         if (symbol == null && isKeyword())
             return this;
@@ -343,7 +338,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         }
 
         GlobalEnvironment.ourCallStack.push(myName);
-        
+
         LispObject result;
         if (args == null)
             args = new ArrayList<>();

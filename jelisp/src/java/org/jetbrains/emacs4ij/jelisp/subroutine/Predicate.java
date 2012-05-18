@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -267,4 +268,12 @@ public abstract class Predicate {
     public static LispSymbol hashTableP (LispObject object) {
         return LispSymbol.bool(object instanceof LispHashTable);
     }
+
+    @Subroutine("called-interactively-p")
+    public static LispSymbol calledInteractivelyP (LispObject kind) {
+        //todo: if kind.equals(new LispSymbol("interactive") then return t only if the interactive call was made by user directly
+        // (not in non-interactive mode or from kbd macro)
+        return LispSymbol.bool(GlobalEnvironment.isInteractiveCall());
+    }
+
 }

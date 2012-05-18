@@ -26,7 +26,7 @@ public class SequenceTest extends BaseSubroutineTest{
         Assert.assertEquals(new LispInteger(3), r);
         //todo: (length (make-bool-vector 5 nil)) ⇒ 5
     }
-    
+
     @Test
     public void testAppend() {
         LispObject r = evaluateString("(append \"h\" [1] \"llo\")");
@@ -37,12 +37,12 @@ public class SequenceTest extends BaseSubroutineTest{
         Assert.assertEquals(LispSymbol.ourNil, r);
         r = evaluateString("(append)");
         Assert.assertEquals(LispSymbol.ourNil, r);
-        
+
         r = evaluateString("(append '(+ 2 3) '(+ 2 3 nil))");
         Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3),
                 new LispSymbol("+"), new LispInteger(2), new LispInteger(3), LispSymbol.ourNil), r);
     }
-    
+
     @Test
     public void testMapCar() {
         LispObject r = evaluateString("(mapcar '+ \"hi\")");
@@ -71,7 +71,7 @@ public class SequenceTest extends BaseSubroutineTest{
         LispObject r = evaluateString("(mapcar '(lambda (a) (+ 1 a)) '(1 2 3))");
         Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3), new LispInteger(4)), r);
     }
-    
+
     @Test
     public void testConcat() {
         LispObject r = evaluateString("(concat)");
@@ -149,7 +149,7 @@ public class SequenceTest extends BaseSubroutineTest{
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testConcatWrongChar4() {
         try {
@@ -160,13 +160,13 @@ public class SequenceTest extends BaseSubroutineTest{
         }
         Assert.fail();
     }
-    
+
     @Test
     public void testConcatLimit() {
         LispObject r = evaluateString("(concat '(4194303))");
 //        Assert.assertEquals(new LispString("ÿ"), r);
     }
-    
+
     @Test
     public void testVConcat() {
         LispObject r = evaluateString("(vconcat '(1 2) '[3 4] \"hello\")");
@@ -282,5 +282,12 @@ public class SequenceTest extends BaseSubroutineTest{
         LispList expected = LispList.testList(new LispInteger(1), new LispInteger(1), new LispInteger(2));
         Assert.assertEquals(expected, evaluateString("(delete 2 a)"));
         Assert.assertEquals(expected, evaluateString("a"));
+    }
+
+    @Test
+    public void test(){
+        evaluateString("(setq selem '(\"abc\" . \"w\"))");
+        LispObject list = evaluateString("(if (numberp (car selem)) (list (car selem)) (mapcar 'identity (car selem)))");
+        Assert.assertEquals(LispList.list(new LispInteger(97), new LispInteger(98), new LispInteger(99)), list);
     }
 }

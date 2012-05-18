@@ -89,6 +89,12 @@ public class ShortcutStringUtilTest {
     }
 
     @Test
+    public void testSlashEToShortcutString() {
+        LispString s = new LispString("\\e");
+        Assert.assertEquals("ESCAPE", ShortcutStringUtil.toShortcutString(s));
+    }
+
+    @Test
     public void testQuestionToShortcutList() {
         LispString s = new LispString("?");
         List<Shortcut> list = new ArrayList<>();

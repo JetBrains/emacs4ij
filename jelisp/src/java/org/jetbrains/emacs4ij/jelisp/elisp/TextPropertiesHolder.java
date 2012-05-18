@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,13 +32,20 @@ public abstract class TextPropertiesHolder {
     }
 
     /**
-     * @param start = left bound of interval
-     * @param end = right bound of interval
+     * @param givenStart = left bound of interval
+     * @param givenEnd = right bound of interval
      * @param propertyList to work with
      * @return true if any properties were added or changed, false otherwise
      */
-    public boolean actOnTextProperties(int start, int end, LispList propertyList, TextPropertiesInterval.Action action) {
-        Range range = new Range(start, end, 0, size());
+    public boolean actOnTextProperties(int givenStart, int givenEnd, LispList propertyList, TextPropertiesInterval.Action action) {
+        Range range;
+        try {
+            int start = this instanceof LispBuffer ? givenStart - 1 : givenStart;
+            int end   = this instanceof LispBuffer ? givenEnd - 1 : givenEnd;
+            range = new Range(start, end, 0, size());
+        } catch (ArgumentOutOfRange e) {
+            throw new ArgumentOutOfRange(givenStart, givenEnd);
+        }
         if (range.isEmpty())
             return false;
         if (noTextProperties()) {

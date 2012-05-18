@@ -21,7 +21,7 @@ public abstract class DefinitionLoader {
     static enum DefType {VAR, FUN} //todo: not private for test only
     private static enum SymbolType {VAR, FUN, CMD}
     protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
-    protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode");
+    protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode", "define-minor-mode");
     private static Map<String, File> myUploadHistory = new HashMap<>();
     protected static Map<Identifier, HashMap<String, Integer>> myIndex = new HashMap<>();
     //for test
@@ -147,7 +147,10 @@ public abstract class DefinitionLoader {
         LispObject evaluated = definition.evaluate(GlobalEnvironment.INSTANCE);
         if (!(evaluated instanceof LispSymbol))
             throw new InternalError(JelispBundle.message("function.failed", "find and register emacs form", name));
-        LispSymbol value = GlobalEnvironment.INSTANCE.find(((LispSymbol) evaluated).getName());
+        if (!((LispSymbol) evaluated).getName().equals(name))
+            System.err.println("DefinitionLoader.processDef: evaluated = " + ((LispSymbol) evaluated).getName() + ", name = " + name);
+        LispSymbol value = GlobalEnvironment.INSTANCE.find(name);
+//        LispSymbol value = GlobalEnvironment.INSTANCE.find(((LispSymbol) evaluated).getName());
         if (value == null) {
             value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), type);
         }

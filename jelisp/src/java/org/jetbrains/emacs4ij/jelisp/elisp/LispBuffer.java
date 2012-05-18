@@ -65,4 +65,8 @@ public interface LispBuffer extends LispObject {
     void replace (int from, int to, String text);
 
     void setKeymap (LispKeymap keymap);
+    @Nullable LispKeymap getKeymap();
+
+    void setModified (LispObject flag);
+    boolean isModified ();
 }

@@ -91,6 +91,8 @@ public class LispSyntaxTable implements LispObject, LispSequence {
     public LispList getCharSyntax (int c) {
         if (myData.containsKey(c))
             return myData.get(c);
+        if (myParent != null)
+            return myParent.getCharSyntax(c);
         System.err.println("request for char syntax of " + c);
         return LispList.list();
     }

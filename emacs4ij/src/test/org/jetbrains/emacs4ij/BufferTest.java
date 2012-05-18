@@ -4,6 +4,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -689,7 +690,7 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         try {
             evaluateString("(add-text-properties 0 2 '(a b))");
         } catch (Exception e) {
-            Assert.assertEquals("(args-out-of-range 0 2)", TestSetup.getCause(e));
+            Assert.assertEquals("'(args-out-of-range 0 2)", TestSetup.getCause(e));
             return;
         }
         Assert.fail();
@@ -700,13 +701,14 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 1 3 '(a b))"));
         LispObject substring = evaluateString("(buffer-substring 2 3)");
         LispString expected = new LispString("a");
-        expected.actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")), TextPropertiesInterval.Action.ADD);
+        expected.actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
+                TextPropertiesInterval.Action.ADD);
         Assert.assertEquals(expected, substring);
     }
 
     public void testSubstring () {
         evaluateString("(switch-to-buffer \"3.txt\")");
-        LispObject substring = evaluateString("(buffer-substring 1 2)");
+        LispObject substring = evaluateString("(buffer-substring 1 3)");
         Assert.assertEquals(new LispString("la"), substring);
         substring = evaluateString("(buffer-substring-no-properties 1 2)");
         Assert.assertEquals(new LispString("l"), substring);
@@ -802,6 +804,18 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     public void testSetLispMode() {
         evaluateString("(emacs-lisp-mode)");
+        LispObject cmd = evaluateString("(key-binding \"\\C-x\\C-e\")");
+        LispObject globalMap = evaluateString("(current-global-map)");
+        LispObject localMap = evaluateString("(current-local-map)");
+        Assert.assertEquals(new LispSymbol("emacs-lisp-mode"), evaluateString("major-mode"));
+
+        System.out.println(cmd);
+    }
+
+    public void testSetFontLockMinorMode() {
+        DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
+        evaluateString("(emacs-lisp-mode)");
+        evaluateString("(font-lock-mode)");
     }
 }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 
 /**
@@ -15,8 +16,8 @@ public class Range implements Comparable<Range> {
     private int myEnd;
 
     public Range (int leftBound, int rightBound, int min, int max) {
-        myStart = normalize(leftBound, min, max);
-        myEnd = normalize(rightBound, min, max);
+        myStart = verify(leftBound, min, max);
+        myEnd   = verify(rightBound, min, max);
         swapIfNeeded();
     }
 
@@ -39,8 +40,10 @@ public class Range implements Comparable<Range> {
         }
     }
 
-    private static int normalize(int what, int min, int max) {
-        return what > max ? max : what < min ? min : what;
+    private static int verify (int what, int min, int max) {
+        if (what < min || what > max)
+            throw new ArgumentOutOfRange(what);
+        return what;
     }
 
     public void set (Range range) {

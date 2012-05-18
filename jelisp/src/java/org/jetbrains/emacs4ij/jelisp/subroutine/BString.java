@@ -20,6 +20,8 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class BString {
+    private static LispString myCurrentMessage = null;
+
     private BString() {}
 
     private static void checkFormatCharacters (String format) {
@@ -82,11 +84,17 @@ public abstract class BString {
 
     @Subroutine("message")
     public static LispString message (LispString formatString, @Optional LispObject... args) {
-        //todo: write in echo area
-        LispString s = format(formatString, args);
-        System.out.println(s.getData());
-        return s;
+        myCurrentMessage = format(formatString, args);
+        System.out.println(myCurrentMessage.getData());
+        //todo: write in echo area here
+        return myCurrentMessage;
     }
+
+    @Subroutine("current-message")
+    public static LispObject currentMessage() {
+        return Core.thisOrNil(myCurrentMessage);
+    }
+
 
     @Subroutine("capitalize")
     public static LispObject capitalize (Environment environment, LispObject object) {
