@@ -159,6 +159,13 @@ public abstract class BString {
         return s1.compareTo(s2) < 0 ? LispSymbol.ourT : LispSymbol.ourNil;
     }
 
+    @Subroutine("string-equal")
+    public static LispSymbol stringEqual (LispObject one, LispObject two) {
+        String s1 = getDataOrName(one);
+        String s2 = getDataOrName(two);
+        return LispSymbol.bool(s1.equals(s2));
+    }
+
     private static LispInteger getInt (LispObject object) {
         if (!(object instanceof LispInteger))
             throw new WrongTypeArgumentException("integerp", object);

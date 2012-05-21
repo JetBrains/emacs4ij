@@ -307,13 +307,11 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 
     @Test
     public void testDefineKeyWrong() {
-        try {
-            evaluateString("(define-key (current-global-map) \"C-a\" 'backward-char)");
-        } catch (Exception e) {
-            Assert.assertEquals("(error \"Key sequence C - a starts with non-prefix key C\")", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
+        Assert.assertEquals(new LispSymbol("a"), evaluateString("(define-key (current-global-map) \"c-a\" 'a)"));
+        IdeaKeymap global = (IdeaKeymap) evaluateString("global-map");
+        IdeaKeymap keymap1 = (IdeaKeymap) global.getKeyBinding(new LispString("c"));
+        IdeaKeymap keymap2 = (IdeaKeymap) keymap1.getKeyBinding(new LispString("-"));
+        Assert.assertEquals (new LispSymbol("a"), keymap2.getKeyBinding(new LispString("a")));
     }
 
     @Test
@@ -400,5 +398,7 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
     public void testAnotherEscShortcut() {
         evaluateString("(setq map (make-sparse-keymap))");
         Assert.assertEquals(new LispSymbol("indent-sexp"), evaluateString("(define-key map \"\\e\\C-q\" 'indent-sexp)"));
+        LispKeymap keymap = (LispKeymap) evaluateString("map");
+        Assert.assertEquals(new LispSymbol("indent-sexp"), keymap.getKeyBinding(new LispString("\\e\\C-q")));
     }
 }

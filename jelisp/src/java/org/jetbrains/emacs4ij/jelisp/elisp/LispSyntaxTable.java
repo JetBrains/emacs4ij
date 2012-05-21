@@ -18,7 +18,7 @@ import java.util.Map;
  * Time: 10:49 AM
  * To change this template use File | Settings | File Templates.
  */
-public class LispSyntaxTable implements LispObject, LispSequence {
+public class LispSyntaxTable implements LispCharTable {
     private LispSyntaxTable myParent;
     private Map<Integer, LispList> myData = new HashMap<>(LispInteger.MAX_CHAR + 1, 1);
 
@@ -138,5 +138,16 @@ public class LispSyntaxTable implements LispObject, LispSequence {
             chars.append((char)key);
         }
         return chars.toString();
+    }
+
+    @Override
+    public void setItem(int position, LispObject value) {
+        assert value instanceof LispList;
+        myData.put(position, (LispList) value);
+    }
+
+    @Override
+    public LispObject getItem(int position) {
+        return getCharSyntax(position);
     }
 }

@@ -107,26 +107,27 @@ public class IdeaKeymap implements LispKeymap {
             myKeyBindings.put(firstKeystroke, action);
             return shortcut;
         }
-        LispKeymap prefix = getPrefixKeymap(firstKeystroke);
+        IdeaKeymap prefix = getPrefixKeymap(firstKeystroke);
         if (prefix != null) {
-            return ((IdeaKeymap) prefix).defineKey(action, shortcuts, index + 1);
+            return prefix.defineKey(action, shortcuts, index + 1);
         }
-        Core.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
-        return null;
+        prefix = new IdeaKeymap(null, this);
+        defineKey(prefix, Arrays.asList(firstKeystroke), 0);
+        return prefix.defineKey(action, shortcuts, index + 1);
+//        Core.error(Emacs4ijBundle.message("non.prefix.first.keystroke", shortcuts.toString(), firstKeystroke.toString()));
+//        return null;
     }
 
-    private LispKeymap getPrefixKeymap (Shortcut shortcut) {
+    private IdeaKeymap getPrefixKeymap (Shortcut shortcut) {
         if (!myKeyBindings.containsKey(shortcut))
             return null;
-        return myKeyBindings.get(shortcut).getKeymap();
+        return (IdeaKeymap) myKeyBindings.get(shortcut).getKeymap();
     }
 
     private String generateActionId (String binding) {
         return (Emacs4ijBundle.message("emacs4ij") + StringUtil.capitalizeWords(binding, "-", true, false)).replaceAll(" ", "");
     }
 
-    private Map<Shortcut, String> myUnbound = new HashMap<>();
-    
     private void unregisterShortcut (Shortcut shortcut) {
         String[] actionIds = myIdeaKeymap.getActionIds(shortcut);
         while (actionIds != ArrayUtil.EMPTY_STRING_ARRAY) {

@@ -22,7 +22,7 @@ public abstract class DefinitionLoader {
     private static enum SymbolType {VAR, FUN, CMD}
     protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
     protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode", "define-minor-mode");
-    private static Map<String, File> myUploadHistory = new HashMap<>();
+    private static Map<String, File> myUploadHistory = new LinkedHashMap<>();
     protected static Map<Identifier, HashMap<String, Integer>> myIndex = new HashMap<>();
     //for test
     private static List<String> mySkipForms = Arrays.asList("language/");
@@ -181,6 +181,8 @@ public abstract class DefinitionLoader {
     private static LispSymbol findAndRegisterEmacsForm (String name, DefType type) {
         Identifier id = new Identifier(name, type);
         if (!myIndex.containsKey(id)) {
+            Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
+            System.err.print(entries[entries.length-1]);
 //            throw new InternalError(JelispBundle.message("unknown.lisp.object", id.toString()));
             if (type == DefType.FUN)
                 throw new VoidFunctionException(name);
