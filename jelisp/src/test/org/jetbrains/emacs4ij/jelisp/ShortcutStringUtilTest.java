@@ -6,6 +6,7 @@ import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.junit.Test;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +100,19 @@ public class ShortcutStringUtilTest {
         LispString s = new LispString("?");
         List<Shortcut> list = new ArrayList<>();
         list.add(KeyboardShortcut.fromString("shift SLASH"));
+        Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
+    }
+
+    @Test
+    public void testSlashedNumber() {
+        Assert.assertEquals("127", ShortcutStringUtil.toShortcutString(new LispString("\\177")));
+    }
+
+    @Test
+    public void testToShortcutsSlashedNumber() throws Exception {
+        LispString s = new LispString("\\177");
+        List<Shortcut> list = new ArrayList<>();
+        list.add(new KeyboardShortcut(KeyStroke.getKeyStroke((char)127), null));
         Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
     }
 }

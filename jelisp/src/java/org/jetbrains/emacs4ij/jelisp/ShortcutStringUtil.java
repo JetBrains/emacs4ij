@@ -3,11 +3,14 @@ package org.jetbrains.emacs4ij.jelisp;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
+import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
+import javax.swing.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,31 +49,34 @@ public abstract class ShortcutStringUtil {
         myReplaceMap.put("-", " MINUS ");
     }
 
-
-    //todo: it's public only for test
-    public static String toShortcutString (LispString string) {        
+    protected static String toShortcutString (LispString string) {
         String data = string.getData();
         for (Map.Entry<String, String> entry: myReplaceMap.entrySet()) {
             data = data.replaceAll(entry.getKey(), entry.getValue());
         }
-
         String[] split = data.trim().split(" ");
-        Pattern p = Pattern.compile(".");
-        for (int i = 0, splitLength = split.length; i < splitLength; i++) {
-            String item = split[i];
-            if (!myModifiers.contains(item) && !myPunctuation.contains(item) && !myFunctional.contains(item)) {
-                Matcher m = p.matcher(item);
-                StringBuffer sb = new StringBuffer();
-                while (m.find()) {
-                    String replacement = " " + m.group().toUpperCase();
-                    m.appendReplacement(sb, replacement);
+        StringBuilder sb = new StringBuilder();
+        for (String item : split) {
+            if (item.length() > 0 && item.charAt(0) == '\\') {
+                try {
+                    LispObject character = new ForwardParser().parseLine('?' + item);
+                    if (character instanceof LispInteger) {
+                        sb.append(character.toString()).append(' ');
+                        continue;
+                    }
+                } catch (ParserException e) {
+                    //skip
                 }
-                m.appendTail(sb);
-                data = data.replaceAll("(^|\\s)" + item + "(\\s|$)" , sb.toString()+ " ");
             }
+            if (!myModifiers.contains(item) && !myPunctuation.contains(item) && !myFunctional.contains(item)) {
+                for (int i = 0; i < item.length(); i++)
+                    sb.append(Character.toUpperCase(item.charAt(i))).append(' ');
+                continue;
+            }
+            sb.append(item).append(' ');
         }
 
-        return data.trim();
+        return sb.toString().trim();
     }
     
     public static List<Shortcut> toKeyboardShortcutList(LispString string) {
@@ -86,7 +92,13 @@ public abstract class ShortcutStringUtil {
                 for (int j = sequenceStart; j <= i; ++j)
                     keystrokeBuilder.append(keystrokeContent[j]).append(" ");
                 sequenceStart = i + 1;
-                keystrokes.add(KeyboardShortcut.fromString(keystrokeBuilder.toString()));
+                String keyStroke = keystrokeBuilder.toString().trim();
+                try {
+                    int c = Integer.parseInt(keyStroke);
+                    keystrokes.add(new KeyboardShortcut(KeyStroke.getKeyStroke((char) c), null));
+                } catch (NumberFormatException e) {
+                    keystrokes.add(KeyboardShortcut.fromString(keyStroke));
+                }
             }
         }
         return keystrokes;

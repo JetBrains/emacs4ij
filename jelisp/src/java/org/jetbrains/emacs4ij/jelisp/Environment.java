@@ -78,17 +78,6 @@ public abstract class Environment {
     public LispSymbol find(String name) {
         LispSymbol symbol = mySymbols.get(name);
         if (symbol != null) {
-//            if (!symbol.isFunction() && symbol.isBufferLocal()) {
-//                try {
-//                    LispSymbol local = getBufferCurrentForEditing().getLocalVariable(name);
-//                    if (local.getValue() != null)
-//                        symbol = local;
-//                } catch (NoOpenedBufferException | InternalException e) {
-//                    return symbol;
-//                } catch (VoidVariableException e1) {
-//                    return null;
-//                }
-//            }
             return symbol;
         }
         if (myOuterEnv != null) {

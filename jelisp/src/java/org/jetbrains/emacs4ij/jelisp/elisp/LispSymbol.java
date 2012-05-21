@@ -302,7 +302,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         }
     }
 
-    private LispSymbol uploadFunctionDefinition (Environment environment, Class exception) {
+    public LispSymbol uploadFunctionDefinition (Environment environment, Class exception) {
         LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
         if (symbol == null || !symbol.isFunction()) {
             //while we are not loading all elisp code, perform search on request

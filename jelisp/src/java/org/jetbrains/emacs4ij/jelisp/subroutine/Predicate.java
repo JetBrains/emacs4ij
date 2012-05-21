@@ -276,4 +276,8 @@ public abstract class Predicate {
         return LispSymbol.bool(GlobalEnvironment.isInteractiveCall());
     }
 
+    @Subroutine("nlistp")
+    public static LispSymbol notListP (LispObject object) {
+        return LispSymbol.bool(!(object.equals(LispSymbol.ourNil) || object instanceof LispList));
+    }
 }

@@ -356,9 +356,7 @@ public class ForwardParser extends Parser {
                 setCharKey(c, spec, true);
                 break;
             }
-
             int next = hasNextChar() ? getNextChar() : -1;
-
             Char.Modifier m;
             try {
                 m = Char.Modifier.valueOf(Character.toString(getCurrentChar()));

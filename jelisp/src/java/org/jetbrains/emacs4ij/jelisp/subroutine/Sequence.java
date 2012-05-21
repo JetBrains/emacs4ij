@@ -61,11 +61,7 @@ public abstract class Sequence {
 
     public static LispObject verifyFunction(Environment environment, LispObject function) {
         if (function instanceof LispSymbol) {
-            LispSymbol f = environment.find(((LispSymbol) function).getName());
-            if (f == null)
-                throw new VoidFunctionException(((LispSymbol) function).getName());
-            if (!f.isFunction())
-                throw new VoidFunctionException(f.getName());
+            function = ((LispSymbol) function).uploadFunctionDefinition(environment, VoidFunctionException.class);
         } else if (function instanceof LispList) {
             if (!((LispList) function).car().equals(new LispSymbol("lambda")))
                 throw new VoidFunctionException(function.toString());

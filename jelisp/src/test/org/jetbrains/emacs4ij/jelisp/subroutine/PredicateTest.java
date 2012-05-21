@@ -163,4 +163,11 @@ public class PredicateTest extends BaseSubroutineTest {
         r = evaluateString("(characterp 4194303)");
         Assert.assertEquals(LispSymbol.ourT, r);
     }
+
+    @Test
+    public void testNotListP() {
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(nlistp nil)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(nlistp '(a . b))"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(nlistp 1)"));
+    }
 }
