@@ -5,8 +5,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
@@ -20,11 +21,11 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
  * To change this template use File | Settings | File Templates.
  */
 public class EmacsAction extends AnAction {
-    private KeymapCell myCommand = null;
+    private LispObject myCommand = null;
     
     public EmacsAction () {}
     
-    public EmacsAction (KeymapCell command) {
+    public EmacsAction (LispObject command) {
         myCommand = command;
     }
     
@@ -44,23 +45,28 @@ public class EmacsAction extends AnAction {
         }
         try {
             if (myCommand instanceof LispKeymap) {
-                GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("long.keystrokes.not.supported"));
+                GlobalEnvironment.echo(JelispBundle.message("not.supported", "long keystrokes"), GlobalEnvironment.MessageType.WARNING);
                 return;
             }
-            if (!((LispSymbol)myCommand).isFunction()) {
-                LispSymbol cmd = environment.find(((LispSymbol)myCommand).getName());
-                if (cmd == null || !cmd.isFunction()) {
-                    System.err.println("upload: " + ((LispSymbol)myCommand).getName());
-                    LispSymbol realCommand = environment.findAndRegisterEmacsFunction(((LispSymbol)myCommand).getName());
-                    if (realCommand != null)
-                        myCommand = realCommand;
-                } else
-                    myCommand = cmd;
+            if (myCommand instanceof LispSymbol) {
+                if (!((LispSymbol)myCommand).isFunction()) {
+                    LispSymbol cmd = environment.find(((LispSymbol)myCommand).getName());
+                    if (cmd == null || !cmd.isFunction()) {
+                        System.err.println("upload: " + ((LispSymbol)myCommand).getName());
+                        LispSymbol realCommand = environment.findAndRegisterEmacsFunction(((LispSymbol)myCommand).getName());
+                        if (realCommand != null)
+                            myCommand = realCommand;
+                    } else
+                        myCommand = cmd;
+                }
+                Core.callInteractively(environment, myCommand, null, null);
+            } else {
+                GlobalEnvironment.echo(Emacs4ijBundle.message("not.cmd", myCommand.toString()), GlobalEnvironment.MessageType.ERROR);
             }
-            Core.callInteractively(environment, myCommand, null, null);
+
         } catch (Exception exc2) {
             exc2.printStackTrace();
-            GlobalEnvironment.showErrorMessage("Emacs4ij action:\n" + exc2.getMessage());
+            GlobalEnvironment.echo("Emacs4ij action:\n" + exc2.getMessage(), GlobalEnvironment.MessageType.ERROR);
         }
     }
 

@@ -140,7 +140,7 @@ public abstract class Minibuffer {
                 historyPosition.getData(), defaults);
         if (read == null) {
             //todo
-            GlobalEnvironment.showErrorMessage("Param was not read");
+            GlobalEnvironment.echo("Param was not read", GlobalEnvironment.MessageType.ERROR);
             return null;
         }
 
@@ -152,7 +152,7 @@ public abstract class Minibuffer {
 
         if (result == null) {
             //todo
-            GlobalEnvironment.echoMessage(JelispBundle.message("file.ended.while.parsing"));
+            GlobalEnvironment.echo(JelispBundle.message("file.ended.while.parsing"), GlobalEnvironment.MessageType.ERROR);
         }
 
         addToHistory(result);
@@ -197,8 +197,7 @@ public abstract class Minibuffer {
                 }
             }
         } catch (LispException exc) {
-            GlobalEnvironment.echoError(exc.getMessage());
-//            Messages.showErrorDialog(exc.getMessage(), JelispBundle.message("auto.complete.error.title"));
+            GlobalEnvironment.echo(exc.getMessage(), GlobalEnvironment.MessageType.ERROR);
         }
     }
 
@@ -229,16 +228,16 @@ public abstract class Minibuffer {
             List<LispObject> arguments = reader.getArguments();
             LambdaOrSymbolWithFunction command = reader.getCommand();
             if (command == null || wasInteractiveFormWithoutRead() || wasInteractiveFormWithRead(command)) {
-                GlobalEnvironment.echoMessage(LispList.list(arguments).toString() + '\n');
+                GlobalEnvironment.echo(LispList.list(arguments).toString() + '\n', GlobalEnvironment.MessageType.OUTPUT);
                 return;
             }
             System.out.println("eval after exit: " + command.toString());
             LispObject result = Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
             if (result != null) {
-                GlobalEnvironment.echoMessage(result.toString() + '\n');
+                GlobalEnvironment.echo(result.toString() + '\n', GlobalEnvironment.MessageType.OUTPUT);
             }
         } catch (LispException exc) {
-            GlobalEnvironment.echoError(exc.getMessage() + '\n');
+            GlobalEnvironment.echo(exc.getMessage() + '\n', GlobalEnvironment.MessageType.ERROR);
         }
     }
     

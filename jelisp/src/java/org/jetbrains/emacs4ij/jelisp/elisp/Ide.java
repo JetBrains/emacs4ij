@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -8,8 +10,5 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
  * To change this template use File | Settings | File Templates.
  */
 public interface Ide {
-    void showErrorMessage (String message);
-    void showInfoMessage (String message);
-    void echoMessage (String message);
-    void echoError (String error);
+    void echo(String message, GlobalEnvironment.MessageType type);
 }

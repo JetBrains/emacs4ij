@@ -1,7 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
@@ -91,9 +94,14 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
         return myData.get(index);
     }
 
+    @Nullable
     @Override
     public List<Shortcut> toKeyboardShortcutList() {
-        throw new NotImplementedException("LispVector.toKeyboardShortcutList()");
+        if (myData.get(0).equals(new LispSymbol("menu-bar"))) {
+            GlobalEnvironment.echo(JelispBundle.message("not.supported", "menu-bars"), GlobalEnvironment.MessageType.WARNING);
+            return null;
+        }
+        throw new NotImplementedException("LispVector.toKeyboardShortcutList(): " + toString());
     }
 
     @Override

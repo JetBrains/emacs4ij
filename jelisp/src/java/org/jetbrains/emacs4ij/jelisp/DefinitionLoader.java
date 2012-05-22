@@ -99,6 +99,7 @@ public abstract class DefinitionLoader {
 
             while (true) {
                 try {
+//                    System.out.println("PARSED: " + line);
                     parsed.evaluate(GlobalEnvironment.INSTANCE);
                 } catch (LispException e) {
                     System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
@@ -181,8 +182,10 @@ public abstract class DefinitionLoader {
     private static LispSymbol findAndRegisterEmacsForm (String name, DefType type) {
         Identifier id = new Identifier(name, type);
         if (!myIndex.containsKey(id)) {
-            Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
-            System.err.print(entries[entries.length-1]);
+            if (!myUploadHistory.isEmpty()) {
+                Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
+                System.err.print(entries[entries.length - 1]);
+            }
 //            throw new InternalError(JelispBundle.message("unknown.lisp.object", id.toString()));
             if (type == DefType.FUN)
                 throw new VoidFunctionException(name);

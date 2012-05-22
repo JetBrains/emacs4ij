@@ -1,11 +1,12 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.Ide;
+import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,47 +18,26 @@ import org.jetbrains.emacs4ij.jelisp.elisp.Ide;
 public class IdeProvider implements Ide {
     public IdeProvider () {}
 
-    @Override
-    public void showErrorMessage(final String message) {
-        UIUtil.invokeLaterIfNeeded(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        Messages.showErrorDialog(message, Emacs4ijBundle.message("error"));
-                    }
-                });
-            }
-        });
-    }
-
-    @Override
-    public void showInfoMessage(final String message) {
-        UIUtil.invokeLaterIfNeeded(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        Messages.showInfoMessage(message, Emacs4ijBundle.message("message"));
-                    }
-                });
-            }
-        });
-    }
-
     private EchoArea getEchoArea() {
         return ProjectManager.getInstance().getOpenProjects()[0].getComponent(MyProjectComponent.class).getEchoArea();
     }
 
     @Override
-    public void echoMessage(final String message) {
-        getEchoArea().print(message, ConsoleViewContentType.NORMAL_OUTPUT_KEY);
-    }
-
-    @Override
-    public void echoError(final String error) {
-        getEchoArea().print(error, ConsoleViewContentType.ERROR_OUTPUT_KEY);
+    public void echo(final String message, @NotNull GlobalEnvironment.MessageType type) {
+        TextAttributesKey outputKey;
+        switch (type) {
+            case OUTPUT:
+                outputKey = ConsoleViewContentType.NORMAL_OUTPUT_KEY;
+                break;
+            case WARNING:
+                outputKey = ConsoleViewContentType.LOG_WARNING_OUTPUT_KEY;
+                break;
+            case ERROR:
+                outputKey = ConsoleViewContentType.ERROR_OUTPUT_KEY;
+                break;
+            default:
+                throw new InternalException(Emacs4ijBundle.message("unsupported.msg.type", type.toString()));
+        }
+        getEchoArea().print(message, outputKey);
     }
 }

@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface StringOrVector extends LispObject {
+    @Nullable
     List<Shortcut> toKeyboardShortcutList();
     int size();
     StringOrVector substring (int from, int to);

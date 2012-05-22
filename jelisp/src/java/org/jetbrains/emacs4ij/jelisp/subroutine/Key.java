@@ -118,12 +118,34 @@ public abstract class Key {
         return keymap.getKeyBinding(key);
     }
 
-    @Subroutine("define-key")
-    public static LispObject defineKey(LispObject keymapObject, StringOrVector key, KeymapCell function) {
-        check(keymapObject);
-        LispKeymap keymap = getKeymap(keymapObject);
-        keymap.defineKey(function, key);
+    private static LispObject defineKey(LispKeymap keymap, StringOrVector key, LispObject function) {
+        if (function instanceof KeymapCell)
+            keymap.defineKey(function, key);
+        else if (function instanceof LispList) {
+            if (((LispList) function).isEmpty())
+                return function;
+            LispObject car = ((LispList) function).car();
+            if (car instanceof LispString) {
+                keymap.defineKey(((LispList) function).cdr(), key);
+            } else if (car instanceof LispKeymap) {
+                LispObject c = ((LispList) function).cdr();
+                LispObject f = ((LispKeymap) car).getKeyBinding(c);
+                return defineKey(keymap, key, f);
+            } else if (car.equals(new LispSymbol("menu-item"))) {
+                GlobalEnvironment.echo(JelispBundle.message("not.supported", "menu-items"), GlobalEnvironment.MessageType.WARNING);
+            } else
+                keymap.defineKey(function, key);
+        } else if (function instanceof LispString) {
+            //todo: use function as kbd macro
+            throw new NotImplementedException("define-key with a string function");
+        }
         return function;
+    }
+
+    @Subroutine("define-key")
+    public static LispObject defineKey(LispObject keymapObject, StringOrVector key, LispObject function) {
+        check(keymapObject);
+        return defineKey(getKeymap(keymapObject), key, function);
     }
 
     @Subroutine("key-description")

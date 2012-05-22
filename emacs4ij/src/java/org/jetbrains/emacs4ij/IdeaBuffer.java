@@ -502,12 +502,19 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     }
 
     @Override
-    public void setModified (LispObject flag) {
+    public void setModified (@Nullable LispObject flag) {
         if (Predicate.isNil(flag)) { //set unmodified, i.e. saved
             mySaveModCount = myModificationsCount;
         } else if (mySaveModCount >= myModificationsCount) { //synchronize last saved mod count and current mod count
             mySaveModCount = myModificationsCount++;
         }
+        //todo: synchronize with virtual file state
+    }
+
+    @Override
+    public void restoreModified(@Nullable LispObject flag) {
+        mySaveModCount = Predicate.isNil(flag) ? myModificationsCount : 0;
+        //todo: synchronize with virtual file state
     }
 
     @Override

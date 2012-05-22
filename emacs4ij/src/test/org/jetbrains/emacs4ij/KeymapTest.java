@@ -401,4 +401,26 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
         LispKeymap keymap = (LispKeymap) evaluateString("map");
         Assert.assertEquals(new LispSymbol("indent-sexp"), keymap.getKeyBinding(new LispString("\\e\\C-q")));
     }
+
+    public void testDefineListKey() {
+        evaluateString("(setq km1 (make-sparse-keymap))");
+        evaluateString("(define-key km1 \"\\C-a\" 'a)");
+        evaluateString("(setq km2 (make-sparse-keymap))");
+        evaluateString("(define-key km2 \"\\C-b\" '(km1 . \"\\C-a\"))");
+        Assert.assertEquals(LispList.cons(new LispSymbol("km1"), new LispString("\\C-a")),
+                evaluateString("(lookup-key km2 \"\\C-b\")"));
+    }
+
+    public void testDefineListStringFirstKey() {
+        evaluateString("(setq km1 (make-sparse-keymap))");
+        evaluateString("(define-key km1 \"\\C-a\" '(\"anna\" 1 2))");
+        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)),
+                evaluateString("(lookup-key km1 \"\\C-a\")"));
+    }
+
+    /* todo
+    (setq km (make-sparse-keymap))
+    (define-key km "\C-b" '((keymap (97 . a)) . 97))
+    (lookup-key km "\C-b") => returns a
+     */
 }

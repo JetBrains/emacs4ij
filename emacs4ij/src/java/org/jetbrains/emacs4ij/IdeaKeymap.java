@@ -36,7 +36,7 @@ import java.util.*;
 public class IdeaKeymap implements LispKeymap {
     private final String myName;
     private LispKeymap myParent = null;
-    private Map<Shortcut, KeymapCell> myKeyBindings = new HashMap<>();
+    private Map<Shortcut, LispObject> myKeyBindings = new HashMap<>();
     private static final KeymapManagerImpl ourKeymapManager = (KeymapManagerImpl) KeymapManager.getInstance();
     private static final KeymapImpl myIdeaKeymap;
 
@@ -87,14 +87,14 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
-    public void defineKey(KeymapCell action, StringOrVector key) {
+    public void defineKey(LispObject action, StringOrVector key) {
         Shortcut shortcut = defineKey(action, key.toKeyboardShortcutList(), 0);
         if (GlobalEnvironment.INSTANCE.isKeymapActive(this) && shortcut != null)
             registerAction(action, shortcut);
     }
 
-    private Shortcut defineKey(KeymapCell action, List<Shortcut> shortcuts, int index) {
-        if (shortcuts.isEmpty())
+    private Shortcut defineKey(LispObject action, @Nullable List<Shortcut> shortcuts, int index) {
+        if (shortcuts == null || shortcuts.isEmpty())
             return null;
         Shortcut firstKeystroke = shortcuts.get(index);
         if (shortcuts.size() - 1 == index) {
@@ -104,7 +104,10 @@ public class IdeaKeymap implements LispKeymap {
                 shortcut = new KeyboardShortcut(((KeyboardShortcut) shortcuts.get(0)).getFirstKeyStroke(),
                         ((KeyboardShortcut) shortcuts.get(1)).getFirstKeyStroke());
             }
-            myKeyBindings.put(firstKeystroke, action);
+            if (org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil(action))
+                myKeyBindings.remove(firstKeystroke);
+            else
+                myKeyBindings.put(firstKeystroke, action);
             return shortcut;
         }
         IdeaKeymap prefix = getPrefixKeymap(firstKeystroke);
@@ -121,7 +124,7 @@ public class IdeaKeymap implements LispKeymap {
     private IdeaKeymap getPrefixKeymap (Shortcut shortcut) {
         if (!myKeyBindings.containsKey(shortcut))
             return null;
-        return (IdeaKeymap) myKeyBindings.get(shortcut).getKeymap();
+        return getKeymap(myKeyBindings.get(shortcut));
     }
 
     private String generateActionId (String binding) {
@@ -138,14 +141,22 @@ public class IdeaKeymap implements LispKeymap {
         }
     }
 
-    private Map<Shortcut, KeymapCell> getBindings() {
+    private Map<Shortcut, LispObject> getBindings() {
         return myKeyBindings;
     }
 
-    private void registerAction (KeymapCell action, Shortcut shortcut) {
+    @Nullable
+    private IdeaKeymap getKeymap (LispObject action) {
+        if (action instanceof KeymapCell)
+            return (IdeaKeymap)((KeymapCell) action).getKeymap();
+        return null;
+    }
+
+    private void registerAction (LispObject action, Shortcut shortcut) {
         if (!(shortcut instanceof KeyboardShortcut))
             return;
-        if (action.getKeymap() == null) {
+        IdeaKeymap inner = getKeymap(action);
+        if (inner == null) {
             registerKbdAction(action, (KeyboardShortcut) shortcut);
             return;
         }
@@ -153,18 +164,17 @@ public class IdeaKeymap implements LispKeymap {
         if (((KeyboardShortcut) shortcut).getSecondKeyStroke() != null)
             return;
         KeyStroke first = ((KeyboardShortcut) shortcut).getFirstKeyStroke();
-        IdeaKeymap inner = (IdeaKeymap) action.getKeymap();
-        for (Map.Entry<Shortcut, KeymapCell> entry: inner.getBindings().entrySet()) {
+        for (Map.Entry<Shortcut, LispObject> entry: inner.getBindings().entrySet()) {
             if (!(entry.getKey() instanceof KeyboardShortcut)
                     || (entry.getKey() instanceof KeyboardShortcut && ((KeyboardShortcut) entry.getKey()).getSecondKeyStroke() != null)
-                    || entry.getValue().getKeymap() != null)
+                    || getKeymap(entry.getValue()) != null)
                 continue;
             KeyStroke second = ((KeyboardShortcut) entry.getKey()).getFirstKeyStroke();
             registerKbdAction(entry.getValue(), new KeyboardShortcut(first, second));
         }
     }
 
-    private void registerKbdAction(KeymapCell action, KeyboardShortcut shortcut) {
+    private void registerKbdAction(LispObject action, KeyboardShortcut shortcut) {
         ActionManager actionManager = ActionManager.getInstance();
         String id = generateActionId(action.toString());
         if (actionManager.getActionIds(id).length == 0)
@@ -195,7 +205,7 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     protected void bind() {
-        for (Map.Entry<Shortcut, KeymapCell> entry: myKeyBindings.entrySet()) {
+        for (Map.Entry<Shortcut, LispObject> entry: myKeyBindings.entrySet()) {
             registerAction(entry.getValue(), entry.getKey());
         }
     }
@@ -217,7 +227,7 @@ public class IdeaKeymap implements LispKeymap {
         if (equalsOrIsParentFor(parent))
             Core.error("Cyclic keymap inheritance");
         myParent = parent;
-        for (KeymapCell cell: myKeyBindings.values()) {
+        for (LispObject cell: myKeyBindings.values()) {
             if (cell instanceof LispKeymap)
                 ((LispKeymap) cell).setParent(parent);
         }
@@ -239,13 +249,16 @@ public class IdeaKeymap implements LispKeymap {
     }
 
     @Override
-    public KeymapCell getKeyBinding(StringOrVector key) {
-        KeymapCell function = getKeyBinding(key.toKeyboardShortcutList());
-        return (KeymapCell) Core.thisOrNil(function);
+    public LispObject getKeyBinding(LispObject key) {
+        //todo: accept LispInteger
+        LispObject binding = null;
+        if (key instanceof StringOrVector)
+            binding = getKeyBinding(((StringOrVector)key).toKeyboardShortcutList());
+        return Core.thisOrNil(binding);
     }
 
-    private KeymapCell getKeyBinding(List<Shortcut> shortcuts) {
-        if (isEmpty() || shortcuts.isEmpty())
+    private LispObject getKeyBinding(@Nullable List<Shortcut> shortcuts) {
+        if (shortcuts == null || isEmpty() || shortcuts.isEmpty())
             return null;
         Shortcut firstKeystroke = shortcuts.get(0);
         if (shortcuts.size() == 1)
@@ -257,8 +270,8 @@ public class IdeaKeymap implements LispKeymap {
         return null;
     }
 
-    private KeymapCell getKeyBinding (Shortcut shortcut) {
-        KeymapCell function = myKeyBindings.get(shortcut);
+    private LispObject getKeyBinding (Shortcut shortcut) {
+        LispObject function = myKeyBindings.get(shortcut);
         if (function != null)
             return function;
         if (myParent != null)

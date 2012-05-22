@@ -38,9 +38,9 @@ public class EvaluateCode extends AnAction {
             LispBuffer buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
             LispObject result = buffer.evaluateLastForm();
             if (result != null)
-                GlobalEnvironment.echoMessage(result.toString() + "\n");
+                GlobalEnvironment.echo(result.toString() + "\n", GlobalEnvironment.MessageType.OUTPUT);
         } catch (LispException exc) {
-            GlobalEnvironment.echoError(exc.getMessage() + "\n");
+            GlobalEnvironment.echo(exc.getMessage() + "\n", GlobalEnvironment.MessageType.ERROR);
         }
     }
 }

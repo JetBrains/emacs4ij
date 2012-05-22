@@ -308,6 +308,9 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             //while we are not loading all elisp code, perform search on request
             System.out.println("FUN " + myName);
             try {
+                //file:///home/kate/Downloads/emacs-23.4/lisp/jit-lock.el
+                if (myName.equals("with-buffer-prepared-for-jit-lock"))
+                    System.out.print(1);
                 symbol = environment.findAndRegisterEmacsFunction(myName);
             } catch (LispException e) {
                 throw new VoidFunctionException(myName);

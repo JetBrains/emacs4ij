@@ -400,4 +400,10 @@ public abstract class Buffer {
         return LispSymbol.bool(((LispBuffer) bufferObject).isModified());
     }
 
+    @Subroutine("restore-buffer-modified-p")
+    public static LispObject restoreBufferModified (Environment environment, LispObject flag) {
+        environment.getBufferCurrentForEditing().restoreModified(flag);
+        return flag;
+    }
+
 }

@@ -151,7 +151,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
             open(myEnvironment.getBufferCurrentForEditing());
             if (myActivationsDepth > 1) {
                 myEnvironment.killBuffer(this);
-                GlobalEnvironment.showInfoMessage(Emacs4ijBundle.message("call.interactively.message"));
+                GlobalEnvironment.echo(Emacs4ijBundle.message("call.interactively.message"), GlobalEnvironment.MessageType.WARNING);
                 return;
             }
         }

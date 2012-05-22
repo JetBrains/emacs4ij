@@ -55,7 +55,7 @@ public abstract class EnvironmentInitializer {
         try {
             return init();
         } catch (LispException e) {
-            GlobalEnvironment.showErrorMessage(e.getMessage());
+            GlobalEnvironment.echo(e.getMessage(), GlobalEnvironment.MessageType.ERROR);
         }
         return isGlobalInitialized;
     }
@@ -83,11 +83,6 @@ public abstract class EnvironmentInitializer {
         if (GlobalEnvironment.INSTANCE.getAllFrames().size() != 1) {
             GlobalEnvironment.INSTANCE.setSelectedFrame(GlobalEnvironment.INSTANCE.getFrame(windowManager.getIdeFrame(project)));
         }
-        //todo index project directory and init buffers
-//        String root = project.getBaseDir().getUrl();
-
-
-
         new IdeaMiniBuffer(0, null, environment, null);
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override

@@ -418,7 +418,7 @@ public abstract class Core {
         } else if (printCharFun instanceof LispMarker) {
             ((LispMarker) printCharFun).insert(toInsert);
         } else if (printCharFun.equals(LispSymbol.ourT)) {
-            GlobalEnvironment.echoMessage(object.toString());
+            GlobalEnvironment.echo(object.toString(), GlobalEnvironment.MessageType.OUTPUT);
         } else {
             for (LispObject character: result.toLispObjectList()) {
                 functionCall(environment, printCharFun, character);
@@ -469,4 +469,14 @@ public abstract class Core {
         return base;
     }
 
+    @Subroutine("require")
+    public static void require (LispObject feature, @Optional LispObject fileName, LispObject noError) {
+        //todo: implement
+    }
+
+    @Subroutine("load-average")
+    public static LispObject loadAverage (@Optional LispObject useFloats) {
+//        Core.error(JelispBundle.message("load.avg.not.impl"));
+        return LispSymbol.ourNil;
+    }
 }

@@ -34,7 +34,7 @@ public class GlobalEnvironment extends Environment {
     public static Deque<String> ourCallStack = new ArrayDeque<>();
 
     //temporary solution while i'm not loading all sources
-    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el");
+    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el");
 
     public static GlobalEnvironment INSTANCE = null;
 
@@ -301,36 +301,14 @@ public class GlobalEnvironment extends Environment {
         }
     }
 
-    public static void showErrorMessage (String message) {
-        if (INSTANCE == null || INSTANCE.myIde == null) {
-            System.out.println(JelispBundle.message("emacs4ij.error", message));
-            return;
-        }
-        INSTANCE.myIde.showErrorMessage(message);
-    }
+    public static enum MessageType {OUTPUT, WARNING, ERROR}
 
-    public static void showInfoMessage (String message) {
-        if (INSTANCE == null || INSTANCE.myIde == null) {
-            System.out.println(JelispBundle.message("emacs4ij.message", message));
+    public static void echo(String message, MessageType type) {
+        if (INSTANCE == null || INSTANCE.myIde == null || TEST) {
+            System.out.println("Emacs4ij " + type.toString().toLowerCase() + ": " + message);
             return;
         }
-        INSTANCE.myIde.showInfoMessage(message);
-    }
-
-    public static void echoMessage (String message) {
-        if (INSTANCE == null || INSTANCE.myIde == null) {
-            System.out.println(JelispBundle.message("emacs4ij.message", message));
-            return;
-        }
-        INSTANCE.myIde.echoMessage(message);
-    }
-
-    public static void echoError (String message) {
-        if (INSTANCE == null || INSTANCE.myIde == null) {
-            System.out.println(JelispBundle.message("emacs4ij.message", message));
-            return;
-        }
-        INSTANCE.myIde.echoError(message);
+        INSTANCE.myIde.echo(message, type);
     }
 
     public LispObject getBufferLocalSymbolValue (LispSymbol symbol) {
