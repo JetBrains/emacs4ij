@@ -406,4 +406,9 @@ public abstract class Buffer {
         return flag;
     }
 
+    @Subroutine(value = "widen", isCmd = true, key = "\\C-xnw")
+    public static LispSymbol widen (Environment environment) {
+        //todo: remove narrowing from current buffer
+        return LispSymbol.ourNil;
+    }
 }

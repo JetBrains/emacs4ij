@@ -13,6 +13,7 @@ public abstract class TestSetup {
     public static String setGlobalEnv() {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
         GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+        GlobalEnvironment.TEST = true;
         return "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     }
 

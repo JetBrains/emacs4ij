@@ -7,7 +7,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +21,7 @@ public class DefinitionLoaderTest {
     @BeforeClass
     public static void runBeforeClass() {
         TestSetup.runBeforeClass();
+        DefinitionLoader.test();
     }
 
     @Test
@@ -67,12 +67,12 @@ public class DefinitionLoaderTest {
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
         LispObject dmm = DefinitionLoader.getDefFromFile(GlobalEnvironment.getEmacsSource() + "/lisp/emacs-lisp/easy-mmode.el",
                 "define-minor-mode", DefinitionLoader.DefType.FUN);
-        junit.framework.Assert.assertNotNull(dmm);
+        Assert.assertNotNull(dmm);
     }
 
     @Test
     public void testDefFormsAreInRightPlaces() {
-        Map<String, Integer> filename = DefinitionLoader.getFileName("defcustom", DefinitionLoader.DefType.FUN);
+        Map<String, Long> filename = DefinitionLoader.getFileName("defcustom", DefinitionLoader.DefType.FUN);
         Assert.assertNotNull(filename);
         Assert.assertTrue(containsStringWhichEndsWith(filename, "/lisp/custom.el"));
         Assert.assertTrue(containsStringWhichEndsWith(
@@ -83,7 +83,7 @@ public class DefinitionLoaderTest {
                 DefinitionLoader.getFileName("defface", DefinitionLoader.DefType.FUN), "/lisp/custom.el"));
     }
 
-    private boolean containsStringWhichEndsWith (Map<String, Integer> map, String ending) {
+    private boolean containsStringWhichEndsWith (Map<String, Long> map, String ending) {
         for (String s: map.keySet())
             if (s.endsWith(ending))
                 return true;
@@ -101,11 +101,15 @@ public class DefinitionLoaderTest {
 
     @Test
     public void testDefineAll() {
-        for (Map.Entry<DefinitionLoader.Identifier, HashMap<String,Integer>> entry:  DefinitionLoader.myIndex.entrySet()) {
-            for (Map.Entry<String, Integer> location: entry.getValue().entrySet()) {
-                LispList def = DefinitionLoader.FileScanner
-                        .getDefFromFile(new File(location.getKey()), location.getValue(), entry.getKey());
-                Assert.assertNotNull(def);
+        for (Map.Entry<DefinitionLoader.Identifier, HashMap<String,Long>> entry:  DefinitionLoader.myIndex.entrySet()) {
+            for (Map.Entry<String, Long> location: entry.getValue().entrySet()) {
+                try {
+                    LispList def = DefinitionLoader.FileScanner
+                            .getDefFromFile(location.getKey(), location.getValue(), entry.getKey());
+                    Assert.assertNotNull(def);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

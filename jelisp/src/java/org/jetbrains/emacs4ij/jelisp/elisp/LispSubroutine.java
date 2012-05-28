@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 /**
-* Created by IntelliJ IDEA.
-* User: Ekaterina.Polishchuk
-* Date: 8/2/11
-* Time: 5:14 PM
-* To change this template use File | Settings | File Templates.
-*/
+ * Created by IntelliJ IDEA.
+ * User: Ekaterina.Polishchuk
+ * Date: 8/2/11
+ * Time: 5:14 PM
+ * To change this template use File | Settings | File Templates.
+ */
 public abstract class LispSubroutine {
 
     private static Class[] myBuiltIns = new Class[] {Arithmetic.class, Predicate.class, Buffer.class, Minibuffer.class,
@@ -182,40 +182,37 @@ public abstract class LispSubroutine {
 
     public static LispObject evaluate (String name, Environment environment, List<LispObject> args) {
         for (Class c: getSubroutineContainers()) {
-            Method[] methods = c.getMethods();
-            for (Method m: methods) {
+            for (Method m: c.getMethods()) {
                 Subroutine annotation = m.getAnnotation(Subroutine.class);
-                if (annotation == null)
+                if (annotation == null || !annotation.value().equals(name))
                     continue;
-                if (annotation.value().equals(name)) {
-                    if (!Arrays.asList(mySpecialForms).contains(c)) {
-                        if (!environment.areArgumentsEvaluated()) {
-                            for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
-                                args.set(i, args.get(i).evaluate(environment));
-                            }
-                        } else {
-                            environment.setArgumentsEvaluated(false);
+                if (!Arrays.asList(mySpecialForms).contains(c)) {
+                    if (!environment.areArgumentsEvaluated()) {
+                        for (int i = 0, dataSize = args.size(); i < dataSize; i++) {
+                            args.set(i, args.get(i).evaluate(environment));
                         }
+                    } else {
+                        environment.setArgumentsEvaluated(false);
                     }
-                    ArgumentsList arguments = parseArguments(m, environment, args);
-                    checkArguments(name, arguments, args);
-                    try {
-                        return (LispObject) m.invoke(null, arguments.getValues());
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        if (e.getCause().getMessage() == null)
-                             e.getCause().printStackTrace();
-                        else System.err.println(e.getCause().getMessage());
-                        Throwable cause = getCause(e);
-                        if (cause instanceof LispThrow)
-                            throw (LispThrow) cause;
-                        if (cause instanceof VoidVariableException && GlobalEnvironment.TEST && c == Key.class) {
-                            System.err.println("Skip keymap errors in test mode");
-                            return LispSymbol.ourNil;
-                        }
-                        if (cause instanceof LispException)
-                            throw (LispException) cause;
-                        throw new LispException(e.getCause().getMessage());
+                }
+                ArgumentsList arguments = parseArguments(m, environment, args);
+                checkArguments(name, arguments, args);
+                try {
+                    return (LispObject) m.invoke(null, arguments.getValues());
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    if (e.getCause().getMessage() == null)
+                        e.getCause().printStackTrace();
+                    else System.err.println(e.getCause().getMessage());
+                    Throwable cause = getCause(e);
+                    if (cause instanceof LispThrow)
+                        throw (LispThrow) cause;
+                    if (cause instanceof VoidVariableException && GlobalEnvironment.TEST && c == Key.class) {
+                        System.err.println("Skip keymap errors in test mode");
+                        return LispSymbol.ourNil;
                     }
+                    if (cause instanceof LispException)
+                        throw (LispException) cause;
+                    throw new LispException(e.getCause().getMessage());
                 }
             }
         }

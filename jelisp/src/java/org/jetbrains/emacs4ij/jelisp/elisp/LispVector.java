@@ -98,7 +98,8 @@ public class LispVector implements LispObject, LispSequence, LispArray, StringOr
     @Override
     public List<Shortcut> toKeyboardShortcutList() {
         if (myData.get(0).equals(new LispSymbol("menu-bar"))) {
-            GlobalEnvironment.echo(JelispBundle.message("not.supported", "menu-bars"), GlobalEnvironment.MessageType.WARNING);
+            GlobalEnvironment.echo(JelispBundle.message("not.supported.with.value", "menu-bars", toString()),
+                    GlobalEnvironment.MessageType.WARNING);
             return null;
         }
         throw new NotImplementedException("LispVector.toKeyboardShortcutList(): " + toString());

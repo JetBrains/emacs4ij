@@ -467,4 +467,15 @@ public abstract class SpecialForms {
             }
         }
     }
+
+    @Subroutine("save-restriction")
+    public static LispObject saveRestriction (Environment environment, @Optional LispObject... body) {
+        //todo: save all narrowing state
+        try {
+            return progn(environment, body);
+        } finally {
+            //todo: restore narrowing state
+        }
+    }
+
 }

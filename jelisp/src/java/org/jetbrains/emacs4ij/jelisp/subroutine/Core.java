@@ -243,7 +243,10 @@ public abstract class Core {
     }
 
     @Subroutine("macroexpand")
-    public static LispObject macroExpand (Environment environment, LispObject macroCall) {
+    public static LispObject macroExpand (Environment environment, LispObject macroCall, @Optional LispObject env) {
+        //todo: env
+        if (!Predicate.isNil(env))
+            System.err.print("macroexpand: emacs environment = " + env.toString());
         if (!(macroCall instanceof LispList))
             return macroCall;
         LispSymbol macro;
@@ -253,9 +256,10 @@ public abstract class Core {
             return macroCall;
         }
         LispSymbol trueMacro = environment.find(macro.getName());
+        if (trueMacro == null)
+            throw new InternalException("void macro " + macro.toString());
         if (!trueMacro.isMacro())
             return macroCall;
-
         return trueMacro.macroExpand(environment, ((LispList) ((LispList) macroCall).cdr()).toLispObjectList());
     }
 
@@ -479,4 +483,13 @@ public abstract class Core {
 //        Core.error(JelispBundle.message("load.avg.not.impl"));
         return LispSymbol.ourNil;
     }
+//
+//    //todo: its as compiled lisp macro in timer.el (???)
+//    @Subroutine("timer-create")
+//    public static LispVector timerCreate () {
+//        LispObject[] data = new LispObject[8];
+//        Arrays.fill(data, LispSymbol.ourNil);
+//        data[0] = LispSymbol.ourT;
+//        return new LispVector(data);
+//    }
 }

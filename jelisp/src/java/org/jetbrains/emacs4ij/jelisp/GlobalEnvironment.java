@@ -123,12 +123,27 @@ public class GlobalEnvironment extends Environment {
         defineGlobalVariables();
         defineUserOptions();
         setSubroutines();
-
-        //note: it's important to load backquote before defsubst
+////        note: it's important to load backquote before defsubst
         DefinitionLoader.loadFile(myFilesToLoad.get(0));
         defineDefForms();
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             DefinitionLoader.loadFile(myFilesToLoad.get(i));
+
+        initSpecial();
+    }
+
+    private void initSpecial() {
+        //todo: timer--function and timer-create are compiled macro in emacs-lisp/timer.el
+
+        SpecialForms.defineFunction(GlobalEnvironment.INSTANCE, new LispSymbol("timer--function"),
+                LispList.list(new LispSymbol("cl-x")),
+                    LispList.list(new LispSymbol("aref"), new LispSymbol("cl-x"), new LispInteger(5)));
+
+        LispObject[] data = new LispObject[8];
+        Arrays.fill(data, LispSymbol.ourNil);
+        data[0] = LispSymbol.ourT;
+        SpecialForms.defmacro(new LispSymbol("timer-create"), LispList.list(),
+                LispList.list(new LispSymbol("quote"), new LispVector(data)));
     }
 
     private GlobalEnvironment (Ide ide) {
