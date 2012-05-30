@@ -7,8 +7,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,12 +21,12 @@ public class DefinitionLoaderTest {
     @BeforeClass
     public static void runBeforeClass() {
         TestSetup.runBeforeClass();
-        DefinitionLoader.test();
     }
 
     @Test
     public void testInit() {
         DefinitionLoader.test();
+        System.out.println(DefinitionLoader.myIndex.size());
     }
 
     @Test
@@ -101,7 +101,7 @@ public class DefinitionLoaderTest {
 
     @Test
     public void testDefineAll() {
-        for (Map.Entry<DefinitionLoader.Identifier, HashMap<String,Long>> entry:  DefinitionLoader.myIndex.entrySet()) {
+        for (Map.Entry<DefinitionLoader.Identifier, SortedMap<String,Long>> entry:  DefinitionLoader.myIndex.entrySet()) {
             for (Map.Entry<String, Long> location: entry.getValue().entrySet()) {
                 try {
                     LispList def = DefinitionLoader.FileScanner

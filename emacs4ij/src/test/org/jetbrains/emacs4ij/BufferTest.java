@@ -817,6 +817,23 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         evaluateString("(emacs-lisp-mode)");
         evaluateString("(font-lock-mode)");
     }
+
+    public void testSetf() {
+        evaluateString("(setq timer (timer-create))");
+        Assert.assertEquals(new LispInteger(4), evaluateString("(setf (timer--function timer) 4)"));
+        Assert.assertEquals(new LispVector(LispSymbol.ourT, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil,
+                LispSymbol.ourNil, new LispInteger(4), LispSymbol.ourNil, LispSymbol.ourNil), evaluateString("timer"));
+    }
+
+    public void testClSetfDoModifyAndSet() {
+        evaluateString("(setq args '((timer--function timer) function))");
+        LispObject method = evaluateString("'(nil (--cl-store-- progn (aset timer 5 --cl-store--)) (timer--function timer))");
+        evaluateString("(setq method (cl-setf-do-modify (car args) (nth 1 args)))");
+        Assert.assertEquals(method, evaluateString("method"));
+        LispObject store = evaluateString("'(progn (aset timer 5 function))");
+        Assert.assertEquals(store, evaluateString("(cl-setf-do-store (nth 1 method) (nth 1 args))"));
+    }
+
 }
 
 

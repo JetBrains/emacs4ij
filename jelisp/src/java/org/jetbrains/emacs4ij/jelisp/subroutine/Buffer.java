@@ -411,4 +411,13 @@ public abstract class Buffer {
         //todo: remove narrowing from current buffer
         return LispSymbol.ourNil;
     }
+
+    @Subroutine("buffer-file-name")
+    public static LispObject bufferFileName (Environment environment, @Optional LispObject bufferObject) {
+        if (Predicate.isNil(bufferObject))
+            bufferObject = environment.getBufferCurrentForEditing();
+        if (!(bufferObject instanceof LispBuffer))
+            throw new WrongTypeArgumentException("bufferp", bufferObject);
+        return ((LispBuffer)bufferObject).getVariableValue("buffer-file-name");
+    }
 }

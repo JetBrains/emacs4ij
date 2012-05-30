@@ -59,15 +59,14 @@ public abstract class Sequence {
         return args[args.length-1];
     }
 
-    public static LispObject verifyFunction(Environment environment, LispObject function) {
-        if (function instanceof LispSymbol) {
-            function = ((LispSymbol) function).uploadFunctionDefinition(environment, VoidFunctionException.class);
-        } else if (function instanceof LispList) {
-            if (!((LispList) function).car().equals(new LispSymbol("lambda")))
-                throw new VoidFunctionException(function.toString());
-        } else
-            throw new InvalidFunctionException(function.toString());
-        return function;
+    public static LambdaOrSymbolWithFunction verifyFunction(Environment environment, LispObject function) {
+        if (function instanceof LispSymbol)
+            return ((LispSymbol) function).uploadFunctionDefinition(environment, VoidFunctionException.class);
+        if (function instanceof LispList)
+            return new Lambda((LispList) function);
+        if (function instanceof Lambda)
+            return (Lambda)function;
+        throw new InvalidFunctionException(function.toString());
     }
 
     @Subroutine("mapcar")

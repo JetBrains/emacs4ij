@@ -280,4 +280,9 @@ public abstract class Predicate {
     public static LispSymbol notListP (LispObject object) {
         return LispSymbol.bool(!(object.equals(LispSymbol.ourNil) || object instanceof LispList));
     }
+
+    @Subroutine("floatp")
+    public static LispSymbol floatP (LispObject object) {
+        return LispSymbol.bool(object instanceof LispFloat);
+    }
 }

@@ -264,8 +264,10 @@ public class ForwardParser extends Parser {
                     return a;
                 if (asIs || c < 33)
                     return c;
-                if (c > 32 && a < 0)
+                if (c == 34)
                     throw new ScanException(JelispBundle.message("invaild.modifier.in.string"));
+                if (c > 32 && c < 65)
+                    return c;
                 return -1;
         }
     }
@@ -457,6 +459,17 @@ public class ForwardParser extends Parser {
         } catch (EndOfLineException | NumberFormatException e) {
             throw new InvalidReadSyntax("integer, radix " + radix);
         }
+    }
+
+    protected LispObject parseComma() {
+        String spec = "\\,";
+        if (getCurrentChar() == '@') {
+            advance();
+            spec += '@';
+        }
+        skipWhitespaces();
+        LispObject lispObject = parseObject(true);
+        return LispList.list(new LispSymbol(spec), lispObject);
     }
 
     @Override

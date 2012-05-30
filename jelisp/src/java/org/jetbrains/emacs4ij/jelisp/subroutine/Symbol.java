@@ -6,10 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
-import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -46,52 +43,66 @@ public abstract class Symbol {
     }
 
     @Subroutine("get")
-    public static LispObject get(LispSymbol symbol, LispSymbol propertyName) {
-        LispObject result = symbol.getProperty(propertyName);
-        return result == null ? LispSymbol.ourNil : result;
+    public static LispObject get(Environment environment, LispSymbol symbol, LispSymbol propertyName) {
+        try {
+            LispSymbol real = symbol.uploadVariableDefinition();
+            return Core.thisOrNil(real.getProperty(propertyName));
+        } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+            return LispSymbol.ourNil;
+        }
     }
 
     @Subroutine("put")
     public static LispObject put(Environment environment, LispSymbol symbol, LispSymbol propertyName, LispObject value) {
-        symbol.setProperty(propertyName, value);
-        if (environment.find(symbol.getName()) == null) {
-            environment.defineSymbol(symbol);
+        try {
+            LispSymbol real = symbol.uploadVariableDefinition();
+            real.setProperty(propertyName, value);
+        } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+            symbol.setProperty(propertyName, value);
+            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
         }
         return value;
     }
 
+    public static LispObject getDocumentationProperty (Environment environment, LispObject doc) {
+        if (doc instanceof LispString)
+            return doc;
+        if (doc instanceof LispInteger)
+            return getDocByInt(((LispInteger) doc).getData());
+        return doc.evaluate(environment);
+    }
+
+    private static LispObject getDocByInt (int offset) {
+        if (offset < 0)
+            offset = -offset;
+        try {
+            RandomAccessFile docFile = new RandomAccessFile(
+                    ((LispString)GlobalEnvironment.INSTANCE.find("doc-directory").getValue()).getData() +
+                    ((LispString)GlobalEnvironment.INSTANCE.find("internal-doc-file-name").getValue()).getData(), "r");
+            docFile.seek(offset);
+            String doc = "";
+            String line = docFile.readLine();
+            while (line != null && !line.contains("")) {
+                doc += (doc.length() > 0 ? '\n' : "") + line;
+                line = docFile.readLine();
+            }
+            docFile.close();
+            if (line != null)
+                doc += (doc.length() > 0 ? '\n' : "") + line.substring(0, line.indexOf(''));
+            return new LispString(doc);
+        } catch (IOException e) {
+            return LispSymbol.ourNil;
+        }
+    }
+
     @Subroutine("documentation-property")
-    public static LispObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName, @Nullable @Optional LispObject verbatim)  {
+    public static LispObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName,
+                                                    @Nullable @Optional LispObject verbatim)  {
         //todo: if (verbatim != null) && !(verbatim.equals(LispSymbol.ourNil) ---
         // Third argument RAW omitted or nil means pass the result through `substitute-command-keys' if it is a string.
-        LispObject value = symbol.getProperty(propertyName);
-        if (value == null)
-            value = LispSymbol.ourNil;
-        if (!(value instanceof LispString)) {
-            if (!(value instanceof LispInteger))
-                return value.evaluate(environment);
-            int offset = ((LispInteger) value).getData();
-            if (offset < 0)
-                offset = -offset;
-            try {
-                RandomAccessFile docFile = new RandomAccessFile(((LispString)GlobalEnvironment.INSTANCE.find("doc-directory").getValue()).getData() +
-                        ((LispString)GlobalEnvironment.INSTANCE.find("internal-doc-file-name").getValue()).getData(), "r");
-                docFile.seek(offset);
-                String doc = "";
-                String line = docFile.readLine();
-                while (line != null && !line.contains("")) {
-                    doc += (doc.length() > 0 ? '\n' : "") + line;
-                    line = docFile.readLine();
-                }
-                docFile.close();
-                if (line != null)
-                    doc += (doc.length() > 0 ? '\n' : "") + line.substring(0, line.indexOf(''));
-                return new LispString(doc);
-            } catch (IOException e) {
-                return LispSymbol.ourNil;
-            }
-        }
-        return value;
+
+        LispObject value = get(environment, symbol, propertyName);
+        return getDocumentationProperty(environment, value);
     }
 
     @Subroutine("documentation")
@@ -174,7 +185,7 @@ public abstract class Symbol {
 
     @Subroutine("intern")
     public static LispSymbol intern (Environment environment, LispString name, @Optional LispObject objectArray) {
-        //TODO? you cannot intern a given symbol in more than one obarray
+        //TODO? you cannot intern a given symbol in more than one object array
 
         if (Predicate.isNil(objectArray))
             objectArray = null;
@@ -190,7 +201,7 @@ public abstract class Symbol {
         if (objectArray == null)
             GlobalEnvironment.INSTANCE.defineSymbol(symbol);
         else {
-            environment.defineSymbol(symbol);
+            GlobalEnvironment.INSTANCE.defineSymbol(symbol);
             ((LispVector)objectArray).defineSymbol(symbol);
         }
 

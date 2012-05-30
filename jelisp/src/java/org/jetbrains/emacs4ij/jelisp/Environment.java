@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 
 import java.util.*;
@@ -434,6 +435,17 @@ public abstract class Environment {
 
     public LispSymbol findAndRegisterEmacsFunction (String name) {
         return DefinitionLoader.findAndRegisterEmacsFunction(name);
+    }
+
+    public LispList getEmacsDefFromFile (String name, String file, LispObject typeObject) {
+//        if (typeObject.equals(LispSymbol.ourNil) || typeObject.equals(new LispSymbol("macro"))) //function or macro
+        if (typeObject.equals(new LispSymbol("keymap")))
+            throw new NotImplementedException("keymap autoload");
+        if (file.endsWith(".elc"))
+            throw new NotImplementedException("Cannot load from Emacs byte-compiled files!");
+        if (!file.endsWith(".el"))
+            file += ".el";
+        return DefinitionLoader.getDefFromFile(file, name, DefinitionLoader.DefType.FUN);
     }
 
     //syntax tables

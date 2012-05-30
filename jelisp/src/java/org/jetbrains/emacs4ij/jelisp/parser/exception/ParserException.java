@@ -15,7 +15,7 @@ public class ParserException extends LispException {
         super(message);
     }
 
-    public ParserException (String filename, int lineNumber, String message, String code) {
+    public ParserException (String filename, long lineNumber, String message, String code) {
         super(JelispBundle.message("parser.error", filename, lineNumber, message, code));
     }
 }

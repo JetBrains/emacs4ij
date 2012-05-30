@@ -115,7 +115,7 @@ public abstract class BList {
     public static LispObject nthElement (LispInteger n, LispList list) {
         List<LispObject> elements = list.toLispObjectList();
         int index = n.getData();
-        if (elements.size() < index)
+        if (elements.size() <= index)
             return LispSymbol.ourNil;
         if (index < 0)
             return elements.get(0);
@@ -143,6 +143,12 @@ public abstract class BList {
             throw new WrongTypeArgumentException("consp", cell);
         ((LispList)cell).setCdr(newCdr);
         return newCdr;
+    }
+
+    @Subroutine("setcar")
+    public static LispObject setCar (LispList list, LispObject newCar) {
+        list.setCar(newCar);
+        return newCar;
     }
 
     @Subroutine("delq")

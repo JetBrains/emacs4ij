@@ -248,7 +248,9 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LispList interactive(Environment environment, @Optional LispObject... args) {
-        return environment.isMainOrGlobal() ? interactivePrepare(environment, args) : LispList.list();
+        //todo: allow evaluation only when interactive command is invoked or it is invoked from buffer code line evaluation
+        return environment.isMainOrGlobal() && !GlobalEnvironment.TEST
+                ? interactivePrepare(environment, args) : LispList.list();
     }
 
     @Subroutine("progn")
@@ -477,5 +479,4 @@ public abstract class SpecialForms {
             //todo: restore narrowing state
         }
     }
-
 }

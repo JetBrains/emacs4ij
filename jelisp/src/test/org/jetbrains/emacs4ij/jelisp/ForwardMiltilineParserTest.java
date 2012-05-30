@@ -5,7 +5,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public class ForwardMiltilineParserTest {
     public void testParseSplitString() throws IOException {
         StringReader r = new StringReader ("\"one\ntwo\"");
         BufferedReader br = new BufferedReader(r);
-        ForwardMultilineParser bufferedReaderParser = new ForwardMultilineParser(br, "test");
+        TestForwardMultilineParser bufferedReaderParser = new TestForwardMultilineParser(br, "test");
         String s;
         s = br.readLine();
         LispObject lispObject = bufferedReaderParser.parse(s, 0);
@@ -35,7 +34,7 @@ public class ForwardMiltilineParserTest {
     @Test
     public void testParseList() throws IOException {
         BufferedReader br = new BufferedReader(new StringReader("(defun test (\n) \"doc\ndoc\ndoc()\" (message\n\"test\")\n)"));
-        ForwardMultilineParser bufferedReaderParser = new ForwardMultilineParser(br, "test");
+        TestForwardMultilineParser bufferedReaderParser = new TestForwardMultilineParser(br, "test");
         String s;
         s = br.readLine();
         LispObject lispObject = bufferedReaderParser.parse(s, 0);
@@ -72,7 +71,7 @@ public class ForwardMiltilineParserTest {
                 "\t    (setq line (max (1- line) 0))))\n" +
                 "\t  (setq highlight (ecomplete-highlight-match-line matches line)))");
         BufferedReader br = new BufferedReader(r);
-        ForwardMultilineParser bufferedReaderParser = new ForwardMultilineParser(br, "test");
+        TestForwardMultilineParser bufferedReaderParser = new TestForwardMultilineParser(br, "test");
         String s;
         s = br.readLine();
         LispObject lispObject = bufferedReaderParser.parse(s, 1);
@@ -83,7 +82,7 @@ public class ForwardMiltilineParserTest {
     public void testParseStringWithManyDefs() throws IOException {
         StringReader r = new StringReader("(defvar problems)       (defvar \nqlist) a");
         BufferedReader br = new BufferedReader(r);
-        ForwardMultilineParser p = new ForwardMultilineParser(br, "test");
+        TestForwardMultilineParser p = new TestForwardMultilineParser(br, "test");
         String s;
         s = br.readLine();
         LispObject lispObject = p.parse(s, 0);
@@ -93,5 +92,58 @@ public class ForwardMiltilineParserTest {
         lispObject = p.parseNext();
         Assert.assertEquals(new LispSymbol("a"), lispObject);
         Assert.assertTrue(p.isFinished());
+    }
+
+    @Test
+    public void parseHugeVarDef() throws IOException {
+        String def = "(defvar desktop-minor-mode-handlers\n" +
+                "  nil\n" +
+                "  \"Alist of functions to restore non-standard minor modes.\n" +
+                "Functions are called by `desktop-create-buffer' to restore minor modes.\n" +
+                "List elements must have the form\n" +
+                "\n" +
+                "   (MINOR-MODE . RESTORE-FUNCTION).\n" +
+                "\n" +
+                "Minor modes not specified here, are restored by the standard minor mode\n" +
+                "function.\n" +
+                "\n" +
+                "Handlers are called with argument list\n" +
+                "\n" +
+                "   (DESKTOP-BUFFER-LOCALS)\n" +
+                "\n" +
+                "Furthermore, they may use the following variables:\n" +
+                "\n" +
+                "   desktop-file-version\n" +
+                "   desktop-buffer-file-name\n" +
+                "   desktop-buffer-name\n" +
+                "   desktop-buffer-major-mode\n" +
+                "   desktop-buffer-minor-modes\n" +
+                "   desktop-buffer-point\n" +
+                "   desktop-buffer-mark\n" +
+                "   desktop-buffer-read-only\n" +
+                "   desktop-buffer-misc\n" +
+                "\n" +
+                "When a handler is called, the buffer has been created and the major mode has\n" +
+                "been set, but local variables listed in desktop-buffer-locals has not yet been\n" +
+                "created and set.\n" +
+                "\n" +
+                "Modules that define a minor mode that needs a special handler should contain\n" +
+                "code like\n" +
+                "\n" +
+                "   (defun foo-desktop-restore\n" +
+                "   ...\n" +
+                "   (add-to-list 'desktop-minor-mode-handlers\n" +
+                "                '(foo-mode . foo-desktop-restore))\n" +
+                "\n" +
+                "Furthermore the minor mode function must be autoloaded.\n" +
+                "\n" +
+                "See also `desktop-minor-mode-table'.\")";
+        StringReader r = new StringReader(def);
+        BufferedReader br = new BufferedReader(r);
+        TestForwardMultilineParser p = new TestForwardMultilineParser(br, "test");
+        String s;
+        s = br.readLine();
+        LispObject lispObject = p.parse(s, 0);
+        Assert.assertTrue(lispObject instanceof LispList);
     }
 }

@@ -246,7 +246,7 @@ public abstract class Core {
     public static LispObject macroExpand (Environment environment, LispObject macroCall, @Optional LispObject env) {
         //todo: env
         if (!Predicate.isNil(env))
-            System.err.print("macroexpand: emacs environment = " + env.toString());
+            System.err.println("macroexpand: emacs environment = " + env.toString());
         if (!(macroCall instanceof LispList))
             return macroCall;
         LispSymbol macro;
@@ -335,12 +335,8 @@ public abstract class Core {
         }
     }
 
-    @Subroutine(value = "apply")
+    @Subroutine("apply")
     public static LispObject apply (Environment environment, LispObject function, LispObject... args) {
-//        if (!(function instanceof LispSymbol) || !((LispSymbol) function).isFunction()
-//                || (!((LispSymbol) function).isCustom() && !((LispSymbol) function).isBuiltIn()))
-//            throw new InvalidFunctionException(function.toString());
-
         if (!(args[args.length-1] instanceof LispList) && !args[args.length-1].equals(LispSymbol.ourNil))
             throw new WrongTypeArgumentException("listp", args[args.length-1]);
 
@@ -353,7 +349,16 @@ public abstract class Core {
         }
         environment.setArgumentsEvaluated(true);
         environment.setSpecFormsAndMacroAllowed(false);
-        return ((LispSymbol) function).evaluateFunction(environment, InvalidFunctionException.class, list);
+
+        LambdaOrSymbolWithFunction lambdaOrSymbol = Sequence.verifyFunction(environment, function);
+        LispSymbol f;
+        if (lambdaOrSymbol instanceof Lambda) {
+            f = new LispSymbol("*tmp*");
+            f.setFunction(lambdaOrSymbol);
+        } else {
+            f = (LispSymbol) lambdaOrSymbol;
+        }
+        return f.evaluateFunction(environment, InvalidFunctionException.class, list);
     }
 
     @Subroutine(value = "purecopy")
@@ -480,16 +485,22 @@ public abstract class Core {
 
     @Subroutine("load-average")
     public static LispObject loadAverage (@Optional LispObject useFloats) {
-//        Core.error(JelispBundle.message("load.avg.not.impl"));
         return LispSymbol.ourNil;
     }
-//
-//    //todo: its as compiled lisp macro in timer.el (???)
-//    @Subroutine("timer-create")
-//    public static LispVector timerCreate () {
-//        LispObject[] data = new LispObject[8];
-//        Arrays.fill(data, LispSymbol.ourNil);
-//        data[0] = LispSymbol.ourT;
-//        return new LispVector(data);
-//    }
+
+    @Subroutine("autoload")
+    public static LispObject autoLoad (Environment environment, LispSymbol function, LispString fileName,
+                                       @Optional LispObject doc, LispObject interactive, LispObject type) {
+        LispSymbol f = environment.find(function.getName());
+        if (f != null && f.isFunction())
+            return LispSymbol.ourNil;
+        LispList list = LispList.list(Arrays.asList(new LispSymbol("autoload"),
+                fileName, Core.thisOrNil(doc), Core.thisOrNil(interactive), Core.thisOrNil(type)));
+        if (f == null) {
+            f = new LispSymbol(function.getName());
+            GlobalEnvironment.INSTANCE.defineSymbol(f);
+        }
+        f.setFunction(list);
+        return LispList.list(list);
+    }
 }

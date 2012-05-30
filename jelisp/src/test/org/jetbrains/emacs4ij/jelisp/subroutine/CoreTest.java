@@ -966,40 +966,26 @@ public class CoreTest extends BaseSubroutineTest {
 
     @Test
     public void testTimerFunctionSelfMethod() {
-        String def = "(defun get-setf-method (place &optional env)\n" +
-                "  \"Return a list of five values describing the setf-method for PLACE.\n" +
-                "PLACE may be any Lisp form which can appear as the PLACE argument to\n" +
-                "a macro like `setf' or `incf'.\"\n" +
-                "  (if (symbolp place)\n" +
-                "      (let ((temp (make-symbol \"--cl-setf--\")))\n" +
-                "\t(list nil nil (list temp) (list 'setq place temp) place))\n" +
-                "    (or (and (symbolp (car place))\n" +
-                "\t     (let* ((func (car place))\n" +
-                "\t\t    (name (symbol-name func))\n" +
-                "\t\t    (method (get func 'setf-method))\n" +
-                "\t\t    (case-fold-search nil))\n" +
-                "\t       (or (and method\n" +
-                "\t\t\t(let ((cl-macro-environment env))\n" +
-                "\t\t\t  (setq method (apply method (cdr place))))\n" +
-                "\t\t\t(if (and (consp method) (= (length method) 5))\n" +
-                "\t\t\t    method\n" +
-                "\t\t\t  (error \"Setf-method for %s returns malformed method\"\n" +
-                "\t\t\t\t func)))\n" +
-                "\t\t   (and (string-match-p \"\\\\`c[ad][ad][ad]?[ad]?r\\\\'\" name)\n" +
-                "\t\t\t(get-setf-method (compiler-macroexpand place)))\n" +
-                "\t\t   (and (eq func 'edebug-after)\n" +
-                "\t\t\t(get-setf-method (nth (1- (length place)) place)\n" +
-                "\t\t\t\t\t env)))))\n" +
-                "\t(if (eq place (setq place (macroexpand place env)))\n" +
-                "\t    (if (and (symbolp (car place)) (fboundp (car place))\n" +
-                "\t\t     (symbolp (symbol-function (car place))))\n" +
-                "\t\t(get-setf-method (cons (symbol-function (car place))\n" +
-                "\t\t\t\t       (cdr place)) env)\n" +
-                "\t      (error \"No setf-method known for %s\" (car place)))\n" +
-                "\t  (get-setf-method place env)))))";
-        evaluateString(def);
-        LispObject expected = evaluateString("'(nil nil (--cl-setf--) (setq timer--function --cl-setf--) timer--function)");
-        Assert.assertEquals(expected, evaluateString("(get-setf-method 'timer--function)"));
+        LispObject expected = evaluateString("'((--cl-x--) (timer) (--cl-store--) (progn (aset --cl-x-- 5 --cl-store--)) (timer--function --cl-x--))");
+        Assert.assertEquals(expected, evaluateString("(get-setf-method '(timer--function timer))"));
     }
 
+    @Test
+    public void testApplyLambda() {
+        Assert.assertEquals(new LispInteger(6), evaluateString("(apply '(lambda (a b c) (+ a b c)) '(1 2 3))"));
+    }
+
+    @Test
+    public void testAutoload() {
+        evaluateString("(autoload 'b \"./jelisp/src/test/test\" \"alla\" nil 'anna)");
+        LispObject f = evaluateString("(symbol-function 'b)");
+        Assert.assertTrue(f instanceof LispList);
+        Assert.assertEquals("(autoload \"./jelisp/src/test/test\" \"alla\" nil anna)", f.toString());
+        Assert.assertEquals(new LispString("alla"), evaluateString("(documentation 'b)"));
+        Assert.assertEquals(new LispInteger(10), evaluateString("(b 5)"));
+        Assert.assertEquals(new LispString("doc"), evaluateString("(documentation 'b)"));
+        evaluateString("(fset 'b '(autoload \"./jelisp/src/test/test\"))");
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(documentation 'b)"));
+        Assert.assertEquals(new LispInteger(6), evaluateString("(b 1)"));
+    }
 }

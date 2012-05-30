@@ -8,6 +8,8 @@ import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Symbol;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -270,16 +272,20 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (myName.equals("obarray")) {
             return GlobalEnvironment.INSTANCE.getObjectArray();
         }
-//        if (hasValue())
-//            return getValue();
+
         LispSymbol symbol = environment.find(myName);
         if (symbol == null && isKeyword())
             return this;
         if (symbol != null && symbol.isConstant)
             return symbol;
-        if (symbol == null || (!symbol.hasValue())) {
+
+        if (symbol == null || !symbol.hasValue()) {
             System.out.println("VAR " + myName);
-            symbol = environment.findAndRegisterEmacsVariable(myName);
+            try {
+                symbol = environment.findAndRegisterEmacsVariable(myName);
+            } catch (CyclicDefinitionLoadException e) {
+                throw new VoidVariableException(myName);
+            }
             if (symbol == null || !symbol.hasValue()) {
                 throw new VoidVariableException(myName);
             }
@@ -288,6 +294,18 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         if (value == null) //it was alias and the alias root is not set
             throw new VoidVariableException(myName);
         return value;
+    }
+
+    @NotNull
+    public LispSymbol uploadVariableDefinition() {
+        LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
+        if (symbol == null && isKeyword())
+            return this;
+        if (symbol == null) {
+            System.out.println("VAR " + myName);
+            symbol =  GlobalEnvironment.INSTANCE.findAndRegisterEmacsVariable(myName);
+        }
+        return symbol;
     }
 
     private void checkCallStack () {
@@ -303,15 +321,16 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     }
 
     public LispSymbol uploadFunctionDefinition (Environment environment, Class exception) {
+        if (isFunction())
+            return this;
         LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
         if (symbol == null || !symbol.isFunction()) {
-            //while we are not loading all elisp code, perform search on request
+            //while we are not loading all emacs lisp code, perform search on request
             System.out.println("FUN " + myName);
             try {
-                //file:///home/kate/Downloads/emacs-23.4/lisp/jit-lock.el
-                if (myName.equals("with-buffer-prepared-for-jit-lock"))
-                    System.out.print(1);
                 symbol = environment.findAndRegisterEmacsFunction(myName);
+            } catch (CyclicDefinitionLoadException e) {
+                throw new CyclicFunctionIndirectionException(myName);
             } catch (LispException e) {
                 throw new VoidFunctionException(myName);
             }
@@ -332,16 +351,20 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         return trueFunction.evaluateTrueFunction(environment, exception, args);
     }
 
-    private LispObject evaluateTrueFunction(Environment environment, Class exception,  @Nullable List<LispObject> args) {
+    private LispObject evaluateTrueFunction(Environment environment, Class exception, @Nullable List<LispObject> args) {
+        GlobalEnvironment.ourCallStack.push(myName);
+        return eval(environment, exception, args);
+    }
+
+    private LispObject eval (Environment environment, Class exception, @Nullable List<LispObject> args) {
         if (!environment.areSpecFormsAndMacroAllowed()) {
             if (isSpecialForm() || isMacro())
                 throw new InvalidFunctionException(myName);
             if (!isFunctionAlias())
                 environment.setSpecFormsAndMacroAllowed(true);
         }
-
-        GlobalEnvironment.ourCallStack.push(myName);
-
+        if (myName.equals("cl-setf-do-modify"))
+            System.out.print(1);
         LispObject result;
         if (args == null)
             args = new ArrayList<>();
@@ -359,6 +382,10 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             result = ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
             checkCallStack();
             return result;
+        }
+        if (isAutoload()) {
+            uploadAutoload();
+            return eval(environment, exception, args);
         }
         result = evaluateCustomFunction(environment, args);
         checkCallStack();
@@ -416,22 +443,65 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
         myProperties.put(new LispSymbol(keyName), value);
     }
 
-    private boolean castFunctionCell () {
+    private void uploadAutoload() {
+        String fileName = ((LispString) getCarIfList(((LispList)myFunction).cdr())).getData();
+        LispObject type;
+        try {
+            type = getCarIfList(((LispList)myFunction).nthCdr(4));
+        } catch (LispException e) {
+            type = LispSymbol.ourNil;
+        }
+        try {
+            LispList def = GlobalEnvironment.INSTANCE.getEmacsDefFromFile(myName, fileName, type);
+            if (def == null)
+                throw new AutoloadDefFromFileException(fileName, myName);
+            def.evaluate(GlobalEnvironment.INSTANCE);
+            castFunctionCell();
+        } catch (ReadException e) {
+            throw new AutoloadDefFromFileException(fileName, myName);
+        }
+    }
+
+    private void castFunctionCell () {
         if (myFunction instanceof FunctionCell)
-            return true;
+            return;
         if (isCustom()) {
             castToLambda();
-            return true;
-        } else if (isMacro()) {
-            castToMacro();
-            return true;
+            return;
         }
-        return false;
+        if (isMacro()) {
+            castToMacro();
+            return;
+        }
+        if (isAutoload()) {
+            uploadAutoload();
+            return;
+        }
+        throw new InvalidFunctionException(myFunction.toString());
+    }
+
+    private boolean isAutoload() {
+        return myFunction instanceof LispList && ((LispList) myFunction).car().equals(new LispSymbol("autoload"))
+                && getCarIfList(((LispList)myFunction).cdr()) instanceof LispString;
+    }
+
+    private LispObject getCarIfList (LispObject object) {
+        return object instanceof LispList ? ((LispList) object).car() : object;
     }
 
     public LispObject getDocumentation () {
         if (myFunction == null)
             return getProperty(JelispBundle.message("var.doc"));
+        if (isAutoload()) {
+            LispObject doc = LispSymbol.ourNil;
+            try {
+                doc = getCarIfList(((LispList)myFunction).nthCdr(2));
+            } catch (LispException e) {
+                //skip: autoload form may have no documentation
+            }
+            return Symbol.getDocumentationProperty(GlobalEnvironment.INSTANCE, doc);
+        }
+
         castFunctionCell();
         return ((FunctionCell)myFunction).getDocumentation();
     }
@@ -460,6 +530,15 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
     public boolean isInteractive() {
         if (myFunction == null)
             return false;
+        if (isAutoload()) {
+            try {
+                LispObject interactive = getCarIfList(((LispList)myFunction).nthCdr(4));
+                return !Predicate.isNil(interactive);
+            } catch (LispException e) {
+                //autoload form may have no interactive form
+                return false;
+            }
+        }
         castFunctionCell();
         return myFunction instanceof LispCommand && ((LispCommand) myFunction).isInteractive();
     }
@@ -486,6 +565,7 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
 
     @Override
     public LispKeymap getKeymap() {
+        //todo: upload keymap if autoload
         LispSymbol symbol = this;
         while (symbol.isFunction()) {
             LispObject function = symbol.getFunction();

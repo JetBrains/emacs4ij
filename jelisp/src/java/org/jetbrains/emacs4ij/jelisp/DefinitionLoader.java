@@ -1,5 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
@@ -7,8 +11,13 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,17 +31,18 @@ public abstract class DefinitionLoader {
     private static enum SymbolType {VAR, FUN, CMD}
     protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
     protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode", "define-minor-mode");
-    private static Map<String, File> myUploadHistory = new LinkedHashMap<>();
-    protected static Map<Identifier, HashMap<String, Integer>> myIndex = new HashMap<>();
+    private static Map<String, String> myUploadHistory = new LinkedHashMap<>();
+    protected static Map<Identifier, SortedMap<String, Long>> myIndex = new HashMap<>();
+    private static String myDefinitionSrcFile;
     //for test
-    private static List<String> mySkipForms = Arrays.asList("language/");
+    private static List<String> mySkipForms = new ArrayList<>();
 
     static { //index Emacs lisp sources
         scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
     }
 
     private static void scan (File file) {
-        if (file.isDirectory()) {
+        if (file.isDirectory() && !file.getAbsolutePath().contains("/language/")) {
             File[] files = file.listFiles();
             if (files == null)
                 return;
@@ -41,7 +51,7 @@ public abstract class DefinitionLoader {
             }
             return;
         }
-        if (file.getAbsolutePath().endsWith(".el")) {
+        if (file.getAbsolutePath().endsWith(".el") && !file.getAbsolutePath().contains("/language/")) {
             FileScanner.scan(file);
         }
     }
@@ -55,7 +65,7 @@ public abstract class DefinitionLoader {
     public static void test () {}
 
     //for test
-    public static Map<String, Integer> getFileName(String name, DefType type) {
+    public static Map<String, Long> getFileName(String name, DefType type) {
         return myIndex.get(new Identifier(name, type));
     }
 
@@ -70,98 +80,128 @@ public abstract class DefinitionLoader {
         return false;
     }
 
+    private static Long getFileOffset(RandomAccessFile file, final String path) {
+        try {
+            return file.getFilePointer();
+        } catch (IOException | NullPointerException e) {
+            throw new ReadException(JelispBundle.message("invalid.file.state", path));
+        }
+    }
+
     public static void loadFile (String fileName) {
         String fullName = GlobalEnvironment.getEmacsSource() + "/lisp/" + fileName;
-        BufferedReader reader;
+        RandomAccessFile reader;
         try {
-            reader = new BufferedReader(new FileReader(fullName));
+            reader = new RandomAccessFile(fullName, "r");
         } catch (FileNotFoundException e) {
             throw new EnvironmentException(e.getMessage());
         }
         String line;
-        int index = 0;
         ForwardMultilineParser p = new ForwardMultilineParser(reader, fullName);
         while (true){
             try {
                 line = reader.readLine();
-                index++;
             } catch (IOException e) {
-                throw new ReadException(fullName +  ", line " + index);
+                //todo: line index
+                throw new ReadException(fullName +  ", line " + 0);
             }
             if (line == null)
                 break;
 
             boolean skip = skip(line);
-            LispObject parsed = p.parse(line, index);
-            index = p.getLine();
+            LispObject parsed = p.parse(line, getFileOffset(reader, fullName));
             if (Predicate.isNil(parsed) || skip)
                 continue;
 
             while (true) {
                 try {
 //                    System.out.println("PARSED: " + line);
+                    if (line.contains("defstruct") && line.contains("timer"))
+                        System.out.print(1);
                     parsed.evaluate(GlobalEnvironment.INSTANCE);
                 } catch (LispException e) {
                     System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
-    //                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
+                    //                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
                 }
                 if (p.isFinished())
                     break;
                 parsed = p.parseNext();
-                index = p.getLine();
             }
         }
     }
 
-    //TODO: its only for test
     public static LispList getDefFromFile(String fileName, String functionName, DefType type) {
-        return FileScanner.getDefFromFile(new File(fileName), -1, new Identifier(functionName, type));
+        return FileScanner.getDefFromFile(fileName, -1, new Identifier(functionName, type));
     }
 
-    protected static int defStartIndex(String line, String name, List<String> defForms) {
-        for (String defForm: defForms) {
-            List<String> middleDef = Arrays.asList('(' + defForm + ' ' + name + ' ', '(' + defForm + " '" + name + ' ',
-                    '(' + defForm + ' ' + name + ')');
-            List<String> endDef = Arrays.asList('(' + defForm + ' ' + name, '(' + defForm + " '" + name);
-            for (String def: endDef) {
-                if (line.endsWith(def))
-                    return line.lastIndexOf(def);
+    protected static Pair<Integer, String> defStartIndex(String line, List<String> defForms) {
+        Matcher m = defStart(line, null, defForms);
+        if (m.find()) {
+            String match = m.group();
+            int length = match.length();
+            char c = match.charAt(length - 1);
+            int nameEnd = c == ')' || Character.isWhitespace(c) ? length - 1 : length;
+            int nameReversedStart = length - nameEnd;
+            String reversed = new StringBuffer(match).reverse().toString();
+            for (; nameReversedStart < reversed.length(); nameReversedStart++) {
+                c = reversed.charAt(nameReversedStart);
+                if (Character.isWhitespace(c) || c == '\'')
+                    break;
             }
-            for (String def: middleDef) {
-                if (line.contains(def))
-                    return line.indexOf(def);
-            }
-//            if (line.endsWith('(' + defForm + ' ' + name)
-//                    || line.endsWith('(' + defForm + " '" + name)
-//                    || line.contains('(' + defForm + ' ' + name + ' ')
-//                    || line.contains('(' + defForm + " '" + name + ' ')
-//                    || line.contains('(' + defForm + ' ' + name + ')')) {
-//                return true;
-//            }
+            String name = match.substring(length - nameReversedStart, nameEnd);
+            return new Pair<>(m.start(), name);
+        }
+        return null;
+    }
+
+    protected static int defStartIndex(String line, @NotNull String name, List<String> defForms) {
+        Matcher m = defStart(line, name, defForms);
+        if (m.find()) {
+            return m.start();
         }
         return -1;
     }
 
-    private static LispSymbol processDef (LispList definition, String name, DefType type) {
-        if (definition == null)
-            return null;
-        LispObject evaluated = definition.evaluate(GlobalEnvironment.INSTANCE);
-        if (!(evaluated instanceof LispSymbol))
-            throw new InternalError(JelispBundle.message("function.failed", "find and register emacs form", name));
-        if (!((LispSymbol) evaluated).getName().equals(name))
-            System.err.println("DefinitionLoader.processDef: evaluated = " + ((LispSymbol) evaluated).getName() + ", name = " + name);
-        LispSymbol value = GlobalEnvironment.INSTANCE.find(name);
-//        LispSymbol value = GlobalEnvironment.INSTANCE.find(((LispSymbol) evaluated).getName());
-        if (value == null) {
-            value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), type);
+    private static Matcher defStart(String line, @Nullable String name, List<String> defForms) {
+        StringBuilder defs = new StringBuilder();
+        for (String def: defForms) {
+            defs.append(def).append('|');
         }
-        return value;
+        String defAlternative = defs.toString().substring(0, defs.length()-1);
+        String nameRegex = name == null ? "[^\\s'\\(\\)]+" : StringUtil.escapeToRegexp(name);
+        Pattern p = Pattern.compile("\\(\\s*(" + defAlternative + ")\\s+'?" + nameRegex + "([\\)\\s]|\\z)");
+        return p.matcher(line);
+    }
+
+    private static LispSymbol processDef (LispList definition, Identifier id) {
+        try {
+            if (definition == null)
+                return null;
+            LispObject evaluated;
+            try {
+                evaluated = definition.evaluate(GlobalEnvironment.INSTANCE);
+            } catch (LispException e) { //invalid definition
+                myIndex.get(id).remove(myDefinitionSrcFile);
+                return findAndRegisterEmacsForm(id.getName(), id.getType());
+            }
+//            if (!(evaluated instanceof LispSymbol))
+//                throw new InternalError(JelispBundle.message("function.failed", "find and register emacs form", id.getName()));
+//            if (!((LispSymbol) evaluated).getName().equals(id.getName()))
+//                System.err.println("DefinitionLoader.processDef: evaluated = " + ((LispSymbol) evaluated).getName() + ", name = " + id.getName());
+            LispSymbol value = GlobalEnvironment.INSTANCE.find(id.getName());
+            if (value == null) {
+                value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
+            }
+            return value;
+        } finally {
+            FileScanner.onUploadFinish(id);
+        }
     }
 
     private static LispList lookInSubrFirst (Identifier id) {
         for (String filename: myIndex.get(id).keySet()) {
             if (filename.endsWith("/lisp/subr.el")) {
-                return FileScanner.getDefFromFile(new File(filename), myIndex.get(id).get(filename), id);
+                return FileScanner.getDefFromFile(filename, myIndex.get(id).get(filename), id);
             }
         }
         return null;
@@ -172,30 +212,34 @@ public abstract class DefinitionLoader {
             if (filename.endsWith("/lisp/subr.el")) {
                 continue;
             }
-            LispList def = FileScanner.getDefFromFile(new File(filename), myIndex.get(id).get(filename), id);
+            LispList def = FileScanner.getDefFromFile(filename, myIndex.get(id).get(filename), id);
             if (def != null)
                 return def;
         }
         return null;
     }
 
+    private static void checkExistence (Identifier id) {
+        if (!myIndex.containsKey(id)) {
+//            if (!myUploadHistory.isEmpty()) {
+////                Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
+////                System.err.println("last upload call: " + entries[entries.length - 1] + ", search for: " + id.getName());
+//            }
+
+            if (id.getType() == DefType.FUN)
+                throw new VoidFunctionException(id.getName());
+            throw new VoidVariableException(id.getName());
+        }
+    }
+
     private static LispSymbol findAndRegisterEmacsForm (String name, DefType type) {
         Identifier id = new Identifier(name, type);
-        if (!myIndex.containsKey(id)) {
-            if (!myUploadHistory.isEmpty()) {
-                Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
-                System.err.print(entries[entries.length - 1]);
-            }
-//            throw new InternalError(JelispBundle.message("unknown.lisp.object", id.toString()));
-            if (type == DefType.FUN)
-                throw new VoidFunctionException(name);
-            throw new VoidVariableException(name);
-        }
+        FileScanner.checkForCyclicUploading(id);
+        checkExistence(id);
         LispList definition;
-        HashMap<String, Integer> map = myIndex.get(id);
+        SortedMap<String, Long> map = myIndex.get(id);
         if (map.size() == 1) {
-            Map.Entry<String, Integer> entry = map.entrySet().iterator().next();
-            definition = FileScanner.getDefFromFile(new File(entry.getKey()), entry.getValue(), id);
+            definition = FileScanner.getDefFromFile(map.firstKey(), map.get(map.firstKey()), id);
         } else {
             definition = getDefFromInvokersSrc(id);
             if (definition == null) {
@@ -204,7 +248,7 @@ public abstract class DefinitionLoader {
                     definition = lookExceptSubr(id);
             }
         }
-        return processDef(definition, name, type);
+        return processDef(definition, id);
     }
 
     public static LispSymbol findAndRegisterEmacsFunction(String name) {
@@ -216,15 +260,16 @@ public abstract class DefinitionLoader {
     }
 
     private static LispList getDefFromInvokersSrc(Identifier id) {
-        HashMap<String, Integer> map = myIndex.get(id);
+        SortedMap<String, Long> map = myIndex.get(id);
         for (String invoker: GlobalEnvironment.ourCallStack) {
             if (!myUploadHistory.containsKey(invoker))
                 continue;
-            String key = myUploadHistory.get(invoker).getAbsolutePath();
+            String key = myUploadHistory.get(invoker);
             if (map.containsKey(key)) {
-                LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), map.get(key),  id);
-                if (def != null)
+                LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), map.get(key), id);
+                if (def != null) {
                     return def;
+                }
             }
         }
         return null;
@@ -282,130 +327,204 @@ public abstract class DefinitionLoader {
     }
 
     protected static class FileScanner {
-        private static int myFileIndex = -1;
-        private static File myFile;
+        private static RandomAccessFile myFile = null;
+        private static String myFilePath;
+        private static Deque<Identifier> myLoadStack = new ArrayDeque<>();
 
         static void scan (File file) {
-            myFile = file;
-            BufferedReader reader;
             try {
-                reader = new BufferedReader(new FileReader(myFile));
-            } catch (FileNotFoundException e) { //don't scan =)
-                return;
+                myFile = new RandomAccessFile(file, "r");
+            } catch (FileNotFoundException e) {
+                throw new ReadException(JelispBundle.message("no.file", file.getAbsolutePath()));
             }
+            myFilePath = file.getAbsolutePath();
             String line;
-            myFileIndex = 0;
             while (true) {
                 try {
-                    line = reader.readLine();
-                    myFileIndex++;
+                    line = myFile.readLine();
                 } catch (IOException e) {
                     return;
                 }
                 if (line == null)
                     break;
-                scanLine(reader, line);
+                scanLine(line);
             }
         }
 
-        static LispList getDefFromFile (File file, int lineOffset, Identifier id) {
-            myFile = file;
-            BufferedReader reader;
+        private static void closeFile() {
+            if (myFile == null)
+                return;
             try {
-                reader = new BufferedReader(new FileReader(myFile));
-            } catch (FileNotFoundException e) {
-                throw new ReadException(JelispBundle.message("no.file", myFile.getName()));
+                myFile.close();
+                myFile = null;
+                myFilePath = null;
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            String line;
-            myFileIndex = 0;
-            while (true) {
-                try {
-                    line = reader.readLine();
-                    myFileIndex++;
-                } catch (IOException e) {
-                    throw new ReadException(myFile.getName());
+        }
+
+        static void checkForCyclicUploading (Identifier id) {
+            for (Identifier uploading: myLoadStack) {
+                if (uploading.equals(id))
+                    throw new CyclicDefinitionLoadException(id.toString());
+            }
+        }
+
+        static void onUploadFinish (Identifier id) {
+            Identifier first = myLoadStack.removeFirst();
+            if (!id.equals(first)) {
+                System.err.println(String.format("Load stack error: top of stack = %s, current id = %s, left stack = %s",
+                        first.toString(), id.toString(), myLoadStack.toString()));
+//                    throw new InternalException(JelispBundle.message("upload.stack.error"));
+            }
+        }
+
+        static LispList getDefFromFile (final String fileName, long offset, Identifier id) {
+            checkForCyclicUploading(id);
+            try {
+                myLoadStack.push(id);
+                myFile = new RandomAccessFile(fileName, "r");
+                myFilePath = fileName;
+                if (offset == -1) {
+                    SortedMap<String, Long> map = myIndex.get(id);
+                    if (map != null && map.containsKey(myFilePath)) {
+                        offset = map.get(myFilePath);
+                    } else {
+                        //we don't know offset
+                        return getDefFromFile(fileName, id);
+                    }
                 }
-
-                if (lineOffset < myFileIndex && lineOffset != -1)
-                    throw new InternalException("Didn't reach definition start!");
-
-                if (lineOffset != myFileIndex && lineOffset != -1)
-                    continue;
-
+                try {
+                    myFile.seek(offset);
+                } catch (IOException e) {
+                    throw new ReadException(JelispBundle.message("invalid.offset", myFilePath, offset));
+                }
+                String line = myFile.readLine();
                 if (line == null)
                     return null;
-
                 int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
-                if (defStart != -1)
-                    return getDef(reader, line, defStart, id.getName());
-                else {
-                    System.out.print(2);
+                if (defStart != -1) {
+                    myDefinitionSrcFile = myFilePath;
+                    return getDef(line, defStart, id.getName());
+                } else {
+                    myDefinitionSrcFile = null;
+                    System.out.println(id.toString() + ", file " + myFilePath);
+                    return null;
                 }
+            } catch (FileNotFoundException e) {
+                throw new ReadException(JelispBundle.message("no.file", fileName));
+            } catch (IOException e1) {
+                throw new ReadException(myFilePath);
+            }   finally {
+                closeFile();
             }
         }
 
-        private static LispList getDef(BufferedReader reader, String line, int index, String name) {
-            ForwardMultilineParser p = new ForwardMultilineParser(reader, myFile.getAbsolutePath());
-            LispObject parsed = p.parse(line, myFileIndex, index);
+        static LispList getDefFromFile (String fileName, Identifier id) {
+            String line;
+            while (true) {
+                try {
+                    line = myFile.readLine();
+                } catch (IOException e) {
+                    throw new ReadException(fileName);
+                }
+                if (line == null)
+                    return null;
+                int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
+                if (defStart == -1)
+                    continue;
+                myDefinitionSrcFile = myFilePath;
+                return getDef(line, defStart, id.getName());
+            }
+        }
+
+        private static LispList getDef(String line, int index, String name) {
+            ForwardMultilineParser p = new ForwardMultilineParser(myFile, myFilePath);
+            LispObject parsed = p.parse(line, getFileOffset(myFile, myFilePath), index);
             if (parsed instanceof LispList) {
-                myUploadHistory.put(name, myFile);
-                myFileIndex = p.getLine();
+                myUploadHistory.put(name, myFilePath);
                 return (LispList) parsed;
             }
             throw new InternalException(JelispBundle.message("unexpected.object.type"));
         }
 
-        private static void scanLine(BufferedReader reader, String line) {
-            if (!scanLine(DefType.FUN, reader, line, myFileIndex))
-                scanLine(DefType.VAR, reader, line, myFileIndex);
+        private static void scanLine(String line) {
+            if (line.trim().startsWith(";"))
+                return;
+            scanLine(DefType.FUN, line);
+            scanLine(DefType.VAR, line);
         }
 
-        private static boolean scanLine (DefType type, BufferedReader reader, String line, int index) {
+        protected static void scanLine (DefType type, String line) {
             List<String> defs = type == DefType.FUN ? myDefFuns : myDefVars;
-            for (String def: defs) {
-                if (line.startsWith("(" + def + " ")) {
-                    int start = 2 + def.length();
-                    if (line.charAt(start) == '\'')
-                        start++;
-                    int end = line.indexOf(' ', start);
-                    if (end == -1) {
-                        end = line.charAt(line.length()-1) == ')' ? line.length() - 1 : line.length();
-                    }
-                    String name = line.substring(start, end);
-                    //todo: back
-                    Identifier id = new Identifier(name, type);
-                    /*Identifier id = null;
-                    if (type == DefType.FUN) {//check if it is command
-                        try {
-                            LispList definition = getDef(reader, line, name);
-                            if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.ourT))
-                                id = new Identifier(name, SymbolType.CMD);
-                        } catch (ParserException e) {
-                            if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def
-                                if (!e.getMessage().contains("\u001B") && !e.getMessage().contains("�")) {
-//                                    System.err.println("Function " + name + ": " + e.getMessage());
-                                } else {
-//                                    System.err.println(myFile.getAbsolutePath());
-                                }
-                            //skip here
-                        }
-                    }
-                    if (id == null)
-                        id = new Identifier(name, type);*/
-                    if (myIndex.containsKey(id)) {
-                        HashMap<String, Integer> map = myIndex.get(id);
-                        if (map.containsKey(myFile.getAbsolutePath()))
-                            return true;
-                        map.put(myFile.getAbsolutePath(), index);
-                        return true;
-                    }
-                    HashMap<String, Integer> map = new HashMap<>();
-                    map.put(myFile.getAbsolutePath(), index);
-                    myIndex.put(id, map);
-                    return true;
-                }
+            long baseOffset = getFileOffset(myFile, myFilePath) - line.getBytes().length - 1;
+            String substring = line;
+            while (!substring.isEmpty()) {
+                Pair<Integer, String> start = defStartIndex(substring, defs);
+                if (start == null)
+                    return;
+                Identifier id = new Identifier(start.getSecond(), type);
+                saveId(id, baseOffset + start.getFirst());
+                substring = substring.substring(start.getFirst() + 1);
+                baseOffset += start.getFirst() + 1;
             }
-            return false;
+        }
+
+        private static void saveId (Identifier id, long offset) {
+            //todo: back
+            //reader == myFile
+            /*Identifier id = null;
+    if (type == DefType.FUN) {//check if it is command
+        try {
+            LispList definition = getDef(reader, line, name);
+            if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.ourT))
+                id = new Identifier(name, SymbolType.CMD);
+        } catch (ParserException e) {
+            if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def
+                if (!e.getMessage().contains("\u001B") && !e.getMessage().contains("�")) {
+//                                    System.err.println("Function " + name + ": " + e.getMessage());
+                } else {
+//                                    System.err.println(myFile.getAbsolutePath());
+                }
+            //skip here
+        }
+    }
+    if (id == null)
+        id = new Identifier(name, type);*/
+            if (myIndex.containsKey(id)) {
+                SortedMap<String, Long> map = myIndex.get(id);
+                if (!map.containsKey(myFilePath))
+                    map.put(myFilePath, offset);
+                return;
+            }
+            TreeMap<String, Long> map = new TreeMap<>(FileNamesComparator.INSTANCE);
+            map.put(myFilePath, offset);
+            myIndex.put(id, map);
+        }
+    }
+
+    //prefer root sources among all others
+    private static class FileNamesComparator implements Comparator<String> {
+        private static FileNamesComparator INSTANCE = new FileNamesComparator();
+
+        private static int countFileSeparators (String s) {
+            int counter = 0;
+            for (int i = 0; i < s.length(); i++) {
+                if (s.charAt(i) == File.separatorChar)
+                    counter++;
+            }
+            return counter;
+        }
+
+        @Override
+        public int compare(String o1, String o2) {
+            if (o1.equals(o2))
+                return 0;
+            int n1 = countFileSeparators(o1);
+            int n2 = countFileSeparators(o2);
+            return n1 < n2
+                    ? -1
+                    : n1 == n2 ? o1.compareTo(o2) : 1;
         }
     }
 }

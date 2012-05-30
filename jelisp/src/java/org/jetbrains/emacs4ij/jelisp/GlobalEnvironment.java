@@ -34,7 +34,7 @@ public class GlobalEnvironment extends Environment {
     public static Deque<String> ourCallStack = new ArrayDeque<>();
 
     //temporary solution while i'm not loading all sources
-    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el");
+    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el");
 
     public static GlobalEnvironment INSTANCE = null;
 
@@ -123,27 +123,11 @@ public class GlobalEnvironment extends Environment {
         defineGlobalVariables();
         defineUserOptions();
         setSubroutines();
-////        note: it's important to load backquote before defsubst
+//        note: it's important to load backquote before defsubst
         DefinitionLoader.loadFile(myFilesToLoad.get(0));
         defineDefForms();
         for (int i = 1; i < myFilesToLoad.size(); ++i)
             DefinitionLoader.loadFile(myFilesToLoad.get(i));
-
-        initSpecial();
-    }
-
-    private void initSpecial() {
-        //todo: timer--function and timer-create are compiled macro in emacs-lisp/timer.el
-
-        SpecialForms.defineFunction(GlobalEnvironment.INSTANCE, new LispSymbol("timer--function"),
-                LispList.list(new LispSymbol("cl-x")),
-                    LispList.list(new LispSymbol("aref"), new LispSymbol("cl-x"), new LispInteger(5)));
-
-        LispObject[] data = new LispObject[8];
-        Arrays.fill(data, LispSymbol.ourNil);
-        data[0] = LispSymbol.ourT;
-        SpecialForms.defmacro(new LispSymbol("timer-create"), LispList.list(),
-                LispList.list(new LispSymbol("quote"), new LispVector(data)));
     }
 
     private GlobalEnvironment (Ide ide) {
@@ -230,6 +214,7 @@ public class GlobalEnvironment extends Environment {
         addBufferLocalVariable("major-mode", new LispSymbol("fundamental-mode"));
         addBufferLocalVariable("change-major-mode-hook");
         addBufferLocalVariable("char-property-alias-alist");
+        addBufferLocalVariable("buffer-file-name");
     }
 
     private void defineGlobalVariables() {
@@ -275,14 +260,19 @@ public class GlobalEnvironment extends Environment {
                 if (annotation == null)
                     continue;
                 String name = annotation.value();
-                if (mySymbols.containsKey(name))
-                    throw new InternalException("Duplicate symbol: " + name + '!');
-                LispSymbol subroutine = new LispSymbol(name);
-                subroutine.setFunction(new Primitive(annotation, myDocumentationExtractor.getSubroutineDoc(name), type));
-                if (activeKeymap != null && !StringUtil.isEmptyOrSpaces(annotation.key())) {
-                    activeKeymap.defineKey(subroutine, new LispString(annotation.key()));
+                LispSymbol symbol;
+                if (mySymbols.containsKey(name)) {
+                    symbol = mySymbols.get(name);
+                    if (symbol.isFunction())
+                        throw new InternalException("Duplicate built-in: " + name + '!');
+                } else {
+                    symbol = new LispSymbol(name);
+                    mySymbols.put(name, symbol);
                 }
-                mySymbols.put(name, subroutine);
+                symbol.setFunction(new Primitive(annotation, myDocumentationExtractor.getSubroutineDoc(name), type));
+                if (activeKeymap != null && !StringUtil.isEmptyOrSpaces(annotation.key())) {
+                    activeKeymap.defineKey(symbol, new LispString(annotation.key()));
+                }
                 //System.out.print(name + ' ');
             }
         }

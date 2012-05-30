@@ -390,7 +390,7 @@ public class LispList implements LispSequence {
         for (; i < n && result instanceof LispList; ++i) {
             result = ((LispList)result).realCdr();
         }
-        if (i < n && result != null)
+        if (i < n || result == null)
             throw new WrongTypeArgumentException("listp", result);
         return result;
     }
@@ -409,7 +409,7 @@ public class LispList implements LispSequence {
         myCar = object;
     }
 
-    private void setCar (LispObject car) {
+    public void setCar (@NotNull LispObject car) {
         myCar = car;
     }
 

@@ -212,6 +212,7 @@ public abstract class LispSubroutine {
                     }
                     if (cause instanceof LispException)
                         throw (LispException) cause;
+                    cause.printStackTrace();
                     throw new LispException(e.getCause().getMessage());
                 }
             }

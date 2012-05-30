@@ -115,16 +115,6 @@ abstract class Parser extends Observable {
         return LispList.list(new LispSymbol("\\`"), lispObject);
     }
 
-    protected LispObject parseComma() {
-        String spec = "\\,";
-        if (getCurrentChar() == '@') {
-            advance();
-            spec += '@';
-        }
-        LispObject lispObject = parseObject(true);
-        return LispList.list(new LispSymbol(spec), lispObject);
-    }
-
     protected LispObject parseObject() {
         return parseObject(false);
     }
