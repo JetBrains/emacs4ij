@@ -245,6 +245,7 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("minibuffer-history", LispList.list());
         defineSymbol("read-expression-map");
         defineSymbol("minibuffer-history-position");
+        defineSymbol("timer-idle-list");
     }
 
     public LispVector getObjectArray() {

@@ -63,6 +63,8 @@ public abstract class SpecialForms {
 
     private static LispObject executeLet (boolean isStar, Environment environment, LispList varList, LispObject... body) {
         Environment inner = new CustomEnvironment(environment);
+        if (body.length == 8 && varList.size() == 3)
+            System.out.print(1);
         bindLetVariables(isStar, inner, varList);
         LispObject result = LispSymbol.ourNil;
         for (LispObject bodyForm: body) {

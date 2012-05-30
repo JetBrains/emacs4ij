@@ -116,8 +116,6 @@ public abstract class DefinitionLoader {
             while (true) {
                 try {
 //                    System.out.println("PARSED: " + line);
-                    if (line.contains("defstruct") && line.contains("timer"))
-                        System.out.print(1);
                     parsed.evaluate(GlobalEnvironment.INSTANCE);
                 } catch (LispException e) {
                     System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
@@ -190,7 +188,11 @@ public abstract class DefinitionLoader {
 //                System.err.println("DefinitionLoader.processDef: evaluated = " + ((LispSymbol) evaluated).getName() + ", name = " + id.getName());
             LispSymbol value = GlobalEnvironment.INSTANCE.find(id.getName());
             if (value == null) {
-                value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
+                if (evaluated instanceof LispSymbol && ((LispSymbol)evaluated).getName().equals(id.getName())) {
+                    GlobalEnvironment.INSTANCE.defineSymbol((LispSymbol) evaluated);
+                    return (LispSymbol) evaluated;
+                } else
+                    value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
             }
             return value;
         } finally {

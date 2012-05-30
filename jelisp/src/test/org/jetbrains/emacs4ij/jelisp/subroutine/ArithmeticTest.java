@@ -204,4 +204,27 @@ public class ArithmeticTest extends BaseSubroutineTest {
         eq = evaluateString("(eql 'a 1.0)");
         Assert.assertEquals(LispSymbol.ourNil, eq);
     }
+
+    @Test
+    public void testFloor() {
+        Assert.assertEquals(new LispInteger(5), evaluateString("(floor 5.36)"));
+        Assert.assertEquals(new LispInteger(5), evaluateString("(floor 5.36 nil)"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("(floor 5.36 2.02)"));
+    }
+
+    @Test
+    public void testDivide() {
+        Assert.assertEquals(new LispInteger(3), evaluateString("(/ 6 2)"));
+        Assert.assertEquals(new LispFloat(6.125), evaluateString("(/ 24.5 2 2 1 1 1)"));
+        Assert.assertEquals(new LispInteger(1), evaluateString("(/ 5 3 1)"));
+        Assert.assertEquals(new LispFloat(2), evaluateString("(/ 5 1 2.5)"));
+    }
+
+    @Test
+    public void testMod() {
+        Assert.assertEquals(new LispInteger(1), evaluateString("(mod 15 2)"));
+        Assert.assertEquals(new LispInteger(2), evaluateString("(mod 2 15)"));
+        Assert.assertEquals(new LispFloat(2.2), evaluateString("(mod 2.2 2.3)"));
+        Assert.assertEquals(new LispFloat(2.1000000000000005), evaluateString("(mod 4.4 2.3)"));
+    }
 }

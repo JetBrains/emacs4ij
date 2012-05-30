@@ -171,4 +171,37 @@ public abstract class Arithmetic {
         return new LispInteger(value.getData() << count.getData());
     }
 
+    @Subroutine("floor")
+    public static LispInteger floor (LispNumber number, @Optional LispObject divisor) {
+        if (!Predicate.isNil(divisor) && !(divisor instanceof LispNumber))
+            throw new WrongTypeArgumentException("numberp", divisor);
+        double d = Predicate.isNil(divisor) ? 1 : ((LispNumber)divisor).getDoubleData();
+        double n = number.getDoubleData();
+        return new LispInteger((int)Math.floor(n/d));
+    }
+
+    private static LispNumber makeNumber (double n) {
+        return n == (int)n ? new LispInteger((int)n) : new LispFloat(n);
+    }
+
+    @Subroutine("/")
+    public static LispNumber divide (LispObject dividend, LispObject divisor, @Optional LispObject... divisors) {
+        double dividendN = numberOrMarkerToNumber(dividend).getDoubleData();
+        double divisorN = numberOrMarkerToNumber(divisor).getDoubleData();
+        double result = dividendN/divisorN;
+        boolean isDouble = dividend instanceof LispFloat || divisor instanceof LispFloat;
+        if (divisors != null)
+            for (LispObject d: divisors) {
+                result /= numberOrMarkerToNumber(d).getDoubleData();
+                isDouble |= d instanceof LispFloat;
+            }
+        return fromDouble(isDouble, result);
+    }
+
+    @Subroutine("mod")
+    public static LispNumber modulo (LispObject num1, LispObject num2) {
+        double n1 = numberOrMarkerToNumber(num1).getDoubleData();
+        double n2 = numberOrMarkerToNumber(num2).getDoubleData();
+        return makeNumber(n1 % n2);
+    }
 }

@@ -363,8 +363,6 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             if (!isFunctionAlias())
                 environment.setSpecFormsAndMacroAllowed(true);
         }
-        if (myName.equals("cl-setf-do-modify"))
-            System.out.print(1);
         LispObject result;
         if (args == null)
             args = new ArrayList<>();
