@@ -10,6 +10,7 @@ import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -31,7 +32,9 @@ import java.util.List;
  * Time: 4:01 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
+public final class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
+    private static IdeaMiniBuffer myInstance;
+
     private int myActivationsDepth = 0;
     private InteractiveReader myInteractive;
     private Integer myCharCode = null;
@@ -41,10 +44,20 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
     private boolean exitOnSuccess = false;
     private static Deque<InteractiveReader> myInteractiveStack = new ArrayDeque<>();
 
-    public IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
-        super(environment, " *Minibuf-" + number + '*', editor);
+    private IdeaMiniBuffer (int number, Editor editor, Environment environment, LispBuffer parent) {
+        super(" *Minibuf-" + number + '*', environment, editor, null);
         myParent = parent;
         myAlarm = new Alarm();
+    }
+
+    public static void init (@Nullable Editor editor, @NotNull Environment environment) {
+        if (myInstance != null)
+            return;
+        myInstance = new IdeaMiniBuffer(0, editor, environment, null);
+    }
+
+    public static IdeaMiniBuffer getInstance() {
+        return myInstance;
     }
 
     private final DocumentListener myMiniBufferChangedListener = new DocumentListener() {
@@ -148,7 +161,7 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
     @Override
     public void readParameter (@NotNull InteractiveReader interactive) {
         if (!isOpened) {
-            open(myEnvironment.getBufferCurrentForEditing());
+            open(myEnvironment.getCurrentNonToolBuffer());
             if (myActivationsDepth > 1) {
                 myEnvironment.killBuffer(this);
                 GlobalEnvironment.echo(Emacs4ijBundle.message("call.interactively.message"), GlobalEnvironment.MessageType.WARNING);
@@ -242,21 +255,24 @@ public class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
         return myActivationsDepth;
     }
 
-    private void open(final LispBuffer parent) {
+    private void open(LispBuffer parent) {
+        if (parent.isToolBuffer())
+            throw new Emacs4ijFatalException(Emacs4ijBundle.message("open.minibuffer.in.tool.window"));
+
         final EditorTextField input = new EditorTextField("", ourProject, FileTypes.PLAIN_TEXT);
-        parent.getEditor().setHeaderComponent(input);
+        ((IdeaBuffer)parent).getEditor().setHeaderComponent(input);
         myParent = parent;
         input.setEnabled(true);
         Editor editor = input.getEditor();
         if (editor != null) {
             ((EditorEx) editor).addFocusListener(myFocusListener);
-            myEnvironment.onWindowOpened(this, editor);
-            editor.getContentComponent().setForeground(Color.GREEN);
-            editor.getComponent().setForeground(Color.BLUE);
+            myEnvironment.onBufferOpened(this, editor);
+            ((EditorEx) editor).setBackgroundColor(Color.GREEN);
+
+            myActivationsDepth++;
+            isOpened = true;
+            setActive();
         }
-        myActivationsDepth++;
-        isOpened = true;
-        setActive();
     }
 
     //for test

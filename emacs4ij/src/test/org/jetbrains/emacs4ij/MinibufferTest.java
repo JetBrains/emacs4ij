@@ -27,13 +27,12 @@ public class MinibufferTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                new IdeProvider(), new TestFrameManagerImpl());
+        myTestsPath = TestSetup.setGlobalEnv();
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EditorTextField t = new EditorTextField();
-        myMiniBuffer = new IdeaMiniBuffer(0, t.getEditor(), myEnvironment, null);
+        IdeaMiniBuffer.init(t.getEditor(), myEnvironment);
+        myMiniBuffer = IdeaMiniBuffer.getInstance();
     }
 
     private LispObject evaluateString (String lispCode) throws LispException {

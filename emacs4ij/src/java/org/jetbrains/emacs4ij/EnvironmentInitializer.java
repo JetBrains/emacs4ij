@@ -83,7 +83,7 @@ public abstract class EnvironmentInitializer {
         if (GlobalEnvironment.INSTANCE.getAllFrames().size() != 1) {
             GlobalEnvironment.INSTANCE.setSelectedFrame(GlobalEnvironment.INSTANCE.getFrame(windowManager.getIdeFrame(project)));
         }
-        new IdeaMiniBuffer(0, null, environment, null);
+        IdeaMiniBuffer.init(null, environment);
         UIUtil.invokeLaterIfNeeded(new Runnable() {
             @Override
             public void run() {
