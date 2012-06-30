@@ -314,6 +314,12 @@ public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapC
             while (!q.equals(myName))
                 q = GlobalEnvironment.ourCallStack.removeFirst();
         if (!q.equals(myName)) {
+            if (myName.equals("eval-last-sexp")) {
+                //we caught exception during the evaluation, so clear call stack
+                assert GlobalEnvironment.ourCallStack.getLast().equals(myName);
+                GlobalEnvironment.ourCallStack.clear();
+                return;
+            }
             System.out.println(String.format("Top of stack = %s, current symbol = %s, left stack = %s",
                     q, myName, GlobalEnvironment.ourCallStack.toString()));
             throw new InternalException(JelispBundle.message("call.stack.error"));

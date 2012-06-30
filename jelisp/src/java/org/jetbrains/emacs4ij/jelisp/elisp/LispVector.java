@@ -1,11 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.Shortcut;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;

@@ -38,12 +38,9 @@ public class BufferTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                new IdeProvider(), new TestFrameManagerImpl());
+        myTestsPath = TestSetup.setGlobalEnv();
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
-
         List<String> list = Arrays.asList((new File(myTestsPath)).list());
         Collections.sort(list);
         for (String fileName: list) {
@@ -220,34 +217,34 @@ public class BufferTest extends CodeInsightFixtureTestCase {
     public void testSwitchToBuffer_Nil() {
         LispObject lispObject = evaluateString("(switch-to-buffer nil)");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(((IdeaBuffer)myEnvironment.getBufferCurrentForEditing()).getEditor() , myFileEditorManager.getSelectedTextEditor());
     }
 
     public void testSwitchToBuffer_ExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\")");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(((IdeaBuffer)myEnvironment.getBufferCurrentForEditing()).getEditor(), myFileEditorManager.getSelectedTextEditor());
     }
 
 
     public void testSwitchToBuffer_NonExistentString() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"test.txt\")");
         Assert.assertEquals(new LispString("It is not allowed to create files this way."), lispObject);
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(((IdeaBuffer)myEnvironment.getBufferCurrentForEditing()).getEditor(), myFileEditorManager.getSelectedTextEditor());
     }
 
 
     public void testSwitchToBuffer_Buffer() {
         LispObject lispObject = evaluateString("(switch-to-buffer (get-buffer \"" + myTestFiles[0] + "\"))");
         Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), lispObject);
-        Assert.assertEquals(myEnvironment.getBufferCurrentForEditing().getEditor() , myFileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(((IdeaBuffer)myEnvironment.getBufferCurrentForEditing()).getEditor(), myFileEditorManager.getSelectedTextEditor());
     }
 
 
     public void testSwitchToBuffer_ExistentString_NoRecord() {
         LispObject lispObject = evaluateString("(switch-to-buffer \"" + myTestFiles[0] + "\" 5)");
         Assert.assertEquals(myEnvironment.getBufferByIndex(0), lispObject);
-        Assert.assertEquals(myEnvironment.getBufferByIndex(0).getEditor() , myFileEditorManager.getSelectedTextEditor());
+        Assert.assertEquals(((IdeaBuffer)myEnvironment.getBufferByIndex(0)).getEditor(), myFileEditorManager.getSelectedTextEditor());
     }
 
 
@@ -657,14 +654,14 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         evaluateString("(push-mark 3 t t)");
         LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
         String insertion = "^A^B^C";
-        String text = buffer.getEditor().getDocument().getText();
+        String text = buffer.getText();
         Assert.assertFalse(text.contains(insertion));
         int point = buffer.point();
         LispMarker mark = buffer.getMark();
         Assert.assertEquals("3", mark.getPosition().toString());
         LispObject result = evaluateString("(insert 1 2 3)");
         Assert.assertEquals(LispSymbol.ourNil, result);
-        text = buffer.getEditor().getDocument().getText();
+        text = buffer.getText();
         System.out.println(text);
         Assert.assertTrue(text.contains(insertion));
         Assert.assertEquals(point + insertion.length(), buffer.point());
@@ -816,6 +813,15 @@ public class BufferTest extends CodeInsightFixtureTestCase {
         DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
         evaluateString("(emacs-lisp-mode)");
         evaluateString("(font-lock-mode)");
+        LispSymbol f = (LispSymbol) evaluateString("'font-lock-string-face");
+        Assert.assertTrue(f == f.getValue());
+        LispObject fProp = evaluateString("(symbol-plist 'font-lock-string-face)");
+        LispObject fValueProp = evaluateString("(symbol-plist (symbol-value 'font-lock-string-face))");
+        Assert.assertEquals(fProp, fValueProp);
+//        System.out.println(fValueProp.toString());
+
+        evaluateString("(switch-to-buffer \"5.txt\")");
+        Assert.assertEquals(f, evaluateString("(get-char-property 5 'face)"));
     }
 
     public void testSetf() {

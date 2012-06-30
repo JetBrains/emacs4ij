@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;

@@ -45,7 +45,7 @@ public abstract class Frame {
     @Subroutine("frame-parameter")
     public static LispObject frameParameter (Environment environment, LispObject frame, LispSymbol parameter) {
 //        System.out.println("Ask for frame parameter: " + parameter.getName());
-        return (getFrame(environment, frame)).getParameter(parameter.getName());
+        return (getFrame(environment, frame)).getParameter(parameter);
     }
 
     @Subroutine("get-buffer-window")
@@ -118,5 +118,27 @@ public abstract class Frame {
     @Subroutine("minibuffer-window")
     public static LispObject minibufferWindow (Environment environment, @Optional LispFrame frame) {
         return Core.thisOrNil(environment.getFrameMinibuffer(getLiveFrame(environment, frame)));
+    }
+
+    @Subroutine("modify-frame-parameters")
+    public static LispSymbol modifyFrameParameters(Environment environment, LispObject frameObject, LispList parameters) {
+        LispFrame frame = getLiveFrame(environment, frameObject);
+        LispObject tail;
+        for (tail = parameters; tail instanceof LispList; tail = ((LispList) tail).cdr()) {
+            LispObject pair = ((LispList) tail).car();
+            if (!(pair instanceof LispList))
+                throw new WrongTypeArgumentException("listp", pair);
+            LispObject name = ((LispList) pair).car();
+            if (!(name instanceof LispSymbol))
+                throw new WrongTypeArgumentException("symbolp", name);
+            frame.setParameter((LispSymbol) name, ((LispList) pair).cdr());
+        }
+        return LispSymbol.ourNil;
+    }
+
+    @Subroutine("frame-parameters")
+    public static LispList frameParameters(Environment environment, @Optional LispObject frameObject) {
+        LispFrame frame = getFrame(environment, frameObject);
+        return frame.getParameters();
     }
 }

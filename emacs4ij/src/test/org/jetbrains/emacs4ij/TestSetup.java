@@ -11,11 +11,18 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
  */
 public abstract class TestSetup {
     public static String setGlobalEnv() {
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+        if (GlobalEnvironment.INSTANCE == null) {
+            System.out.println("INIT GLOBAL ENV");
+            GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
+            GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
+                    new IdeProvider(), new TestFrameManagerImpl());
+        }
         GlobalEnvironment.TEST = true;
+        GlobalEnvironment.INSTANCE.startRecording();
         return "/home/kate/emacs4ij/emacs4ij/src/testSrc/";
     }
+
 
     public static String getCause (Throwable e) {
         if (e.getCause() == null)

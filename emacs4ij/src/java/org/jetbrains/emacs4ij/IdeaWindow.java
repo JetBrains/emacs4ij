@@ -1,13 +1,17 @@
 package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.editor.ex.FocusChangeListener;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -31,7 +35,24 @@ public class IdeaWindow implements LispWindow {
         myId = id;
         myBuffer = buffer;
         myFrame = frame;
+        setEditor(editor);
+    }
+
+    private void setEditor (@Nullable Editor editor) {
         myEditor = editor;
+        if (editor == null)
+            return;
+        ((EditorEx) myEditor).addFocusListener(new FocusChangeListener() {
+            @Override
+            public void focusGained(Editor editor) {
+                if (myBuffer != null)
+                    GlobalEnvironment.INSTANCE.switchToBuffer(myBuffer);
+            }
+
+            @Override
+            public void focusLost(Editor editor) {
+            }
+        });
     }
 
     public Editor getEditor() {
@@ -114,12 +135,21 @@ public class IdeaWindow implements LispWindow {
     @Override
     public void open (@NotNull Editor editor) {
         assert myEditor == null;
-        myEditor = editor;
+        setEditor(editor);
     }
 
     @Override
     public void closeTab() {
+        VirtualFile file = ((IdeaBuffer) myBuffer).getFile();
+        if (file == null)
+            return;
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(IdeaBuffer.getProject());
-        fileEditorManager.closeFile(((IdeaBuffer)myBuffer).getFile());
+        fileEditorManager.closeFile(file);
+    }
+
+    @Override
+    public Integer getDisplayStart() {
+        //todo
+        return 1;
     }
 }

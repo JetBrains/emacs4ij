@@ -6,10 +6,12 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
@@ -37,12 +39,21 @@ public class EmacsAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         if (Predicate.isNil(myCommand))
             throw new LispException(Emacs4ijBundle.message("emacs.action.nocommand.error", e.toString()));
+
         Environment environment;
         try {
-            environment = PlatformDataKeys.PROJECT.getData(e.getDataContext()).getComponent(MyProjectComponent.class).getEnvironment();
+            Environment main = PlatformDataKeys.PROJECT.getData(e.getDataContext())
+                    .getComponent(MyProjectComponent.class).getEnvironment();
+            try {
+                LispBuffer current = main.getBufferCurrentForEditing();
+                environment = current.getEnvironment();
+            } catch (NoOpenedBufferException exc2) {
+                environment = main;
+            }
         } catch (NullPointerException exc) {
             return;
         }
+
         try {
             if (myCommand instanceof LispKeymap) {
                 GlobalEnvironment.echo(JelispBundle.message("not.supported", "long keystrokes"), GlobalEnvironment.MessageType.WARNING);

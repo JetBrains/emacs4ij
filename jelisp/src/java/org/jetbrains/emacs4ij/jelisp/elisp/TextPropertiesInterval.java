@@ -20,6 +20,19 @@ public class TextPropertiesInterval implements Comparable<TextPropertiesInterval
         myProperties = new LinkedHashMap<>(properties);
     }
 
+    public LispList getPropertyList() {
+        List<LispObject> list = new ArrayList<>();
+        for (Map.Entry<LispObject, LispObject> entry: myProperties.entrySet()) {
+            list.add(entry.getKey());
+            list.add(entry.getValue());
+        }
+        return LispList.list(list);
+    }
+
+    public Map<LispObject, LispObject> getProperties () {
+        return myProperties;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(myRange.toString() + " (");

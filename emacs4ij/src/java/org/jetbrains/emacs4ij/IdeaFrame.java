@@ -4,12 +4,15 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
 import javax.swing.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,11 +24,10 @@ import java.util.Map;
  */
 public class IdeaFrame implements LispFrame {
     private final IdeFrameImpl myFrame;
-    private Map<String, LispObject> myParameters = new HashMap<>();
+    private Map<LispSymbol, LispObject> myParameters = new HashMap<>();
 
     public IdeaFrame(IdeFrameImpl frame) {
         myFrame = frame;
-        myParameters.put("visibility", LispSymbol.ourT);
         initParameters();
     }
 
@@ -41,6 +43,7 @@ public class IdeaFrame implements LispFrame {
     }
 
     private void initParameters() {
+        setParameter("visibility", LispSymbol.ourT);
         setParameter("buffer-predicate", LispSymbol.ourNil);
     }
 
@@ -54,28 +57,36 @@ public class IdeaFrame implements LispFrame {
         return this;
     }
 
+    private LispObject getParameter(String parameter) {
+        return getParameter(new LispSymbol(parameter));
+    }
+
     @Override
-    public LispObject getParameter(String parameter) {
+    public LispObject getParameter(LispSymbol parameter) {
         LispObject value = myParameters.get(parameter);
         if (value == null)
-            throw new VoidVariableException(parameter);
+            throw new VoidVariableException(parameter.getName());
         return value;
     }
 
     @Override
-    public void setParameter(String name, LispObject value) {
+    public void setParameter(LispSymbol name, LispObject value) {
         myParameters.put(name, value);
+    }
+
+    private void setParameter(String name, LispObject value) {
+        myParameters.put(new LispSymbol(name), value);
     }
 
     @Override
     public void setVisible(boolean visible) {
-        myParameters.put("visibility", visible ? LispSymbol.ourT : LispSymbol.ourNil);
+        setParameter("visibility", visible ? LispSymbol.ourT : LispSymbol.ourNil);
         myFrame.setVisible(visible);
     }
 
     @Override
     public void setIconified(boolean iconified) {
-        myParameters.put("visibility", iconified ? new LispSymbol("icon") : LispSymbol.ourT);
+        setParameter("visibility", iconified ? new LispSymbol("icon") : LispSymbol.ourT);
         if (!iconified) {
             myFrame.show();
             //WindowManagerImpl.getInstance().
@@ -90,16 +101,27 @@ public class IdeaFrame implements LispFrame {
 
     @Override
     public boolean isIconified() {
-        return myParameters.get("visibility").equals(new LispSymbol("icon"));
+        return getParameter("visibility").equals(new LispSymbol("icon"));
     }
 
     @Override
     public boolean isVisible() {
-        return myParameters.get("visibility").equals(LispSymbol.ourT);
+        return getParameter("visibility").equals(LispSymbol.ourT);
     }
 
     @Override
     public JComponent getComponent() {
         return myFrame.getComponent();
+    }
+
+    @Override
+    public LispList getParameters() {
+        List<LispObject> list = new ArrayList<>();
+        for (Map.Entry<LispSymbol, LispObject> parameter: myParameters.entrySet()) {
+            LispList item = LispList.list(parameter.getKey());
+            item.append(parameter.getValue());
+            list.add(item);
+        }
+        return LispList.list(list);
     }
 }

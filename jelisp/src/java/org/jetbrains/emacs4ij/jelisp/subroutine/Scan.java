@@ -266,7 +266,7 @@ public abstract class Scan {
 
         public SyntaxIterator (Environment e, int start, int end) {
             environment = e;
-            text = environment.getBufferCurrentForEditing().getDocument().getText();
+            text = environment.getBufferCurrentForEditing().getText();
             from = start - 1;
 //            System.out.println(text.substring(from));
             finish = end;

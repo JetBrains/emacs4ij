@@ -24,10 +24,10 @@ public class KeymapTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                new IdeProvider(), new TestFrameManagerImpl());
+        TestSetup.setGlobalEnv();
+//        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
+//                new IdeProvider(), new TestFrameManagerImpl());
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
     }
 

@@ -14,4 +14,5 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  */
 public interface LispBufferFactory {
     LispBuffer createBuffer (Environment environment, VirtualFile file, @Nullable Editor editor);
+    LispBuffer createBuffer (Environment environment, String name, String defaultDir, LispToolWindow window);
 }

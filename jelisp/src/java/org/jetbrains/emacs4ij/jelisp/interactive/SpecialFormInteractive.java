@@ -1,11 +1,11 @@
 package org.jetbrains.emacs4ij.jelisp.interactive;
 
 import com.intellij.openapi.util.text.StringUtil;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 
 import java.util.List;
 

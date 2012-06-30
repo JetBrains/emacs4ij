@@ -28,10 +28,8 @@ public class OptionsFormTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                new IdeProvider(), new TestFrameManagerImpl());
+        myTestsPath = TestSetup.setGlobalEnv();
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         List<String> list = Arrays.asList((new File(myTestsPath)).list());
         Collections.sort(list);

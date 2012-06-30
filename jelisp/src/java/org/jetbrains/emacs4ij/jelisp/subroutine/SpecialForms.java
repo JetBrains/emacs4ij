@@ -1,10 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
-import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.*;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.Error;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
@@ -63,8 +60,6 @@ public abstract class SpecialForms {
 
     private static LispObject executeLet (boolean isStar, Environment environment, LispList varList, LispObject... body) {
         Environment inner = new CustomEnvironment(environment);
-        if (body.length == 8 && varList.size() == 3)
-            System.out.print(1);
         bindLetVariables(isStar, inner, varList);
         LispObject result = LispSymbol.ourNil;
         for (LispObject bodyForm: body) {
@@ -178,6 +173,8 @@ public abstract class SpecialForms {
         if (variable == null) {
             LispObject value = initValue == null ? null : initValue.evaluate(environment);
             LispSymbol symbol = new LispSymbol(name.getName());
+            if (value instanceof LispSymbol && ((LispSymbol) value).getName().equals(name.getName()))
+                value = symbol;
             symbol.setValue(value);
             if (docString != null) {
                 symbol.setVariableDocumentation(docString.evaluate(environment));
@@ -250,8 +247,7 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LispList interactive(Environment environment, @Optional LispObject... args) {
-        //todo: allow evaluation only when interactive command is invoked or it is invoked from buffer code line evaluation
-        return environment.isMainOrGlobal() && !GlobalEnvironment.TEST
+        return environment instanceof BufferEnvironment
                 ? interactivePrepare(environment, args) : LispList.list();
     }
 
@@ -480,5 +476,73 @@ public abstract class SpecialForms {
         } finally {
             //todo: restore narrowing state
         }
+    }
+
+    @Subroutine("with-output-to-temp-buffer")
+    public static LispObject withOutputToTempBuffer (Environment environment, LispObject bufferName,
+                                                     @Optional LispObject... body) {
+        LispObject realName = bufferName.evaluate(environment);
+        if (!(realName instanceof LispString))
+            throw new WrongTypeArgumentException("stringp", bufferName);
+        LispBuffer buffer = Buffer.getBufferCreate(environment, ((LispString)realName).getData());
+        assert buffer != null;
+        LispSymbol standardOutput = environment.find("standard-output");
+        assert standardOutput != null : "void-variable standard-output";
+        LispObject oldOutput = standardOutput.getValue();
+        standardOutput.setValue(buffer);
+        boolean showBuffer = true;
+        try {
+            buffer.setText("");
+            progn(environment, body);
+        } catch (Exception e) {
+            showBuffer = false;
+            throw e;
+        }
+        finally {
+            if (showBuffer) {
+                buffer.setModified(null); //set unmodified
+                Core.functionCall(environment, new LispSymbol("display-buffer"), buffer);
+                LispSymbol f = GlobalEnvironment.INSTANCE.find("temp-buffer-show-function");
+                if (f.hasValue()) {
+                    Core.functionCall(environment, new LispSymbol("temp-buffer-show-function"), buffer);
+                } else {
+                    Core.runHooks(environment, new LispSymbol("temp-buffer-show-hook"));
+                }
+            }
+            standardOutput.setValue(oldOutput);
+        }
+
+        /*
+
+Bind `standard-output' to buffer BUFNAME, eval BODY, then show that buffer.
+
+This construct makes buffer BUFNAME empty before running BODY.
+It does not make the buffer current for BODY.
+Instead it binds `standard-output' to that buffer, so that output
+generated with `prin1' and similar functions in BODY goes into
+the buffer.
+
+At the end of BODY, this marks buffer BUFNAME unmodifed and displays
+it in a window, but does not select it.  The normal way to do this is
+by calling `display-buffer', then running `temp-buffer-show-hook'.
+However, if `temp-buffer-show-function' is non-nil, it calls that
+function instead (and does not run `temp-buffer-show-hook').  The
+function gets one argument, the buffer to display.
+
+The return value of `with-output-to-temp-buffer' is the value of the
+last form in BODY.  If BODY does not finish normally, the buffer
+BUFNAME is not displayed.
+
+This runs the hook `temp-buffer-setup-hook' before BODY,
+with the buffer BUFNAME temporarily current.  It runs the hook
+`temp-buffer-show-hook' after displaying buffer BUFNAME, with that
+buffer temporarily current, and the window that was used to display it
+temporarily selected.  But it doesn't run `temp-buffer-show-hook'
+if it uses `temp-buffer-show-function'.
+
+
+                         */
+
+        return null;
     }
 }

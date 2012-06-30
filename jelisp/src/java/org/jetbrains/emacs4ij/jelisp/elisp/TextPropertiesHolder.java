@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,6 +99,8 @@ public abstract class TextPropertiesHolder {
     }
 
     protected List<TextPropertiesInterval> getTextPropertiesInRange (int start, int end) {
+        if (start < 0 || end > size())
+            throw new ArgumentOutOfRange(start, end);
         List<TextPropertiesInterval> list = new ArrayList<>();
         for (TextPropertiesInterval interval : myIntervals) {
             if (interval.getRange().getEnd() <= start) {
@@ -110,4 +114,30 @@ public abstract class TextPropertiesHolder {
         Collections.sort(list);
         return list;
     }
+
+    @Nullable
+    private TextPropertiesInterval getTextPropertiesIntervalFor (int position) {
+        if (position == size())
+            return null;
+        List<TextPropertiesInterval> properties = getTextPropertiesInRange(position, position);
+        assert properties.size() <= 1 : "Multiple text properties intervals for position";
+        if (properties.isEmpty())
+            return null;
+        return properties.get(0);
+    }
+
+    public LispObject getTextPropertiesAt (int position) {
+        TextPropertiesInterval interval = getTextPropertiesIntervalFor(position);
+        return interval == null
+                ? LispSymbol.ourNil
+                : interval.getPropertyList();
+    }
+
+    public LispObject getTextPropertyAt (int position, LispObject property) {
+        TextPropertiesInterval interval = getTextPropertiesIntervalFor(position);
+        return interval == null
+                ? LispSymbol.ourNil
+                : Core.thisOrNil(interval.getProperties().get(property));
+    }
+
 }

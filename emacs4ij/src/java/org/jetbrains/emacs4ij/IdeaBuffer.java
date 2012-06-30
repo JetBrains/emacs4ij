@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
+import com.intellij.openapi.editor.ex.FocusChangeListener;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -13,6 +14,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -42,9 +44,9 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     protected static Project ourProject;
     protected LispMarker myMark = new LispMarker();
     protected Document myDocument;
-    private VirtualFile myVirtualFile = null;
+    private VirtualFile myVirtualFile;
 
-    private LispKeymap myKeymap = null;
+    private LispKeymap myKeymap;
     private LispSyntaxTable mySyntaxTable;
 
     protected int myModificationsCount = 0;
@@ -70,36 +72,54 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         }
     };
 
-    protected IdeaBuffer (Environment environment, String name, @Nullable Editor editor) {
+    private final FocusChangeListener myBaseFocusListener = new FocusChangeListener() {
+        @Override
+        public void focusGained(Editor editor) {
+            myEnvironment.switchToBuffer(IdeaBuffer.this);
+        }
+
+        @Override
+        public void focusLost(Editor editor) {
+        }
+    };
+
+    protected IdeaBuffer (String name, Environment environment, @Nullable Editor editor, @Nullable VirtualFile file) {
         myEnvironment = new BufferEnvironment(environment);
         myName = name;
+        myVirtualFile = file;
         mySyntaxTable = SyntaxTable.getStandardSyntaxTable();
         //todo: set fundamental mode, it has StandardSyntaxTable set
 
         myEnvironment.defineBuffer(this);
         if (editor == null)
             return;
-        myEnvironment.onWindowOpened(this, editor);
+        myEnvironment.onBufferOpened(this, editor);
     }
 
     public IdeaBuffer(Environment environment, FileEditorManager fileEditorManager, VirtualFile file) {
-        this(environment, file.getName(), null);
-        myVirtualFile = file;
+        this(file.getName(), environment, null, file);
         setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
         for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
-            myEnvironment.onWindowOpened(this, ((TextEditor)fileEditor).getEditor());
+            myEnvironment.onBufferOpened(this, ((TextEditor) fileEditor).getEditor());
         }
         FileEditor selected = fileEditorManager.getSelectedEditor(file);
         if (selected != null)
             myEnvironment.switchToWindow(((TextEditor)selected).getEditor(), true);
     }
 
-    public IdeaBuffer(Environment environment, VirtualFile file, @Nullable Editor editor) {
-        this(environment, file.getName(), editor);
-        myVirtualFile = file;
+    public IdeaBuffer(Environment environment, @NotNull VirtualFile file, @Nullable Editor editor) {
+        this(file.getName(), environment, editor, file);
         setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
     }
 
+    public IdeaBuffer (Environment environment, String name, String defaultDir, LispToolWindow window) {
+        this(name, environment, null, null);
+        myEnvironment.onToolBufferOpened(window);
+        onOpen(window.getEditor().getDocument());
+        setLocalVariable("default-directory", new LispString(defaultDir));
+    }
+
+    @Nullable
     public VirtualFile getFile() {
         return myVirtualFile;
     }
@@ -116,10 +136,9 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         myDocument.addDocumentListener(myDocumentListener);
     }
 
-    @Override
     public void reopen (Editor editor, VirtualFile file) {
         assert file == myVirtualFile;
-        myEnvironment.onWindowOpened(this, editor);
+        myEnvironment.onBufferOpened(this, editor);
     }
 
     @Override
@@ -188,6 +207,17 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         return myEnvironment;
     }
 
+    /**
+     * Emacs determines whether the buffer is not a normal buffer for editing by enclosing it's name with stars: "*Help*".
+     * In special cases a space is added at the beginning: " *Echo Area 0*".
+     *
+     * @return true if a buffer is a tool buffer
+     */
+    @Override
+    public boolean isToolBuffer() {
+        return myName.startsWith("*") || myName.startsWith(" ");
+    }
+
     public static void setProject(Project project) {
         ourProject = project;
     }
@@ -200,8 +230,8 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         myEnvironment.setVariable(new LispSymbol(name, value));
     }
 
-    @Override
-    public Document getDocument() {
+    @NotNull
+    protected Document getDocument() {
         if (myDocument == null)
             throw new NullBufferDocument(myName);
         return myDocument;
@@ -226,8 +256,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         return parsed.evaluate(myEnvironment);
     }
 
-    @Override
-    public Editor getEditor() {
+   protected Editor getEditor() {
         return myEnvironment.getBufferLastSelectedWindow(this).getEditor();
     }
 
@@ -270,7 +299,12 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     @Override
     public int point() {
         Editor editor = getEditor();
-        return editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition()) + 1;
+        try {
+            return editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition()) + 1;
+        } catch (NullPointerException e) {
+            System.out.print(1);
+            throw e;
+        }
     }
 
     @Override
@@ -287,8 +321,23 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         return (int)getDocument().getText().charAt(point()-2);
     }
 
+    @Override
+    public String getText() {
+        return getDocument().getText();
+    }
+
+    @Override
+    public void setText(String text) {
+        getDocument().setText(text);
+    }
+
     public void setPoint(int position) {
-        getEditor().getCaretModel().moveToOffset(position);
+        try {
+            getEditor().getCaretModel().moveToOffset(position - 1);
+        } catch (IndexOutOfBoundsException e){
+            System.out.print(1);
+            throw e;
+        }
     }
 
     public int pointMin() {
@@ -381,7 +430,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         //it is not in opened files, open it.
         assert myVirtualFile != null;
         Editor editor = ((TextEditor)fileEditorManager.openFile(myVirtualFile, true)[0]).getEditor();
-        myEnvironment.onWindowOpened(this, editor);
+        myEnvironment.onBufferOpened(this, editor);
         myEnvironment.switchToWindow(editor, false);
     }
 
@@ -552,14 +601,14 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (myName != null ? myName.hashCode() : 0);
-        result = 31 * result + (myEnvironment != null ? myEnvironment.hashCode() : 0);
-        result = 31 * result + (myMarkers != null ? myMarkers.hashCode() : 0);
-        result = 31 * result + (myMark != null ? myMark.hashCode() : 0);
-        result = 31 * result + (myDocument != null ? myDocument.hashCode() : 0);
-        result = 31 * result + (myVirtualFile != null ? myVirtualFile.hashCode() : 0);
-        result = 31 * result + (myKeymap != null ? myKeymap.hashCode() : 0);
-        result = 31 * result + (mySyntaxTable != null ? mySyntaxTable.hashCode() : 0);
-        result = 31 * result + (myDocumentListener != null ? myDocumentListener.hashCode() : 0);
+//        result = 31 * result + (myEnvironment != null ? myEnvironment.hashCode() : 0);
+//        result = 31 * result + (myMarkers != null ? myMarkers.hashCode() : 0);
+//        result = 31 * result + (myMark != null ? myMark.hashCode() : 0);
+//        result = 31 * result + (myDocument != null ? myDocument.hashCode() : 0);
+//        result = 31 * result + (myVirtualFile != null ? myVirtualFile.hashCode() : 0);
+//        result = 31 * result + (myKeymap != null ? myKeymap.hashCode() : 0);
+//        result = 31 * result + (mySyntaxTable != null ? mySyntaxTable.hashCode() : 0);
+//        result = 31 * result + (myDocumentListener != null ? myDocumentListener.hashCode() : 0);
         return result;
     }
 }

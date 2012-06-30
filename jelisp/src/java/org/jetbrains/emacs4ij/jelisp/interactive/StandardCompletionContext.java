@@ -1,10 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp.interactive;
 
 import com.intellij.openapi.util.text.StringUtil;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.File;

@@ -32,10 +32,8 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
 
     @Before
     public void setUp() throws Exception {
-        myTestsPath = TestSetup.setGlobalEnv();
         super.setUp();
-        GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                new IdeProvider(), new TestFrameManagerImpl());
+        myTestsPath = TestSetup.setGlobalEnv();
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         List<String> list = Arrays.asList((new File(myTestsPath)).list());
         Collections.sort(list);
@@ -242,10 +240,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testInsertNil() {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 2)");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         evaluateString("(prin1 1 m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         Assert.assertEquals("3", m.getPosition().toString());
     }
 
@@ -254,10 +252,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 3)");
         evaluateString("(set-marker-insertion-type m t)");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         evaluateString("(prin1 1 m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         Assert.assertEquals("4", m.getPosition().toString());
     }
 
@@ -265,10 +263,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testInsertKey() {
         evaluateString("(setq m (make-marker))");
         evaluateString("(set-marker m 3)");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         evaluateString("(prin1 \"hello\" m)");
         LispMarker m = (LispMarker) evaluateString("m");
-        System.out.println(myEnvironment.getBufferCurrentForEditing().getEditor().getDocument().getText());
+        System.out.println(myEnvironment.getBufferCurrentForEditing().getText());
         Assert.assertEquals("10", m.getPosition().toString());
     }
 
@@ -480,11 +478,11 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     @Test
     public void testReplaceMatchInStringShorter () {
         evaluateString("(set-match-data (list 1 2))");
-        String init = myEnvironment.getBufferCurrentForEditing().getDocument().getText();
+        String init = myEnvironment.getBufferCurrentForEditing().getText();
         LispObject replaced = evaluateString("(replace-match \"anna\")");
         Assert.assertEquals(LispSymbol.ourNil, replaced);
         String expected ="anna" + init.substring(1);
-        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getDocument().getText());
+        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getText());
         Assert.assertEquals(5, myEnvironment.getBufferCurrentForEditing().point());
     }
 
@@ -500,10 +498,10 @@ public class MarkerTest extends CodeInsightFixtureTestCase {
     public void testReplaceMatchInBuffer () {
         evaluateString("(switch-to-buffer \"1.txt\")");
         evaluateString("(set-match-data '(2 10 1 3 4 6))");
-        String init = myEnvironment.getBufferCurrentForEditing().getDocument().getText();
+        String init = myEnvironment.getBufferCurrentForEditing().getText();
         evaluateString("(replace-match \"one\\2two\")");
         String expected = init.substring(0, 1) + "one" + init.substring(3, 5) + "two" + init.substring(9);
-        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getDocument().getText());
+        Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getText());
         Assert.assertEquals(10, myEnvironment.getBufferCurrentForEditing().point());
     }
 

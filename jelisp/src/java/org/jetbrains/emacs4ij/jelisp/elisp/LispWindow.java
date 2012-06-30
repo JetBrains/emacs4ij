@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,4 +20,11 @@ public interface LispWindow extends LispObject {
     void close();
     void open (@NotNull Editor editor);
     void closeTab();
+
+    /**
+     *
+     * @return the position in displayed buffer, at which the visible part of buffer starts and NULL if none
+     */
+    @Nullable
+    Integer getDisplayStart();
 }
