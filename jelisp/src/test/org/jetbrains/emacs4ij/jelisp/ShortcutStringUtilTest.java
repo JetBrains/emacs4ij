@@ -115,4 +115,10 @@ public class ShortcutStringUtilTest {
         list.add(new KeyboardShortcut(KeyStroke.getKeyStroke((char)127), null));
         Assert.assertEquals(list, ShortcutStringUtil.toKeyboardShortcutList(s));
     }
+
+    @Test
+    public void testCtrl() {
+        LispString s = new LispString("^x");
+        Assert.assertEquals("ctrl X", ShortcutStringUtil.toShortcutString(s));
+    }
 }

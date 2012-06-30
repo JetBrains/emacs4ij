@@ -117,6 +117,12 @@ public class TextPropertiesTest extends BaseSubroutineTest {
         Assert.assertEquals("#(\"hello\" 0 5 (3 4 1 2))", evaluateString("s").toString());
     }
 
+    @Test
+    public void testGetCharProperty() {
+        evaluateString("(setq s \"hello world\")");
+
+    }
+
 }
 
 

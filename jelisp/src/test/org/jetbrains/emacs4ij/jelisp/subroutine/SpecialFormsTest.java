@@ -6,7 +6,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
-import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -578,10 +577,18 @@ default-directory
         Assert.assertEquals("\"4\"", r.toString());
     }
 
-
-    @Test (expected = ScanException.class)
     public void testNilChar() {
-        evaluateString("(setq b ?\\^( )");
+        try {
+            evaluateString("(setq b ?\\^)");
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("End of file during parsing"));
+        }
+        Assert.fail();
+    }
+
+    public void testFunChar() {
+        Assert.assertEquals(new LispInteger(67108904), evaluateString("(setq b ?\\^( ))"));
+        Assert.assertEquals(new LispInteger(67108904), evaluateString("(setq b ?\\^())"));
     }
 
     @Test

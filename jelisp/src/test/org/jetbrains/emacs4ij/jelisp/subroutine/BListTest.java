@@ -403,7 +403,7 @@ public class BListTest extends BaseSubroutineTest {
     public void testNthCdrNil() {
         LispObject r = evaluateString("(nthcdr 5 nil)");
         Assert.assertEquals (LispSymbol.ourNil, r);
-        r = evaluateString("(nthcdr 4 '(1 2 3))");
+        r = evaluateString("(nthcdr 3 '(1 2 3))");
         Assert.assertEquals (LispSymbol.ourNil, r);
         r = evaluateString("(nthcdr -1 '(1 2 3))");
         Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);

@@ -22,7 +22,16 @@ public class WindowManager extends CyclicManager<LispWindow> {
         myFactory = factory;
     }
 
-    public void onOpenWindow (LispBuffer buffer, LispFrame frame, Editor editor) {
+    public void onOpenToolBuffer (LispFrame frame, LispToolWindow window) {
+        if (!window.isRegistered()) {
+            int id = getFrameWindows(frame).size();
+            window.setId(id);
+            window.setFrame(frame);
+            define(window);
+        }
+    }
+
+    public void onOpenBuffer(LispBuffer buffer, LispFrame frame, Editor editor) {
         List<LispWindow> bufferWindowsOnFrame = getBufferWindowsOnFrame(buffer, frame);
         if (bufferWindowsOnFrame.isEmpty()) {
             int id = getFrameWindows(frame).size();

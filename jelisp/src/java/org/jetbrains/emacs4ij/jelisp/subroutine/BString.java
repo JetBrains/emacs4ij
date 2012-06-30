@@ -219,4 +219,11 @@ public abstract class BString {
     public static LispString byteToString (LispObject byteObject) {
         throw new UnsupportedOperationException("byte-to-string");
     }
+
+    @Subroutine(value = "re-search-backward", isCmd = true, interactive = "sRE search backward: ")
+    public static LispObject reSearchBackward(LispString regExp,
+                                              @Optional LispObject bound, LispObject noError, LispObject count) {
+        //todo: implement
+        return LispSymbol.ourNil;
+    }
 }

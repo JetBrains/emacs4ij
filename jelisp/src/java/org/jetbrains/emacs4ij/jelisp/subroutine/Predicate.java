@@ -285,4 +285,29 @@ public abstract class Predicate {
     public static LispSymbol floatP (LispObject object) {
         return LispSymbol.bool(object instanceof LispFloat);
     }
+
+    public static boolean isFeature (LispSymbol feature, @Optional LispObject subFeature) {
+        LispObject features = GlobalEnvironment.INSTANCE.find("features").getValue();
+        if (!(features instanceof LispList))
+            throw new WrongTypeArgumentException("listp", features);
+        LispList car = ((LispList) features).memq(feature, "eq");
+        if (car.isEmpty())
+            return false;
+        if (isNil(subFeature))
+            return true;
+        LispObject symbol = car.car();
+        if (!(symbol instanceof LispSymbol))
+            throw new WrongTypeArgumentException("symbolp", symbol);
+        LispSymbol f = GlobalEnvironment.INSTANCE.find(((LispSymbol)symbol).getName());
+        LispObject subFeatures = f.getProperty("subfeatures");
+        if (!(subFeatures instanceof LispList))
+            throw new WrongTypeArgumentException("listp", subFeatures);
+        return !((LispList) subFeatures).memq(subFeature, "equal").isEmpty();
+    }
+
+    @Subroutine("featurep")
+    public static LispSymbol featureP (LispSymbol feature, @Optional LispObject subFeature) {
+        return LispSymbol.bool(isFeature(feature, subFeature));
+    }
 }
+

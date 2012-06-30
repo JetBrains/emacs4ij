@@ -110,4 +110,17 @@ public abstract class Window {
         return environment.getSelectedWindow();
     }
 
+    @Subroutine("window-start")
+    public static LispObject windowStart (Environment environment, @Optional LispObject windowObject) {
+        LispWindow window = getWindow(environment, windowObject);
+        Integer start = window.getDisplayStart();
+        return start == null ? LispSymbol.ourNil : new LispInteger(start);
+    }
+
+    @Subroutine("window-point")
+    public static LispObject windowPoint (Environment environment, @Optional LispObject windowObject) {
+        LispWindow window = getWindow(environment, windowObject);
+        return new LispInteger(window.getBuffer().point());
+    }
+
 }

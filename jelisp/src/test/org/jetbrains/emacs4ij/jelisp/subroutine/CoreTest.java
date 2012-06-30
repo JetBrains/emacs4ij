@@ -988,4 +988,32 @@ public class CoreTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourNil, evaluateString("(documentation 'b)"));
         Assert.assertEquals(new LispInteger(6), evaluateString("(b 1)"));
     }
+
+    @Test
+    public void testDefvarValueItself() {
+        evaluateString("(defvar a 'a \"doc\")");
+        LispSymbol a = (LispSymbol) evaluateString("'a");
+        Assert.assertTrue(a == a.getValue());
+    }
+
+    @Test
+    public void testProvide() {
+        evaluateString("(provide 'f '(a))");
+        Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispSymbol("a"))),
+                evaluateString("(symbol-plist 'f)"));
+        LispObject list = evaluateString("features");
+        Assert.assertEquals(LispList.list(new LispSymbol("f")), list);
+        evaluateString("(provide 'f '(1))");
+        Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispInteger(1))),
+                evaluateString("(symbol-plist 'f)"));
+    }
+
+    @Test
+    public void testFeatureP() {
+        evaluateString("(provide 'f '(a))");
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'a)"));
+        Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f 'a)"));
+        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'f 'b)"));
+    }
 }

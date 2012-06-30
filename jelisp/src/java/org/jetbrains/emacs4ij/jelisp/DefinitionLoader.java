@@ -37,12 +37,14 @@ public abstract class DefinitionLoader {
     //for test
     private static List<String> mySkipForms = new ArrayList<>();
 
+    private static List<String> mySkipDirs = Arrays.asList("/language/", "/international/");
+
     static { //index Emacs lisp sources
         scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
     }
 
     private static void scan (File file) {
-        if (file.isDirectory() && !file.getAbsolutePath().contains("/language/")) {
+        if (file.isDirectory() && notSkipped(file.getAbsolutePath())) {
             File[] files = file.listFiles();
             if (files == null)
                 return;
@@ -51,9 +53,17 @@ public abstract class DefinitionLoader {
             }
             return;
         }
-        if (file.getAbsolutePath().endsWith(".el") && !file.getAbsolutePath().contains("/language/")) {
+        if (file.getAbsolutePath().endsWith(".el") && notSkipped(file.getAbsolutePath())) {
             FileScanner.scan(file);
         }
+    }
+
+    private static boolean notSkipped(String path) {
+        boolean ok = true;
+        for (String skipDir: mySkipDirs) {
+            ok &= !path.contains(skipDir);
+        }
+        return ok;
     }
 
     //for test
@@ -410,7 +420,7 @@ public abstract class DefinitionLoader {
                     return getDef(line, defStart, id.getName());
                 } else {
                     myDefinitionSrcFile = null;
-                    System.out.println(id.toString() + ", file " + myFilePath);
+                    System.err.println("NULL def: " + id.toString() + ", file " + myFilePath);
                     return null;
                 }
             } catch (FileNotFoundException e) {
@@ -453,13 +463,17 @@ public abstract class DefinitionLoader {
         private static void scanLine(String line) {
             if (line.trim().startsWith(";"))
                 return;
-            scanLine(DefType.FUN, line);
-            scanLine(DefType.VAR, line);
+            if (line.isEmpty())
+                return;
+            long baseOffset = getFileOffset(myFile, myFilePath) - line.length() - 1;
+//            if (line.getBytes().length != line.length())
+//                System.out.print(1);
+            scanLine(DefType.FUN, line, baseOffset);
+            scanLine(DefType.VAR, line, baseOffset);
         }
 
-        protected static void scanLine (DefType type, String line) {
+        protected static void scanLine (DefType type, String line, long baseOffset) {
             List<String> defs = type == DefType.FUN ? myDefFuns : myDefVars;
-            long baseOffset = getFileOffset(myFile, myFilePath) - line.getBytes().length - 1;
             String substring = line;
             while (!substring.isEmpty()) {
                 Pair<Integer, String> start = defStartIndex(substring, defs);

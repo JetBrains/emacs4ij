@@ -1081,56 +1081,6 @@ public class ForwardParserTest {
         }
         Assert.fail("#37r");
     }
-
-    @Test
-    public void parseHugeVarDef() {
-        String s = "(defconst htmlfontify-manual \"Htmlfontify Manual\"\n" +
-                "  \"Copy and convert buffers and files to HTML, adding hyperlinks between files\n" +
-                "\\(driven by etags) if requested.\n" +
-                "\\nInteractive functions:\n" +
-                "  `htmlfontify-buffer'\n" +
-                "  `htmlfontify-run-etags'\n" +
-                "  `htmlfontify-copy-and-link-dir'\n" +
-                "  `htmlfontify-load-rgb-file'\n" +
-                "  `htmlfontify-unload-rgb-file'\\n\n" +
-                "In order to:\\n\n" +
-                "fontify a file you have open:           M-x htmlfontify-buffer\n" +
-                "prepare the etags map for a directory:  M-x htmlfontify-run-etags\n" +
-                "copy a directory, fontifying as you go: M-x htmlfontify-copy-and-link-dir\\n\n" +
-                "The following might be useful when running non-windowed or in batch mode:\n" +
-                "\\(note that they shouldn't be necessary - we have a built in map)\\n\n" +
-                "load an X11 style rgb.txt file:         M-x htmlfontify-load-rgb-file\n" +
-                "unload the current rgb.txt file:        M-x htmlfontify-unload-rgb-file\\n\n" +
-                "And here's a programmatic example:\\n\n" +
-                "\\(defun rtfm-build-page-header (file style)\n" +
-                "  (format \\\"#define  TEMPLATE red+black.html\n" +
-                "#define  DEBUG    1\n" +
-                "#include <build/menu-dirlist|>\\\\n\n" +
-                "html-css-url := /css/red+black.css\n" +
-                "title        := rtfm.etla.org ( %s / src/%s )\n" +
-                "bodytag      :=\n" +
-                "head         <=STYLESHEET;\\\\n\n" +
-                "%s\n" +
-                "STYLESHEET\n" +
-                "main-title   := rtfm / %s / src/%s\\\\n\n" +
-                "main-content <=MAIN_CONTENT;\\\\n\\\" rtfm-section file style rtfm-section file))\n" +
-                "\n" +
-                "\\(defun rtfm-build-page-footer (file) \\\"\\\\nMAIN_CONTENT\\\\n\\\")\n" +
-                "\n" +
-                "\\(defun rtfm-build-source-docs (section srcdir destdir)\n" +
-                "  (interactive\n" +
-                "   \\\"s section[eg- emacs / p4-blame]:\\\\nD source-dir: \\\\nD output-dir: \\\")\n" +
-                "  (require 'htmlfontify)\n" +
-                "  (hfy-load-tags-cache srcdir)\n" +
-                "  (let ((hfy-page-header  'rtfm-build-page-header)\n" +
-                "        (hfy-page-footer  'rtfm-build-page-footer)\n" +
-                "        (rtfm-section                     section)\n" +
-                "        (hfy-index-file                   \\\"index\\\"))\n" +
-                "    (htmlfontify-run-etags srcdir)\n" +
-                "    (htmlfontify-copy-and-link-dir srcdir destdir \\\".src\\\" \\\".html\\\")))\")";
-        LispObject object = p.parseLine(s);
-        Assert.assertTrue(object instanceof LispList);
-    }
 }
 
 

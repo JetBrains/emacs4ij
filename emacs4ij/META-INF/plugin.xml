@@ -44,7 +44,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.EmacsHomeService"/>
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
-        <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.Emacs4ijToolWindowFactory"
+        <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.EchoAreaToolWindowFactory"
+                    icon="icons/emacs.png"/>
+        <toolWindow id="Emacs4ij Help" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.HelpToolWindowFactory"
                     icon="icons/emacs.png"/>
     </extensions>
 

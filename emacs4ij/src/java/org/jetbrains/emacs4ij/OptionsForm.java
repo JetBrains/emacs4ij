@@ -160,7 +160,6 @@ public class OptionsForm extends JFrame {
                                 indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                                 indicator.setFraction(0.0);
                                 if (EnvironmentInitializer.initGlobal()) {
-                                    myProjectComponent.getEchoArea().setToolWindowEnabled(true);
                                     myProjectComponent.initEnv();
                                 }
                                 indicator.setFraction(1.0);

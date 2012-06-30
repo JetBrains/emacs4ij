@@ -386,8 +386,32 @@ public abstract class Core {
 
     @Subroutine("provide")
     public static LispSymbol provide (LispSymbol feature, @Optional LispObject subFeatures) {
-        //todo: implement
-        return feature;
+        //todo: autoloadable features
+
+        LispSymbol featuresSymbol = GlobalEnvironment.INSTANCE.find("features");
+        LispObject featuresValue = featuresSymbol.getValue();
+        if (!(featuresValue instanceof LispList))
+            throw new WrongTypeArgumentException("listp", featuresValue);
+
+        LispSymbol realFeature;
+        try {
+            realFeature = feature.uploadVariableDefinition();
+        } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+            GlobalEnvironment.INSTANCE.defineSymbol(feature);
+            realFeature = feature;
+        }
+
+        if (!Predicate.isNil(subFeatures)) {
+            if (subFeatures instanceof LispList)
+                Symbol.put(GlobalEnvironment.INSTANCE, realFeature, new LispSymbol("subfeatures"), subFeatures);
+            else throw new WrongTypeArgumentException("listp", subFeatures);
+        }
+
+        LispList features = (LispList) featuresValue;
+        if (features.memq(realFeature, "eq").isEmpty())
+            featuresSymbol.setValue(LispList.cons(realFeature, features));
+
+        return realFeature;
     }
 
     @Subroutine("atom")
@@ -503,4 +527,11 @@ public abstract class Core {
         f.setFunction(list);
         return LispList.list(list);
     }
+
+    @Subroutine(value = "start-kbd-macro", isCmd = true, interactive = "P")
+    public static LispSymbol startKbdMacro (Environment environment, LispObject array, @Optional LispObject noExec) {
+        //todo: implement
+        return LispSymbol.ourNil;
+    }
+
 }

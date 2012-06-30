@@ -76,16 +76,26 @@ public abstract class Buffer {
         throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 
+    public static LispBuffer getToolBufferCreate (Environment environment, String name, LispToolWindow window) {
+        LispBuffer buffer = environment.findBuffer(name);
+        if (buffer != null)
+            return buffer;
+        return environment.createToolBuffer(name, window);
+    }
+
+    public static LispBuffer getBufferCreate (Environment environment, String name) {
+        LispBuffer buffer = environment.findBuffer(name);
+        if (buffer != null)
+            return buffer;
+        return environment.createBuffer(name);
+    }
+
     @Subroutine("get-buffer-create")
     public static LispObject getBufferCreate (Environment environment, LispObject bufferOrName) {
         if (bufferOrName instanceof LispBuffer)
             return bufferOrName;
-        if (bufferOrName instanceof LispString) {
-            LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
-            if (buffer != null)
-                return buffer;
-            return environment.createBuffer(((LispString) bufferOrName).getData());
-        }
+        if (bufferOrName instanceof LispString)
+            return getBufferCreate(environment, ((LispString) bufferOrName).getData());
         throw new WrongTypeArgumentException("stringp", bufferOrName);
     }
 

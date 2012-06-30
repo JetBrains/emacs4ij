@@ -13,7 +13,7 @@ import com.intellij.ui.content.ContentFactory;
  * Time: 6:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Emacs4ijToolWindowFactory implements ToolWindowFactory {
+public class EchoAreaToolWindowFactory implements ToolWindowFactory {
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
         EchoArea echoArea = project.getComponent(MyProjectComponent.class).getEchoArea();

@@ -2,10 +2,10 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.wm.IdeFrame;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 
 import java.util.*;
@@ -126,6 +126,10 @@ public abstract class Environment {
     // =========== buffers =================
     public LispBuffer createBuffer (String bufferName) {
         return ourBufferManager.createBuffer(bufferName);
+    }
+
+    public LispBuffer createToolBuffer (String bufferName, @NotNull LispToolWindow window) {
+        return ourBufferManager.createBuffer(bufferName, window);
     }
 
     public LispWindow getBufferLastSelectedWindow (LispBuffer buffer) {
@@ -299,6 +303,7 @@ public abstract class Environment {
 
     //========== mini buffer ==========================
 
+    @NotNull
     public LispMinibuffer getMinibuffer() {
         LispMinibuffer miniBuffer = ourBufferManager.getMinibuffer();
         if (miniBuffer == null)
@@ -336,8 +341,12 @@ public abstract class Environment {
     }
 
     //========= frames & windows ===================
-    public void onWindowOpened (LispBuffer buffer, Editor editor) {
-        ourWindowManager.onOpenWindow(buffer, getSelectedFrame(), editor);
+    public void onBufferOpened(LispBuffer buffer, Editor editor) {
+        ourWindowManager.onOpenBuffer(buffer, getSelectedFrame(), editor);
+    }
+
+    public void onToolBufferOpened(LispToolWindow window) {
+        ourWindowManager.onOpenToolBuffer(getSelectedFrame(), window);
     }
 
     public void onFrameOpened (LispFrame newFrame) {

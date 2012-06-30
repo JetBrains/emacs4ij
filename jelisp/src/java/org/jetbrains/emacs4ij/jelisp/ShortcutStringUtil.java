@@ -34,6 +34,7 @@ public abstract class ShortcutStringUtil {
         myReplaceMap.put("\\\\e", " ESCAPE ");
         myReplaceMap.put("<RET>", " ENTER ");
         myReplaceMap.put("<TAB>", " TAB ");
+        myReplaceMap.put("\\^", " ctrl ");
         myReplaceMap.put(regModifier('M'), " alt "); // :)
         myReplaceMap.put(regModifier('C'), " ctrl ");
         myReplaceMap.put(regModifier('S'), " shift ");

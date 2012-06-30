@@ -208,7 +208,7 @@ public abstract class Match {
             String text = applyFixedCase(environment, fixedCase, newText, index, string);
             String source = string instanceof LispString
                     ? ((LispString)string).getData()
-                    : environment.getBufferCurrentForEditing().getDocument().getText();
+                    : environment.getBufferCurrentForEditing().getText();
 
             text = applyLiteral(literal, text, index, source, string instanceof LispString ? 0 : -1);
 

@@ -8,14 +8,16 @@ package org.jetbrains.emacs4ij.jelisp;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class TestSetup {
-
     public static void runBeforeClass() {
         try {
-            GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-            GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
-            GlobalEnvironment.initialize(null, null, null, null, null);
-            GlobalEnvironment.INSTANCE.startRecording();
+            if (GlobalEnvironment.INSTANCE == null) {
+                System.out.println("INIT GLOBAL ENV");
+                GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
+                GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+                GlobalEnvironment.initialize(null, null, null, null, null);
+            }
             GlobalEnvironment.TEST = true;
+            GlobalEnvironment.INSTANCE.startRecording();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }

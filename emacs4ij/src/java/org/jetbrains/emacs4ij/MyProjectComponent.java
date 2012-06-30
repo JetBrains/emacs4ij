@@ -40,6 +40,7 @@ public class MyProjectComponent implements ProjectComponent {
     private Environment myEnvironment = null;
     private Project myProject;
     private EchoArea myEchoArea;
+    private HelpArea myHelpArea;
 
     public MyProjectComponent(Project project) {
         myProject = project;
@@ -48,11 +49,21 @@ public class MyProjectComponent implements ProjectComponent {
             @Override
             public void run() {
                 myEchoArea = new EchoArea(myProject);
+                myHelpArea = new HelpArea(myProject);
             } });
     }
 
     public EchoArea getEchoArea() {
         return myEchoArea;
+    }
+
+    public HelpArea getHelpArea() {
+        return myHelpArea;
+    }
+
+    private void setToolWindowsEnabled(boolean enabled) {
+        myHelpArea.setToolWindowEnabled(enabled, myEnvironment);
+        myEchoArea.setToolWindowEnabled(enabled);
     }
 
     @NotNull
@@ -75,7 +86,7 @@ public class MyProjectComponent implements ProjectComponent {
                         if (existing == null)
                             new IdeaBuffer(myEnvironment, virtualFile, editor);
                         else
-                            existing.reopen(editor, virtualFile);
+                            ((IdeaBuffer)existing).reopen(editor, virtualFile);
                     } finally {
                         myEnvironment.switchToWindow(editor, true);
                     }
@@ -124,10 +135,9 @@ public class MyProjectComponent implements ProjectComponent {
                 indicator.setText(Emacs4ijBundle.message("init.indicator.text"));
                 indicator.setFraction(0.0);
                 if (EnvironmentInitializer.silentInitGlobal()) {
-                    myProject.getComponent(MyProjectComponent.class).getEchoArea().setToolWindowEnabled(true);
                     initEnv();
                 } else {
-                    myProject.getComponent(MyProjectComponent.class).getEchoArea().setToolWindowEnabled(false);
+                    setToolWindowsEnabled(false);
                     JBPopupFactory.getInstance()
                             .createHtmlTextBalloonBuilder(Emacs4ijBundle.message("global.env.not.initialized.message"),
                                     MessageType.WARNING, new HyperlinkListener() {
@@ -149,10 +159,11 @@ public class MyProjectComponent implements ProjectComponent {
     public void initEnv () {
         myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
         EnvironmentInitializer.initProjectEnv(myProject, myEnvironment);
+        setToolWindowsEnabled(true);
     }
 
     public void reset () {
-        myEchoArea.setToolWindowEnabled(false);
+        setToolWindowsEnabled(false);
         myEnvironment = null;
     }
 
@@ -166,6 +177,7 @@ public class MyProjectComponent implements ProjectComponent {
 
     public void disposeComponent() {
         myEchoArea.dispose();
+        myHelpArea.dispose();
     }
 
     public void projectClosed() {

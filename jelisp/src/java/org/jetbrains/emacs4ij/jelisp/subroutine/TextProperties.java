@@ -115,5 +115,23 @@ public abstract class TextProperties {
                 (LispList) propertyNames, TextPropertiesInterval.Action.REMOVE_LIST));
     }
 
+    @Subroutine("text-properties-at")
+    public static LispObject textPropertiesAt(Environment environment, MarkerOrInteger position,
+                                              @Optional LispObject bufferOrString) {
+        return normalizeHolder(environment, bufferOrString).getTextPropertiesAt(position.getPosition());
+    }
+
+    @Subroutine("get-text-property")
+    public static LispObject getTextProperty(Environment environment, MarkerOrInteger position, LispObject property,
+                                             @Optional LispObject bufferOrString) {
+        return normalizeHolder(environment, bufferOrString).getTextPropertyAt(position.getPosition(), property);
+    }
+
+    @Subroutine("get-char-property")
+    public static LispObject getCharProperty (Environment environment, MarkerOrInteger position, LispObject property,
+                                              @Optional LispObject object) {
+        //todo: object may be a window
+        return getTextProperty(environment, position, property, object);
+    }
 
 }

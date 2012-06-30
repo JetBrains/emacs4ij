@@ -34,7 +34,8 @@ public class GlobalEnvironment extends Environment {
     public static Deque<String> ourCallStack = new ArrayDeque<>();
 
     //temporary solution while i'm not loading all sources
-    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el");
+    private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
+            "font-core.el", "font-lock.el", "help.el");
 
     public static GlobalEnvironment INSTANCE = null;
 
@@ -246,6 +247,11 @@ public class GlobalEnvironment extends Environment {
         defineSymbol("read-expression-map");
         defineSymbol("minibuffer-history-position");
         defineSymbol("timer-idle-list");
+        defineSymbol("temp-buffer-show-function");
+        defineSymbol("help-char", new LispInteger(8)); //ctrl-h
+        defineSymbol("help-form");
+        defineSymbol("prefix-help-command");
+        defineSymbol("features", LispList.list());
     }
 
     public LispVector getObjectArray() {
