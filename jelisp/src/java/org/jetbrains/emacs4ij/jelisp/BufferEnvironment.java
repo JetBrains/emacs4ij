@@ -1,8 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 
 import java.util.Map;
 
@@ -24,5 +26,13 @@ public class BufferEnvironment extends Environment {
 //                continue;
             map.put(new LispSymbol(symbol.getName()), symbol.getValue());
         }
+    }
+
+    @NotNull
+    public LispBuffer getCurrentNonToolBuffer() {
+        LispBuffer nonToolBuffer = ourBufferManager.getCurrentNonToolBuffer();
+        if (nonToolBuffer == null)
+            throw new NoOpenedBufferException();
+        return nonToolBuffer;
     }
 }

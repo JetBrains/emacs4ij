@@ -2,10 +2,8 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBufferFactory;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispMinibuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
@@ -31,36 +29,31 @@ public class BufferManager extends CyclicManager<LispBuffer> {
     public LispBuffer createBuffer (String bufferName) {
         String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing()
                 .getVariableValue("default-directory")).getData();
-
         VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(baseDir + bufferName);
         if (file == null)
             throw new InternalException("create buffer failed");
-
         return myFactory.createBuffer(GlobalEnvironment.INSTANCE, file, null);
     }
 
+    public LispBuffer createBuffer (String bufferName, LispToolWindow window) {
+        String baseDir = ".";
+        try {
+            LispObject defaultDir = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing().getVariableValue("default-directory");
+            if (defaultDir instanceof LispString)
+                baseDir = ((LispString) defaultDir).getData();
+        } catch (NoOpenedBufferException e) {
+            //skip
+        }
+        return myFactory.createBuffer(GlobalEnvironment.INSTANCE, bufferName, baseDir, window);
+    }
+
+    @Nullable
     public LispBuffer findBuffer (String bufferName) {
         for (LispBuffer buffer: myData) {
             if (buffer.getName().equals(bufferName))
                 return buffer;
         }
         return null;
-    }
-
-    public boolean containsBuffer (String bufferName) {
-        return findBuffer(bufferName) != null;
-    }
-
-    public LispBuffer findBufferSafe (String bufferName) {
-        LispBuffer buffer = findBuffer(bufferName);
-        if (buffer == null)
-            throw new UnregisteredBufferException(bufferName);
-        return buffer;
-    }
-
-    public void killBuffer (LispBuffer buffer) {
-        buffer.kill();
-        remove(buffer);
     }
 
     public List<String> getBuffersNames () {
@@ -71,7 +64,7 @@ public class BufferManager extends CyclicManager<LispBuffer> {
         return list;
     }
 
-    public List<String> getBuffersNames (String begin) {
+    public List<String> getBuffersNames (final String begin) {
         List<String> bufferNamesList = new ArrayList<>();
         for (LispBuffer buffer: myData) {
             String bufferName = buffer.getName();
@@ -90,6 +83,37 @@ public class BufferManager extends CyclicManager<LispBuffer> {
 //        }
 //    }
 
+    @Override
+    protected void throwNoOpenedItem() {
+        throw new NoOpenedBufferException();
+    }
+
+    @Override
+    protected void throwItemIsNotInDataSet(LispBuffer item) {
+        throw new UnregisteredBufferException(item.getName());
+    }
+
+    @Override
+    protected void throwDuplicateItem(LispBuffer item) {
+        throw new DoubleBufferException(item.getName());
+    }
+
+    public boolean containsBuffer (String bufferName) {
+        return findBuffer(bufferName) != null;
+    }
+
+    public LispBuffer findBufferSafe (String bufferName) {
+        LispBuffer buffer = findBuffer(bufferName);
+        if (buffer == null)
+            throw new UnregisteredBufferException(bufferName);
+        return buffer;
+    }
+
+    public void killBuffer (LispBuffer buffer) {
+        buffer.kill();
+        remove(buffer);
+    }
+
     public LispMinibuffer getMinibuffer() {
         for (LispBuffer buffer: myData) {
             if (buffer instanceof LispMinibuffer)
@@ -98,23 +122,19 @@ public class BufferManager extends CyclicManager<LispBuffer> {
         return null;
     }
 
-    @Override
-    protected void throwNoOpenedItem() {
-        throw new NoOpenedBufferException();
-    }
-
-    @Override
-    protected void throwItemIsNotInDataSet(LispBuffer buffer) {
-        throw new UnregisteredBufferException(buffer.getName());
-    }
-
-    @Override
-    protected void throwDuplicateItem(LispBuffer item) {
-        throw new DoubleBufferException(item.getName());
-    }
-
+    //for test
     public LispBuffer getBufferByIndex (int index) {
         return myData.get(index);
+    }
+
+    @Nullable
+    public LispBuffer getCurrentNonToolBuffer() {
+        for (LispBuffer buffer : myData) {
+            if (buffer.isToolBuffer())
+                continue;
+            return buffer;
+        }
+        return null;
     }
 }
 

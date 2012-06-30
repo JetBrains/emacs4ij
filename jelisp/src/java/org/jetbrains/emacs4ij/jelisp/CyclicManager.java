@@ -41,7 +41,7 @@ public abstract class CyclicManager<T> implements Manager<T> {
         int newCurrentItemIndex = myData.indexOf(item);
         if (newCurrentItemIndex == -1)
             throwItemIsNotInDataSet(item);
-        Collections.rotate(myData, myData.size() - newCurrentItemIndex);
+        Collections.rotate(myData.subList(0, newCurrentItemIndex + 1), 1);
         return myData.get(0);
     }
 
