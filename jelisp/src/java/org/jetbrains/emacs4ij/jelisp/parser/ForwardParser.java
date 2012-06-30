@@ -65,20 +65,28 @@ public class ForwardParser extends Parser {
         ArrayList<LispObject> data = new ArrayList<>();
         boolean makeList = true;
         boolean wasCons = false;
+        boolean wasDot = false;
         while (true) {
             try {
                 while (true) {
                     skipWhitespaces();
-                    if (getCurrentChar() == ')')
+                    if (getCurrentChar() == ')') {
+                        if (wasDot)
+                            throw new InvalidReadSyntax(")");
                         break;
+                    }
                     if (!makeList)
                         throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
-                    if (getCurrentChar() == '.') {
-                        if (!hasNextChar())
+                    if (getCurrentChar() == '.' || wasDot) {
+                        if (!hasNextChar() && !wasDot) {
+                            wasDot = true;
                             throw new InvalidReadSyntaxDot();
-                        if (!Character.isDigit(getNextChar())) {
-                            advance();
-                            skipWhitespaces();
+                        }
+                        if ((hasNextChar() && !Character.isDigit(getNextChar())) || wasDot) { //wasDot in this case means there was line break before dot, so the dot doesn't belong to lisp float
+                            if (!wasDot) {
+                                advance();
+                                skipWhitespaces();
+                            }
                             if (getCurrentChar() == ')')
                                 throw new InvalidReadSyntax(")");
                             if (data.size() == 0) {
@@ -98,11 +106,13 @@ public class ForwardParser extends Parser {
                             }
                             data.set(data.size()-1, LispList.cons(car, cdr));
                             wasCons = true;
+                            wasDot = false;
                             skipWhitespaces();
                             if (getCurrentChar() != ')')
                                 throw new InvalidReadSyntax(JelispBundle.message("dot.in.wrong.context"));
                             break;
                         }
+                        wasDot = false;
                     }
                     LispObject object = parseObject(isBackQuote);
                     if (object != null) {

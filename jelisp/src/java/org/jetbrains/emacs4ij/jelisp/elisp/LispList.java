@@ -390,8 +390,10 @@ public class LispList implements LispSequence {
         for (; i < n && result instanceof LispList; ++i) {
             result = ((LispList)result).realCdr();
         }
-        if (i < n || result == null)
+        if (i < n && result != null)
             throw new WrongTypeArgumentException("listp", result);
+        if (result == null)
+            return LispSymbol.ourNil;
         return result;
     }
 
@@ -422,8 +424,10 @@ public class LispList implements LispSequence {
         LispObject tail = list;
         LispObject current = this;
         while (tail instanceof LispList) {
-            if (((LispList)current).realCar() == null)
-                ((LispList)current).setCar(((LispList)tail).realCar());
+            if (((LispList)current).realCar() == null) {
+                if (((LispList)tail).realCar() != null)
+                    ((LispList)current).setCar(((LispList)tail).realCar());
+            }
             else ((LispList)current).setCar(((LispList)tail).car());
 
             if (!(((LispList)current).realCdr() instanceof LispList)) {
