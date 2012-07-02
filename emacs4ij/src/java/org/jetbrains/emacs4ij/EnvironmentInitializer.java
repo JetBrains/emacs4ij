@@ -13,6 +13,7 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.util.ui.UIUtil;
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
@@ -45,6 +46,7 @@ public abstract class EnvironmentInitializer {
             try {
                 return init();
             } catch (LispException e) {
+                e.printStackTrace();
                 //skip
             }
         }
@@ -65,6 +67,7 @@ public abstract class EnvironmentInitializer {
             return true;
         Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
         try {
+            DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());
             GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                     new IdeProvider(), new FrameManagerImpl());
             isGlobalInitialized = true;

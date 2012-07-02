@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij;
 
+import com.intellij.openapi.components.ServiceManager;
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 
 /**
@@ -15,6 +17,7 @@ public abstract class TestSetup {
             System.out.println("INIT GLOBAL ENV");
             GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
             GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+            DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());
             GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
                     new IdeProvider(), new TestFrameManagerImpl());
         }

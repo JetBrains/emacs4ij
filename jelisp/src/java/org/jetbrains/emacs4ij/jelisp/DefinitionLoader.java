@@ -26,21 +26,31 @@ import java.util.regex.Pattern;
  * Time: 1:28 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class DefinitionLoader {
-    static enum DefType {VAR, FUN} //todo: not private for test only
-    private static enum SymbolType {VAR, FUN, CMD}
+public final class DefinitionLoader {
+    static enum DefType {VAR, FUN} //todo: not private for test only  && IDENTIFIER
+    static enum SymbolType {VAR, FUN, CMD} //todo: not private for test only  && IDENTIFIER
     protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
     protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode", "define-minor-mode");
-    private static Map<String, String> myUploadHistory = new LinkedHashMap<>();
-    protected static Map<Identifier, SortedMap<String, Long>> myIndex = new HashMap<>();
+    private static final Map<String, String> myUploadHistory = new LinkedHashMap<>();
+    protected static DefinitionIndex myIndex = new DefinitionIndex();
     private static String myDefinitionSrcFile;
     //for test
     private static List<String> mySkipForms = new ArrayList<>();
 
     private static List<String> mySkipDirs = Arrays.asList("/language/", "/international/");
 
-    static { //index Emacs lisp sources
-        scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
+    public static void initialize (@NotNull DefinitionIndex index) {
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        System.out.println(sdf.format(Calendar.getInstance().getTime()));
+
+        if (index.isEmpty()) {
+            scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
+            index.setWith(myIndex);
+//        System.out.println(sdf.format(Calendar.getInstance().getTime()));
+
+//        NUMBER OF NON-SINGLE ENTRIES = 1517, TOTAL = 61251
+        } else
+            myIndex = index;
     }
 
     private static void scan (File file) {
@@ -287,56 +297,56 @@ public abstract class DefinitionLoader {
         return null;
     }
 
-    protected static class Identifier {
-        private final String myName;
-        private final DefType myType;
-        private final SymbolType mySymbolType;
-
-        Identifier (String name, DefType type) {
-            myName = name;
-            myType = type;
-            mySymbolType = type == DefType.VAR ? SymbolType.VAR : SymbolType.FUN;
-        }
-
-        Identifier (String name, SymbolType type) {
-            myName = name;
-            myType = type == SymbolType.VAR ? DefType.VAR : DefType.FUN;
-            mySymbolType = type;
-        }
-
-        String getName() {
-            return myName;
-        }
-
-        DefType getType() {
-            return myType;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Identifier)) return false;
-
-            Identifier that = (Identifier) o;
-
-            if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
-            if (myType != that.myType) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = myName != null ? myName.hashCode() : 0;
-            result = 31 * result + (myType != null ? myType.hashCode() : 0);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "[" + myType + " " + myName + "]";
-        }
-    }
+//    protected static class Identifier  {
+//        private final String myName;
+//        private final DefType myType;
+//        private final SymbolType mySymbolType;
+//
+//        Identifier (String name, DefType type) {
+//            myName = name;
+//            myType = type;
+//            mySymbolType = type == DefType.VAR ? SymbolType.VAR : SymbolType.FUN;
+//        }
+//
+//        Identifier (String name, SymbolType type) {
+//            myName = name;
+//            myType = type == SymbolType.VAR ? DefType.VAR : DefType.FUN;
+//            mySymbolType = type;
+//        }
+//
+//        String getName() {
+//            return myName;
+//        }
+//
+//        DefType getType() {
+//            return myType;
+//        }
+//
+//        @Override
+//        public boolean equals(Object o) {
+//            if (this == o) return true;
+//            if (!(o instanceof Identifier)) return false;
+//
+//            Identifier that = (Identifier) o;
+//
+//            if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
+//            if (myType != that.myType) return false;
+//
+//            return true;
+//        }
+//
+//        @Override
+//        public int hashCode() {
+//            int result = myName != null ? myName.hashCode() : 0;
+//            result = 31 * result + (myType != null ? myType.hashCode() : 0);
+//            return result;
+//        }
+//
+//        @Override
+//        public String toString() {
+//            return "[" + myType + " " + myName + "]";
+//        }
+//    }
 
     protected static class FileScanner {
         private static RandomAccessFile myFile = null;

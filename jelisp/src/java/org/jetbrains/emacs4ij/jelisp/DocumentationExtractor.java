@@ -54,7 +54,7 @@ public class DocumentationExtractor {
     private String mySourcePath;
     private HashMap<String, Subr> mySubr = new HashMap<>();
     private HashMap<String, Variable> myVar = new HashMap<>();
-    public enum VarType {LISP, LISP_NOPRO, BOOL, INT, KBOARD, PER_BUFFER}
+    public enum VarType {LISP, LISP_NOPRO, BOOL, INT, KBOARD, PER_BUFFER, BUFFER_DEFAULTS}
 
     public DocumentationExtractor (String srcPath) {
         mySourcePath = srcPath;
@@ -118,12 +118,14 @@ public class DocumentationExtractor {
             String name = line.substring(start, end);
             start = line.indexOf('_', line.indexOf(myVarDef)) + 1;
             end = line.indexOf(' ', start);
-            VarType type = VarType.valueOf(line.substring(start, end).toUpperCase());
-            if (type == null)
+            try {
+                VarType type = VarType.valueOf(line.substring(start, end).toUpperCase());
+                Variable var = new Variable(name, type);
+                myVar.put(name, var);
+                return var;
+            } catch (IllegalArgumentException e) {
                 throw new DocumentationExtractorException(JelispBundle.message("unknown.var.def", myVarDef, line.substring(start, end).toUpperCase()));
-            Variable var = new Variable(name, type);
-            myVar.put(name, var);
-            return var;
+            }
         }
         return null;
     }
@@ -176,8 +178,11 @@ public class DocumentationExtractor {
                         if (line == null)
                             throw new DocumentationExtractorException(JelispBundle.message("unexpected.doc.end", file.getName(), object.getName()));
                         if (line.contains(myDocEndFlag)) {
-                            doc += '\n' + line.substring(0, line.indexOf(myDocEndFlag)-1);
-                            object.setDoc(doc.trim());
+                            int endStart = line.indexOf(myDocEndFlag);
+                            if (endStart > 0) {
+                                doc += '\n' + line.substring(0, line.indexOf(myDocEndFlag)-1);
+                                object.setDoc(doc.trim());
+                            }
                             break;
                         }
                         doc += '\n' + line;

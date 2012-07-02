@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+
 /**
  * Created by IntelliJ IDEA.
  * User: kate
@@ -14,6 +15,7 @@ public abstract class TestSetup {
                 System.out.println("INIT GLOBAL ENV");
                 GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
                 GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
+                DefinitionLoader.initialize(null);
                 GlobalEnvironment.initialize(null, null, null, null, null);
             }
             GlobalEnvironment.TEST = true;
