@@ -297,57 +297,6 @@ public final class DefinitionLoader {
         return null;
     }
 
-//    protected static class Identifier  {
-//        private final String myName;
-//        private final DefType myType;
-//        private final SymbolType mySymbolType;
-//
-//        Identifier (String name, DefType type) {
-//            myName = name;
-//            myType = type;
-//            mySymbolType = type == DefType.VAR ? SymbolType.VAR : SymbolType.FUN;
-//        }
-//
-//        Identifier (String name, SymbolType type) {
-//            myName = name;
-//            myType = type == SymbolType.VAR ? DefType.VAR : DefType.FUN;
-//            mySymbolType = type;
-//        }
-//
-//        String getName() {
-//            return myName;
-//        }
-//
-//        DefType getType() {
-//            return myType;
-//        }
-//
-//        @Override
-//        public boolean equals(Object o) {
-//            if (this == o) return true;
-//            if (!(o instanceof Identifier)) return false;
-//
-//            Identifier that = (Identifier) o;
-//
-//            if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
-//            if (myType != that.myType) return false;
-//
-//            return true;
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            int result = myName != null ? myName.hashCode() : 0;
-//            result = 31 * result + (myType != null ? myType.hashCode() : 0);
-//            return result;
-//        }
-//
-//        @Override
-//        public String toString() {
-//            return "[" + myType + " " + myName + "]";
-//        }
-//    }
-
     protected static class FileScanner {
         private static RandomAccessFile myFile = null;
         private static String myFilePath;
