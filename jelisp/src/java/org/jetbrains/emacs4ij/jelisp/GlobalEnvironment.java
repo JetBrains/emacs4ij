@@ -10,6 +10,7 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -112,10 +113,11 @@ public class GlobalEnvironment extends Environment {
         ourBufferManager = new BufferManager(bufferFactory);
         ourWindowManager = new WindowManager(windowFactory);
         ourFrameManager = frameManager;
-
         INSTANCE = new GlobalEnvironment(ide);
         Key.init();
         INSTANCE.init();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println("GE INIT FINISHED " + sdf.format(Calendar.getInstance().getTime()));
     }
 
     private void init() {
