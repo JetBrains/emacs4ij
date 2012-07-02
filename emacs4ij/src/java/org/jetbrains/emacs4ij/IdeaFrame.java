@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
@@ -22,7 +21,7 @@ import java.util.Map;
  * Time: 1:19 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaFrame implements LispFrame {
+public final class IdeaFrame implements LispFrame {
     private final IdeFrameImpl myFrame;
     private Map<LispSymbol, LispObject> myParameters = new HashMap<>();
 
@@ -35,11 +34,6 @@ public class IdeaFrame implements LispFrame {
     IdeaFrame () {
         myFrame = null;
         initParameters();
-    }
-
-    @Override
-    public IdeFrame getIdeFrame() {
-        return myFrame;
     }
 
     private void initParameters() {
@@ -123,5 +117,22 @@ public class IdeaFrame implements LispFrame {
             list.add(item);
         }
         return LispList.list(list);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IdeaFrame ideaFrame = (IdeaFrame) o;
+
+        if (myFrame != null ? !myFrame.equals(ideaFrame.myFrame) : ideaFrame.myFrame != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return myFrame != null ? myFrame.hashCode() : 0;
     }
 }

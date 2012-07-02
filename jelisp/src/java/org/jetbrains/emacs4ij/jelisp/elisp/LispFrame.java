@@ -1,7 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import com.intellij.openapi.wm.IdeFrame;
-
 import javax.swing.*;
 
 /**
@@ -12,15 +10,12 @@ import javax.swing.*;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispFrame extends LispObject {
-//    LispObject getParameter (String parameter);
-//    void setParameter(String name, LispObject value);
     LispObject getParameter (LispSymbol parameter);
     void setParameter(LispSymbol name, LispObject value);
     void setVisible (boolean visible);
     boolean isVisible ();
     void setIconified (boolean iconified);
     boolean isIconified ();
-    IdeFrame getIdeFrame();
     JComponent getComponent();
     LispList getParameters();
 }

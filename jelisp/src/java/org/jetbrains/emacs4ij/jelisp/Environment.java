@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.wm.IdeFrame;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -362,8 +361,8 @@ public abstract class Environment {
     }
 
     @NotNull
-    public LispFrame getFrame (IdeFrame ideFrame) {
-        return ourFrameManager.getFrame(ideFrame);
+    public LispFrame getExistingFrame (LispFrame frame) {
+        return ourFrameManager.getExistingFrame(frame);
     }
 
     @NotNull

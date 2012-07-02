@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.wm.IdeFrame;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 
 import java.util.List;
@@ -17,5 +17,5 @@ public interface FrameManager extends Manager<LispFrame> {
     void onFrameReleased (LispFrame frame);
     List<LispFrame> getVisibleFrames();
     List<LispFrame> getVisibleAndIconifiedFrames();
-    LispFrame getFrame (IdeFrame frame);
+    @NotNull LispFrame getExistingFrame (LispFrame frame);
 }

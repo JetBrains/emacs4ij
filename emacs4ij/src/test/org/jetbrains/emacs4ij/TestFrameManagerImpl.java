@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.wm.IdeFrame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.FrameManager;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
@@ -72,9 +71,10 @@ public class TestFrameManagerImpl implements FrameManager {
         return Arrays.asList(myFrame);
     }
 
+    @NotNull
     @Override
-    public LispFrame getFrame(IdeFrame frame) {
-        if (myFrame.getIdeFrame() == frame)
+    public LispFrame getExistingFrame(LispFrame frame) {
+        if (myFrame.equals(frame))
             return myFrame;
         throw new NoLispFrameForIdeFrame();
     }

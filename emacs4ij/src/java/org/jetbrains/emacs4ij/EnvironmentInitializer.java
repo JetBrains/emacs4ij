@@ -16,6 +16,7 @@ import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 
@@ -84,7 +85,8 @@ public abstract class EnvironmentInitializer {
             GlobalEnvironment.INSTANCE.onFrameOpened(new IdeaFrame((IdeFrameImpl) frame));
         }
         if (GlobalEnvironment.INSTANCE.getAllFrames().size() != 1) {
-            GlobalEnvironment.INSTANCE.setSelectedFrame(GlobalEnvironment.INSTANCE.getFrame(windowManager.getIdeFrame(project)));
+            LispFrame existing = GlobalEnvironment.INSTANCE.getExistingFrame(new IdeaFrame((IdeFrameImpl) windowManager.getIdeFrame(project)));
+            GlobalEnvironment.INSTANCE.setSelectedFrame(existing);
         }
         IdeaMiniBuffer.init(null, environment);
         UIUtil.invokeLaterIfNeeded(new Runnable() {

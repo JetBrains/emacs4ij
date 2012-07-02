@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.wm.IdeFrame;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CyclicManager;
 import org.jetbrains.emacs4ij.jelisp.FrameManager;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -54,10 +54,11 @@ public class FrameManagerImpl extends CyclicManager<LispFrame> implements FrameM
         return frames;
     }
 
+    @NotNull
     @Override
-    public LispFrame getFrame(IdeFrame ideFrame) {
+    public LispFrame getExistingFrame(final LispFrame newFrame) {
         for (LispFrame frame: myData) {
-            if (frame.getIdeFrame() == ideFrame)
+            if (frame.equals(newFrame))
                 return frame;
         }
         throw new NoLispFrameForIdeFrame();

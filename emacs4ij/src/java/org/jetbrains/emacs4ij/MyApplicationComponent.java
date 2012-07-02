@@ -29,8 +29,7 @@ public class MyApplicationComponent implements ApplicationComponent {
                 super.windowGainedFocus(e);
                 if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
-                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
-                GlobalEnvironment.INSTANCE.setSelectedFrame(frame);
+                GlobalEnvironment.INSTANCE.setSelectedFrame(getExistingFrame(e));
             }
 
             @Override
@@ -38,8 +37,7 @@ public class MyApplicationComponent implements ApplicationComponent {
                 super.windowIconified(e);
                 if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
-                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
-                frame.setIconified(true);
+                getExistingFrame(e).setIconified(true);
             }
 
             @Override
@@ -47,8 +45,7 @@ public class MyApplicationComponent implements ApplicationComponent {
                 super.windowDeiconified(e);
                 if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
-                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame((IdeFrameImpl) e.getWindow());
-                frame.setIconified(false);
+                getExistingFrame(e).setIconified(false);
             }
         };
     }
@@ -69,8 +66,7 @@ public class MyApplicationComponent implements ApplicationComponent {
             public void beforeFrameReleased(IdeFrame ideFrame) {
                 if (!EnvironmentInitializer.isGlobalInitialized())
                     return;
-                LispFrame frame = GlobalEnvironment.INSTANCE.getFrame(ideFrame);
-                GlobalEnvironment.INSTANCE.onFrameReleased(frame);
+                GlobalEnvironment.INSTANCE.onFrameReleased(getExistingFrame((IdeFrameImpl) ideFrame));
             }
         });
     }
@@ -84,4 +80,11 @@ public class MyApplicationComponent implements ApplicationComponent {
         return "org.jetbrains.emacs4ij.MyApplicationComponent";
     }
 
+    private LispFrame getExistingFrame (WindowEvent e) {
+        return getExistingFrame((IdeFrameImpl) e.getWindow());
+    }
+
+    private LispFrame getExistingFrame (IdeFrameImpl ideFrame) {
+        return GlobalEnvironment.INSTANCE.getExistingFrame(new IdeaFrame(ideFrame));
+    }
 }
