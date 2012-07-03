@@ -1,15 +1,12 @@
-package org.jetbrains.emacs4ij;
+package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.CyclicManager;
-import org.jetbrains.emacs4ij.jelisp.FrameManager;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.DuplicateFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.NoLispFrameForIdeFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedFrameException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredFrameException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
@@ -22,7 +19,7 @@ import java.util.List;
  * Time: 11:42 AM
  * To change this template use File | Settings | File Templates.
  */
-public class FrameManagerImpl extends CyclicManager<LispFrame> implements FrameManager {
+final class FrameManagerImpl extends CyclicManager<LispFrame> implements FrameManager {
     @Override
     public void onFrameOpened(LispFrame frame) {
         define(frame);

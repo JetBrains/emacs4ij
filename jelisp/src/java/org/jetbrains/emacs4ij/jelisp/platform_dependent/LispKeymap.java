@@ -1,7 +1,9 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.elisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.StringOrVector;
 
 /**
  * Created by IntelliJ IDEA.

@@ -2,11 +2,11 @@ package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleKeymapNameException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.List;
  * Time: 11:58 AM
  * To change this template use File | Settings | File Templates.
  */
-public class EmacsKeymapManager {
+final class EmacsKeymapManager {
     private List<LispKeymap> myKeymaps = new ArrayList<>();
     private LispKeymap myCurrentKeyMap = null;
     private final LispKeymapFactory myKeymapFactory;

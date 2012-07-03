@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 

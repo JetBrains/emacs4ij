@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 
 import java.util.List;
 

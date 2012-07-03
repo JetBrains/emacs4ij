@@ -426,7 +426,7 @@ public class BStringTest extends BaseSubroutineTest {
         LispObject o = evaluateString("(substring s 2 4)");
         LispString expected = new LispString("ll");
         expected.actOnTextProperties(0, 2, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
-                TextPropertiesInterval.Action.ADD);
+                TextPropertiesHolder.Action.ADD);
         Assert.assertEquals(expected, o);
     }
 

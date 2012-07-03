@@ -16,8 +16,8 @@ import java.util.List;
  * It handles data objects so that the current one is the last one.
  */
 
-public abstract class CyclicManager<T> implements Manager<T> {
-    protected List<T> myData = new ArrayList<>();
+abstract class CyclicManager<T> implements Manager<T> {
+    protected final List<T> myData = new ArrayList<>();
 
     protected abstract void throwNoOpenedItem();
     protected abstract void throwItemIsNotInDataSet(T item);
@@ -25,7 +25,7 @@ public abstract class CyclicManager<T> implements Manager<T> {
 
     @NotNull
     @Override
-    public T getCurrent () {
+    public final T getCurrent () {
         if (myData.isEmpty())
             throwNoOpenedItem();
         return myData.get(0);
@@ -33,7 +33,7 @@ public abstract class CyclicManager<T> implements Manager<T> {
 
     @NotNull
     @Override
-    public T switchTo (T item) {
+    public final T switchTo (T item) {
         if (myData.isEmpty())
             throwNoOpenedItem();
         if (myData.get(0).equals(item))
@@ -45,59 +45,45 @@ public abstract class CyclicManager<T> implements Manager<T> {
         return myData.get(0);
     }
 
-//    @Override
-    //note: invalid!!!
-//    public T getOther (T item) {
-//        if (myData.isEmpty())
-//            throwNoOpenedItem();
-//        if (myData.size() == 1)
-//            return myData.get(0);
-//        for (int i = myData.size() - 1; i != -1; --i) {
-//            if (!myData.get(i).equals(item))
-//                return myData.get(i);
-//        }
-//        throw new InternalException("other " + item.getClass().getSimpleName() + ": " + item);
-//    }
-
     @Override
-    public void bury (T item) {
+    public final void bury (T item) {
         if (myData.remove(item))
             myData.add(item);
     }
 
     @Override
-    public List<T> getData() {
+    public final List<T> getData() {
         return myData;
     }
 
     @Override
-    public int getSize() {
+    public final int getSize() {
         return myData.size();
     }
 
     @Override
-    public void remove (T item) {
+    public final void remove (T item) {
         if (!myData.remove(item))
             throwItemIsNotInDataSet(item);
     }
 
     @Override
-    public void clear() {
+    public final void clear() {
         myData.clear();
     }
 
     @Override
-    public boolean isAlive (T item) {
+    public final boolean isAlive (T item) {
         return myData.contains(item);
     }
 
     @Override
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return myData.isEmpty();
     }
 
     @Override
-    public boolean define(T item) {
+    public final boolean define(T item) {
         if (myData.contains(item))
             throwDuplicateItem(item);
         myData.add(0, item);

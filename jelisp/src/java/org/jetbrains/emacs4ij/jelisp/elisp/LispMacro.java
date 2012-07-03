@@ -14,7 +14,7 @@ import java.util.List;
  * Time: 7:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispMacro implements FunctionCell {
+public final class LispMacro implements FunctionCell {
     private Lambda myLambda;
 
     public LispMacro(LispList def) {

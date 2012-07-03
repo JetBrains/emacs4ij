@@ -1,9 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import junit.framework.Assert;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.junit.Test;
 
 import javax.swing.*;

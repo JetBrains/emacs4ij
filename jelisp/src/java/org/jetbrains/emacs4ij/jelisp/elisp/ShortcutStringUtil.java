@@ -1,11 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
@@ -19,7 +16,7 @@ import java.util.*;
  * Time: 1:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class ShortcutStringUtil {
+abstract class ShortcutStringUtil {
     private ShortcutStringUtil() {}
 
     private static final List<String> myModifiers = Arrays.asList("meta", "ctrl", "shift", "alt");

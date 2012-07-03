@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,4 +11,5 @@ public interface LispToolWindow extends LispWindow {
     void setId (int id);
     void setFrame (LispFrame frame);
     boolean isRegistered();
+    EditorWrapper getEditor();
 }

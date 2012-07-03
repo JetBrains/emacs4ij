@@ -13,10 +13,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Minibuffer;
 
 import java.awt.*;
@@ -266,9 +272,8 @@ public final class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
         Editor editor = input.getEditor();
         if (editor != null) {
             ((EditorEx) editor).addFocusListener(myFocusListener);
-            myEnvironment.onBufferOpened(this, editor);
+            openStandardBuffer(editor);
             ((EditorEx) editor).setBackgroundColor(Color.GREEN);
-
             myActivationsDepth++;
             isOpened = true;
             setActive();

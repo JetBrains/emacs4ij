@@ -1,9 +1,9 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.TestSetup;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.MissingClosingBracketException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.MissingClosingDoubleQuoteException;
@@ -953,17 +953,17 @@ public class ForwardParserTest {
     @Test
     public void testParseStringWithTextPropOneProp() {
         LispString expected = new LispString("hello");
-        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesInterval.Action.ADD);
+        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesHolder.Action.ADD);
         Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a)"));
     }
 
     @Test
     public void testParseStringWithTextPropTwoProp() {
         LispString expected = new LispString("hello");
-        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesInterval.Action.ADD);
+        expected.actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesHolder.Action.ADD);
         expected.actOnTextProperties(3, 5,
                 LispList.list(new LispSymbol("q"), new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")),
-                TextPropertiesInterval.Action.ADD);
+                TextPropertiesHolder.Action.ADD);
         Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a 3 5 (q b c d))"));
     }
 

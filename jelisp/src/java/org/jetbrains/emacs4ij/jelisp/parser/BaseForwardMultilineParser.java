@@ -17,7 +17,7 @@ import java.util.Observer;
  * Time: 12:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class BaseForwardMultilineParser implements Observer {
+abstract class BaseForwardMultilineParser implements Observer {
     protected ForwardParser myForwardParser = new ForwardParser();
     protected String myFilename;
     protected long myLine = 0;

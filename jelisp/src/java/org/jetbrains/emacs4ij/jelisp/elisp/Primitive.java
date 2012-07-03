@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
  * Time: 5:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class Primitive implements FunctionCell, LispCommand {
+public final class Primitive implements FunctionCell, LispCommand {
     private final String myName;
     private LispObject myDocumentation;
     private final boolean isInteractive;

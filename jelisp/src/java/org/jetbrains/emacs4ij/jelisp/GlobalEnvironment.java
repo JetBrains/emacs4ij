@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
 import java.io.File;
@@ -107,17 +108,24 @@ public class GlobalEnvironment extends Environment {
 
     //input parameters are nullable only for test!!!
     public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
-                                   @Nullable LispWindowFactory windowFactory,
-                                   @Nullable Ide ide, @Nullable FrameManager frameManager) {
+                                   @Nullable LispWindowFactory windowFactory, @Nullable Ide ide) {
         ourKeymapManager = new EmacsKeymapManager(keymapFactory);
         ourBufferManager = new BufferManager(bufferFactory);
         ourWindowManager = new WindowManager(windowFactory);
-        ourFrameManager = frameManager;
+        ourFrameManager = new FrameManagerImpl();
         INSTANCE = new GlobalEnvironment(ide);
         Key.init();
         INSTANCE.init();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println("GE INIT FINISHED " + sdf.format(Calendar.getInstance().getTime()));
+        System.out.println("GLOBAL ENVIRONMENT INIT FINISHED " + sdf.format(Calendar.getInstance().getTime()));
+    }
+
+    /**
+     * For platform-dependent tests only! See @org.jetbrains.emacs4ij.TestSetup
+     * @param frameManager to be set
+     */
+    public static void setFrameManager (final FrameManager frameManager) {
+        ourFrameManager = frameManager;
     }
 
     private void init() {

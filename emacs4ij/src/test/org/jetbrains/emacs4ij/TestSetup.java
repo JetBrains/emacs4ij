@@ -18,8 +18,8 @@ public abstract class TestSetup {
             GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
             GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
             DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());
-            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                    new IdeProvider(), new TestFrameManagerImpl());
+            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(), new IdeProvider());
+            GlobalEnvironment.setFrameManager(new TestFrameManagerImpl());
         }
         GlobalEnvironment.TEST = true;
         GlobalEnvironment.INSTANCE.startRecording();

@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.FrameManager;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.NoLispFrameForIdeFrame;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  * Time: 6:06 PM
  * To change this template use File | Settings | File Templates.
  */
-public class TestFrameManagerImpl implements FrameManager {
+public final class TestFrameManagerImpl implements FrameManager {
     private LispFrame myFrame = new IdeaFrame();
 
     @Override

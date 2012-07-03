@@ -10,7 +10,7 @@ import java.io.RandomAccessFile;
  * Time: 20:30
  * To change this template use File | Settings | File Templates.
  */
-public class ForwardMultilineParser extends BaseForwardMultilineParser {
+public final class ForwardMultilineParser extends BaseForwardMultilineParser {
     private RandomAccessFile myReader;
 
     public ForwardMultilineParser(RandomAccessFile reader, String filename) {

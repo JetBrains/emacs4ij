@@ -1,11 +1,14 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.editor.Editor;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSyntaxTable;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
 
 import java.util.*;
 
@@ -135,7 +138,7 @@ public abstract class Environment {
         return ourWindowManager.getBufferLastSelectedWindow(buffer);
     }
 
-    public void onTabSwitch (Editor editor) {
+    public void onTabSwitch (EditorWrapper editor) {
         switchToWindow(editor, true);
     }
 
@@ -151,7 +154,7 @@ public abstract class Environment {
      * this method switches only for "window ring", but doesn't perform visual switch
      * also the displayed buffer is made current and frame which holds window with given editor
      */
-    public void switchToWindow(Editor editor, boolean switchBuffer) {
+    public void switchToWindow(EditorWrapper editor, boolean switchBuffer) {
         LispWindow window = ourWindowManager.getEditorWindow(editor);
         ourWindowManager.switchTo(window);
         switchToFrame(window.getFrame());
@@ -296,7 +299,7 @@ public abstract class Environment {
         return ourWindowManager.getFrameOtherBuffer(buffer, frame, invisibleBuffersPreferred);
     }
 
-    public LispBuffer getEditorBuffer (Editor editor) {
+    public LispBuffer getEditorBuffer (EditorWrapper editor) {
         return ourWindowManager.getEditorWindow(editor).getBuffer();
     }
 
@@ -340,7 +343,7 @@ public abstract class Environment {
     }
 
     //========= frames & windows ===================
-    public void onBufferOpened(LispBuffer buffer, Editor editor) {
+    public void onBufferOpened(LispBuffer buffer, EditorWrapper editor) {
         ourWindowManager.onOpenBuffer(buffer, getSelectedFrame(), editor);
     }
 

@@ -7,7 +7,7 @@ import com.intellij.openapi.wm.WindowManagerListener;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

@@ -1,10 +1,6 @@
 package org.jetbrains.emacs4ij;
 
-import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispWindowFactory;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +11,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispWindowFactory;
  */
 public class WindowCreator implements LispWindowFactory {
     @Override
-    public LispWindow createWindow(int id, LispBuffer buffer, LispFrame frame, Editor editor) {
-        return new IdeaWindow(id, buffer, frame, editor);
+    public LispWindow createWindow(int id, final LispBuffer buffer, final LispFrame frame, final EditorWrapper editor) {
+        return new IdeaWindow(id, buffer, frame, ((IdeaEditorWrapper)editor).getEditor());
     }
 }

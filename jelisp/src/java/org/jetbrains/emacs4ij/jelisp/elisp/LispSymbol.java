@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.KeymapCell;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Symbol;
@@ -26,7 +26,7 @@ import java.util.Map;
  *
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
-public class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapCell {
+public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapCell {
     public static final LispSymbol ourNil = new LispSymbol("nil");
     public static final LispSymbol ourT = new LispSymbol("t");
     public static final LispSymbol ourVoid = new LispSymbol("void");

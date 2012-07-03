@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
@@ -15,7 +15,7 @@ import java.io.StringReader;
  * Time: 15:14
  * To change this template use File | Settings | File Templates.
  */
-public class ForwardMiltilineParserTest {
+public class ForwardMultilineParserTest {
     @Test
     public void testParseSplitString() throws IOException {
         StringReader r = new StringReader ("\"one\ntwo\"");

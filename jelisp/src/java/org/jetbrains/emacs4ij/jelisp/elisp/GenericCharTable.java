@@ -19,7 +19,7 @@ import java.util.Map;
  * Time: 12:00 PM
  * To change this template use File | Settings | File Templates.
  */
-public class GenericCharTable implements LispCharTable {
+public final class GenericCharTable implements LispCharTable {
     public static final int MAX_N_EXTRA_SLOTS = 10;
     private Map<Integer, LispObject> myData = new HashMap<>();
     private LispObject myDefault;

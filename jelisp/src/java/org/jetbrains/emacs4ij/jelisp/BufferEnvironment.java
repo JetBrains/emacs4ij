@@ -1,10 +1,10 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 
 import java.util.Map;
 
@@ -15,7 +15,7 @@ import java.util.Map;
  * Time: 6:39 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BufferEnvironment extends Environment {
+public final class BufferEnvironment extends Environment {
     public BufferEnvironment(@NotNull final Environment outerEnv) {
         myOuterEnv = outerEnv;
     }

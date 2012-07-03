@@ -21,7 +21,7 @@ import java.util.List;
  * for each subroutine and variable, initially defined in C source, the doc string is extracted
  *
  */
-public class DocumentationExtractor {
+final class DocumentationExtractor {
     private class ObjectToDocument {
         String myName;
         String myDoc = null;

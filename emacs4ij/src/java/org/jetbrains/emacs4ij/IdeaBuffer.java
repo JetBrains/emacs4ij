@@ -5,7 +5,6 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.DocumentEvent;
 import com.intellij.openapi.editor.event.DocumentListener;
-import com.intellij.openapi.editor.ex.FocusChangeListener;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -23,6 +22,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
@@ -72,17 +74,6 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         }
     };
 
-    private final FocusChangeListener myBaseFocusListener = new FocusChangeListener() {
-        @Override
-        public void focusGained(Editor editor) {
-            myEnvironment.switchToBuffer(IdeaBuffer.this);
-        }
-
-        @Override
-        public void focusLost(Editor editor) {
-        }
-    };
-
     protected IdeaBuffer (String name, Environment environment, @Nullable Editor editor, @Nullable VirtualFile file) {
         myEnvironment = new BufferEnvironment(environment);
         myName = name;
@@ -93,18 +84,18 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         myEnvironment.defineBuffer(this);
         if (editor == null)
             return;
-        myEnvironment.onBufferOpened(this, editor);
+        openStandardBuffer(editor);
     }
 
     public IdeaBuffer(Environment environment, FileEditorManager fileEditorManager, VirtualFile file) {
         this(file.getName(), environment, null, file);
         setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
         for (FileEditor fileEditor: fileEditorManager.getAllEditors(file)) {
-            myEnvironment.onBufferOpened(this, ((TextEditor) fileEditor).getEditor());
+            openStandardBuffer(((TextEditor) fileEditor).getEditor());
         }
         FileEditor selected = fileEditorManager.getSelectedEditor(file);
         if (selected != null)
-            myEnvironment.switchToWindow(((TextEditor)selected).getEditor(), true);
+            switchToWindow(((TextEditor) selected).getEditor(), true);
     }
 
     public IdeaBuffer(Environment environment, @NotNull VirtualFile file, @Nullable Editor editor) {
@@ -114,9 +105,22 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
     public IdeaBuffer (Environment environment, String name, String defaultDir, LispToolWindow window) {
         this(name, environment, null, null);
-        myEnvironment.onToolBufferOpened(window);
-        onOpen(window.getEditor().getDocument());
+        openToolBuffer(window);
         setLocalVariable("default-directory", new LispString(defaultDir));
+    }
+
+    private void openToolBuffer (LispToolWindow window) {
+        myEnvironment.onToolBufferOpened(window);
+        onOpen(((IdeaEditorWrapper) window.getEditor()).getEditor().getDocument());
+    }
+
+    protected final void openStandardBuffer(Editor editor) {
+        myEnvironment.onBufferOpened(this, new IdeaEditorWrapper(editor));
+        onOpen(editor.getDocument());
+    }
+
+    private void switchToWindow (final Editor editor, boolean switchBuffer) {
+        myEnvironment.switchToWindow(new IdeaEditorWrapper(editor), switchBuffer);
     }
 
     @Nullable
@@ -124,8 +128,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         return myVirtualFile;
     }
 
-    @Override
-    public void onOpen (Document document) {
+    private void onOpen (Document document) {
         if (myDocument != null && myDocument != document)
             throw new BufferOpenException(myName);
         if (document == null)
@@ -138,7 +141,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
     public void reopen (Editor editor, VirtualFile file) {
         assert file == myVirtualFile;
-        myEnvironment.onBufferOpened(this, editor);
+        openStandardBuffer(editor);
     }
 
     @Override
@@ -257,7 +260,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     }
 
    protected Editor getEditor() {
-        return myEnvironment.getBufferLastSelectedWindow(this).getEditor();
+        return ((IdeaWindow)myEnvironment.getBufferLastSelectedWindow(this)).getEditor();
     }
 
     @Override
@@ -421,17 +424,15 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         VirtualFile[] openedFiles = fileEditorManager.getOpenFiles();
         for (VirtualFile file: openedFiles) {
             if (file.getName().equals(myName)) {
-                myEnvironment.switchToWindow(
-                        fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true),
-                        false);
+                switchToWindow(fileEditorManager.openTextEditor(new OpenFileDescriptor(ourProject, file), true), false);
                 return;
             }
         }
         //it is not in opened files, open it.
         assert myVirtualFile != null;
         Editor editor = ((TextEditor)fileEditorManager.openFile(myVirtualFile, true)[0]).getEditor();
-        myEnvironment.onBufferOpened(this, editor);
-        myEnvironment.switchToWindow(editor, false);
+        openStandardBuffer(editor);
+        switchToWindow(editor, false);
     }
 
     @Override
@@ -579,6 +580,7 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
 
         IdeaBuffer that = (IdeaBuffer) o;
 
+        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
         if (myIntervals != null ? !myIntervals.equals(that.myIntervals) : that.myIntervals != null) return false;
         if (myDocument != null ? !myDocument.equals(that.myDocument) : that.myDocument != null) return false;
         if (myDocumentListener != null ? !myDocumentListener.equals(that.myDocumentListener) : that.myDocumentListener != null)
@@ -588,7 +590,6 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
         if (myKeymap != null ? !myKeymap.equals(that.myKeymap) : that.myKeymap != null) return false;
         if (myMark != null ? !myMark.equals(that.myMark) : that.myMark != null) return false;
         if (myMarkers != null ? !myMarkers.equals(that.myMarkers) : that.myMarkers != null) return false;
-        if (myName != null ? !myName.equals(that.myName) : that.myName != null) return false;
         if (mySyntaxTable != null ? !mySyntaxTable.equals(that.mySyntaxTable) : that.mySyntaxTable != null)
             return false;
         if (myVirtualFile != null ? !myVirtualFile.equals(that.myVirtualFile) : that.myVirtualFile != null)

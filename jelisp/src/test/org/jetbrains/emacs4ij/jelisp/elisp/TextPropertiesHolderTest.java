@@ -17,14 +17,14 @@ public class TextPropertiesHolderTest {
     public void testAddProperties() {
         LispString holder = new LispString("hello world");
         Assert.assertTrue(holder.actOnTextProperties(0, 11, LispList.list(new LispSymbol("one"), new LispInteger(1)),
-                TextPropertiesInterval.Action.ADD));
-        List<TextPropertiesInterval> intervals = holder.getIntervals();
+                TextPropertiesHolder.Action.ADD));
+        List<TextPropertiesHolder.TextPropertiesInterval> intervals = holder.getIntervals();
         Assert.assertEquals(1, intervals.size());
         Assert.assertTrue(intervals.get(0).getRange().equals(0, 11));
         Assert.assertEquals("#(\"hello world\" 0 11 (one 1))", holder.toString());
 
         Assert.assertTrue(holder.actOnTextProperties(4, 6, LispList.list(new LispSymbol("two"), new LispInteger(2)),
-                TextPropertiesInterval.Action.ADD));
+                TextPropertiesHolder.Action.ADD));
         intervals = holder.getIntervals();
         Assert.assertEquals(3, intervals.size());
         Assert.assertTrue(intervals.get(0).getRange().equals(0, 4));
@@ -35,7 +35,7 @@ public class TextPropertiesHolderTest {
 
         Assert.assertTrue(holder.actOnTextProperties(4, 6,
                 LispList.list(new LispSymbol("two"), new LispInteger(2), new LispSymbol("three"), new LispInteger(3)),
-                TextPropertiesInterval.Action.ADD));
+                TextPropertiesHolder.Action.ADD));
         intervals = holder.getIntervals();
         Assert.assertEquals(3, intervals.size());
         Assert.assertTrue(intervals.get(0).getRange().equals(0, 4));

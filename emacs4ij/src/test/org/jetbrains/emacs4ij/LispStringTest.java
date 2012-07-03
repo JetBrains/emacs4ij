@@ -1,8 +1,12 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij;
 
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import junit.framework.Assert;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -38,7 +42,7 @@ public class LispStringTest {
     @Test
     public void testStringEquality() {
         LispString a = new LispString("a");
-        a.actOnTextProperties(0, 1, LispList.list(new LispSymbol("q")), TextPropertiesInterval.Action.ADD);
+        a.actOnTextProperties(0, 1, LispList.list(new LispSymbol("q")), TextPropertiesHolder.Action.ADD);
         LispString b = new LispString("a");
         Assert.assertFalse(a.noTextProperties());
         Assert.assertTrue(b.noTextProperties());

@@ -12,11 +12,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispWindow;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,20 +26,20 @@ import org.jetbrains.emacs4ij.jelisp.exception.NoEditorException;
  * Time: 1:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class IdeaWindow implements LispWindow {
-    private int myId;
-    private LispBuffer myBuffer;
+public final class IdeaWindow implements LispWindow {
+    private final int myId;
+    private final LispBuffer myBuffer;
     private final LispFrame myFrame;
-    private Editor myEditor = null;
+    private Editor myEditor;
 
-    public IdeaWindow (int id, LispBuffer buffer, LispFrame frame, Editor editor) {
+    IdeaWindow (int id, final LispBuffer buffer, final LispFrame frame, final Editor editor) {
         myId = id;
         myBuffer = buffer;
         myFrame = frame;
         setEditor(editor);
     }
 
-    private void setEditor (@Nullable Editor editor) {
+    private void setEditor (@Nullable final Editor editor) {
         myEditor = editor;
         if (editor == null)
             return;
@@ -100,25 +101,18 @@ public class IdeaWindow implements LispWindow {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof IdeaWindow)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         IdeaWindow that = (IdeaWindow) o;
 
-        if (myId != that.myId) return false;
-        if (myBuffer != null ? !myBuffer.equals(that.myBuffer) : that.myBuffer != null) return false;
         if (myEditor != null ? !myEditor.equals(that.myEditor) : that.myEditor != null) return false;
-        if (myFrame != null ? !myFrame.equals(that.myFrame) : that.myFrame != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = myId;
-        result = 31 * result + (myBuffer != null ? myBuffer.hashCode() : 0);
-        result = 31 * result + (myFrame != null ? myFrame.hashCode() : 0);
-        result = 31 * result + (myEditor != null ? myEditor.hashCode() : 0);
-        return result;
+        return myEditor != null ? myEditor.hashCode() : 0;
     }
 
     @Override
@@ -133,9 +127,9 @@ public class IdeaWindow implements LispWindow {
     }
 
     @Override
-    public void open (@NotNull Editor editor) {
+    public void open (@NotNull EditorWrapper wrapper) {
         assert myEditor == null;
-        setEditor(editor);
+        setEditor(((IdeaEditorWrapper)wrapper).getEditor());
     }
 
     @Override
@@ -145,6 +139,11 @@ public class IdeaWindow implements LispWindow {
             return;
         FileEditorManager fileEditorManager = FileEditorManager.getInstance(IdeaBuffer.getProject());
         fileEditorManager.closeFile(file);
+    }
+
+    @Override
+    public boolean editorEquals(EditorWrapper editor) {
+        return myEditor == ((IdeaEditorWrapper)editor).getEditor();
     }
 
     @Override

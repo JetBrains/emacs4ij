@@ -15,11 +15,12 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
 
 import javax.swing.*;
@@ -33,8 +34,8 @@ import java.awt.*;
  * To change this template use File | Settings | File Templates.
  */
 public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Disposable, LispToolWindow {
-    private Project myProject;
-    private Editor myEditor = null;
+    private final Project myProject;
+    private final Editor myEditor;
     private LispBuffer myBuffer = null;
     private int myId;
     private LispFrame myFrame = null;
@@ -46,7 +47,7 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
         ((EditorEx) myEditor).addFocusListener(new FocusChangeListener() {
             @Override
             public void focusGained(Editor editor) {
-                GlobalEnvironment.INSTANCE.switchToWindow(myEditor, true);
+                GlobalEnvironment.INSTANCE.switchToWindow(new IdeaEditorWrapper(myEditor), true);
             }
 
             @Override
@@ -62,9 +63,6 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
-//                if (!state) {
-//                    releaseEditor(environment);
-//                }
                 if (state && myBuffer == null) {
                     myBuffer = Buffer.getToolBufferCreate(environment, Emacs4ijBundle.message("help.buffer.name"), HelpArea.this);
                 }
@@ -81,46 +79,19 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
         }
         if (myEditor != null) {
             EditorFactory.getInstance().releaseEditor(myEditor);
-            myEditor = null;
+//            myEditor = null;
         }
     }
 
     @Override
     public void dispose() {
         releaseEditor();
-        myProject = null;
+//        myProject = null;
     }
 
-//    public void setText (final String message, final TextAttributesKey key) {
-//        ApplicationManager.getApplication().invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (!myProject.isDisposed() && myEditor != null) {
-//                    Document document = myEditor.getDocument();
-//                    document.setText("");
-//                    int messageStart = 0;
-//                    document.insertString(0, message);
-//                    boolean scroll = document.getTextLength() == myEditor.getCaretModel().getOffset();
-//                    TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(key);
-//                    int layer = HighlighterLayer.CARET_ROW + 1;
-//                    myEditor.getMarkupModel().addRangeHighlighter(messageStart, document.getTextLength(), layer, attributes,
-//                            HighlighterTargetArea.EXACT_RANGE);
-//
-//                    if (scroll) {
-//                        myEditor.getCaretModel().moveToOffset(document.getTextLength());
-//                        myEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
-//                    }
-//
-//                    ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow("Emacs4ij Help");
-//                    toolWindow.show(null);
-//                }
-//            }
-//        });
-//    }
-
     @Override
-    public Editor getEditor() {
-        return myEditor;
+    public EditorWrapper getEditor() {
+        return new IdeaEditorWrapper(myEditor);
     }
 
     @Override
@@ -137,7 +108,7 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
     public void setActive() {
         if (myBuffer == null)
             throw new NoBufferException("*Help*");
-        open(myEditor);
+        open();
     }
 
     @Override
@@ -152,7 +123,11 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
     }
 
     @Override
-    public void open(@NotNull Editor editor) {
+    public void open(@NotNull EditorWrapper wrapper) {
+        throw new UnsupportedOperationException(Emacs4ijBundle.message("help.area.open.with.window"));
+    }
+
+    private void open() {
         ApplicationManager.getApplication().invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -165,6 +140,11 @@ public class HelpArea extends SimpleToolWindowPanel implements DataProvider, Dis
     @Override
     public void closeTab() {
         close();
+    }
+
+    @Override
+    public boolean editorEquals(EditorWrapper editor) {
+        return myEditor == ((IdeaEditorWrapper)editor).getEditor();
     }
 
     @Override

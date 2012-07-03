@@ -1,8 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
-import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,14 +12,14 @@ import org.jetbrains.annotations.Nullable;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispWindow extends LispObject {
-    Editor getEditor();
     LispFrame getFrame();
     LispBuffer getBuffer();
     void setActive();
     boolean isVisible();
     void close();
-    void open (@NotNull Editor editor);
+    void open (@NotNull EditorWrapper editor);
     void closeTab();
+    boolean editorEquals (EditorWrapper editor);
 
     /**
      *

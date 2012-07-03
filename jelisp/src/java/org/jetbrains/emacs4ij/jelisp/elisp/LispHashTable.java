@@ -15,7 +15,7 @@ import java.util.Map;
  * Time: 10:44 AM
  * To change this template use File | Settings | File Templates.
  */
-public class LispHashTable implements LispObject {
+public final class LispHashTable implements LispObject {
     public static enum EqualityMethod {EQL, EQ, EQUAL}
 
     private HashMap<LispObject, LispObject> myData;

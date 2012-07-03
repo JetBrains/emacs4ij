@@ -19,7 +19,7 @@ import java.util.List;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BackwardParser extends Parser {
+class BackwardParser extends Parser {
     private ForwardParser myForwardParser = new ForwardParser();
 
     @Override

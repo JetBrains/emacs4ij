@@ -40,18 +40,18 @@ public class LambdaTest {
     @Test
     public void testParseArgumentsList() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (a &optional b &key c &rest d))");
-        List<LambdaArgument> args = new Lambda(list).getArguments();
+        List<Lambda.LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(4, args.size());
-        Assert.assertEquals(LambdaArgument.Type.REQUIRED, args.get(0).getType());
-        Assert.assertEquals(LambdaArgument.Type.OPTIONAL, args.get(1).getType());
-        Assert.assertEquals(LambdaArgument.Type.KEYWORD, args.get(2).getType());
-        Assert.assertEquals(LambdaArgument.Type.REST, args.get(3).getType());
+        Assert.assertEquals(Lambda.LambdaArgument.Type.REQUIRED, args.get(0).getType());
+        Assert.assertEquals(Lambda.LambdaArgument.Type.OPTIONAL, args.get(1).getType());
+        Assert.assertEquals(Lambda.LambdaArgument.Type.KEYWORD, args.get(2).getType());
+        Assert.assertEquals(Lambda.LambdaArgument.Type.REST, args.get(3).getType());
     }
 
     @Test
     public void testParseArgumentsList_Keyword_Simple() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key (c 10)))");
-        List<LambdaArgument> args = new Lambda(list).getArguments();
+        List<Lambda.LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(1, args.size());
         Assert.assertEquals(new LispInteger(10), args.get(0).getInitForm());
         Assert.assertEquals(new LispSymbol(":c"), args.get(0).getKeyword());
@@ -61,7 +61,7 @@ public class LambdaTest {
     @Test
     public void testParseArguments_Keyword_Complex() throws Exception {
         LispList list = (LispList) evaluateString("'(lambda (&key ((word var) 10 a)))");
-        List<LambdaArgument> args = new Lambda(list).getArguments();
+        List<Lambda.LambdaArgument> args = new Lambda(list).getArguments();
         Assert.assertEquals(1, args.size());
         Assert.assertEquals(new LispInteger(10), args.get(0).getInitForm());
         Assert.assertEquals(new LispSymbol("word"), args.get(0).getKeyword());

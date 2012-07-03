@@ -16,9 +16,9 @@ import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 
 /**
  * Created by IntelliJ IDEA.
@@ -69,8 +69,7 @@ public abstract class EnvironmentInitializer {
         Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
         try {
             DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());
-            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(),
-                    new IdeProvider(), new FrameManagerImpl());
+            GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(), new IdeProvider());
             isGlobalInitialized = true;
         } catch (LispException e) {
             ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(userKeymap);
@@ -111,7 +110,7 @@ public abstract class EnvironmentInitializer {
                         }
                         Editor editor = fileEditorManager.getSelectedTextEditor();
                         if (editor != null) {
-                            environment.switchToWindow(fileEditorManager.getSelectedTextEditor(), true);
+                            environment.switchToWindow(new IdeaEditorWrapper(fileEditorManager.getSelectedTextEditor()), true);
                             return;
                         }
                         if (fileEditorManager.getOpenFiles().length != 0)

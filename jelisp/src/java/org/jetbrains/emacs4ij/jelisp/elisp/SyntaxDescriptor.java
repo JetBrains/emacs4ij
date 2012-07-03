@@ -16,7 +16,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 
-public class SyntaxDescriptor {
+public final class SyntaxDescriptor {
     public static enum CommentStyle {A, B, GENERIC}
 
     public static enum ClassType {WHITESPACE, PUNCTUATION, WORD, SYMBOL, OPEN_PARENTHESIS, CLOSE_PARENTHESIS,
@@ -43,6 +43,8 @@ public class SyntaxDescriptor {
             ourFlagMap.put(flags.charAt(i), 1 << (16 + i));
         }
     }
+
+    private SyntaxDescriptor() {}
 
     protected static int makeFullSyntaxCode (String string) {
         int syntaxCode = ourSyntaxClassMap.get(string.charAt(0));

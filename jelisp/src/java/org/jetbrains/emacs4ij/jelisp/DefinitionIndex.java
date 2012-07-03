@@ -22,6 +22,10 @@ import java.util.SortedMap;
 public final class DefinitionIndex {
     private Map<Identifier, IdLocation> myValue = new HashMap<>();
 
+    /**
+     * Don't use this setter! It is only for deserialization of persistent data.
+     * @param index the map to be set as index value.
+     */
     public void setValue(Map<Identifier, IdLocation> index) {
         myValue = index;
     }

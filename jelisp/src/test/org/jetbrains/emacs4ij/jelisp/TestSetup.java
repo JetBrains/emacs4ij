@@ -16,7 +16,7 @@ public abstract class TestSetup {
                 GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
                 GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.3");
                 DefinitionLoader.initialize(null);
-                GlobalEnvironment.initialize(null, null, null, null, null);
+                GlobalEnvironment.initialize(null, null, null, null);
             }
             GlobalEnvironment.TEST = true;
             GlobalEnvironment.INSTANCE.startRecording();

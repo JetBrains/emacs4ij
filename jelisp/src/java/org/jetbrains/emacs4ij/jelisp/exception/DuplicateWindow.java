@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispWindow;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispWindow;
 
 /**
  * Created with IntelliJ IDEA.

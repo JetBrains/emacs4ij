@@ -1,13 +1,10 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
-import com.intellij.openapi.editor.Document;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.*;
 
 import java.util.Map;
-
-//import com.intellij.openapi.editor.Editor;
-//import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,9 +14,6 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBuffer extends LispObject {
-    void onOpen (Document document);
-//    void reopen (Editor editor, VirtualFile file);
-
     LispObject getVariableValue (String name);
     LispSymbol getVariable (String name);
     void defineVariable (LispSymbol variable);
@@ -41,6 +35,7 @@ public interface LispBuffer extends LispObject {
     String forwardChar (int shift);
     int followingCharacter();
     int precedingCharacter();
+
     String getText();
     void setText (final String text);
 
@@ -59,9 +54,6 @@ public interface LispBuffer extends LispObject {
     void insert(String insertion, int where);
     void insert(LispObject insertion, @Nullable LispMarker where);
     void insert(LispObject insertion);
-
-//    Editor getEditor();
-//    Document getDocument();
 
     void setSyntaxTable(LispSyntaxTable table);
     LispSyntaxTable getSyntaxTable ();

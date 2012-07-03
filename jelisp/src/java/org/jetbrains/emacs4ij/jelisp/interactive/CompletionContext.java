@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Time: 11:01 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class CompletionContext {
+abstract class CompletionContext {
     private final static String ourStandardNoMatchMessage = JelispBundle.message("standard.no.match.msg");
 //    private LispObject myCollection = null; //GlobalEnvironment.INSTANCE.getObjectArray();
 //    private LispObject myPredicate = null;

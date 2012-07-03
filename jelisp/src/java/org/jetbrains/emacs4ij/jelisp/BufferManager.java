@@ -1,13 +1,16 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBufferFactory;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.List;
  * Time: 8:15 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BufferManager extends CyclicManager<LispBuffer> {
+final class BufferManager extends CyclicManager<LispBuffer> {
     private final LispBufferFactory myFactory;
 
     public BufferManager(LispBufferFactory factory) {
@@ -29,10 +32,10 @@ public class BufferManager extends CyclicManager<LispBuffer> {
     public LispBuffer createBuffer (String bufferName) {
         String baseDir = ((LispString) GlobalEnvironment.INSTANCE.getBufferCurrentForEditing()
                 .getVariableValue("default-directory")).getData();
-        VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(baseDir + bufferName);
-        if (file == null)
+//        VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(baseDir + bufferName);
+//        if (file == null)
             throw new InternalException("create buffer failed");
-        return myFactory.createBuffer(GlobalEnvironment.INSTANCE, file, null);
+//        return myFactory.createBuffer(GlobalEnvironment.INSTANCE, file, null);
     }
 
     public LispBuffer createBuffer (String bufferName, LispToolWindow window) {

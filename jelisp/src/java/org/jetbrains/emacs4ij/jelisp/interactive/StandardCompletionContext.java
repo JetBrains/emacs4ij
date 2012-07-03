@@ -4,7 +4,11 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.File;
@@ -19,7 +23,7 @@ import java.util.List;
  * Time: 2:50 PM
  * To change this template use File | Settings | File Templates.
  */
-public class StandardCompletionContext extends CompletionContext {
+class StandardCompletionContext extends CompletionContext {
     public char InteractiveChar;
 
     public StandardCompletionContext () {

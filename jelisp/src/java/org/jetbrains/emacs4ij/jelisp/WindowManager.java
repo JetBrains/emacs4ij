@@ -1,10 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
-import com.intellij.openapi.editor.Editor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
 
 import java.util.*;
 
@@ -15,7 +14,7 @@ import java.util.*;
  * Time: 6:17 PM
  * To change this template use File | Settings | File Templates.
  */
-public class WindowManager extends CyclicManager<LispWindow> {
+final class WindowManager extends CyclicManager<LispWindow> {
     private final LispWindowFactory myFactory;
 
     public WindowManager (LispWindowFactory factory) {
@@ -31,18 +30,16 @@ public class WindowManager extends CyclicManager<LispWindow> {
         }
     }
 
-    public void onOpenBuffer(LispBuffer buffer, LispFrame frame, Editor editor) {
+    public void onOpenBuffer(LispBuffer buffer, LispFrame frame, EditorWrapper editor) {
         List<LispWindow> bufferWindowsOnFrame = getBufferWindowsOnFrame(buffer, frame);
         if (bufferWindowsOnFrame.isEmpty()) {
             int id = getFrameWindows(frame).size();
             LispWindow window = myFactory.createWindow(id, buffer, frame, editor);
             define(window);
-            buffer.onOpen(editor.getDocument());
             return;
         }
         if (bufferWindowsOnFrame.size() == 1 && !bufferWindowsOnFrame.get(0).isVisible()) {
             bufferWindowsOnFrame.get(0).open(editor);
-            buffer.onOpen(editor.getDocument());
             return;
         }
         throw new DoubleBufferException(buffer.getName());
@@ -175,9 +172,9 @@ public class WindowManager extends CyclicManager<LispWindow> {
     }
 
     @NotNull
-    public LispWindow getEditorWindow (Editor editor) {
+    public LispWindow getEditorWindow (EditorWrapper editor) {
         for (LispWindow window: myData) {
-            if (window.getEditor() == editor)
+            if (window.editorEquals(editor))
                 return window;
         }
         throw new UnregisteredEditorException();

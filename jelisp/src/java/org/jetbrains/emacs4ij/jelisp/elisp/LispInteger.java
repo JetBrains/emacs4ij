@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
  *
  * elisp integer number = 13, 1355, -7979, etc
  */
-public class LispInteger extends LispNumber<Integer> implements MarkerOrInteger {
+public final class LispInteger extends LispNumber<Integer> implements MarkerOrInteger {
     public static final int MAX_CHAR   = 0x3FFFFF;
 
     public LispInteger(int data) {

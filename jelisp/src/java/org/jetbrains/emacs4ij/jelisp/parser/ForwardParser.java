@@ -21,7 +21,7 @@ import java.util.List;
  * this is a parser for lisp program
  */
 
-public class ForwardParser extends Parser {
+public final class ForwardParser extends Parser {
     @Override
     protected void advance() {
         if (myCurrentIndex == myLispCode.length())

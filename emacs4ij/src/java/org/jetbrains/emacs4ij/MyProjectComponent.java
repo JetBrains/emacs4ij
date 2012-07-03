@@ -20,11 +20,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -79,8 +80,9 @@ public class MyProjectComponent implements ProjectComponent {
                     return;
                 try {
                     Editor editor = ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor();
+                    EditorWrapper wrapper = new IdeaEditorWrapper(editor);
                     try {
-                        myEnvironment.getEditorBuffer(editor);
+                        myEnvironment.getEditorBuffer(wrapper);
                     } catch (UnregisteredEditorException e) {//new buffer or reopen closed
                         LispBuffer existing = myEnvironment.findBuffer(virtualFile.getName());
                         if (existing == null)
@@ -88,7 +90,7 @@ public class MyProjectComponent implements ProjectComponent {
                         else
                             ((IdeaBuffer)existing).reopen(editor, virtualFile);
                     } finally {
-                        myEnvironment.switchToWindow(editor, true);
+                        myEnvironment.switchToWindow(wrapper, true);
                     }
                 } catch (DoubleBufferException e) {
                     //opened 1 file in 2 or more editors.
@@ -119,7 +121,7 @@ public class MyProjectComponent implements ProjectComponent {
                 }
                 if (!(myEnvironment.isSelectionManagedBySubroutine())) {
                     try {
-                        myEnvironment.onTabSwitch(FileEditorManager.getInstance(myProject).getSelectedTextEditor());
+                        myEnvironment.onTabSwitch(new IdeaEditorWrapper(FileEditorManager.getInstance(myProject).getSelectedTextEditor()));
 //                        myEnvironment.onTabSwitch(fileEditorManagerEvent.getNewFile().getName(),
 //                                FileEditorManager.getInstance(myProject).getSelectedTextEditor());
                     } catch (NoBufferException | UnregisteredEditorException e) {

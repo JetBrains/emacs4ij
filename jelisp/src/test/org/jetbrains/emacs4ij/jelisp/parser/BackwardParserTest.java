@@ -1,9 +1,8 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.parser.BackwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.InvalidReadSyntax;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;

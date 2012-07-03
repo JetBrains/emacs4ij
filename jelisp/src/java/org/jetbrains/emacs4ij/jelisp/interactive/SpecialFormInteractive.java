@@ -16,7 +16,7 @@ import java.util.List;
  * Time: 6:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SpecialFormInteractive extends InteractiveReader {
+public final class SpecialFormInteractive extends InteractiveReader {
     private String[] myParameters;
     private int myIndex;
     private final StandardCompletionContext myCompletionContext = new StandardCompletionContext();

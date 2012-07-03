@@ -1,8 +1,5 @@
-package org.jetbrains.emacs4ij.jelisp.elisp;
+package org.jetbrains.emacs4ij.jelisp.platform_dependent;
 
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 
 /**
@@ -13,6 +10,6 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
  * To change this template use File | Settings | File Templates.
  */
 public interface LispBufferFactory {
-    LispBuffer createBuffer (Environment environment, VirtualFile file, @Nullable Editor editor);
+//    LispBuffer createBuffer (Environment environment, VirtualFile file, @Nullable EditorWrapper editor);
     LispBuffer createBuffer (Environment environment, String name, String defaultDir, LispToolWindow window);
 }

@@ -3,7 +3,6 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.ShortcutStringUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
@@ -22,7 +21,7 @@ import java.util.List;
  *
  * elisp string = "anything between double quotation marks"
  */
-public class LispString extends TextPropertiesHolder implements LispAtom, LispSequence, LispArray, StringOrVector {
+public final class LispString extends TextPropertiesHolder implements LispAtom, LispSequence, LispArray, StringOrVector {
     private String myData;
 
     public LispString (String data) {

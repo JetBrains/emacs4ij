@@ -25,7 +25,7 @@ import java.util.List;
  *
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
-public class LispList implements LispSequence {
+public final class LispList implements LispSequence {
     private LispObject myCar = null;
     private LispObject myCdr = null;
     private Boolean isTrueList;

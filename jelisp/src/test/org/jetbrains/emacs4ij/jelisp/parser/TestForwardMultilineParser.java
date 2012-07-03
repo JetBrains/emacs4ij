@@ -1,7 +1,6 @@
-package org.jetbrains.emacs4ij.jelisp;
+package org.jetbrains.emacs4ij.jelisp.parser;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.parser.BaseForwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
 import java.io.BufferedReader;

@@ -13,8 +13,7 @@ import java.util.List;
  * Time: 4:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EmptyReader extends InteractiveReader {
-
+public final class EmptyReader extends InteractiveReader {
     public EmptyReader (Environment environment, LambdaOrSymbolWithFunction command, LispList args) {
         super(environment, command);
         myArguments = args.toLispObjectList();

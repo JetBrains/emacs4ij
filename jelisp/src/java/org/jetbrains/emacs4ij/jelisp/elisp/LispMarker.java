@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
+import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,7 +13,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
  * Time: 4:03 PM
  * To change this template use File | Settings | File Templates.
  */
-public class LispMarker implements MarkerOrInteger {
+public final class LispMarker implements MarkerOrInteger {
     private Integer myPosition;
     private LispBuffer myBuffer;
     private boolean isAfterInsertion; // true = after, false = before inserted text

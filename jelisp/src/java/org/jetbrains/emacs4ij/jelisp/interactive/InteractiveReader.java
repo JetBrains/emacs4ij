@@ -3,9 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.interactive;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LambdaOrSymbolWithFunction;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +29,18 @@ public abstract class InteractiveReader implements Completer {
     protected String myParameterDefaultValue = ourEmptyMessage;
     protected String myPromptDefaultValue = ourEmptyMessage;
 
-    public InteractiveReader (Environment environment, @Nullable LambdaOrSymbolWithFunction command) {
+    InteractiveReader (Environment environment, @Nullable LambdaOrSymbolWithFunction command) {
         myEnvironment = environment;
         myCommand = command;
     }
 
-    public static InteractiveReader create (Environment environment, LambdaOrSymbolWithFunction command, LispObject args) {
-        if (args instanceof LispString)
-            return new SpecialFormInteractive(environment, command, ((LispString) args).getData());
-        if (args instanceof LispList)
-            return new EmptyReader(environment, command, (LispList) args);
-        return null;
-    }
+//    public static InteractiveReader create (Environment environment, LambdaOrSymbolWithFunction command, LispObject args) {
+//        if (args instanceof LispString)
+//            return new SpecialFormInteractive(environment, command, ((LispString) args).getData());
+//        if (args instanceof LispList)
+//            return new EmptyReader(environment, command, (LispList) args);
+//        return null;
+//    }
 
     public abstract boolean isFinished ();
     public abstract boolean isNoMatch();

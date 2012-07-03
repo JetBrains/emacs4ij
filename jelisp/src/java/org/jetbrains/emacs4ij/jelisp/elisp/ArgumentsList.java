@@ -11,7 +11,7 @@ import java.util.List;
  * Time: 2:36 PM
  * To change this template use File | Settings | File Templates.
  */
-public class ArgumentsList {
+final class ArgumentsList {
     private class Argument {
         private boolean myOptional = false;
         private Object myValue = null;

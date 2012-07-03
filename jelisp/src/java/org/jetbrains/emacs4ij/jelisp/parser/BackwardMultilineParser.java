@@ -17,7 +17,7 @@ import java.util.Observer;
  * Time: 00:08
  * To change this template use File | Settings | File Templates.
  */
-public class BackwardMultilineParser implements Observer {
+public final class BackwardMultilineParser implements Observer {
     private BackwardParser myBackwardParser = new BackwardParser();
     private List<String> myReader;
     private int myIndex;
