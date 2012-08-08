@@ -24,7 +24,7 @@
   <property name="src-emacs4ij" value="${basedir}/emacs4ij/src/java"/>
   <property name="src-jelisp" value="${basedir}/jelisp/src/java"/>
 
-  <property name="resources" value="${basedir}/emacs4ij/icons"/>
+  <property name="icons" value="${basedir}/emacs4ij/icons"/>
   <property name="idea.home" value="${idea}/unzip"/>
 
   <property name="version" value="${version-id}.${build.number}"/>
@@ -93,8 +93,10 @@
       <fileset dir="${src-emacs4ij}" excludes="**/*.java"/>
       <fileset dir="${src-jelisp}" excludes="**/*.java"/>
     </copy>
-    <copy todir="${classes}">
-      <fileset dir="${resources}"/>
+
+    <mkdir dir="${classes}/icons"/>
+    <copy todir="${classes}/icons">
+      <fileset dir="${icons}"/>
     </copy>
     <mkdir dir="${build}"/>
     <jar basedir="${classes}" jarfile="${build}/emacs4ij.jar" compress="yes"/>
