@@ -22,19 +22,19 @@
         <group id="Emacs4ijActionGroup" text="Emacs4ij Group" description="Group with Emacs4ij actions" popup="false">
 
             <!--action id="org.jetbrains.emacs4ij.OpenMiniBuffer" class="org.jetbrains.emacs4ij.OpenMiniBuffer"
-                    text="Execute command in minibuffer" icon="icons/execute.png"
+                    text="Execute command in minibuffer" icon="/icons/execute.png"
                     description="Execute command in minibuffer">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
             </action-->
             <action id="Open Settings" class="org.jetbrains.emacs4ij.OpenSettings"
-                    text="Emacs4ij settings" icon="icons/options.png"
+                    text="Emacs4ij settings" icon="/icons/options.png"
                     description="View and edit Emacs4ij settings">
             </action>
             <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
         </group>
 
         <!--action id="Evaluate Code" class="org.jetbrains.emacs4ij.EvaluateCode"
-                text="Evaluate elisp code" icon="icons/emacs.png">
+                text="Evaluate elisp code" icon="/icons/emacs.png">
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl X" second-keystroke="ctrl E"/>
         </action-->
 
@@ -46,9 +46,9 @@
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsIndexService" serviceImplementation="org.jetbrains.emacs4ij.EmacsIndexService"/>
         <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.EchoAreaToolWindowFactory"
-                    icon="icons/emacs.png"/>
+                    icon="/icons/emacs.png"/>
         <toolWindow id="Emacs4ij Help" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.HelpToolWindowFactory"
-                    icon="icons/emacs.png"/>
+                    icon="/icons/emacs.png"/>
     </extensions>
 
     <resource-bundle>org.jetbrains.emacs4ij.Emacs4ijBundle</resource-bundle>
