@@ -1,9 +1,9 @@
 <idea-plugin version="2">
     <name>Emacs4ij</name>
     <description>Plugin for Emacs support</description>
-    <version>1.0</version>
+    <version>VERSION</version>
     <vendor logo="/general/ijLogo.png">JetBrains</vendor>
-    <idea-version since-build="8000"/>
+    <idea-version since-build="SINCE-VERSION"/>
 
     <application-components>
         <component>
