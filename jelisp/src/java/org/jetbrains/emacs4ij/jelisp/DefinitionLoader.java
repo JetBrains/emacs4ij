@@ -342,11 +342,15 @@ public final class DefinitionLoader {
         }
 
         static void onUploadFinish (Identifier id) {
-            Identifier first = myLoadStack.removeFirst();
-            if (!id.equals(first)) {
-                System.err.println(String.format("Load stack error: top of stack = %s, current id = %s, left stack = %s",
-                        first.toString(), id.toString(), myLoadStack.toString()));
-//                    throw new InternalException(JelispBundle.message("upload.stack.error"));
+            try {
+                Identifier first = myLoadStack.removeFirst();
+                if (!id.equals(first)) {
+                    System.err.println(String.format("Load stack error: top of stack = %s, current id = %s, left stack = %s",
+                            first.toString(), id.toString(), myLoadStack.toString()));
+    //                    throw new InternalException(JelispBundle.message("upload.stack.error"));
+                }
+            } catch (NoSuchElementException e) {
+                System.err.println(String.format("Load stack error: %s, left stack = %s", e.getMessage(), myLoadStack.toString()));
             }
         }
 

@@ -38,6 +38,6 @@ public class IdeProvider implements Ide {
             default:
                 throw new InternalException(Emacs4ijBundle.message("unsupported.msg.type", type.toString()));
         }
-        getEchoArea().print(message, outputKey);
+        getEchoArea().print(message + "\n", outputKey);
     }
 }
