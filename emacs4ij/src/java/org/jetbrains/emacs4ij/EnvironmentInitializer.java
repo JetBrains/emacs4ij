@@ -20,13 +20,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 2/13/12
- * Time: 9:55 AM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class EnvironmentInitializer {
     private static boolean isGlobalInitialized = false;
 
@@ -47,8 +40,7 @@ public abstract class EnvironmentInitializer {
             try {
                 return init();
             } catch (LispException e) {
-                e.printStackTrace();
-                //skip
+//                e.printStackTrace(); todo: log
             }
         }
         return isGlobalInitialized;

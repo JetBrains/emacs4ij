@@ -30,8 +30,7 @@ public final class DefinitionIndex {
         myValue = index;
     }
 
-    @MapAnnotation(surroundWithTag = false, entryTagName = "index", keyAttributeName = "id", valueAttributeName = "locations",
-            surroundValueWithTag = false, surroundKeyWithTag = false)
+    @MapAnnotation(surroundWithTag = false, entryTagName = "index", keyAttributeName = "id", valueAttributeName = "locations", surroundValueWithTag = false, surroundKeyWithTag = false)
     public Map<Identifier, IdLocation> getValue() {
         return myValue;
     }

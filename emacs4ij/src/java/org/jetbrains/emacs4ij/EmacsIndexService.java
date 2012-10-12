@@ -7,18 +7,9 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.emacs4ij.jelisp.DefinitionIndex;
 
-/**
- * Created with IntelliJ IDEA.
- * User: kate
- * Date: 7/1/12
- * Time: 2:05 PM
- *
- * This service provides DefinitionIndex persistence.
- */
-
 @State(
         name="EmacsIndex",
-        storages = @Storage(id="other", file = "$APP_CONFIG$/other.xml"),
+        storages = @Storage(id="other", file = "$APP_CONFIG$/emacs4ij_index.xml"),
         reloadable = true,
         roamingType = RoamingType.DISABLED
 )
