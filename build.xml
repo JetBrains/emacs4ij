@@ -1,0 +1,152 @@
+<project name="Emacs4ij">
+  <!--
+  * Emacs4ij - A Vim emulator plugin for IntelliJ Idea
+  * Copyright (C) 2003-2009 Rick Maddy, Oleg Shpynov
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version 2
+  * of the License, or (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+  -->
+  <property file="build.properties"/>
+
+  <property name="idea" value="${basedir}/idea"/>
+
+  <property name="src-emacs4ij" value="${basedir}/emacs4ij/src/java"/>
+  <property name="src-jelisp" value="${basedir}/jelisp/src/java"/>
+
+  <property name="icons" value="${basedir}/emacs4ij/icons"/>
+  <property name="idea.home" value="${idea}/unzip"/>
+
+  <property name="version" value="${version-id}.${build.number}"/>
+  <property name="filename" value="emacs4ij-${version}"/>
+
+  <!--Output-->
+  <property name="out" value="${basedir}"/>
+  <property name="classes" value="${out}/classes"/>
+  <property name="build" value="${out}/build"/>
+  <property name="dist" value="${out}/dist"/>
+
+  <!-- Define task -->
+  <path id="ant-contrib">
+    <pathelement path="lib/ant-contrib-1.0b3.jar"/>
+  </path>
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpathref="ant-contrib"/>
+
+  <path id="build.classpath">
+    <fileset dir="${idea.home}/lib">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${basedir}/lib">
+        <include name="**/*.jar"/>
+    </fileset>
+    <pathelement path="${classes}"/>
+  </path>
+
+  <!-- Clean all the generated stuff -->
+  <target name="clean" description="Removes all generated files">
+    <delete dir="${build}"/>
+    <delete dir="${classes}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+    <!-- Compile all the sources to the ${classes} folder -->
+  <target name="compile">
+    <mkdir dir="${classes}"/>
+    <!-- The task requires the following libraries from IntelliJ IDEA distribution: -->
+    <!--   javac2.jar; jdom.jar; asm.jar; asm-commons.jar -->
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2">
+      <classpath refid="build.classpath"/>
+    </taskdef>
+
+
+    <javac2 destdir="${classes}"
+            debug="on"
+            fork="true">
+      <classpath refid="build.classpath"/>
+      <src path="${src-emacs4ij}"/>
+      <src path="${src-jelisp}"/>
+      <include name="org/jetbrains/**"/>
+    </javac2>
+  </target>
+
+  <!-- Create emacs4ij.jar for packing inside zip plugin package -->
+  <target name="jar">
+    <mkdir dir="${classes}"/>
+    <mkdir dir="${classes}/META-INF"/>
+    <copy file="${basedir}/emacs4ij/META-INF/plugin.xml" todir="${classes}/META-INF">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="SINCE-VERSION" value="${platform-version}"/>
+      </filterset>
+    </copy>
+    <copy todir="${classes}">
+      <fileset dir="${src-emacs4ij}" excludes="**/*.java"/>
+      <fileset dir="${src-jelisp}" excludes="**/*.java"/>
+    </copy>
+
+    <mkdir dir="${classes}/icons"/>
+    <copy todir="${classes}/icons">
+      <fileset dir="${icons}"/>
+    </copy>
+    <mkdir dir="${build}"/>
+    <jar basedir="${classes}" jarfile="${build}/emacs4ij.jar" compress="yes"/>
+  </target>
+
+  <target name="build" depends="unzip, clean, compile, jar" description="Compiles all source code and created plugin jar file"/>
+
+  <!-- Donwload IntelliJ IDEA distribution -->
+  <target name="download" description="Downloads IntellIJ IDEA artifacts">
+    <delete dir="${idea}"/>
+    <mkdir dir="${idea}"/>
+    <get src="${idea.download.url}" dest="${idea}"/>
+  </target>
+
+  <!-- Unpack idea-*.zip file for emacs4ij compilation -->
+  <target name="unzip" depends="download" description="Unzip downloaded artifacts and set up idea.home">
+    <delete dir="${idea}/unzip"/>
+    <mkdir dir="${idea}/unzip"/>
+    <unzip dest="${idea}/unzip">
+      <fileset dir="${idea}" includes="idea*.zip"/>
+    </unzip>
+  </target>
+
+  <target name="dist" depends="dist-src, dist-bin" description="Creates the src and bin distribution files"/>
+
+  <!-- Prepare layout for plugin distribution and creates zip file which can be published -->
+  <target name="dist-bin" depends="clean, build" description="Creates a zip file containing the plugin sources">
+    <delete dir="${build}/Emacs4ij"/>
+    <mkdir dir="${build}/Emacs4ij"/>
+    <copy todir="${build}/Emacs4ij">
+      <fileset dir="${basedir}" includes="license/**"/>
+    </copy>
+    <copy todir="${build}/Emacs4ij/lib">
+      <fileset dir="${build}" includes="*.jar"/>
+    </copy>
+    <copy todir="${build}/Emacs4ij">
+      <fileset dir="${basedir}" includes="doc/**"/>
+    </copy>
+    <copy file="${basedir}/README" tofile="${build}/Emacs4ij/README">
+      <filterset>
+        <filter token="VERSION" value="${version}"/>
+        <filter token="PLATFORM_VERSION" value="${platform-version}"/>
+      </filterset>
+    </copy>
+    <zip basedir="${build}" zipfile="${dist}/${filename}.zip" compress="true" includes="Emacs4ij/**"/>
+  </target>
+
+ <!-- Packs all the sources -->
+  <target name="dist-src" depends="clean" description="Creates the source tar file">
+    <mkdir dir="${dist}"/>
+    <tar basedir="." destfile="${dist}/${filename}-src.tar.gz" excludes=".git/**,.idea/**,idea/**,*.iws,*.iml" compression="gzip"/>
+  </target>
+</project>

@@ -101,7 +101,7 @@ public final class LispVector implements LispObject, LispSequence, LispArray, St
         GlobalEnvironment.echo(JelispBundle.message("not.supported.with.value", myData.get(0), toString()), GlobalEnvironment.MessageType.WARNING);
         return null;
 //        if (myData.get(0).equals(new LispSymbol("menu-bar"))) {
-//        GlobalEnvironment.echo(JelispBundle.message("not.supported.with.value", "menu-bars", toString()),
+//            GlobalEnvironment.echo(JelispBundle.message("not.supported.with.value", "menu-bars", toString()),
 //                    GlobalEnvironment.MessageType.WARNING);
 //            return null;
 //        }
