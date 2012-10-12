@@ -17,20 +17,24 @@
   
   <path id="jelisp.module.production.classpath">
     <path refid="${module.jdk.classpath.jelisp}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
   </path>
   
   <path id="jelisp.runtime.production.module.classpath">
     <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
   </path>
   
   <path id="jelisp.module.classpath">
     <path refid="${module.jdk.classpath.jelisp}"/>
     <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
   </path>
   
   <path id="jelisp.runtime.module.classpath">
     <pathelement location="${jelisp.testoutput.dir}"/>
     <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
   </path>
   
   

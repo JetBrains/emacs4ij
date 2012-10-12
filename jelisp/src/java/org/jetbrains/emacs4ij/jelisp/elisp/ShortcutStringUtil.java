@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
@@ -76,7 +77,8 @@ abstract class ShortcutStringUtil {
 
         return sb.toString().trim();
     }
-    
+
+    @Nullable
     public static List<Shortcut> toKeyboardShortcutList(LispString string) {
         String[] keystrokeContent = toShortcutString(string).split(" ");
         List<Shortcut> keystrokes = new ArrayList<>();
@@ -95,7 +97,11 @@ abstract class ShortcutStringUtil {
                     int c = Integer.parseInt(keyStroke);
                     keystrokes.add(new KeyboardShortcut(KeyStroke.getKeyStroke((char) c), null));
                 } catch (NumberFormatException e) {
-                    keystrokes.add(KeyboardShortcut.fromString(keyStroke));
+                    try {
+                        keystrokes.add(KeyboardShortcut.fromString(keyStroke));
+                    } catch (IllegalArgumentException e2) {
+                        return null;
+                    }
                 }
             }
         }

@@ -89,7 +89,11 @@ public class IdeaKeymap implements LispKeymap {
     @Override
     public void defineKey(LispObject action, StringOrVector key) {
         Shortcut shortcut = defineKey(action, key.toKeyboardShortcutList(), 0);
-        if (GlobalEnvironment.INSTANCE.isKeymapActive(this) && shortcut != null)
+        if (shortcut == null) {
+            GlobalEnvironment.echo("Couldn't assign " + key + " to " + action + " in keymap " + this, GlobalEnvironment.MessageType.WARNING);
+            return;
+        }
+        if (GlobalEnvironment.INSTANCE.isKeymapActive(this))
             registerAction(action, shortcut);
     }
 

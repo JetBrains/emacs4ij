@@ -109,6 +109,8 @@ public class GlobalEnvironment extends Environment {
     //input parameters are nullable only for test!!!
     public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
                                    @Nullable LispWindowFactory windowFactory, @Nullable Ide ide) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println("GLOBAL ENVIRONMENT INIT STARTED " + sdf.format(Calendar.getInstance().getTime()));
         ourKeymapManager = new EmacsKeymapManager(keymapFactory);
         ourBufferManager = new BufferManager(bufferFactory);
         ourWindowManager = new WindowManager(windowFactory);
@@ -116,7 +118,6 @@ public class GlobalEnvironment extends Environment {
         INSTANCE = new GlobalEnvironment(ide);
         Key.init();
         INSTANCE.init();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         System.out.println("GLOBAL ENVIRONMENT INIT FINISHED " + sdf.format(Calendar.getInstance().getTime()));
     }
 

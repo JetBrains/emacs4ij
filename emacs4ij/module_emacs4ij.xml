@@ -1,127 +1,145 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="module_emacs4ij" default="compile.module.emacs4ij">
-    <dirname property="module.emacs4ij.basedir" file="${ant.file.module_emacs4ij}"/>
+  <dirname property="module.emacs4ij.basedir" file="${ant.file.module_emacs4ij}"/>
+  
+  <property name="module.jdk.home.emacs4ij" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.emacs4ij" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.emacs4ij" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.emacs4ij" value="${compiler.args}"/>
+  
+  <property name="emacs4ij.output.dir" value="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
+  <property name="emacs4ij.testoutput.dir" value="${module.emacs4ij.basedir}/../out/test/emacs4ij"/>
+  
+  <path id="emacs4ij.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="emacs4ij.module.production.classpath">
+    <path refid="${module.jdk.classpath.emacs4ij}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="emacs4ij.runtime.production.module.classpath">
+    <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="emacs4ij.module.classpath">
+    <path refid="${module.jdk.classpath.emacs4ij}"/>
+    <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="emacs4ij.runtime.module.classpath">
+    <pathelement location="${emacs4ij.testoutput.dir}"/>
+    <pathelement location="${emacs4ij.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.emacs4ij">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.emacs4ij">
+    <patternset refid="excluded.from.module.emacs4ij"/>
+  </patternset>
+  
+  <path id="emacs4ij.module.sourcepath">
+    <dirset dir="${module.emacs4ij.basedir}">
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  <path id="emacs4ij.module.test.sourcepath">
+    <dirset dir="${module.emacs4ij.basedir}">
+      <include name="src/test"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.emacs4ij" depends="compile.module.emacs4ij.production,compile.module.emacs4ij.tests" description="Compile module emacs4ij"/>
+  
+  <target name="compile.module.emacs4ij.production" depends="register.custom.compilers,compile.module.jelisp" description="Compile module emacs4ij; production classes">
+    <mkdir dir="${emacs4ij.output.dir}"/>
+    <javac2 destdir="${emacs4ij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
+      <compilerarg line="${compiler.args.emacs4ij}"/>
+      <bootclasspath refid="emacs4ij.module.bootclasspath"/>
+      <classpath refid="emacs4ij.module.production.classpath"/>
+      <src refid="emacs4ij.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.emacs4ij"/>
+    </javac2>
+    
+    <copy todir="${emacs4ij.output.dir}">
+      <fileset dir="${module.emacs4ij.basedir}/src/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
 
-    <property name="module.jdk.home.emacs4ij" value="${project.jdk.home}"/>
-    <property name="module.jdk.bin.emacs4ij" value="${project.jdk.bin}"/>
-    <property name="module.jdk.classpath.emacs4ij" value="${project.jdk.classpath}"/>
-
-    <property name="compiler.args.emacs4ij" value="${compiler.args}"/>
-
-    <property name="emacs4ij.output.dir" value="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
-    <property name="emacs4ij.testoutput.dir" value="${module.emacs4ij.basedir}/../out/test/emacs4ij"/>
-
-    <path id="emacs4ij.module.bootclasspath">
-        <!-- Paths to be included in compilation bootclasspath -->
-    </path>
-
-    <path id="emacs4ij.module.production.classpath">
-        <path refid="${module.jdk.classpath.emacs4ij}"/>
-        <pathelement location="${jelisp.output.dir}"/>
-    </path>
-
-    <path id="emacs4ij.runtime.production.module.classpath">
-        <pathelement location="${emacs4ij.output.dir}"/>
-        <pathelement location="${jelisp.output.dir}"/>
-    </path>
-
-    <path id="emacs4ij.module.classpath">
-        <path refid="${module.jdk.classpath.emacs4ij}"/>
-        <pathelement location="${emacs4ij.output.dir}"/>
-        <pathelement location="${jelisp.testoutput.dir}"/>
-        <pathelement location="${jelisp.output.dir}"/>
-    </path>
-
-    <path id="emacs4ij.runtime.module.classpath">
-        <pathelement location="${emacs4ij.testoutput.dir}"/>
-        <pathelement location="${emacs4ij.output.dir}"/>
-        <pathelement location="${jelisp.testoutput.dir}"/>
-        <pathelement location="${jelisp.output.dir}"/>
-    </path>
-
-
-    <patternset id="excluded.from.module.emacs4ij">
-        <patternset refid="ignored.files"/>
-    </patternset>
-
-    <patternset id="excluded.from.compilation.emacs4ij">
-        <patternset refid="excluded.from.module.emacs4ij"/>
-    </patternset>
-
-    <path id="emacs4ij.module.sourcepath">
-        <dirset dir="${module.emacs4ij.basedir}">
-            <include name="src/java"/>
-        </dirset>
-    </path>
-
-    <path id="emacs4ij.module.test.sourcepath">
-        <dirset dir="${module.emacs4ij.basedir}">
-            <include name="src/test"/>
-        </dirset>
-    </path>
-
-
-    <target name="compile.module.emacs4ij" depends="compile.module.emacs4ij.production,compile.module.emacs4ij.tests" description="Compile module emacs4ij"/>
-
-    <target name="compile.module.emacs4ij.production" depends="register.custom.compilers,compile.module.jelisp" description="Compile module emacs4ij; production classes">
-        <mkdir dir="${emacs4ij.output.dir}"/>
-        <javac2 destdir="${emacs4ij.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
-            <compilerarg line="${compiler.args.emacs4ij}"/>
-            <bootclasspath refid="emacs4ij.module.bootclasspath"/>
-            <classpath refid="emacs4ij.module.production.classpath"/>
-            <src refid="emacs4ij.module.sourcepath"/>
-            <patternset refid="excluded.from.compilation.emacs4ij"/>
-        </javac2>
-
-        <copy todir="${emacs4ij.output.dir}">
-            <fileset dir="${module.emacs4ij.basedir}/src/java">
-                <patternset refid="compiler.resources"/>
-                <type type="file"/>
-            </fileset>
-        </copy>
-
-        <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/icons">
-            <fileset dir="${module.emacs4ij.basedir}/icons">
-                <type type="file"/>
-            </fileset>
-        </copy>
-
-    </target>
-
-    <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests">
-        <mkdir dir="${emacs4ij.testoutput.dir}"/>
-        <javac2 destdir="${emacs4ij.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
-            <compilerarg line="${compiler.args.emacs4ij}"/>
-            <bootclasspath refid="emacs4ij.module.bootclasspath"/>
-            <classpath refid="emacs4ij.module.classpath"/>
-            <src refid="emacs4ij.module.test.sourcepath"/>
-            <patternset refid="excluded.from.compilation.emacs4ij"/>
-        </javac2>
-
-        <copy todir="${emacs4ij.testoutput.dir}">
-            <fileset dir="${module.emacs4ij.basedir}/src/test">
-                <patternset refid="compiler.resources"/>
-                <type type="file"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="clean.module.emacs4ij" description="cleanup module">
-        <delete dir="${emacs4ij.output.dir}"/>
-        <delete dir="${emacs4ij.testoutput.dir}"/>
-    </target>
-
-    <property name="emacs4ij.plugin.path.jar" value="${module.emacs4ij.basedir}/emacs4ij.jar"/>
-
-    <!-- Build archive for plugin 'emacs4ij' -->
-    <target name="plugin.build.jar.emacs4ij" depends="compile.module.emacs4ij" description="Build plugin archive for module &#39;emacs4ij&#39;">
-        <jar destfile="${emacs4ij.plugin.path.jar}" duplicate="preserve">
-            <zipfileset dir="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
-            <zipfileset file="${module.emacs4ij.basedir}/META-INF/plugin.xml" prefix="META-INF"/>
-            <manifest>
-                <attribute name="Created-By" value="IntelliJ IDEA"/>
-                <attribute name="Manifest-Version" value="1.0"/>
-            </manifest>
-        </jar>
-    </target>
+    <copy todir="${emacs4ij.output.dir}/org/jetbrains/emacs4ij/icons">
+      <fileset dir="${module.emacs4ij.basedir}/icons">
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.emacs4ij.tests" depends="register.custom.compilers,compile.module.emacs4ij.production" description="compile module emacs4ij; test classes" unless="skip.tests">
+    <mkdir dir="${emacs4ij.testoutput.dir}"/>
+    <javac2 destdir="${emacs4ij.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.emacs4ij}/javac">
+      <compilerarg line="${compiler.args.emacs4ij}"/>
+      <bootclasspath refid="emacs4ij.module.bootclasspath"/>
+      <classpath refid="emacs4ij.module.classpath"/>
+      <src refid="emacs4ij.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.emacs4ij"/>
+    </javac2>
+    
+    <copy todir="${emacs4ij.testoutput.dir}">
+      <fileset dir="${module.emacs4ij.basedir}/src/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.emacs4ij" description="cleanup module">
+    <delete dir="${emacs4ij.output.dir}"/>
+    <delete dir="${emacs4ij.testoutput.dir}"/>
+  </target>
+  
+  <property name="emacs4ij.plugin.path.jar" value="${module.emacs4ij.basedir}/emacs4ij.zip"/>
+  
+  <!-- Build archive for plugin 'emacs4ij' -->
+  <target name="plugin.build.jar.emacs4ij" depends="compile.module.emacs4ij" description="Build plugin archive for module &#39;emacs4ij&#39;">
+    <property name="tmp.dir.emacs4ij" value="${module.emacs4ij.basedir}/../temp"/>
+    <mkdir dir="${tmp.dir.emacs4ij}"/>
+    <mkdir dir="${tmp.dir.emacs4ij}/lib"/>
+    <jar destfile="${tmp.dir.emacs4ij}/lib/emacs4ij.jar" duplicate="preserve">
+      <zipfileset dir="${module.emacs4ij.basedir}/../out/production/emacs4ij"/>
+      <zipfileset file="${module.emacs4ij.basedir}/META-INF/plugin.xml" prefix="META-INF"/>
+      <manifest>
+        <attribute name="Created-By" value="IntelliJ IDEA"/>
+        <attribute name="Manifest-Version" value="1.0"/>
+      </manifest>
+    </jar>
+    <copy file="${module.emacs4ij.basedir}/../lib/cloning-1.7.9/cloning-1.7.9.jar" tofile="${tmp.dir.emacs4ij}/lib/cloning-1.7.9.jar"/>
+    <copy file="${module.emacs4ij.basedir}/../lib/cloning-1.7.9/lib/objenesis-1.2.jar" tofile="${tmp.dir.emacs4ij}/lib/objenesis-1.2.jar"/>
+    <zip destfile="${emacs4ij.plugin.path.jar}">
+      <fileset dir="${module.emacs4ij.basedir}/../temp"/>
+    </zip>
+    <delete dir="${tmp.dir.emacs4ij}"/>
+  </target>
 </project>

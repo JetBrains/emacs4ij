@@ -1,6 +1,6 @@
 This is a plugin for GNU Emacs support in IntelliJ IDEA. 
 
-To use this plugin you have install GNU Emacs and to download full Emacs sources (http://ftp.gnu.org/pub/gnu/emacs/). The current stable version is 24.1.
+To use this plugin you have install GNU Emacs and to download full Emacs sources (http://ftp.gnu.org/pub/gnu/emacs/). Please, use Emacs 23.4.
 When started IDEA with this plugin installed, to activate the Emacs functionality you have to specify Emacs location in a special menu at IDEA's main toolbar. For screenshot, see doc/settings.png. 
 When you do everything ok, it will take about 7 minutes to index the sources. The plugin is ready to work.
 
