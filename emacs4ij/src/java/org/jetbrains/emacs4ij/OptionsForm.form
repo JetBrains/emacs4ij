@@ -13,8 +13,6 @@
     <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
     <rowspec value="top:4dlu:noGrow"/>
-    <rowspec value="center:max(d;4px):noGrow"/>
-    <rowspec value="top:4dlu:noGrow"/>
     <rowspec value="center:d:grow"/>
     <colspec value="fill:d:grow"/>
     <colspec value="left:4dlu:noGrow"/>
@@ -117,16 +115,6 @@
           <text value="Browse"/>
         </properties>
       </component>
-      <component id="1c8a6" class="javax.swing.JLabel" binding="infoLabel">
-        <constraints>
-          <grid row="12" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-          <forms/>
-        </constraints>
-        <properties>
-          <opaque value="true"/>
-          <text value=" "/>
-        </properties>
-      </component>
       <component id="cdb06" class="javax.swing.JButton" binding="quitButton">
         <constraints>
           <grid row="10" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
@@ -144,10 +132,21 @@
       </vspacer>
       <vspacer id="28810">
         <constraints>
-          <grid row="14" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="12" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
           <forms defaultalign-vert="false"/>
         </constraints>
       </vspacer>
+      <component id="1c8a6" class="javax.swing.JLabel" binding="infoLabel">
+        <constraints>
+          <grid row="10" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <forms/>
+        </constraints>
+        <properties>
+          <opaque value="true"/>
+          <text value=" "/>
+          <verticalAlignment value="1"/>
+        </properties>
+      </component>
     </children>
   </grid>
 </form>

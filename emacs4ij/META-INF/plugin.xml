@@ -3,7 +3,7 @@
     <description>Plugin for Emacs support</description>
     <version>@VERSION@</version>
     <vendor logo="/general/ijLogo.png">JetBrains</vendor>
-    <idea-version since-build="@SINCE-VERSION@"/>
+    <idea-version since-build="8000"/>
 
     <application-components>
         <component>
@@ -27,7 +27,7 @@
                 <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
             </action-->
             <action id="Open Settings" class="org.jetbrains.emacs4ij.OpenSettings"
-                    text="Emacs4ij settings" icon="/icons/options.png"
+                    text="Emacs4ij settings" icon="icons/options.png"
                     description="View and edit Emacs4ij settings">
             </action>
             <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
@@ -46,9 +46,9 @@
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.EmacsSourceService"/>
         <applicationService serviceInterface="org.jetbrains.emacs4ij.EmacsIndexService" serviceImplementation="org.jetbrains.emacs4ij.EmacsIndexService"/>
         <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.EchoAreaToolWindowFactory"
-                    icon="/icons/emacs.png"/>
+                    icon="icons/emacs.png"/>
         <toolWindow id="Emacs4ij Help" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.HelpToolWindowFactory"
-                    icon="/icons/emacs.png"/>
+                    icon="icons/emacs.png"/>
     </extensions>
 
     <resource-bundle>org.jetbrains.emacs4ij.Emacs4ijBundle</resource-bundle>
