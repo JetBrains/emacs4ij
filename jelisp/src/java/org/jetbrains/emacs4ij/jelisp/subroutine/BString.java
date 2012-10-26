@@ -2,12 +2,10 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
-import org.jetbrains.emacs4ij.jelisp.exception.InvalidFormatOperationException;
-import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
+import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 
 import java.util.*;
@@ -83,10 +81,19 @@ public abstract class BString {
     }
 
     @Subroutine("message")
-    public static LispString message (LispString formatString, @Optional LispObject... args) {
-        myCurrentMessage = format(formatString, args);
-        System.out.println(myCurrentMessage.getData());
-        //todo: write in echo area here
+    public static LispString message (@Optional LispObject... args) {
+        if (args.length == 0) throw new WrongNumberOfArgumentsException("message", 0);
+        LispObject formatObj = args[0];
+        if (formatObj instanceof LispString) {
+            LispObject[] a = new LispObject[args.length-1];
+            System.arraycopy(args, 1, a, 0, args.length - 1);
+            myCurrentMessage = format((LispString) formatObj,  a);
+        } else if (formatObj.equals(LispSymbol.ourNil)) {
+            myCurrentMessage = new LispString(LispSymbol.ourNil.toString());
+        } else {
+            throw new WrongTypeArgumentException("stringp", formatObj);
+        }
+        GlobalEnvironment.echo(myCurrentMessage.getData(), GlobalEnvironment.MessageType.OUTPUT);
         return myCurrentMessage;
     }
 

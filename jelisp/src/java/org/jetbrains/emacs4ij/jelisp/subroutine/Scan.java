@@ -9,7 +9,6 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.SyntaxDescriptor;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
 
 /**
  * Created with IntelliJ IDEA.
@@ -180,15 +179,16 @@ public abstract class Scan {
 
     //todo: compiled lisp f
     @Subroutine(value = "eval-last-sexp", isCmd = true, interactive = "P", key = "\\C-x\\C-e")
-    public static void evalLastSexp (Environment environment, LispObject evalLastSexpArgInternal) {
+    public static LispObject evalLastSexp (Environment environment, LispObject evalLastSexpArgInternal) {
+        LispObject result = null;
         try {
-            LispBuffer buffer = environment.getBufferCurrentForEditing();
-            LispObject result = buffer.evaluateLastForm();
+            result = environment.getBufferCurrentForEditing().evaluateLastForm();
             if (result != null)
                 GlobalEnvironment.echo(result.toString() + "\n", GlobalEnvironment.MessageType.OUTPUT);
         } catch (LispException exc) {
             GlobalEnvironment.echo(exc.getMessage() + "\n", GlobalEnvironment.MessageType.ERROR);
         }
+        return Core.thisOrNil(result);
     }
 
     private static boolean skipCommentForward (final SyntaxDescriptor.CommentStyle style, boolean prevValid, SyntaxIterator iterator) {

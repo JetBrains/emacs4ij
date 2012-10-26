@@ -10,13 +10,6 @@ import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 import javax.swing.*;
 import java.util.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 3/28/12
- * Time: 1:39 PM
- * To change this template use File | Settings | File Templates.
- */
 abstract class ShortcutStringUtil {
     private ShortcutStringUtil() {}
 

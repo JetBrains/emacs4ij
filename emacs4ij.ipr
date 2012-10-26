@@ -217,7 +217,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/emacs4ij/emacs4ij.iml" filepath="$PROJECT_DIR$/emacs4ij/emacs4ij.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ide/ide.iml" filepath="$PROJECT_DIR$/ide/ide.iml" />
       <module fileurl="file://$PROJECT_DIR$/jelisp/jelisp.iml" filepath="$PROJECT_DIR$/jelisp/jelisp.iml" />
     </modules>
   </component>
@@ -257,11 +257,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -285,11 +285,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testGetBufferWindows" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testGetBufferWindows" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -313,11 +313,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testPointMarkerOk" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testPointMarkerOk" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -435,11 +435,11 @@
       <method />
     </configuration>
     <configuration default="false" name="KeymapTest" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.KeymapTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.KeymapTest" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -494,11 +494,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testGetNextValidBuffer" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testGetNextValidBuffer" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -522,11 +522,11 @@
       <method />
     </configuration>
     <configuration default="false" name="MinibufferTest.testMessage" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.MinibufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.MinibufferTest" />
       <option name="METHOD_NAME" value="testMessage" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -539,16 +539,22 @@
       </option>
       <envs />
       <patterns />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="" />
+        <option name="TRANSPORT" value="0" />
+        <option name="LOCAL" value="true" />
+      </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Debug" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testEvalLastSexp" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testEvalLastSexp" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -572,11 +578,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testSetLispMode" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testSetLispMode" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -600,11 +606,11 @@
       <method />
     </configuration>
     <configuration default="false" name="BufferTest.testSetFontLockMinorMode" type="JUnit" factoryName="JUnit">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij" />
-      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.BufferTest" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.BufferTest" />
       <option name="METHOD_NAME" value="testSetFontLockMinorMode" />
       <option name="TEST_OBJECT" value="method" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
@@ -631,15 +637,38 @@
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
-    <configuration default="false" name="All in emacs4ij" type="JUnit" factoryName="JUnit">
+    <configuration default="false" name="org.jetbrains.emacs4ij.ide in ide" type="JUnit" factoryName="JUnit">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
       <option name="ALTERNATIVE_JRE_PATH" value="" />
-      <option name="PACKAGE_NAME" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
       <option name="MAIN_CLASS_NAME" value="" />
       <option name="METHOD_NAME" value="" />
       <option name="TEST_OBJECT" value="package" />
+      <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
+      <option name="PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="TEST_SEARCH_SCOPE">
+        <value defaultName="singleModule" />
+      </option>
+      <envs />
+      <patterns />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="ScanTest" type="JUnit" factoryName="JUnit">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <module name="ide" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" value="" />
+      <option name="PACKAGE_NAME" value="org.jetbrains.emacs4ij.ide" />
+      <option name="MAIN_CLASS_NAME" value="org.jetbrains.emacs4ij.ide.ScanTest" />
+      <option name="METHOD_NAME" value="" />
+      <option name="TEST_OBJECT" value="class" />
       <option name="VM_PARAMETERS" value="-Didea.platform.prefix=Idea" />
       <option name="PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$" />
@@ -655,7 +684,7 @@
       <method />
     </configuration>
     <configuration default="false" name="emacs4ij" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
-      <module name="emacs4ij" />
+      <module name="ide" />
       <option name="VM_PARAMETERS" value="" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <log_file path="$USER_HOME$/.IdeaIC11/system/plugins-sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />

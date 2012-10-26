@@ -16,6 +16,7 @@ import java.io.File;
 public class DocumentationExtractorTest {
     @Test
     public void testScanAll() throws Exception {
+        TestMode.EXTRACT_DOC = true;
         String ourEmacsSource = "/home/kate/Downloads/emacs-23.4";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
         Assert.assertEquals(4, d.scanAll());

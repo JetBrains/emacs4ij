@@ -3,10 +3,10 @@ package org.jetbrains.emacs4ij.jelisp.parser;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,10 +119,7 @@ class BackwardParser extends Parser {
     public LispObject parseLine (String lispCode, int index) {
         myCurrentIndex = index;
         myLispCode = lispCode;
-        LispObject lispObject = parseObject();
-        if (lispObject == null)
-            lispObject = LispSymbol.ourNil;
-        return lispObject;
+        return Core.thisOrNil(parseObject());
     }
 
     private void skipSpacesAndEmptyComments () {

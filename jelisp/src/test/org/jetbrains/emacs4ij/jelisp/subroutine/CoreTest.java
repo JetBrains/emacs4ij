@@ -396,7 +396,7 @@ public class CoreTest extends BaseSubroutineTest {
     public void testArefStringOk () {
         LispObject val = evaluateString("(aref \"hi\" 0)");
         Assert.assertEquals(new LispInteger(104), val);
-        val = evaluateString("(aref \"\\C\" 0)");
+        val = evaluateString("(aref \"\\\\C\" 0)");
         Assert.assertEquals(new LispInteger(1), val);
     }
 
@@ -733,7 +733,6 @@ public class CoreTest extends BaseSubroutineTest {
         Assert.assertEquals(LispSymbol.ourNil, r);
     }
 
-    @Ignore
     @Test
     public void testSimple() {
 //        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
