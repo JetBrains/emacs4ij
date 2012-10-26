@@ -12,15 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 12/5/11
- * Time: 9:35 AM
- *
- * this class is a helper for doc extraction. 
+ * this class is a helper for doc extraction.
  * for each subroutine and variable, initially defined in C source, the doc string is extracted
- *
  */
+
 final class DocumentationExtractor {
     private class ObjectToDocument {
         String myName;
@@ -61,15 +56,11 @@ final class DocumentationExtractor {
     }
 
     public String getSubroutineDoc (String name) {
-        if (mySubr.containsKey(name))
-            return mySubr.get(name).getDoc();
-        return null;
+        return mySubr.containsKey(name) ? mySubr.get(name).getDoc() : null;
     }
 
     public String getVariableDoc (String name) {
-        if (myVar.containsKey(name))
-            return myVar.get(name).getDoc();
-        return null;
+        return myVar.containsKey(name) ? myVar.get(name).getDoc() : null;
     }
 
     private List<String> getUndocumentedSubroutines()  {
@@ -148,7 +139,7 @@ final class DocumentationExtractor {
         }
     }
 
-    public void scanFile (File file) throws DocumentationExtractorException {
+    protected void scanFile (File file) throws DocumentationExtractorException {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(file));
@@ -199,6 +190,8 @@ final class DocumentationExtractor {
     }
 
     public int scanAll () throws DocumentationExtractorException {
+        if (!TestMode.EXTRACT_DOC) return -1;
+
         File sourceDir = new File(mySourcePath);
         File[] cSrc = sourceDir.listFiles(new FilenameFilter() {
             @Override

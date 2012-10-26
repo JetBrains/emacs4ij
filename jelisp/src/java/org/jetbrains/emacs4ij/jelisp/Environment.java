@@ -91,7 +91,7 @@ public abstract class Environment {
 
     public void startRecording() {
         isRecording = true;
-        myRecordedSymbols.clear();
+        clearRecorded();
     }
 
     public void clearRecorded() {
@@ -99,6 +99,8 @@ public abstract class Environment {
             mySymbols.remove(name);
         }
         myRecordedSymbols.clear();
+        ourBufferManager.clear();
+        ourWindowManager.clear();
     }
 
     public void remove (String name) {

@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.TestMode;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
@@ -12,13 +12,7 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-/**
- * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 8/2/11
- * Time: 5:14 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public abstract class LispSubroutine {
 
     private static Class[] myBuiltIns = new Class[] {Arithmetic.class, Predicate.class, Buffer.class, Minibuffer.class,
@@ -206,7 +200,7 @@ public abstract class LispSubroutine {
                     Throwable cause = getCause(e);
                     if (cause instanceof LispThrow)
                         throw (LispThrow) cause;
-                    if (cause instanceof VoidVariableException && GlobalEnvironment.TEST && c == Key.class) {
+                    if (cause instanceof VoidVariableException && TestMode.TEST && c == Key.class) {
                         System.err.println("Skip keymap errors in test mode");
                         return LispSymbol.ourNil;
                     }

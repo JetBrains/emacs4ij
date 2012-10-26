@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.DefinitionIndex;
 
 @State(
         name="EmacsIndex",
-        storages = @Storage(id="other", file = "$APP_CONFIG$/emacs4ij_index.xml"),
+        storages = @Storage(id="emacsIndex", file = "$APP_CONFIG$/emacs4ij_index.xml"),
         reloadable = true,
         roamingType = RoamingType.DISABLED
 )

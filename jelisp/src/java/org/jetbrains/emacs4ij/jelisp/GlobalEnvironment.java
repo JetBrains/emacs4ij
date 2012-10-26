@@ -14,23 +14,15 @@ import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 11/14/11
- * Time: 11:20 AM
- * To change this template use File | Settings | File Templates.
- */
 public class GlobalEnvironment extends Environment {
-    public static boolean TEST = false;
-
     private static String ourEmacsHome = "";
     private static String ourEmacsSource = "";
     private static boolean isEmacsSourceOk = false;
     private static boolean isEmacsHomeOk = false;
     private final Ide myIde;
-    private final DocumentationExtractor myDocumentationExtractor;
+    private DocumentationExtractor myDocumentationExtractor;
     private List<String> myBufferLocals = new ArrayList<>();
+    private boolean isLoading = false;
 
     //for debug & extract definition on the fly
     public static Deque<String> ourCallStack = new ArrayDeque<>();
@@ -130,6 +122,7 @@ public class GlobalEnvironment extends Environment {
     }
 
     private void init() {
+        isLoading = true;
         setConstants();
         defineBufferLocalVariables();
         defineGlobalVariables();
@@ -138,8 +131,12 @@ public class GlobalEnvironment extends Environment {
 //        note: it's important to load backquote before defsubst
         DefinitionLoader.loadFile(myFilesToLoad.get(0));
         defineDefForms();
-        for (int i = 1; i < myFilesToLoad.size(); ++i)
-            DefinitionLoader.loadFile(myFilesToLoad.get(i));
+        if (TestMode.LOAD_FILES) {
+            for (int i = 1; i < myFilesToLoad.size(); ++i) {
+                DefinitionLoader.loadFile(myFilesToLoad.get(i));
+            }
+        }
+        isLoading = false;
     }
 
     private GlobalEnvironment (Ide ide) {
@@ -174,27 +171,28 @@ public class GlobalEnvironment extends Environment {
 
     @Override
     public void defineSymbol (LispSymbol symbol) {
-        String doc = myDocumentationExtractor.getVariableDoc(symbol.getName());
-        if (!StringUtil.isEmptyOrSpaces(doc))
-            symbol.setGlobalVariableDocumentation(new LispString(doc));
-        else if (isRecording && !myRecordedSymbols.contains(symbol.getName())) {
+        setGlobalVariableDocumentation(symbol);
+        if (!isLoading && isRecording && !myRecordedSymbols.contains(symbol.getName())) {
             myRecordedSymbols.add(symbol.getName());
         }
         putSymbol(symbol);
     }
 
     private void addBufferLocalVariable(String name) {
-        LispSymbol symbol = new LispSymbol(name, LispSymbol.ourNil, true);
-        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
-        myBufferLocals.add(name);
-        putSymbol(symbol);
+        addBufferLocalVariable(name, LispSymbol.ourNil);
     }
 
     private void addBufferLocalVariable(String name, LispObject value) {
         LispSymbol symbol = new LispSymbol(name, value, true);
-        symbol.setGlobalVariableDocumentation(new LispString(myDocumentationExtractor.getVariableDoc(name)));
+        setGlobalVariableDocumentation(symbol);
         myBufferLocals.add(name);
         putSymbol(symbol);
+    }
+
+    private void setGlobalVariableDocumentation(LispSymbol var) {
+        if (!TestMode.EXTRACT_DOC) return;
+        String doc = myDocumentationExtractor.getVariableDoc(var.getName());
+        if (!StringUtil.isEmptyOrSpaces(doc)) var.setGlobalVariableDocumentation(new LispString(doc));
     }
 
     public Map<LispSymbol, LispObject> getBufferLocalVariables() {
@@ -327,7 +325,7 @@ public class GlobalEnvironment extends Environment {
     public static enum MessageType {OUTPUT, WARNING, ERROR}
 
     public static void echo(String message, MessageType type) {
-        if (INSTANCE == null || INSTANCE.myIde == null || TEST) {
+        if (INSTANCE == null || INSTANCE.myIde == null || TestMode.TEST) {
             System.out.println("Emacs4ij " + type.toString().toLowerCase() + ": " + message);
             return;
         }
@@ -418,9 +416,12 @@ public class GlobalEnvironment extends Environment {
 
     @Override
     public void clearRecorded() {
-        super.clearRecorded();
         Match.clearHistory();
         ourCallStack.clear();
+        for (String name: myRecordedSymbols) {
+            myBufferLocals.remove(name);
+        }
+        super.clearRecorded();
     }
 
     public boolean isVariableBufferLocal (String name) {
