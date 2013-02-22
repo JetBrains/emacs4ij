@@ -12,1003 +12,1003 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class CoreTest extends BaseSubroutineTest {
-    @Test
-    public void testSetVar() throws LispException {
-        LispObject value = evaluateString("(set 'var (+ 2 3))");
-        Assert.assertEquals("set return value assertion", new LispInteger(5), value);
-        LispObject lispObject = evaluateString("var");
-        Assert.assertEquals(new LispInteger(5), lispObject);
+  @Test
+  public void testSetVar() throws LispException {
+    LispObject value = evaluateString("(set 'var (+ 2 3))");
+    Assert.assertEquals("set return value assertion", new LispInteger(5), value);
+    LispObject lispObject = evaluateString("var");
+    Assert.assertEquals(new LispInteger(5), lispObject);
+  }
+
+  @Test
+  public void testSetBindings() {
+    LispObject lispObject = evaluateString("(set 'one 1)");
+    Assert.assertEquals(new LispInteger(1), lispObject);
+    lispObject = evaluateString("(set 'two 'one)");
+    Assert.assertEquals(new LispSymbol("one"), lispObject);
+    lispObject = evaluateString("(set two 2)");
+    Assert.assertEquals(new LispInteger(2), lispObject);
+    lispObject = evaluateString("one");
+    Assert.assertEquals(new LispInteger(2), lispObject);
+    lispObject = evaluateString("(let ((one 1)) (set 'one 3) one)");
+    Assert.assertEquals(new LispInteger(3), lispObject);
+    lispObject = evaluateString("one");
+    Assert.assertEquals(new LispInteger(2), lispObject);
+  }
+
+  @Test (expected = WrongTypeArgumentException.class)
+  public void testSetSymbols() {
+    LispObject lispObject = evaluateString("(set 'x 1)");
+    Assert.assertEquals(new LispInteger(1), lispObject);
+    lispObject = evaluateString("(set 'y 'x)");
+    Assert.assertEquals(new LispSymbol("x"), lispObject);
+    lispObject = evaluateString("y");
+    LispSymbol x = new LispSymbol("x", new LispInteger(1));
+    Assert.assertEquals(x, lispObject);
+
+    lispObject = evaluateString("(symbol-value y)");
+    Assert.assertEquals(new LispInteger(1), lispObject);
+    lispObject = evaluateString("(symbol-value 'y)");
+    Assert.assertEquals(new LispSymbol("x"), lispObject);
+    //must throw WrongTypeArgumentException
+    evaluateString("(symbol-value x)");
+  }
+
+  @Test
+  public void testEq() {
+    LispObject lispObject = evaluateString("(eq 5 5)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(eq 'foo 'foo)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(eq \"qwa\" \"qwa\")");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    lispObject = evaluateString("(eq \"\" \"\")");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(eq '(1 (2 (3))) '(1 (2 (3))))");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    evaluateString("(setq foo '(1 (2 (3))))");
+    lispObject = evaluateString("(eq foo foo)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(eq foo '(1 (2 (3))))");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    lispObject = evaluateString("(eq [(1 2) 3] [(1 2) 3])");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+  }
+
+  @Ignore
+  @Test
+  public void testEqSymbol() {
+    LispObject lispObject = evaluateString("(eq (make-symbol \"foo\") 'foo)");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+  }
+
+  @Test
+  public void testEqual() {
+    LispObject lispObject = evaluateString("(equal 5 5)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal 'foo 'foo)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal \"qwa\" \"qwa\")");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal \"qwa\" \"QWA\")");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    lispObject = evaluateString("(equal \"\" \"\")");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal '(1 (2 (3))) '(1 (2 (3))))");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    evaluateString("(setq foo '(1 (2 (3))))");
+    lispObject = evaluateString("(equal foo foo)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal foo '(1 (2 (3))))");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+  }
+
+  @Test
+  public void testNilEqual() {
+    LispObject r = evaluateString("(equal nil (cons nil nil))");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+    r = evaluateString("(equal nil '())");
+    Assert.assertEquals(LispSymbol.ourT, r);
+    r = evaluateString("(equal nil '(nil))");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
+
+  @Test
+  public void testNull () {
+    LispObject lispObject = evaluateString("(null 5)");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    lispObject = evaluateString("(null nil)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+  }
+
+  @Test
+  public void testLispNot() throws Exception {
+    LispObject lispObject = evaluateString("(not 5)");
+    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    lispObject = evaluateString("(not nil)");
+    Assert.assertEquals(LispSymbol.ourT, lispObject);
+  }
+
+  @Test
+  public void testFuncall () {
+    LispObject result = evaluateString("(funcall '+ 1 2)");
+    Assert.assertEquals(new LispInteger(3), result);
+  }
+
+  @Test
+  public void testEvalLambda() {
+    LispObject result = evaluateString("((lambda (a) (+ 1 a)) 2)");
+    Assert.assertEquals(new LispInteger(3), result);
+  }
+
+  @Test
+  public void testEvalMacro() {
+    try {
+      evaluateString("((defmacro mac (a) (message \"%s\" a)) 5)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(invalid-function (defmacro mac (a) (message \"%s\" a)))", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testSetBindings() {
-        LispObject lispObject = evaluateString("(set 'one 1)");
-        Assert.assertEquals(new LispInteger(1), lispObject);
-        lispObject = evaluateString("(set 'two 'one)");
-        Assert.assertEquals(new LispSymbol("one"), lispObject);
-        lispObject = evaluateString("(set two 2)");
-        Assert.assertEquals(new LispInteger(2), lispObject);
-        lispObject = evaluateString("one");
-        Assert.assertEquals(new LispInteger(2), lispObject);
-        lispObject = evaluateString("(let ((one 1)) (set 'one 3) one)");
-        Assert.assertEquals(new LispInteger(3), lispObject);
-        lispObject = evaluateString("one");
-        Assert.assertEquals(new LispInteger(2), lispObject);
+  @Test
+  public void testFuncallLambda () {
+    LispObject result = evaluateString("(funcall '(lambda (a) (+ 1 a)) 2)");
+    Assert.assertEquals(new LispInteger(3), result);
+  }
+
+  @Test
+  public void testFuncallSymbolFunction () {
+    LispObject r = evaluateString("(funcall (symbol-function '1+) 5)");
+    Assert.assertEquals(new LispInteger(6), r);
+  }
+
+  @Test
+  public void testLambdaInteractiveForm() {
+    LispList list = (LispList) evaluateString("'(lambda (a b) (message \"test\") (interactive \"sFirst: \") (message \"%s\" a) (interactive \"sString2: \") (message \"%s\" b))");
+    Lambda lambda = new Lambda(list);
+    Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("sFirst: ")), lambda.getInteractiveForm());
+    Assert.assertEquals(5, lambda.getBodyLength());
+  }
+
+  @Test
+  public void testFuncallInvalid () {
+    try {
+      evaluateString("(funcall 0 1 2)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(invalid-function 0)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test (expected = WrongTypeArgumentException.class)
-    public void testSetSymbols() {
-        LispObject lispObject = evaluateString("(set 'x 1)");
-        Assert.assertEquals(new LispInteger(1), lispObject);
-        lispObject = evaluateString("(set 'y 'x)");
-        Assert.assertEquals(new LispSymbol("x"), lispObject);
-        lispObject = evaluateString("y");
-        LispSymbol x = new LispSymbol("x", new LispInteger(1));
-        Assert.assertEquals(x, lispObject);
+  @Test
+  public void testRunHooks () {
+    evaluateString("(defun f () (+ 1 2))");
+    evaluateString("(defun g () (+ 2 3))");
+    evaluateString("(set 'hook1 '(f g))");
+    evaluateString("(run-hooks 'hook1)");
+    evaluateString("(run-hooks 'hook2)");
+  }
 
-        lispObject = evaluateString("(symbol-value y)");
-        Assert.assertEquals(new LispInteger(1), lispObject);
-        lispObject = evaluateString("(symbol-value 'y)");
-        Assert.assertEquals(new LispSymbol("x"), lispObject);
-        //must throw WrongTypeArgumentException
-        evaluateString("(symbol-value x)");
+  @Test
+  public void testRunHooks_InvalidFunction () {
+    try {
+      evaluateString("(set 'hook1 5)");
+      evaluateString("(run-hooks 'hook1)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(invalid-function 5)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testEq() {
-        LispObject lispObject = evaluateString("(eq 5 5)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(eq 'foo 'foo)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(eq \"qwa\" \"qwa\")");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(eq \"\" \"\")");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(eq '(1 (2 (3))) '(1 (2 (3))))");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        evaluateString("(setq foo '(1 (2 (3))))");
-        lispObject = evaluateString("(eq foo foo)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(eq foo '(1 (2 (3))))");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(eq [(1 2) 3] [(1 2) 3])");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+  @Test
+  public void testMacro () {
+    evaluateString("(setq r 5)");
+    evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+    evaluateString("(inc r)");
+    LispObject r = evaluateString("r");
+    Assert.assertEquals(new LispInteger(6), r);
+  }
+
+  @Test
+  public void testMacroExpand_Complex () {
+    evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+    LispObject expansion = evaluateString("(macroexpand '(inc r))");
+    //(setq r (+ r 1))
+    Assert.assertEquals(LispList.list(new LispSymbol("setq"),
+        new LispSymbol("r"),
+        LispList.list(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
+        expansion);
+  }
+
+  @Test
+  public void testMacroExpand_Simple () {
+    evaluateString("(defmacro m2 (q) (declare (doc-string \"hello1\")) \"hello2\" (+ 5 q))");
+    LispObject expansion = evaluateString("(macroexpand '(m2 7))");
+    Assert.assertEquals(new LispInteger(12), expansion);
+  }
+
+  @Test
+  public void testMacroExpand_EmbeddedMacro () {
+    evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
+    evaluateString("(defmacro inc2 (var1 var2) (list 'progn (list 'inc var1) (list 'inc var2)))");
+    LispObject expansion = evaluateString("(macroexpand '(inc2 r s))");
+    //(progn (inc r) (inc s)) ; inc not expanded here.
+    Assert.assertEquals(LispList.list(new LispSymbol("progn"),
+        LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
+        LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
+        expansion);
+  }
+
+  @Test
+  public void testMacroExpand_NotMacroCall() {
+    LispObject expansion = evaluateString("(macroexpand 10)");
+    Assert.assertEquals(new LispInteger(10), expansion);
+    evaluateString("(defun f ())");
+    expansion = evaluateString("(macroexpand 'f)");
+    Assert.assertEquals(new LispSymbol("f"), expansion);
+    expansion = evaluateString("(macroexpand '(f))");
+    Assert.assertEquals(LispList.list(new LispSymbol("f")), expansion);
+  }
+
+  @Test
+  public void testFset() {
+    LispObject f = evaluateString("(fset 'f2 'f1)");
+    Assert.assertEquals(new LispSymbol("f1"), f);
+    LispSymbol f1 = myEnvironment.find("f1");
+    Assert.assertNull(f1);
+    LispSymbol f2 = myEnvironment.find("f2");
+    Assert.assertNotNull(f2);
+    Assert.assertEquals(new LispSymbol("f1"), f2.getFunction());
+  }
+
+  @Test
+  public void testFsetWta() {
+    try {
+      evaluateString("(fset 5 10)");
+    } catch (WrongTypeArgumentException e) {
+      // todo: (wrong-type-argument symbolp 5)
+      Assert.assertEquals("'(wrong-type-argument LispSymbol 5)", e.getMessage());
+      return;
     }
+    Assert.fail();
+  }
 
-    @Ignore
-    @Test
-    public void testEqSymbol() {
-        LispObject lispObject = evaluateString("(eq (make-symbol \"foo\") 'foo)");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
+  @Test
+  public void testIndirectFunction() {
+    evaluateString("(defun f1 () (+ 1 2))");
+    evaluateString("(fset 'f2 'f1)");
+    evaluateString("(fset 'g 'f2)");
+    LispObject innerF = evaluateString("(indirect-function 'g)");
+    Assert.assertEquals("(lambda nil (+ 1 2))", innerF.toString());
+  }
+
+  @Test
+  public void testIndirectFunctionNumber() {
+    LispObject r = evaluateString("(fset 'a 10)");
+    Assert.assertEquals(new LispInteger(10), r);
+    r = evaluateString("(indirect-function 'a)");
+    Assert.assertEquals(new LispInteger(10), r);
+  }
+
+  @Test
+  public void testIndirectFunctionVoid() {
+    evaluateString("(fset 'g 'f)");
+    try {
+      evaluateString("(indirect-function 'g)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(void-function g)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testEqual() {
-        LispObject lispObject = evaluateString("(equal 5 5)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal 'foo 'foo)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal \"qwa\" \"qwa\")");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal \"qwa\" \"QWA\")");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(equal \"\" \"\")");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal '(1 (2 (3))) '(1 (2 (3))))");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        evaluateString("(setq foo '(1 (2 (3))))");
-        lispObject = evaluateString("(equal foo foo)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal foo '(1 (2 (3))))");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-        lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
+  @Test
+  public void testIndirectFunctionCycle() {
+    evaluateString("(fset 'f 'g)");
+    evaluateString("(fset 'g 'f)");
+    try {
+      evaluateString("(indirect-function 'g)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testNilEqual() {
-        LispObject r = evaluateString("(equal nil (cons nil nil))");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-        r = evaluateString("(equal nil '())");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(equal nil '(nil))");
-        Assert.assertEquals(LispSymbol.ourNil, r);
+  @Test
+  public void testIndirectFunctionOverride() {
+    evaluateString("(defun f () (+ 1 2))");
+    LispObject innerF = evaluateString("(indirect-function 'f)");
+    LispSymbol f = myEnvironment.find("f");
+    Assert.assertEquals(f.getFunction(), innerF);
+    evaluateString("(fset 'f 1)");
+    innerF = evaluateString("(indirect-function 'f)");
+    Assert.assertEquals(new LispInteger(1), innerF);
+  }
+
+  @Test
+  public void testPrimitiveMinMaxArgsNum() {
+    LispSymbol f = myEnvironment.find("indirect-function");
+    Assert.assertEquals(1, ((Primitive) f.getFunction()).getNRequiredArguments());
+    Assert.assertEquals(new LispInteger(2), ((Primitive)f.getFunction()).getMaxNumArgs());
+
+    f = myEnvironment.find("run-hooks");
+    Assert.assertEquals(0, ((Primitive) f.getFunction()).getNRequiredArguments());
+    Assert.assertEquals(new LispSymbol("many"), ((Primitive) f.getFunction()).getMaxNumArgs());
+
+    f = myEnvironment.find("if");
+    Assert.assertEquals(2, ((Primitive) f.getFunction()).getNRequiredArguments());
+    Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive) f.getFunction()).getMaxNumArgs());
+  }
+
+  @Test
+  public void testSubrArityWta() {
+    try {
+      evaluateString("(subr-arity 'if)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testNull () {
-        LispObject lispObject = evaluateString("(null 5)");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(null nil)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
+  @Test
+  public void testSubrArity() {
+    LispObject cons = evaluateString("(subr-arity (symbol-function 'if))");
+    Assert.assertEquals(LispList.cons(new LispInteger(2), new LispSymbol("unevalled")), cons);
+    cons = evaluateString("(subr-arity (symbol-function 'indirect-function))");
+    Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), cons);
+    cons = evaluateString("(subr-arity (symbol-function 'run-hooks))");
+    Assert.assertEquals(LispList.cons(new LispInteger(0), new LispSymbol("many")), cons);
+  }
+
+  @Test
+  public void testArefVectorOk () {
+    LispObject val = evaluateString("(aref '[1 2 3] 0)");
+    Assert.assertEquals(new LispInteger(1), val);
+  }
+
+  @Test
+  public void testArefVectorOutOfBounds () {
+    try {
+      evaluateString("(aref '[1 2 3] 10)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testLispNot() throws Exception {
-        LispObject lispObject = evaluateString("(not 5)");
-        Assert.assertEquals(LispSymbol.ourNil, lispObject);
-        lispObject = evaluateString("(not nil)");
-        Assert.assertEquals(LispSymbol.ourT, lispObject);
-    }
-
-    @Test
-    public void testFuncall () {
-        LispObject result = evaluateString("(funcall '+ 1 2)");
-        Assert.assertEquals(new LispInteger(3), result);
-    }
-
-    @Test
-    public void testEvalLambda() {
-        LispObject result = evaluateString("((lambda (a) (+ 1 a)) 2)");
-        Assert.assertEquals(new LispInteger(3), result);
-    }
-
-    @Test
-    public void testEvalMacro() {
-        try {
-        evaluateString("((defmacro mac (a) (message \"%s\" a)) 5)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function (defmacro mac (a) (message \"%s\" a)))", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testFuncallLambda () {
-        LispObject result = evaluateString("(funcall '(lambda (a) (+ 1 a)) 2)");
-        Assert.assertEquals(new LispInteger(3), result);
-    }
-    
-    @Test
-    public void testFuncallSymbolFunction () {
-        LispObject r = evaluateString("(funcall (symbol-function '1+) 5)");
-        Assert.assertEquals(new LispInteger(6), r);
-    }
-
-    @Test
-    public void testLambdaInteractiveForm() {
-        LispList list = (LispList) evaluateString("'(lambda (a b) (message \"test\") (interactive \"sFirst: \") (message \"%s\" a) (interactive \"sString2: \") (message \"%s\" b))");
-        Lambda lambda = new Lambda(list);
-        Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("sFirst: ")), lambda.getInteractiveForm());
-        Assert.assertEquals(5, lambda.getBodyLength());
-    }
-
-    @Test
-    public void testFuncallInvalid () {
-        try {
-            evaluateString("(funcall 0 1 2)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function 0)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testRunHooks () {
-        evaluateString("(defun f () (+ 1 2))");
-        evaluateString("(defun g () (+ 2 3))");
-        evaluateString("(set 'hook1 '(f g))");
-        evaluateString("(run-hooks 'hook1)");
-        evaluateString("(run-hooks 'hook2)");
-    }
-
-    @Test
-    public void testRunHooks_InvalidFunction () {
-        try {
-            evaluateString("(set 'hook1 5)");
-            evaluateString("(run-hooks 'hook1)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function 5)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testMacro () {
-        evaluateString("(setq r 5)");
-        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
-        evaluateString("(inc r)");
-        LispObject r = evaluateString("r");
-        Assert.assertEquals(new LispInteger(6), r);
-    }
-
-    @Test
-    public void testMacroExpand_Complex () {
-        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
-        LispObject expansion = evaluateString("(macroexpand '(inc r))");
-        //(setq r (+ r 1))
-        Assert.assertEquals(LispList.list(new LispSymbol("setq"),
-                new LispSymbol("r"),
-                LispList.list(new LispSymbol("+"), new LispSymbol("r"), new LispInteger(1))),
-                expansion);
-    }
-
-    @Test
-    public void testMacroExpand_Simple () {
-        evaluateString("(defmacro m2 (q) (declare (doc-string \"hello1\")) \"hello2\" (+ 5 q))");
-        LispObject expansion = evaluateString("(macroexpand '(m2 7))");
-        Assert.assertEquals(new LispInteger(12), expansion);
-    }
-
-    @Test
-    public void testMacroExpand_EmbeddedMacro () {
-        evaluateString("(defmacro inc (var) (list 'setq var (list '+ var 1)))");
-        evaluateString("(defmacro inc2 (var1 var2) (list 'progn (list 'inc var1) (list 'inc var2)))");
-        LispObject expansion = evaluateString("(macroexpand '(inc2 r s))");
-        //(progn (inc r) (inc s)) ; inc not expanded here.
-        Assert.assertEquals(LispList.list(new LispSymbol("progn"),
-                LispList.list(new LispSymbol("inc"), new LispSymbol("r")),
-                LispList.list(new LispSymbol("inc"), new LispSymbol("s"))),
-                expansion);
-    }
-
-    @Test
-    public void testMacroExpand_NotMacroCall() {
-        LispObject expansion = evaluateString("(macroexpand 10)");
-        Assert.assertEquals(new LispInteger(10), expansion);
-        evaluateString("(defun f ())");
-        expansion = evaluateString("(macroexpand 'f)");
-        Assert.assertEquals(new LispSymbol("f"), expansion);
-        expansion = evaluateString("(macroexpand '(f))");
-        Assert.assertEquals(LispList.list(new LispSymbol("f")), expansion);
-    }
-
-    @Test
-    public void testFset() {
-        LispObject f = evaluateString("(fset 'f2 'f1)");
-        Assert.assertEquals(new LispSymbol("f1"), f);
-        LispSymbol f1 = myEnvironment.find("f1");
-        Assert.assertNull(f1);
-        LispSymbol f2 = myEnvironment.find("f2");
-        Assert.assertNotNull(f2);
-        Assert.assertEquals(new LispSymbol("f1"), f2.getFunction());
-    }
-
-    @Test
-    public void testFsetWta() {
-        try {
-            evaluateString("(fset 5 10)");
-        } catch (WrongTypeArgumentException e) {
-            // todo: (wrong-type-argument symbolp 5)
-            Assert.assertEquals("'(wrong-type-argument LispSymbol 5)", e.getMessage());
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testIndirectFunction() {
-        evaluateString("(defun f1 () (+ 1 2))");
-        evaluateString("(fset 'f2 'f1)");
-        evaluateString("(fset 'g 'f2)");
-        LispObject innerF = evaluateString("(indirect-function 'g)");
-        Assert.assertEquals("(lambda nil (+ 1 2))", innerF.toString());
-    }
-
-    @Test
-    public void testIndirectFunctionNumber() {
-        LispObject r = evaluateString("(fset 'a 10)");
-        Assert.assertEquals(new LispInteger(10), r);
-        r = evaluateString("(indirect-function 'a)");
-        Assert.assertEquals(new LispInteger(10), r);
-    }
-
-    @Test
-    public void testIndirectFunctionVoid() {
-        evaluateString("(fset 'g 'f)");
-        try {
-            evaluateString("(indirect-function 'g)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(void-function g)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testIndirectFunctionCycle() {
-        evaluateString("(fset 'f 'g)");
-        evaluateString("(fset 'g 'f)");
-        try {
-            evaluateString("(indirect-function 'g)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testIndirectFunctionOverride() {
-        evaluateString("(defun f () (+ 1 2))");
-        LispObject innerF = evaluateString("(indirect-function 'f)");
-        LispSymbol f = myEnvironment.find("f");
-        Assert.assertEquals(f.getFunction(), innerF);
-        evaluateString("(fset 'f 1)");
-        innerF = evaluateString("(indirect-function 'f)");
-        Assert.assertEquals(new LispInteger(1), innerF);
-    }
-
-    @Test
-    public void testPrimitiveMinMaxArgsNum() {
-        LispSymbol f = myEnvironment.find("indirect-function");
-        Assert.assertEquals(1, ((Primitive) f.getFunction()).getNRequiredArguments());
-        Assert.assertEquals(new LispInteger(2), ((Primitive)f.getFunction()).getMaxNumArgs());
-
-        f = myEnvironment.find("run-hooks");
-        Assert.assertEquals(0, ((Primitive) f.getFunction()).getNRequiredArguments());
-        Assert.assertEquals(new LispSymbol("many"), ((Primitive) f.getFunction()).getMaxNumArgs());
-
-        f = myEnvironment.find("if");
-        Assert.assertEquals(2, ((Primitive) f.getFunction()).getNRequiredArguments());
-        Assert.assertEquals(new LispSymbol("unevalled"), ((Primitive) f.getFunction()).getMaxNumArgs());
-    }
-
-    @Test
-    public void testSubrArityWta() {
-        try {
-            evaluateString("(subr-arity 'if)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testSubrArity() {
-        LispObject cons = evaluateString("(subr-arity (symbol-function 'if))");
-        Assert.assertEquals(LispList.cons(new LispInteger(2), new LispSymbol("unevalled")), cons);
-        cons = evaluateString("(subr-arity (symbol-function 'indirect-function))");
-        Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), cons);
-        cons = evaluateString("(subr-arity (symbol-function 'run-hooks))");
-        Assert.assertEquals(LispList.cons(new LispInteger(0), new LispSymbol("many")), cons);
-    }
-
-    @Test
-    public void testArefVectorOk () {
-        LispObject val = evaluateString("(aref '[1 2 3] 0)");
-        Assert.assertEquals(new LispInteger(1), val);
-    }
-
-    @Test
-    public void testArefVectorOutOfBounds () {
-        try {
-            evaluateString("(aref '[1 2 3] 10)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testArefStringOk () {
-        LispObject val = evaluateString("(aref \"hi\" 0)");
-        Assert.assertEquals(new LispInteger(104), val);
-        //todo: reproduce
+  @Test
+  public void testArefStringOk () {
+    LispObject val = evaluateString("(aref \"hi\" 0)");
+    Assert.assertEquals(new LispInteger(104), val);
+    //todo: reproduce
 //        val = evaluateString("(aref \"\\\\C\" 0)");
 //        Assert.assertEquals(new LispInteger(1), val);
+  }
+
+  @Test
+  public void testArefStringOutOfBounds () {
+    try {
+      evaluateString("(aref \"hi\" 10)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testArefStringOutOfBounds () {
-        try {
-            evaluateString("(aref \"hi\" 10)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
+  @Ignore
+  @Test
+  public void testAsetArefString() {
+    evaluateString("(defvar s \"hello\")");
+    LispObject a = evaluateString("(aset s 1 ?\\C-z)");
+    Assert.assertEquals(new LispInteger(26), a);
+    a = evaluateString("s");
+    Assert.assertEquals(evaluateString("s"), a);
+    System.out.println(evaluateString("s").toString());
+    a = evaluateString("(aref s 1)");
+    Assert.assertEquals(new LispInteger(26), a);    //todo: comes 94
+    a = evaluateString("(length s)");
+    Assert.assertEquals(new LispInteger(5), a);
+  }
+
+  @Test(expected = WrongNumberOfArgumentsException.class)
+  public void testApplyNoArgs() {
+    evaluateString("(apply '+)");
+  }
+
+  @Test
+  public void testApplyNotListLastArg() {
+    try {
+      evaluateString("(apply '+ 1 2)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Ignore
-    @Test
-    public void testAsetArefString() {
-        evaluateString("(defvar s \"hello\")");
-        LispObject a = evaluateString("(aset s 1 ?\\C-z)");
-        Assert.assertEquals(new LispInteger(26), a);
-        a = evaluateString("s");
-        Assert.assertEquals(evaluateString("s"), a);
-        System.out.println(evaluateString("s").toString());
-        a = evaluateString("(aref s 1)");
-        Assert.assertEquals(new LispInteger(26), a);    //todo: comes 94
-        a = evaluateString("(length s)");
-        Assert.assertEquals(new LispInteger(5), a);
+  @Test
+  public void testApplyBuiltin() {
+    LispObject r = evaluateString("(apply '+ 1 2 '(3 4))");
+    Assert.assertEquals(new LispInteger(10), r);
+  }
+
+  @Test
+  public void testApplyBuiltinWrongArg() {
+    try {
+      evaluateString("(apply '< 1 2)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test(expected = WrongNumberOfArgumentsException.class)
-    public void testApplyNoArgs() {
-        evaluateString("(apply '+)");
+  @Test
+  public void testApplySpecForm() {
+    try {
+      evaluateString("(apply 'setq 'a '(5))");
+    } catch (Exception e) {
+      Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testApplyNotListLastArg() {
-        try {
-            evaluateString("(apply '+ 1 2)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
+  @Test
+  public void testApplyMacro() {
+    try {
+      evaluateString("(apply 'when 't '(message \"hi\"))");
+    } catch (Exception e) {
+      Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testApplyBuiltin() {
-        LispObject r = evaluateString("(apply '+ 1 2 '(3 4))");
-        Assert.assertEquals(new LispInteger(10), r);
+  @Test
+  public void testApply() {
+    LispObject b = evaluateString("(nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
+    Assert.assertEquals("((ch (aref --cl-vec-- --cl-idx--)))", b.toString());
+    LispObject r = evaluateString("(apply 'nconc '((ch (aref --cl-vec-- --cl-idx--))))");
+    Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
+    r = evaluateString("(apply 'nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
+    Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
+  }
+
+  @Test
+  public void testDefAliasVoidVar() {
+    try {
+      evaluateString("(defalias a nil)");
+    } catch (Exception e) {
+      Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testApplyBuiltinWrongArg() {
-        try {
-            evaluateString("(apply '< 1 2)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+  @Test
+  public void testDefAliasVoidFun() {
+    evaluateString("(defun f ())");
+    LispObject r = evaluateString("(defalias 'a (symbol-function 'f))");
+    Assert.assertEquals("(lambda nil)", r.toString());
+  }
 
-    @Test
-    public void testApplySpecForm() {
-        try {
-            evaluateString("(apply 'setq 'a '(5))");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+  @Test
+  public void testDefAliasSetDoc() {
+    evaluateString("(defun f ())");
+    LispObject r = evaluateString("(defalias 'a (symbol-function 'f) (make-marker))");
+    Assert.assertEquals("(lambda nil)", r.toString());
+    r = evaluateString("(symbol-function 'a)");
+    Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil));
+    test.setDocumentation(new LispMarker());
+    Assert.assertEquals(test, r);
+    r = evaluateString("(get 'variable-documentation 'a)");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+    r = evaluateString("(documentation 'a)");
+    Assert.assertEquals(new LispMarker(), r);
+    r = evaluateString("(documentation 'f)");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
 
-    @Test
-    public void testApplyMacro() {
-        try {
-            evaluateString("(apply 'when 't '(message \"hi\"))");
-        } catch (Exception e) {
-            Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+  @Test
+  public void testDefAliasExec() {
+    evaluateString("(defalias 'a 'identity)");
+    LispObject r = evaluateString("(a 5)");
+    Assert.assertEquals(new LispInteger(5), r);
+    r = evaluateString("(symbol-function 'a)");
+    Assert.assertEquals(new LispSymbol("identity"), r);
+  }
 
-    @Test
-    public void testApply() {
-        LispObject b = evaluateString("(nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
-        Assert.assertEquals("((ch (aref --cl-vec-- --cl-idx--)))", b.toString());
-        LispObject r = evaluateString("(apply 'nconc '((ch (aref --cl-vec-- --cl-idx--))))");
-        Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
-        r = evaluateString("(apply 'nconc (nreverse '((ch (aref --cl-vec-- --cl-idx--)))))");
-        Assert.assertEquals("(ch (aref --cl-vec-- --cl-idx--))", r.toString());
-    }
+  @Test
+  public void testAtom() {
+    LispObject r = evaluateString("(atom 5)");
+    Assert.assertEquals(LispSymbol.ourT, r);
+    r = evaluateString("(atom [])");
+    Assert.assertEquals(LispSymbol.ourT, r);
+    r = evaluateString("(atom nil)");
+    Assert.assertEquals(LispSymbol.ourT, r);
+    r = evaluateString("(atom 'a)");
+    Assert.assertEquals(LispSymbol.ourT, r);
+    r = evaluateString("(atom ())");
+    Assert.assertEquals(LispSymbol.ourT, r);
 
-    @Test
-    public void testDefAliasVoidVar() {
-        try {
-            evaluateString("(defalias a nil)");
-        } catch (Exception e) {
-            Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+    r = evaluateString("(atom '(5))");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+    r = evaluateString("(atom (cons 1 2))");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
 
-    @Test
-    public void testDefAliasVoidFun() {
-        evaluateString("(defun f ())");
-        LispObject r = evaluateString("(defalias 'a (symbol-function 'f))");
-        Assert.assertEquals("(lambda nil)", r.toString());
-    }
+  @Test
+  public void testBackQuoteSimplest_Atom() {
+    String form = "5";
+    LispObject expected = evaluateString("'" + form);
+    LispObject r = evaluateString("`" + form);
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testDefAliasSetDoc() {
-        evaluateString("(defun f ())");
-        LispObject r = evaluateString("(defalias 'a (symbol-function 'f) (make-marker))");
-        Assert.assertEquals("(lambda nil)", r.toString());
-        r = evaluateString("(symbol-function 'a)");
-        Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil));
-        test.setDocumentation(new LispMarker());
-        Assert.assertEquals(test, r);
-        r = evaluateString("(get 'variable-documentation 'a)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-        r = evaluateString("(documentation 'a)");
-        Assert.assertEquals(new LispMarker(), r);
-        r = evaluateString("(documentation 'f)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
+  @Test
+  public void testBackQuoteSimplest_Symbol() {
+    String form = "a";
+    LispObject expected = evaluateString("'" + form);
+    LispObject r = evaluateString("`" + form);
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testDefAliasExec() {
-        evaluateString("(defalias 'a 'identity)");
-        LispObject r = evaluateString("(a 5)");
-        Assert.assertEquals(new LispInteger(5), r);
-        r = evaluateString("(symbol-function 'a)");
-        Assert.assertEquals(new LispSymbol("identity"), r);
-    }
+  @Test
+  public void testBackQuoteSimplest_Vector() {
+    String form = "[]";
+    LispObject expected = evaluateString("'" + form);
+    LispObject r = evaluateString("`" + form);
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testAtom() {
-        LispObject r = evaluateString("(atom 5)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(atom [])");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(atom nil)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(atom 'a)");
-        Assert.assertEquals(LispSymbol.ourT, r);
-        r = evaluateString("(atom ())");
-        Assert.assertEquals(LispSymbol.ourT, r);
+  @Test
+  public void testBackQuoteSimplest_List() {
+    String form = "(1 a)";
+    LispObject expected = evaluateString("'" + form);
+    LispObject r = evaluateString("`" + form);
+    Assert.assertEquals(expected, r);
+  }
 
-        r = evaluateString("(atom '(5))");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-        r = evaluateString("(atom (cons 1 2))");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
+  @Test
+  public void testBackQuoteRecursiveList() {
+    String form = "(1 a (5))";
+    LispObject expected = evaluateString("'" + form);
+    LispObject r = evaluateString("`" + form);
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteSimplest_Atom() {
-        String form = "5";
-        LispObject expected = evaluateString("'" + form);
-        LispObject r = evaluateString("`" + form);
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteSimple() {
+    LispList expected = LispList.list(new LispSymbol("a"), new LispSymbol("list"),
+        new LispSymbol("of"), LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3)),
+        new LispSymbol("elements"));
+    LispObject r = evaluateString("'(a list of (+ 2 3) elements)");
+    Assert.assertEquals(expected, r);
+    r = evaluateString("`(a list of (+ 2 3) elements)");
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteSimplest_Symbol() {
-        String form = "a";
-        LispObject expected = evaluateString("'" + form);
-        LispObject r = evaluateString("`" + form);
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteComma() {
+    LispObject expected = evaluateString("(list 'a 'list 'of (+ 2 3) 'elements)"); //(a list of 5 elements)
+    LispObject result = evaluateString("`(a list of ,(+ 2 3) elements)");
+    Assert.assertEquals(expected, result);
+  }
 
-    @Test
-    public void testBackQuoteSimplest_Vector() {
-        String form = "[]";
-        LispObject expected = evaluateString("'" + form);
-        LispObject r = evaluateString("`" + form);
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteCommaDeep() {
+    evaluateString("(defmacro t-becomes-nil (variable)\n" +
+        " `(if (eq ,variable t)\n" +
+        " (setq ,variable nil)))");
+    evaluateString("(setq foo t)");
+    LispObject r = evaluateString("(t-becomes-nil foo)");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+    r = evaluateString("foo");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
 
-    @Test
-    public void testBackQuoteSimplest_List() {
-        String form = "(1 a)";
-        LispObject expected = evaluateString("'" + form);
-        LispObject r = evaluateString("`" + form);
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteDog_Simple() {
+    evaluateString("(setq some-list '(2 3))");
+    LispObject expected = evaluateString("some-list");
+    Assert.assertEquals("(2 3)", expected.toString());
+    LispObject r = evaluateString("some-list");
+    Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+    r = evaluateString("`,@some-list");
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteRecursiveList() {
-        String form = "(1 a (5))";
-        LispObject expected = evaluateString("'" + form);
-        LispObject r = evaluateString("`" + form);
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteDog_SimpleList() {
+    evaluateString("(setq some-list '(2 3))");
+    LispObject expected = evaluateString("some-list");
+    Assert.assertEquals("(2 3)", expected.toString());
+    LispObject r = evaluateString("some-list");
+    Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+    r = evaluateString("`(,@some-list)");
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteSimple() {
-        LispList expected = LispList.list(new LispSymbol("a"), new LispSymbol("list"),
-                new LispSymbol("of"), LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3)),
-                new LispSymbol("elements"));
-        LispObject r = evaluateString("'(a list of (+ 2 3) elements)");
-        Assert.assertEquals(expected, r);
-        r = evaluateString("`(a list of (+ 2 3) elements)");
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteDog_List() {
+    evaluateString("(setq some-list '(2 3))");
+    LispObject expected = evaluateString("(cons 1 some-list)");
+    Assert.assertEquals("(1 2 3)", expected.toString());
+    LispObject r = evaluateString("some-list");
+    Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+    r = evaluateString("`(1 ,@some-list)");
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteComma() {
-        LispObject expected = evaluateString("(list 'a 'list 'of (+ 2 3) 'elements)"); //(a list of 5 elements)
-        LispObject result = evaluateString("`(a list of ,(+ 2 3) elements)");
-        Assert.assertEquals(expected, result);
-    }
+  @Test
+  public void testBackQuoteListify() {
+    LispObject r = evaluateString("(backquote-listify '((2 . (8 9))) '(0 . nil))");
+    Assert.assertEquals(LispList.list(new LispSymbol("list"), LispList.list(new LispInteger(8), new LispInteger(9))), r);
+  }
 
-    @Test
-    public void testBackQuoteCommaDeep() {
-        evaluateString("(defmacro t-becomes-nil (variable)\n" +
-                " `(if (eq ,variable t)\n" +
-                " (setq ,variable nil)))");
-        evaluateString("(setq foo t)");
-        LispObject r = evaluateString("(t-becomes-nil foo)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-        r = evaluateString("foo");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
+  @Test
+  public void testBackQuoteDog() {
+    evaluateString("(setq some-list '(2 3))");
+    LispObject expected = evaluateString("(cons 1 (append some-list '(4) some-list))");
+    Assert.assertEquals("(1 2 3 4 2 3)", expected.toString());
+    LispObject r = evaluateString("some-list");
+    Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
+    r = evaluateString("`(1 ,@some-list 4 ,@some-list)");
+    Assert.assertEquals(expected, r);
+  }
 
-    @Test
-    public void testBackQuoteDog_Simple() {
-        evaluateString("(setq some-list '(2 3))");
-        LispObject expected = evaluateString("some-list");
-        Assert.assertEquals("(2 3)", expected.toString());
-        LispObject r = evaluateString("some-list");
-        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
-        r = evaluateString("`,@some-list");
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteAtoms () {
+    evaluateString("(setq a 1 b 2)");
+    LispObject r = evaluateString("`(,a b)");
+    Assert.assertEquals("(1 b)", r.toString());
+  }
 
-    @Test
-    public void testBackQuoteDog_SimpleList() {
-        evaluateString("(setq some-list '(2 3))");
-        LispObject expected = evaluateString("some-list");
-        Assert.assertEquals("(2 3)", expected.toString());
-        LispObject r = evaluateString("some-list");
-        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
-        r = evaluateString("`(,@some-list)");
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testBackQuoteBrackets () {
+    evaluateString("(setq some-list '(2 3))");
+    LispObject r = evaluateString("`((,@some-list))");
+    Assert.assertEquals("((2 3))", r.toString());
+  }
 
-    @Test
-    public void testBackQuoteDog_List() {
-        evaluateString("(setq some-list '(2 3))");
-        LispObject expected = evaluateString("(cons 1 some-list)");
-        Assert.assertEquals("(1 2 3)", expected.toString());
-        LispObject r = evaluateString("some-list");
-        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
-        r = evaluateString("`(1 ,@some-list)");
-        Assert.assertEquals(expected, r);
-    }
+  @Test (expected = LispThrow.class)
+  public void testThrowNoCatch() {
+    evaluateString("(throw 'a nil)");
+  }
 
-    @Test
-    public void testBackQuoteListify() {
-        LispObject r = evaluateString("(backquote-listify '((2 . (8 9))) '(0 . nil))");
-        Assert.assertEquals(LispList.list(new LispSymbol("list"), LispList.list(new LispInteger(8), new LispInteger(9))), r);
-    }
+  @Test
+  public void testListStarTwo() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq b '(2 3))");
+    LispObject r = evaluateString("(list* a b)");
+    Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
+  }
 
-    @Test
-    public void testBackQuoteDog() {
-        evaluateString("(setq some-list '(2 3))");
-        LispObject expected = evaluateString("(cons 1 (append some-list '(4) some-list))");
-        Assert.assertEquals("(1 2 3 4 2 3)", expected.toString());
-        LispObject r = evaluateString("some-list");
-        Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), r);
-        r = evaluateString("`(1 ,@some-list 4 ,@some-list)");
-        Assert.assertEquals(expected, r);
-    }
+  @Test
+  public void testListStarThreeNil() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq b '(2 3))");
+    LispObject r = evaluateString("(list* a b nil)");
+    Assert.assertEquals(LispList.list(new LispInteger(1), LispList.list(new LispInteger(2), new LispInteger(3))), r);
+  }
 
-    @Test
-    public void testBackQuoteAtoms () {
-        evaluateString("(setq a 1 b 2)");
-        LispObject r = evaluateString("`(,a b)");
-        Assert.assertEquals("(1 b)", r.toString());
-    }
+  @Test
+  public void testListStarThreeObject() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq b '(2 3))");
+    LispObject r = evaluateString("(list* a b 4)");
+    Assert.assertEquals(LispList.testList(new LispInteger(1),
+        LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
+  }
 
-    @Test
-    public void testBackQuoteBrackets () {
-        evaluateString("(setq some-list '(2 3))");
-        LispObject r = evaluateString("`((,@some-list))");
-        Assert.assertEquals("((2 3))", r.toString());
-    }
+  @Test
+  public void testListStarThreeList() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq b '(2 3))");
+    LispObject r = evaluateString("(list* a b '(4))");
+    Assert.assertEquals(LispList.list(new LispInteger(1),
+        LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
+  }
 
-    @Test (expected = LispThrow.class)
-    public void testThrowNoCatch() {
-        evaluateString("(throw 'a nil)");
-    }
+  @Ignore
+  @Test
+  //todo '(cyclic-function-indirection define-minor-mode)
+  public void testDefineMinorMode() {
+    LispObject r = evaluateString("(define-minor-mode m1 \"doc\")");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
 
-    @Test
-    public void testListStarTwo() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq b '(2 3))");
-        LispObject r = evaluateString("(list* a b)");
-        Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
-    }
-
-    @Test
-    public void testListStarThreeNil() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq b '(2 3))");
-        LispObject r = evaluateString("(list* a b nil)");
-        Assert.assertEquals(LispList.list(new LispInteger(1), LispList.list(new LispInteger(2), new LispInteger(3))), r);
-    }
-
-    @Test
-    public void testListStarThreeObject() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq b '(2 3))");
-        LispObject r = evaluateString("(list* a b 4)");
-        Assert.assertEquals(LispList.testList(new LispInteger(1),
-                LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
-    }
-
-    @Test
-    public void testListStarThreeList() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq b '(2 3))");
-        LispObject r = evaluateString("(list* a b '(4))");
-        Assert.assertEquals(LispList.list(new LispInteger(1),
-                LispList.list(new LispInteger(2), new LispInteger(3)), new LispInteger(4)), r);
-    }
-
-    @Ignore
-    @Test
-    //todo '(cyclic-function-indirection define-minor-mode)
-    public void testDefineMinorMode() {
-        LispObject r = evaluateString("(define-minor-mode m1 \"doc\")");
-        Assert.assertEquals(LispSymbol.ourNil, r);
-    }
-
-    @Test
-    public void testSimple() {
+  @Test
+  public void testSimple() {
 //        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
-        DefinitionLoader.loadFile("simple.el");
+    DefinitionLoader.loadFile("simple.el");
+  }
+
+  @Test
+  public void testInteractiveInBody() {
+    evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
+    LispObject r = evaluateString("(f)");
+    Assert.assertEquals(LispSymbol.ourNil, r);
+  }
+
+  @Test
+  public void testEvalExpression() {
+    evaluateString("(eval-expression '(+ 5 5))");
+  }
+
+  @Test
+  public void testVarAliasSimple() {
+    evaluateString("(setq a 5)");
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("(symbol-value 'b)"));
+    evaluateString("(setq b 10)");
+    Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+    evaluateString("(setq a 15)");
+    Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+
+    Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("doc")),
+        evaluateString("(symbol-plist 'b)"));
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+  }
+
+  @Test
+  public void testVarAliasVoid() {
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
+    try {
+      evaluateString("b");
+    } catch (Exception e) {
+      Assert.assertEquals("'(void-variable b)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testInteractiveInBody() {
-        evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
-        LispObject r = evaluateString("(f)");
-        Assert.assertEquals(LispSymbol.ourNil, r);
+  @Test
+  public void testVarTwoAliases() {
+    evaluateString("(setq a 5)");
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'c 'a \"c\")"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+
+    evaluateString("(setq c 10)");
+    Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+
+    evaluateString("(setq a 15)");
+    Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+
+    Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
+        evaluateString("(symbol-plist 'b)"));
+    Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
+        evaluateString("(symbol-plist 'c)"));
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+  }
+
+  @Test
+  public void testVarAliasForAlias() {
+    evaluateString("(setq a 5)");
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
+    Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'c 'b \"c\")"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+
+    evaluateString("(setq c 10)");
+    Assert.assertEquals(new LispInteger(10), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+
+    evaluateString("(setq a 15)");
+    Assert.assertEquals(new LispInteger(15), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+
+    evaluateString("(setq b 1)");
+    Assert.assertEquals(new LispInteger(1), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("c"));
+
+    Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
+        evaluateString("(symbol-plist 'b)"));
+    Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
+        evaluateString("(symbol-plist 'c)"));
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+  }
+
+  @Test
+  public void testCyclicAliasGet() {
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
+    Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
+    try {
+      evaluateString("a");
+    } catch (Exception e) {
+      Assert.assertEquals("(cyclic-variable-indirection a)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testEvalExpression() {
-        evaluateString("(eval-expression '(+ 5 5))");
+  @Test
+  public void testCyclicAliasSet() {
+    Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
+    Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
+    try {
+      evaluateString("(setq b 5)");
+    } catch (Exception e) {
+      Assert.assertEquals("(cyclic-variable-indirection b)", TestSetup.getCause(e));
+      return;
     }
+    Assert.fail();
+  }
 
-    @Test
-    public void testVarAliasSimple() {
-        evaluateString("(setq a 5)");
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("(symbol-value 'b)"));
-        evaluateString("(setq b 10)");
-        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
-        evaluateString("(setq a 15)");
-        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
+  @Test
+  public void testUniqueAliasBase() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq d 2)");
+    evaluateString("(defvaralias 'b 'a)");
+    evaluateString("(defvaralias 'c 'a)");
+    evaluateString("(defvaralias 'c 'd)");
 
-        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("doc")),
-                evaluateString("(symbol-plist 'b)"));
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
-    }
+    evaluateString("(setq b 3)");
+    Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("d"));
 
-    @Test
-    public void testVarAliasVoid() {
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"doc\")"));
-        try {
-            evaluateString("b");
-        } catch (Exception e) {
-            Assert.assertEquals("'(void-variable b)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+    evaluateString("(setq c 4)");
+    Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+  }
 
-    @Test
-    public void testVarTwoAliases() {
-        evaluateString("(setq a 5)");
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'c 'a \"c\")"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+  @Test
+  public void testVarAliasTree1() {
+    evaluateString("(setq a 1)");
+    evaluateString("(defvaralias 'b 'a)");
+    evaluateString("(defvaralias 'c 'b)");
+    evaluateString("(defvaralias 'd 'b)");
+    Assert.assertEquals(new LispInteger(1), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("d"));
 
-        evaluateString("(setq c 10)");
-        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+    evaluateString("(setq a 2)");
+    Assert.assertEquals(new LispInteger(2), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("d"));
 
-        evaluateString("(setq a 15)");
-        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+    evaluateString("(setq b 3)");
+    Assert.assertEquals(new LispInteger(3), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(3), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(3), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(3), evaluateString("d"));
 
-        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
-                evaluateString("(symbol-plist 'b)"));
-        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
-                evaluateString("(symbol-plist 'c)"));
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
-    }
+    evaluateString("(setq c 4)");
+    Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("d"));
 
-    @Test
-    public void testVarAliasForAlias() {
-        evaluateString("(setq a 5)");
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a \"b\")"));
-        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'c 'b \"c\")"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+    evaluateString("(setq d 5)");
+    Assert.assertEquals(new LispInteger(5), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(5), evaluateString("d"));
+  }
 
-        evaluateString("(setq c 10)");
-        Assert.assertEquals(new LispInteger(10), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("c"));
+  @Test
+  public void testVarAliasTree2() {
+    evaluateString("(setq a 1)");
+    evaluateString("(setq d 4)");
+    evaluateString("(defvaralias 'b 'a)");
+    evaluateString("(defvaralias 'c 'b)");
+    evaluateString("(defvaralias 'b 'd)");
+    Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(1), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+    evaluateString("(setq a 2)");
+    Assert.assertEquals(new LispInteger(4), evaluateString("b"));
+    Assert.assertEquals(new LispInteger(2), evaluateString("a"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("c"));
+    Assert.assertEquals(new LispInteger(4), evaluateString("d"));
+  }
 
-        evaluateString("(setq a 15)");
-        Assert.assertEquals(new LispInteger(15), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(15), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(15), evaluateString("c"));
+  @Test
+  public void testLoadLispMode() {
+    DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
+  }
 
-        evaluateString("(setq b 1)");
-        Assert.assertEquals(new LispInteger(1), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("c"));
+  @Test
+  public void testDefineDerivedMode() {
+    evaluateString("(define-derived-mode my-mode nil \"doc\" ())");
+  }
 
-        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("b")),
-                evaluateString("(symbol-plist 'b)"));
-        Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
-                evaluateString("(symbol-plist 'c)"));
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
-    }
+  @Test
+  public void testTimerCreate() {
+    Assert.assertEquals(new LispVector(LispSymbol.ourT, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil,
+        LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil),
+        evaluateString("(setq timer (timer-create))"));
+  }
 
-    @Test
-    public void testCyclicAliasGet() {
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
-        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
-        try {
-            evaluateString("a");
-        } catch (Exception e) {
-            Assert.assertEquals("(cyclic-variable-indirection a)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+  @Test
+  public void testTimerFunction() {
+    evaluateString("(setq timer '[1 2 3 4 5 6])");
+    Assert.assertEquals(new LispInteger(6), evaluateString("(timer--function timer)"));
+    evaluateString("(setq timer \"abcdef\")");
+    Assert.assertEquals(new LispInteger(102), evaluateString("(timer--function timer)"));
+  }
 
-    @Test
-    public void testCyclicAliasSet() {
-        Assert.assertEquals(new LispSymbol("a"), evaluateString("(defvaralias 'b 'a)"));
-        Assert.assertEquals(new LispSymbol("b"), evaluateString("(defvaralias 'a 'b)"));
-        try {
-            evaluateString("(setq b 5)");
-        } catch (Exception e) {
-            Assert.assertEquals("(cyclic-variable-indirection b)", TestSetup.getCause(e));
-            return;
-        }
-        Assert.fail();
-    }
+  @Test
+  public void testTimerFunctionSelfMethod() {
+    LispObject expected = evaluateString("'((--cl-x--) (timer) (--cl-store--) (progn (aset --cl-x-- 5 --cl-store--)) (timer--function --cl-x--))");
+    Assert.assertEquals(expected, evaluateString("(get-setf-method '(timer--function timer))"));
+  }
 
-    @Test
-    public void testUniqueAliasBase() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq d 2)");
-        evaluateString("(defvaralias 'b 'a)");
-        evaluateString("(defvaralias 'c 'a)");
-        evaluateString("(defvaralias 'c 'd)");
+  @Test
+  public void testApplyLambda() {
+    Assert.assertEquals(new LispInteger(6), evaluateString("(apply '(lambda (a b c) (+ a b c)) '(1 2 3))"));
+  }
 
-        evaluateString("(setq b 3)");
-        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("d"));
+  @Test
+  public void testAutoload() {
+    evaluateString("(autoload 'b \"./jelisp/src/test/test\" \"alla\" nil 'anna)");
+    LispObject f = evaluateString("(symbol-function 'b)");
+    Assert.assertTrue(f instanceof LispList);
+    Assert.assertEquals("(autoload \"./jelisp/src/test/test\" \"alla\" nil anna)", f.toString());
+    Assert.assertEquals(new LispString("alla"), evaluateString("(documentation 'b)"));
+    Assert.assertEquals(new LispInteger(10), evaluateString("(b 5)"));
+    Assert.assertEquals(new LispString("doc"), evaluateString("(documentation 'b)"));
+    evaluateString("(fset 'b '(autoload \"./jelisp/src/test/test\"))");
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(documentation 'b)"));
+    Assert.assertEquals(new LispInteger(6), evaluateString("(b 1)"));
+  }
 
-        evaluateString("(setq c 4)");
-        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
-    }
+  @Test
+  public void testDefvarValueItself() {
+    evaluateString("(defvar a 'a \"doc\")");
+    LispSymbol a = (LispSymbol) evaluateString("'a");
+    Assert.assertTrue(a == a.getValue());
+  }
 
-    @Test
-    public void testVarAliasTree1() {
-        evaluateString("(setq a 1)");
-        evaluateString("(defvaralias 'b 'a)");
-        evaluateString("(defvaralias 'c 'b)");
-        evaluateString("(defvaralias 'd 'b)");
-        Assert.assertEquals(new LispInteger(1), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("d"));
+  @Test
+  public void testProvide() {
+    evaluateString("(provide 'f '(a))");
+    Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispSymbol("a"))),
+        evaluateString("(symbol-plist 'f)"));
+    LispObject list = evaluateString("features");
+    Assert.assertEquals(LispList.list(new LispSymbol("f")), list);
+    evaluateString("(provide 'f '(1))");
+    Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispInteger(1))),
+        evaluateString("(symbol-plist 'f)"));
+  }
 
-        evaluateString("(setq a 2)");
-        Assert.assertEquals(new LispInteger(2), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("d"));
-
-        evaluateString("(setq b 3)");
-        Assert.assertEquals(new LispInteger(3), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(3), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(3), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(3), evaluateString("d"));
-
-        evaluateString("(setq c 4)");
-        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
-
-        evaluateString("(setq d 5)");
-        Assert.assertEquals(new LispInteger(5), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(5), evaluateString("d"));
-    }
-
-    @Test
-    public void testVarAliasTree2() {
-        evaluateString("(setq a 1)");
-        evaluateString("(setq d 4)");
-        evaluateString("(defvaralias 'b 'a)");
-        evaluateString("(defvaralias 'c 'b)");
-        evaluateString("(defvaralias 'b 'd)");
-        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(1), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
-        evaluateString("(setq a 2)");
-        Assert.assertEquals(new LispInteger(4), evaluateString("b"));
-        Assert.assertEquals(new LispInteger(2), evaluateString("a"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("c"));
-        Assert.assertEquals(new LispInteger(4), evaluateString("d"));
-    }
-
-    @Test
-    public void testLoadLispMode() {
-        DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
-    }
-
-    @Test
-    public void testDefineDerivedMode() {
-        evaluateString("(define-derived-mode my-mode nil \"doc\" ())");
-    }
-
-    @Test
-    public void testTimerCreate() {
-        Assert.assertEquals(new LispVector(LispSymbol.ourT, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil,
-                LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil),
-                evaluateString("(setq timer (timer-create))"));
-    }
-
-    @Test
-    public void testTimerFunction() {
-        evaluateString("(setq timer '[1 2 3 4 5 6])");
-        Assert.assertEquals(new LispInteger(6), evaluateString("(timer--function timer)"));
-        evaluateString("(setq timer \"abcdef\")");
-        Assert.assertEquals(new LispInteger(102), evaluateString("(timer--function timer)"));
-    }
-
-    @Test
-    public void testTimerFunctionSelfMethod() {
-        LispObject expected = evaluateString("'((--cl-x--) (timer) (--cl-store--) (progn (aset --cl-x-- 5 --cl-store--)) (timer--function --cl-x--))");
-        Assert.assertEquals(expected, evaluateString("(get-setf-method '(timer--function timer))"));
-    }
-
-    @Test
-    public void testApplyLambda() {
-        Assert.assertEquals(new LispInteger(6), evaluateString("(apply '(lambda (a b c) (+ a b c)) '(1 2 3))"));
-    }
-
-    @Test
-    public void testAutoload() {
-        evaluateString("(autoload 'b \"./jelisp/src/test/test\" \"alla\" nil 'anna)");
-        LispObject f = evaluateString("(symbol-function 'b)");
-        Assert.assertTrue(f instanceof LispList);
-        Assert.assertEquals("(autoload \"./jelisp/src/test/test\" \"alla\" nil anna)", f.toString());
-        Assert.assertEquals(new LispString("alla"), evaluateString("(documentation 'b)"));
-        Assert.assertEquals(new LispInteger(10), evaluateString("(b 5)"));
-        Assert.assertEquals(new LispString("doc"), evaluateString("(documentation 'b)"));
-        evaluateString("(fset 'b '(autoload \"./jelisp/src/test/test\"))");
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(documentation 'b)"));
-        Assert.assertEquals(new LispInteger(6), evaluateString("(b 1)"));
-    }
-
-    @Test
-    public void testDefvarValueItself() {
-        evaluateString("(defvar a 'a \"doc\")");
-        LispSymbol a = (LispSymbol) evaluateString("'a");
-        Assert.assertTrue(a == a.getValue());
-    }
-
-    @Test
-    public void testProvide() {
-        evaluateString("(provide 'f '(a))");
-        Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispSymbol("a"))),
-                evaluateString("(symbol-plist 'f)"));
-        LispObject list = evaluateString("features");
-        Assert.assertEquals(LispList.list(new LispSymbol("f")), list);
-        evaluateString("(provide 'f '(1))");
-        Assert.assertEquals(LispList.list(new LispSymbol("subfeatures"), LispList.list(new LispInteger(1))),
-                evaluateString("(symbol-plist 'f)"));
-    }
-
-    @Test
-    public void testFeatureP() {
-        evaluateString("(provide 'f '(a))");
-        Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f)"));
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'a)"));
-        Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f 'a)"));
-        Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'f 'b)"));
-    }
+  @Test
+  public void testFeatureP() {
+    evaluateString("(provide 'f '(a))");
+    Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f)"));
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'a)"));
+    Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f 'a)"));
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'f 'b)"));
+  }
 }
