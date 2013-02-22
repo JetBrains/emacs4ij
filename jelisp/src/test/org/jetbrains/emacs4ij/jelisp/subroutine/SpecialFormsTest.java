@@ -12,13 +12,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 9/26/11
- * Time: 3:20 PM
- * To change this template use File | Settings | File Templates.
- */
 public class SpecialFormsTest extends BaseSubroutineTest {
     @Test
     public void testQuote() throws Exception {

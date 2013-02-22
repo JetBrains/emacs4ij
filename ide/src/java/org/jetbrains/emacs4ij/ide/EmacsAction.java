@@ -10,8 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 

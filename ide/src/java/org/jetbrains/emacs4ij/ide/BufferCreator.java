@@ -1,9 +1,9 @@
 package org.jetbrains.emacs4ij.ide;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBufferFactory;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBufferFactory;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 
 /**
  * Created with IntelliJ IDEA.

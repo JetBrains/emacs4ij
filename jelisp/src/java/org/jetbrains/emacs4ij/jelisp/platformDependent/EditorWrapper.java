@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.platform_dependent;
+package org.jetbrains.emacs4ij.jelisp.platformDependent;
 
 /**
  * Created with IntelliJ IDEA.

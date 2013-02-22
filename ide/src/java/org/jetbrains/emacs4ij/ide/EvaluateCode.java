@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.

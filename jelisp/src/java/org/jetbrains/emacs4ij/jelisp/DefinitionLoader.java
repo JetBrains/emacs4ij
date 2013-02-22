@@ -43,14 +43,15 @@ public final class DefinitionLoader {
 //        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //        System.out.println(sdf.format(Calendar.getInstance().getTime()));
 
-        if (index.isEmpty()) {
+        if (index.isEmpty() && TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES) {
             scan(new File(GlobalEnvironment.getEmacsSource() + "/lisp/"));
             index.setWith(myIndex);
 //        System.out.println(sdf.format(Calendar.getInstance().getTime()));
 
 //        NUMBER OF NON-SINGLE ENTRIES = 1517, TOTAL = 61251
-        } else
+        } else {
             myIndex = index;
+        }
     }
 
     private static void scan (File file) {

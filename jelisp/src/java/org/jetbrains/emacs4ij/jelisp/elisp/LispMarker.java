@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 /**
  * Created by IntelliJ IDEA.

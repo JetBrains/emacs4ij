@@ -3,7 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.*;
 
 import java.util.*;
 

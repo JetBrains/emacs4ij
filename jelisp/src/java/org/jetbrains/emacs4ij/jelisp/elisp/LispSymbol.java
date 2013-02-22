@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Symbol;

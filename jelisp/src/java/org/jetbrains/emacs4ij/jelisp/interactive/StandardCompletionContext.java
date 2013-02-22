@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.io.File;

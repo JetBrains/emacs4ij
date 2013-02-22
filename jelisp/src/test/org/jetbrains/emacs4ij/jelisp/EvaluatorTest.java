@@ -7,7 +7,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -95,14 +94,12 @@ public class EvaluatorTest {
         }
     }
 
-    @Ignore
     @Test
     public void testEvalGlobalVar() {
         LispObject var = evaluateString("default-directory");
         org.junit.Assert.assertEquals(LispSymbol.ourNil, var);
     }
 
-    @Ignore
     @Test
     public void testFinder () {
         try {

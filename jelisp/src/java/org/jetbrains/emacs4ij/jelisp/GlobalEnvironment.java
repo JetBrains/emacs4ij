@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.EnvironmentException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.*;
 import org.jetbrains.emacs4ij.jelisp.subroutine.*;
 
 import java.io.File;
@@ -128,12 +128,15 @@ public class GlobalEnvironment extends Environment {
         defineGlobalVariables();
         defineUserOptions();
         setSubroutines();
-//        note: it's important to load backquote before defsubst
-        DefinitionLoader.loadFile(myFilesToLoad.get(0));
-        defineDefForms();
-        if (TestMode.LOAD_FILES) {
-            for (int i = 1; i < myFilesToLoad.size(); ++i) {
-                DefinitionLoader.loadFile(myFilesToLoad.get(i));
+
+        if (TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES) {
+            //note: it's important to load backquote before defsubst
+            DefinitionLoader.loadFile(myFilesToLoad.get(0));
+            defineDefForms();
+            if (TestMode.LOAD_FILES) {
+                for (int i = 1; i < myFilesToLoad.size(); ++i) {
+                    DefinitionLoader.loadFile(myFilesToLoad.get(i));
+                }
             }
         }
         isLoading = false;

@@ -24,8 +24,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredEditorException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;

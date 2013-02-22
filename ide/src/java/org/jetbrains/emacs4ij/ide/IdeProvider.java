@@ -6,7 +6,7 @@ import com.intellij.openapi.project.ProjectManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.Ide;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.Ide;
 
 public class IdeProvider implements Ide {
     public IdeProvider () {}

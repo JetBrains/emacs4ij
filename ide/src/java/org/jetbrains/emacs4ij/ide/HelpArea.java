@@ -17,10 +17,10 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
 
 import javax.swing.*;

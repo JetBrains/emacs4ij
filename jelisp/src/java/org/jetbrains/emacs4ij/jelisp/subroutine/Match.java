@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidBackslashInReplacementException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoMatchData;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;

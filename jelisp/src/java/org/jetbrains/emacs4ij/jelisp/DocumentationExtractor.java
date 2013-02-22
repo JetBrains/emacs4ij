@@ -204,8 +204,8 @@ final class DocumentationExtractor {
                 scanFile(file);
             }
         List<String> str = getUndocumentedSubroutines();
-//        System.out.println("Undocumented: " + str.size());
-//        System.out.println(str);
+        System.out.println("Undocumented: " + str.size());
+        System.out.println(str);
         return str.size();
     }
 }

@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.ide;
 
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.*;
 
 /**
  * Created with IntelliJ IDEA.

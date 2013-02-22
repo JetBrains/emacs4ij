@@ -22,9 +22,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.parser.BackwardMultilineParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfFileException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SyntaxTable;
 
@@ -46,8 +46,8 @@ public class IdeaBuffer extends TextPropertiesHolder implements LispBuffer {
     protected static Project ourProject;
     protected LispMarker myMark = new LispMarker();
     protected Document myDocument;
-    private VirtualFile myVirtualFile;
 
+    private VirtualFile myVirtualFile;
     private LispKeymap myKeymap;
     private LispSyntaxTable mySyntaxTable;
 

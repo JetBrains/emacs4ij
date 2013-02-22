@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.apache.commons.collections.CollectionUtils;
+import net.sf.cglib.core.CollectionUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -10,14 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.*;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collection;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 8/2/11
- * Time: 5:05 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Symbol {
     private Symbol() {}
 
@@ -170,7 +164,7 @@ public abstract class Symbol {
         if (objectArray == null) {
             return GlobalEnvironment.INSTANCE.find(name);
         }
-        return (LispSymbol) CollectionUtils.find(objectArray.toLispObjectList(), new org.apache.commons.collections.Predicate() {
+        Collection filtered = CollectionUtils.filter(objectArray.toLispObjectList(), new net.sf.cglib.core.Predicate() {
             @Override
             public boolean evaluate(Object o) {
                 if (o.equals(new LispInteger(0)))
@@ -181,6 +175,10 @@ public abstract class Symbol {
                 return false;
             }
         });
+        if (filtered.size() != 1 && filtered.size() != 0) throw new IllegalStateException("real size = " + filtered.size());
+
+        if (filtered.isEmpty()) return null;
+        return (LispSymbol) filtered.iterator().next();
     }
 
     @Subroutine("intern")

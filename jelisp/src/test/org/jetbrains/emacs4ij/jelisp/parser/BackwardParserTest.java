@@ -627,6 +627,7 @@ public class BackwardParserTest {
 
     @Ignore
     @Test (expected = InvalidReadSyntax.class)
+    //todo: comes ScanException '(scan-error Unbalanced parentheses), BackwardParser.java:79
     public void testParseSpecialCharWrong3() {
         p.parseLine("?\\^\\\"");
     }

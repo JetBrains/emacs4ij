@@ -20,9 +20,9 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Minibuffer;
 
 import java.awt.*;
@@ -31,13 +31,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 10/23/11
- * Time: 4:01 PM
- * To change this template use File | Settings | File Templates.
- */
 public final class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
     private static IdeaMiniBuffer myInstance;
 

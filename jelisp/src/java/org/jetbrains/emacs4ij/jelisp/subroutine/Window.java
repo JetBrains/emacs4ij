@@ -10,10 +10,10 @@ import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispWindow;
 
 import java.util.ArrayList;
 import java.util.List;

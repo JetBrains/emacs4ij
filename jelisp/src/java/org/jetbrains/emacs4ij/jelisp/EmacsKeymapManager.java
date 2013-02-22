@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleKeymapNameException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredKeymapException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymapFactory;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymapFactory;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;

@@ -11,9 +11,9 @@ import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoWindowException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispWindow;
 
 /**
  * Created with IntelliJ IDEA.

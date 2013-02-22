@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import javax.swing.*;

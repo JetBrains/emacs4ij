@@ -1,8 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp.exception;
 
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispWindow;
 
 /**
  * Created by IntelliJ IDEA.

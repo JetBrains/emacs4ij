@@ -1,6 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 
 /**
  * Created by IntelliJ IDEA.

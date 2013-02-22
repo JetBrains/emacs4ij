@@ -1,7 +1,7 @@
 package org.jetbrains.emacs4ij.ide;
 
 import com.intellij.openapi.editor.Editor;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.EditorWrapper;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.EditorWrapper;
 
 /**
  * Created with IntelliJ IDEA.

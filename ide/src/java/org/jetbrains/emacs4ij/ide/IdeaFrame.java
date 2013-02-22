@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 
 import javax.swing.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.jetbrains.emacs4ij.jelisp.platform_dependent;
+package org.jetbrains.emacs4ij.jelisp.platformDependent;
 
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;

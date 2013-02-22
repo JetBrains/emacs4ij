@@ -10,8 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.*;
 import org.jetbrains.emacs4ij.jelisp.interactive.EmptyReader;
 import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
 
 import java.util.ArrayList;
 import java.util.Arrays;

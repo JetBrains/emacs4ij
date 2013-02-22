@@ -11,9 +11,9 @@ import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;

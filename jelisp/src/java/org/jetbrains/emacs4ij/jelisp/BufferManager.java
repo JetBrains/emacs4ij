@@ -7,10 +7,10 @@ import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBufferFactory;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispToolWindow;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBufferFactory;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 
 import java.util.ArrayList;
 import java.util.List;

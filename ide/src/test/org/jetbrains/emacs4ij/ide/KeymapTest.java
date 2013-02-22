@@ -8,7 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.elisp.*;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
 import org.junit.Before;
 

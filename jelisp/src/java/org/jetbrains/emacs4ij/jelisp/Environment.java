@@ -8,19 +8,10 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSyntaxTable;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.*;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.*;
 
 import java.util.*;
 
-//import com.intellij.openapi.wm.WindowManager;
-
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 12/19/11
- * Time: 8:25 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Environment {
     protected boolean isRecording = false;
     protected List<String> myRecordedSymbols = new ArrayList<>();

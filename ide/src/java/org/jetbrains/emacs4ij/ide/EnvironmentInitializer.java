@@ -18,7 +18,7 @@ import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 
 public abstract class EnvironmentInitializer {
     private static boolean isGlobalInitialized = false;

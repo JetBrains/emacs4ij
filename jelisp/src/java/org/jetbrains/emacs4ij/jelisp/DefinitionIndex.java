@@ -44,6 +44,8 @@ public final class DefinitionIndex {
     }
 
     SortedMap<String, Long> get (Identifier key) {
+        if (!containsKey(key))
+            throw new IllegalStateException();
         return myValue.get(key).getLocations();
     }
 

@@ -2,8 +2,8 @@ package org.jetbrains.emacs4ij.ide;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymap;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispKeymapFactory;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymapFactory;
 
 /**
  * Created by IntelliJ IDEA.

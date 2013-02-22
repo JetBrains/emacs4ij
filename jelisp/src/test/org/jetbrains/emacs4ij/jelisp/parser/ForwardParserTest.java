@@ -546,6 +546,7 @@ public class ForwardParserTest {
 
     @Ignore
     @Test
+    //todo: fix Invalid modifier in string
     public void testParseSpecialCharWrong4() {
         try {
             LispObject c = p.parseLine("?\\^\"");

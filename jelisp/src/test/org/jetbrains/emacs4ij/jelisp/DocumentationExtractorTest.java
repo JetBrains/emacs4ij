@@ -19,7 +19,9 @@ public class DocumentationExtractorTest {
         TestMode.EXTRACT_DOC = true;
         String ourEmacsSource = "/home/kate/Downloads/emacs-23.4";
         DocumentationExtractor d = new DocumentationExtractor(ourEmacsSource + "/src");
-        Assert.assertEquals(4, d.scanAll());
+        Assert.assertEquals(11, d.scanAll());
+        //todo undocumented
+        //[wholenump, kill-buffer, minibuffer-complete, minibuffer-complete-word, minibuffer-completion-help, exit-minibuffer, not, purecopy, move-marker, make-syntax-table, eval-last-sexp]
     }
 
     @Ignore

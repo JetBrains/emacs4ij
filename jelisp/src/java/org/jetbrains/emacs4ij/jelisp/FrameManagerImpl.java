@@ -6,7 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.DuplicateFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.NoLispFrameForIdeFrame;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedFrameException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredFrameException;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispFrame;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
 import java.util.ArrayList;

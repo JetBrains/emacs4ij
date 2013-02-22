@@ -9,8 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispBuffer;
-import org.jetbrains.emacs4ij.jelisp.platform_dependent.LispMinibuffer;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -238,10 +237,8 @@ public abstract class SpecialForms {
         }
 
         if (arg instanceof LispString) {
-            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, Core.getInvoker(),
-                    ((LispString) arg).getData());
-            LispMinibuffer miniBuffer = environment.getMinibuffer();
-            miniBuffer.onInteractiveNoIoInput(interactive);
+            SpecialFormInteractive interactive = new SpecialFormInteractive(environment, Core.getInvoker(), ((LispString) arg).getData());
+            environment.getMinibuffer().onInteractiveNoIoInput(interactive);
             return null;
         }
         throw new WrongTypeArgumentException("listp", arg.toString());
@@ -249,7 +246,7 @@ public abstract class SpecialForms {
 
     @Subroutine("interactive")
     public static LispList interactive(Environment environment, @Optional LispObject... args) {
-        return environment instanceof BufferEnvironment
+        return environment instanceof BufferEnvironment || TestMode.TEST
                 ? interactivePrepare(environment, args) : LispList.list();
     }
 
