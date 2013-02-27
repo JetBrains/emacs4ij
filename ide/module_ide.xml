@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_ide" default="compile.module.ide">
+  <dirname property="module.ide.basedir" file="${ant.file.module_ide}"/>
+  
+  <property name="module.jdk.home.ide" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.ide" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.ide" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.ide" value="${compiler.args}"/>
+  
+  <property name="ide.output.dir" value="${module.ide.basedir}/../out/production/ide"/>
+  <property name="ide.testoutput.dir" value="${module.ide.basedir}/../out/test/ide"/>
+  
+  <path id="ide.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="ide.module.production.classpath">
+    <path refid="${module.jdk.classpath.ide}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="ide.runtime.production.module.classpath">
+    <pathelement location="${ide.output.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="ide.module.classpath">
+    <path refid="${module.jdk.classpath.ide}"/>
+    <pathelement location="${ide.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  <path id="ide.runtime.module.classpath">
+    <pathelement location="${ide.testoutput.dir}"/>
+    <pathelement location="${ide.output.dir}"/>
+    <pathelement location="${jelisp.testoutput.dir}"/>
+    <pathelement location="${jelisp.output.dir}"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/cloning-1.7.9.jar"/>
+    <pathelement location="${basedir}/lib/cloning-1.7.9/lib/objenesis-1.2.jar"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.ide">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.ide">
+    <patternset refid="excluded.from.module.ide"/>
+  </patternset>
+  
+  <path id="ide.module.sourcepath">
+    <dirset dir="${module.ide.basedir}">
+      <include name="src/java"/>
+    </dirset>
+  </path>
+  
+  <path id="ide.module.test.sourcepath">
+    <dirset dir="${module.ide.basedir}">
+      <include name="src/test"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.ide" depends="compile.module.ide.production,compile.module.ide.tests" description="Compile module ide"/>
+  
+  <target name="compile.module.ide.production" depends="register.custom.compilers,compile.module.jelisp" description="Compile module ide; production classes">
+    <mkdir dir="${ide.output.dir}"/>
+    <javac2 destdir="${ide.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ide}/javac">
+      <compilerarg line="${compiler.args.ide}"/>
+      <bootclasspath refid="ide.module.bootclasspath"/>
+      <classpath refid="ide.module.production.classpath"/>
+      <src refid="ide.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ide"/>
+    </javac2>
+    
+    <copy todir="${ide.output.dir}">
+      <fileset dir="${module.ide.basedir}/src/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+
+    <copy todir="${ide.output.dir}/org/jetbrains/emacs4ij/ide/icons">
+      <fileset dir="${module.ide.basedir}/icons">
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.ide.tests" depends="register.custom.compilers,compile.module.ide.production" description="compile module ide; test classes" unless="skip.tests">
+    <mkdir dir="${ide.testoutput.dir}"/>
+    <javac2 destdir="${ide.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ide}/javac">
+      <compilerarg line="${compiler.args.ide}"/>
+      <bootclasspath refid="ide.module.bootclasspath"/>
+      <classpath refid="ide.module.classpath"/>
+      <src refid="ide.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ide"/>
+    </javac2>
+    
+    <copy todir="${ide.testoutput.dir}">
+      <fileset dir="${module.ide.basedir}/src/test">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.ide" description="cleanup module">
+    <delete dir="${ide.output.dir}"/>
+    <delete dir="${ide.testoutput.dir}"/>
+  </target>
+  
+  <property name="ide.plugin.path.jar" value="${module.ide.basedir}/ide.zip"/>
+  
+  <!-- Build archive for plugin 'ide' -->
+  <target name="plugin.build.jar.ide" depends="compile.module.ide" description="Build plugin archive for module &#39;ide&#39;">
+    <property name="tmp.dir.ide" value="${module.ide.basedir}/../temp"/>
+    <mkdir dir="${tmp.dir.ide}"/>
+    <mkdir dir="${tmp.dir.ide}/lib"/>
+    <jar destfile="${tmp.dir.ide}/lib/ide.jar" duplicate="preserve">
+      <zipfileset dir="${module.ide.basedir}/../out/production/ide"/>
+      <zipfileset file="${module.ide.basedir}/META-INF/plugin.xml" prefix="META-INF"/>
+      <manifest>
+        <attribute name="Created-By" value="IntelliJ IDEA"/>
+        <attribute name="Manifest-Version" value="1.0"/>
+      </manifest>
+    </jar>
+    <copy file="${module.ide.basedir}/../lib/cloning-1.7.9/cloning-1.7.9.jar" tofile="${tmp.dir.ide}/lib/cloning-1.7.9.jar"/>
+    <copy file="${module.ide.basedir}/../lib/cloning-1.7.9/lib/objenesis-1.2.jar" tofile="${tmp.dir.ide}/lib/objenesis-1.2.jar"/>
+    <zip destfile="${ide.plugin.path.jar}">
+      <fileset dir="${module.ide.basedir}/../temp"/>
+    </zip>
+    <delete dir="${tmp.dir.ide}"/>
+  </target>
+</project>

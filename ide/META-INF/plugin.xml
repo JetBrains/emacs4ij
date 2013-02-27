@@ -27,7 +27,7 @@
           <keyboard-shortcut keymap="$default" first-keystroke="alt X"/>
       </action-->
       <action id="Open Settings" class="org.jetbrains.emacs4ij.ide.OpenSettings"
-              text="Emacs4ij settings" icon="/icons/options.png"
+              text="Emacs4ij settings" icon="/org/jetbrains/emacs4ij/ide/icons/options.png"
               description="View and edit Emacs4ij settings">
       </action>
       <add-to-group group-id="MainToolBar" relative-to-action="HelpMenu" anchor="after"/>
@@ -46,9 +46,9 @@
     <applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsSourceService"/>
     <applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsIndexService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsIndexService"/>
     <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.ide.EchoAreaToolWindowFactory"
-                icon="/icons/emacs.png"/>
+                icon="/org/jetbrains/emacs4ij/ide/icons/emacs13x13.png"/>
     <toolWindow id="Emacs4ij Help" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.ide.HelpToolWindowFactory"
-                icon="/icons/emacs.png"/>
+                icon="/org/jetbrains/emacs4ij/ide/icons/emacs13x13.png"/>
   </extensions>
 
   <resource-bundle>org.jetbrains.emacs4ij.ide.Emacs4ijBundle</resource-bundle>
