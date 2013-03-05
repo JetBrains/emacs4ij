@@ -295,9 +295,15 @@ public class GlobalEnvironment extends Environment {
     defineSymbol("help-form");
     defineSymbol("prefix-help-command");
     defineSymbol("features", LispList.list());
+    defineSymbol("face-new-frame-defaults");
 
-    //todo fill with emacs values
-    defineSymbol("system-type", new LispString(System.getProperty("os.name")));
+    //todo check
+    String os = System.getProperty("os.name").toLowerCase();
+    String systemType;
+    if (os.contains("win")) systemType = "windows-nt";
+    else if (os.contains("linux")) systemType = "gnu/linux";
+    else throw new IllegalStateException(os);
+    defineSymbol("system-type", new LispString(systemType));
   }
 
   public LispVector getObjectArray() {
