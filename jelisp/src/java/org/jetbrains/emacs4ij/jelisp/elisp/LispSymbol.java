@@ -265,9 +265,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
 
   @NotNull
   @Override
-  /**
-   * takes Environment
-   */
   public LispObject evaluate(Environment environment) {
     if (isConstant)
       return this;
@@ -282,7 +279,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
       return symbol;
 
     if (symbol == null || !symbol.hasValue()) {
-      //System.out.println("VAR " + myName);
       try {
         symbol = environment.findAndRegisterEmacsVariable(myName);
       } catch (CyclicDefinitionLoadException e) {
@@ -304,7 +300,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     if (symbol == null && isKeyword())
       return this;
     if (symbol == null) {
-      //System.out.println("VAR " + myName);
       symbol =  GlobalEnvironment.INSTANCE.findAndRegisterEmacsVariable(myName);
     }
     return symbol;
@@ -334,7 +329,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
     if (symbol == null || !symbol.isFunction()) {
       //while we are not loading all emacs lisp code, perform search on request
-      //System.out.println("FUN " + myName);
       try {
         symbol = environment.findAndRegisterEmacsFunction(myName);
       } catch (CyclicDefinitionLoadException e) {

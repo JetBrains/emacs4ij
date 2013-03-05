@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.ide;
 import com.intellij.openapi.components.ServiceManager;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.TestMode;
 
 public abstract class TestSetup {
@@ -12,7 +13,7 @@ public abstract class TestSetup {
     TestMode.LOAD_FILES = false;
 
     if (GlobalEnvironment.INSTANCE == null) {
-      System.out.println("INIT GLOBAL ENV");
+      LogUtil.info("INIT GLOBAL ENV");
       GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
       GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
       DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());

@@ -7,7 +7,7 @@ public abstract class TestSetup {
     TestMode.EXTRACT_DOC = false;
     try {
       if (GlobalEnvironment.INSTANCE == null) {
-        System.out.println("INIT GLOBAL ENV");
+        LogUtil.info("INIT GLOBAL ENV");
         GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
         GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
         DefinitionLoader.initialize(new DefinitionIndex());

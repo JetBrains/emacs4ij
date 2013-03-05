@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
@@ -244,7 +245,8 @@ public final class IdeaMiniBuffer extends IdeaBuffer implements LispMinibuffer {
     }
     isOpened = false;
     myDocument = null;
-    System.out.println("kill minibuffer");
+
+    LogUtil.info("kill minibuffer");
 //  todo: I should do this way, probably. So when 1 minibuffer is closed, the previous one is recovered
 //    myActivationsDepth--;
   }

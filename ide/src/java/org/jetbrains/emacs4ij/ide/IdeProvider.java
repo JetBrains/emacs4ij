@@ -23,7 +23,7 @@ public class IdeProvider implements Ide {
   public void echo(final String message, @NotNull GlobalEnvironment.MessageType type) {
     TextAttributesKey outputKey;
     switch (type) {
-      case OUTPUT:
+      case INFO:
         outputKey = ConsoleViewContentType.NORMAL_OUTPUT_KEY;
         break;
       case WARNING:

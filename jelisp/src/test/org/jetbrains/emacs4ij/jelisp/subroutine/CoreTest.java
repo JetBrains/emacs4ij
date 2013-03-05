@@ -3,7 +3,15 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.TestSetup;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.Lambda;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
+import org.jetbrains.emacs4ij.jelisp.elisp.Primitive;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispThrow;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
@@ -731,7 +739,7 @@ public class CoreTest extends BaseSubroutineTest {
 
   @Test
   public void testSimple() {
-//        DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
+    DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
     DefinitionLoader.loadFile("simple.el");
   }
 
@@ -1010,5 +1018,23 @@ public class CoreTest extends BaseSubroutineTest {
     Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'a)"));
     Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f 'a)"));
     Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'f 'b)"));
+  }
+
+  @Test
+  public void startup() {
+    DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
+    DefinitionLoader.loadFile("startup.el");
+  }
+
+  @Test
+  public void faces() {
+    DefinitionLoader.loadFile("faces.el");
+    evaluateString("(list-faces-display)");
+  }
+
+  @Test
+  public void lispMode() {
+    DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
+    DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
   }
 }

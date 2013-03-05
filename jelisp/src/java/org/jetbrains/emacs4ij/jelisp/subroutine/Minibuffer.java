@@ -238,13 +238,12 @@ public abstract class Minibuffer {
       List<LispObject> arguments = reader.getArguments();
       LambdaOrSymbolWithFunction command = reader.getCommand();
       if (command == null || wasInteractiveFormWithoutRead() || wasInteractiveFormWithRead(command)) {
-        GlobalEnvironment.echo(LispList.list(arguments).toString(), GlobalEnvironment.MessageType.OUTPUT);
+        GlobalEnvironment.echo(LispList.list(arguments).toString(), GlobalEnvironment.MessageType.INFO);
         return;
       }
-      System.out.println("eval after exit: " + command.toString());
       LispObject result = Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
       if (result != null) {
-        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.OUTPUT);
+        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.INFO);
       }
     } catch (LispException exc) {
       GlobalEnvironment.echo(exc.getMessage(), GlobalEnvironment.MessageType.ERROR);

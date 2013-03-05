@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
@@ -27,11 +28,9 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.Subroutine;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +38,10 @@ import java.util.List;
 import java.util.Map;
 
 public class GlobalEnvironment extends Environment {
+  public static enum MessageType {INFO, WARNING, ERROR}
+
+  private static final Logger LOG = Logger.getInstance("#org.jetbrains.emacs4ij.jelisp.GlobalEnvironment");
+
   private static String ourEmacsHome = "";
   private static String ourEmacsSource = "";
   private static boolean isEmacsSourceOk = false;
@@ -125,8 +128,7 @@ public class GlobalEnvironment extends Environment {
   //input parameters are nullable only for test!!!
   public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
                                  @Nullable LispWindowFactory windowFactory, @Nullable Ide ide) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    System.out.println("GLOBAL ENVIRONMENT INIT STARTED " + sdf.format(Calendar.getInstance().getTime()));
+    LogUtil.info(LOG, "GLOBAL ENVIRONMENT INIT STARTED");
     ourKeymapManager = new EmacsKeymapManager(keymapFactory);
     ourBufferManager = new BufferManager(bufferFactory);
     ourWindowManager = new WindowManager(windowFactory);
@@ -134,7 +136,7 @@ public class GlobalEnvironment extends Environment {
     INSTANCE = new GlobalEnvironment(ide);
     Key.init();
     INSTANCE.init();
-    System.out.println("GLOBAL ENVIRONMENT INIT FINISHED " + sdf.format(Calendar.getInstance().getTime()));
+    LogUtil.info(LOG, "GLOBAL ENVIRONMENT INIT FINISHED");
   }
 
   /**
@@ -159,14 +161,13 @@ public class GlobalEnvironment extends Environment {
       defineDefForms();
 
       if (TestMode.LOAD_FILES) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println("start load files " + sdf.format(Calendar.getInstance().getTime()));
+        LogUtil.info(LOG, "start load files");
         for (int i = 1; i < myFilesToLoad.size(); ++i) {
           String fileName = myFilesToLoad.get(i);
-          System.out.println("load " + fileName + " " + sdf.format(Calendar.getInstance().getTime()));
+          LogUtil.info(LOG, "load " + fileName);
           DefinitionLoader.loadFile(fileName);
         }
-        System.out.println("end load files " + sdf.format(Calendar.getInstance().getTime()));
+        LogUtil.info(LOG, "finish load files");
       }
     }
     isLoading = false;
@@ -294,6 +295,9 @@ public class GlobalEnvironment extends Environment {
     defineSymbol("help-form");
     defineSymbol("prefix-help-command");
     defineSymbol("features", LispList.list());
+
+    //todo fill with emacs values
+    defineSymbol("system-type", new LispString(System.getProperty("os.name")));
   }
 
   public LispVector getObjectArray() {
@@ -322,16 +326,13 @@ public class GlobalEnvironment extends Environment {
         if (activeKeymap != null && !StringUtil.isEmptyOrSpaces(annotation.key())) {
           activeKeymap.defineKey(symbol, new LispString(annotation.key()));
         }
-        //System.out.print(name + ' ');
       }
     }
   }
 
   private void setSubroutines () {
-    //int n = mySymbols.size();
     setSubroutinesFromClass(LispSubroutine.getBuiltinsClasses(), Primitive.Type.BUILTIN);
     setSubroutinesFromClass(LispSubroutine.getSpecialFormsClasses(), Primitive.Type.SPECIAL_FORM);
-    //System.out.println("implemented " + (mySymbols.size()-n) + " subroutines");
   }
 
   private void setConstants() {
@@ -355,11 +356,9 @@ public class GlobalEnvironment extends Environment {
     }
   }
 
-  public static enum MessageType {OUTPUT, WARNING, ERROR}
-
   public static void echo(String message, MessageType type) {
     if (INSTANCE == null || INSTANCE.myIde == null || TestMode.TEST) {
-      System.out.println("Emacs4ij " + type.toString().toLowerCase() + ": " + message);
+      LogUtil.log(LOG, "echo: " + message, type);
       return;
     }
     INSTANCE.myIde.echo(message, type);
@@ -468,4 +467,6 @@ public class GlobalEnvironment extends Environment {
     }
     return false;
   }
+
+
 }

@@ -108,7 +108,7 @@ public abstract class BString {
     } else {
       throw new WrongTypeArgumentException("stringp", formatObj);
     }
-    GlobalEnvironment.echo(myCurrentMessage.getData(), GlobalEnvironment.MessageType.OUTPUT);
+    GlobalEnvironment.echo(myCurrentMessage.getData(), GlobalEnvironment.MessageType.INFO);
     return myCurrentMessage;
   }
 

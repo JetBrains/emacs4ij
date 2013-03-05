@@ -474,7 +474,7 @@ public abstract class Core {
     } else if (printCharFun instanceof LispMarker) {
       ((LispMarker) printCharFun).insert(toInsert);
     } else if (printCharFun.equals(LispSymbol.ourT)) {
-      GlobalEnvironment.echo(object.toString(), GlobalEnvironment.MessageType.OUTPUT);
+      GlobalEnvironment.echo(object.toString(), GlobalEnvironment.MessageType.INFO);
     } else {
       for (LispObject character: result.toLispObjectList()) {
         functionCall(environment, printCharFun, character);

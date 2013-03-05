@@ -1,7 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -16,14 +15,7 @@ public abstract class Scan {
   //todo: compiled lisp f ?
   @Subroutine(value = "eval-last-sexp", isCmd = true, interactive = "P", key = "\\C-x\\C-e")
   public static LispObject evalLastSexp (Environment environment, LispObject evalLastSexpArgInternal) {
-    LispObject result = null;
-    try {
-      result = environment.getBufferCurrentForEditing().evaluateLastForm();
-//      if (result != null)
-//        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.OUTPUT);
-    } catch (LispException exc) {
-      GlobalEnvironment.echo(exc.getMessage(), GlobalEnvironment.MessageType.ERROR);
-    }
+    LispObject result = environment.getBufferCurrentForEditing().evaluateLastForm();
     return Core.thisOrNil(result);
   }
 
@@ -265,7 +257,7 @@ public abstract class Scan {
       environment = e;
       text = environment.getBufferCurrentForEditing().getText();
       from = start - 1;
-//      System.out.println(text.substring(from));
+//      LogUtil.info(text.substring(from));
       finish = end;
       current = new Descriptor(text.charAt(from), environment);
       previous = null;

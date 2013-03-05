@@ -21,11 +21,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
@@ -37,7 +35,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 public final class DefinitionLoader {
   static enum DefType {VAR, FUN} //todo: not private for test only  && IDENTIFIER
@@ -53,8 +50,7 @@ public final class DefinitionLoader {
   private static List<String> mySkipDirs = Arrays.asList("/language/", "/international/");
 
   public static void initialize (@Nullable DefinitionIndex index) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    System.out.println(sdf.format(Calendar.getInstance().getTime()));
+    LogUtil.info("DefinitionLoader: init start");
 
     if (index == null) {
       index = new DefinitionIndex();
@@ -67,7 +63,7 @@ public final class DefinitionLoader {
       myIndex = index;
     }
 
-    System.out.println("index finished " + sdf.format(Calendar.getInstance().getTime()));
+    LogUtil.info("DefinitionLoader: init finish");
   }
 
   private static void scan (File file) {

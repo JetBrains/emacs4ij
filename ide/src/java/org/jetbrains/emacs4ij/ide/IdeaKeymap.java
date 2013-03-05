@@ -17,12 +17,21 @@ import com.rits.cloning.Cloner;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
+import org.jetbrains.emacs4ij.jelisp.elisp.KeymapCell;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.StringOrVector;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class IdeaKeymap implements LispKeymap {
   private final String myName;
@@ -48,9 +57,9 @@ public class IdeaKeymap implements LispKeymap {
     ourKeymapManager.addKeymapManagerListener(new KeymapManagerListener() {
       @Override
       public void activeKeymapChanged(Keymap keymap) {
-        System.out.println("incoming: " + keymap.getName() + " = " + keymap.toString() +
-            ", current: " + ourKeymapManager.getActiveKeymap().getName() + " = "
-            + ourKeymapManager.getActiveKeymap().toString());
+        LogUtil.info("Keymap: incoming: " + keymap.getName() + " = " + keymap.toString()
+            + ", current: " + ourKeymapManager.getActiveKeymap().getName() + " = " + ourKeymapManager.getActiveKeymap().toString());
+
         //if user changes keymap to non-emacs?
         //todo: remove my bindings from old keymap. Should I add them to the new one?
         // or should i derive myIdeaKeymap from new one?
