@@ -17,6 +17,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.awt.RelativePoint;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.emacs4ij.ide.tool.EchoArea;
+import org.jetbrains.emacs4ij.ide.tool.HelpArea;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -107,11 +109,11 @@ public class MyProjectComponent implements ProjectComponent {
       public void selectionChanged(FileEditorManagerEvent fileEditorManagerEvent) {
         if (myEnvironment == null)
           return;
-        if (fileEditorManagerEvent.getNewFile() == null) {
-          if (myEnvironment.getBuffersSize() != 1)
-            throw new Emacs4ijFatalException(Emacs4ijBundle.message("error.n.opened.files"));
-          return;
-        }
+//        if (fileEditorManagerEvent.getNewFile() == null) { //file closed
+//          if (myEnvironment.getBuffersSize() != 1)
+//            throw new Emacs4ijFatalException(Emacs4ijBundle.message("error.n.opened.files"));
+//          return;
+//        }
         if (!(myEnvironment.isSelectionManagedBySubroutine())) {
           try {
             myEnvironment.onTabSwitch(new IdeaEditorWrapper(FileEditorManager.getInstance(myProject).getSelectedTextEditor()));
@@ -181,6 +183,8 @@ public class MyProjectComponent implements ProjectComponent {
   }
 
   public void projectClosed() {
+
+
     // called when project is being closed
   }
 }

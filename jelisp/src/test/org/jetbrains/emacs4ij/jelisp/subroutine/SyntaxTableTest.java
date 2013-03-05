@@ -14,22 +14,22 @@ import org.junit.Test;
  * To change this template use File | Settings | File Templates.
  */
 public class SyntaxTableTest extends BaseSubroutineTest {
-    @Test
-    public void testElispModeSyntaxTable () {
-        Assert.assertNotNull(evaluateString("emacs-lisp-mode-syntax-table"));
-    }
+  @Test
+  public void testElispModeSyntaxTable () {
+    Assert.assertNotNull(evaluateString("emacs-lisp-mode-syntax-table"));
+  }
 
-    @Test
-    public void testStandardSyntaxTable () {
-        LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
-        for (char i = 0; i < 128; i++) {
-            Assert.assertNotSame(LispSymbol.ourNil, standard.getCharSyntax(i));
-        }
+  @Test
+  public void testStandardSyntaxTable () {
+    LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
+    for (char i = 0; i < 128; i++) {
+      Assert.assertNotSame(LispSymbol.ourNil, standard.getCharSyntax(i));
     }
+  }
 
-    @Test
-    public void testStandardSyntaxTableLength () {
-        LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
-        Assert.assertEquals(LispInteger.MAX_CHAR, standard.size());
-    }
+  @Test
+  public void testStandardSyntaxTableLength () {
+    LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
+    Assert.assertEquals(LispInteger.MAX_CHAR, standard.size());
+  }
 }
