@@ -19,8 +19,8 @@ public abstract class Scan {
     LispObject result = null;
     try {
       result = environment.getBufferCurrentForEditing().evaluateLastForm();
-      if (result != null)
-        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.OUTPUT);
+//      if (result != null)
+//        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.OUTPUT);
     } catch (LispException exc) {
       GlobalEnvironment.echo(exc.getMessage(), GlobalEnvironment.MessageType.ERROR);
     }

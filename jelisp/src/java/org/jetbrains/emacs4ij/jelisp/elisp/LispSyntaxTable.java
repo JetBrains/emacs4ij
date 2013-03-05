@@ -13,8 +13,7 @@ import java.util.Map;
 
 public final class LispSyntaxTable implements LispCharTable {
   private LispSyntaxTable myParent;
-  private Map<Integer, LispList> myData = new HashMap<>();
-//  private Map<Integer, LispList> myData = new HashMap<>(LispInteger.MAX_CHAR + 1, 1);
+  private Map<Integer, LispList> myData = new HashMap<>(LispInteger.MAX_CHAR + 1, 1);
 
   /**
    * this constructor is for standard-syntax-table only!

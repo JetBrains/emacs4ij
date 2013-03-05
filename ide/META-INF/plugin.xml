@@ -44,7 +44,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsHomeService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsHomeService"/>
     <applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsSourceService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsSourceService"/>
-    <!--<applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsIndexService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsIndexService"/>-->
+    <applicationService serviceInterface="org.jetbrains.emacs4ij.ide.EmacsIndexService" serviceImplementation="org.jetbrains.emacs4ij.ide.EmacsIndexService"/>
     <toolWindow id="Emacs4ij Echo Area" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.ide.EchoAreaToolWindowFactory"
                 icon="/org/jetbrains/emacs4ij/ide/icons/emacs13x13.png"/>
     <toolWindow id="Emacs4ij Help" anchor="bottom" factoryClass="org.jetbrains.emacs4ij.ide.HelpToolWindowFactory"

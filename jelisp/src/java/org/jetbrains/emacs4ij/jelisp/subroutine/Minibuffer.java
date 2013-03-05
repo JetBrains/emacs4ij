@@ -244,7 +244,7 @@ public abstract class Minibuffer {
       System.out.println("eval after exit: " + command.toString());
       LispObject result = Core.functionCall(reader.getEnvironment(), command, arguments.toArray(new LispObject[arguments.size()]));
       if (result != null) {
-        GlobalEnvironment.echo(result.toString() + " (Minibuffer.goOn)", GlobalEnvironment.MessageType.OUTPUT);
+        GlobalEnvironment.echo(result.toString(), GlobalEnvironment.MessageType.OUTPUT);
       }
     } catch (LispException exc) {
       GlobalEnvironment.echo(exc.getMessage(), GlobalEnvironment.MessageType.ERROR);
