@@ -6,6 +6,7 @@ import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.Lambda;
 import org.jetbrains.emacs4ij.jelisp.elisp.LambdaOrSymbolWithFunction;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispArray;
@@ -42,13 +43,6 @@ import java.util.List;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.subrp;
 
-/**
- * Created by IntelliJ IDEA.
- * User: Ekaterina.Polishchuk
- * Date: 7/13/11
- * Time: 3:49 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Core {
   private Core() {}
 
@@ -269,7 +263,7 @@ public abstract class Core {
   public static LispObject macroExpand (Environment environment, LispObject macroCall, @Optional LispObject env) {
     //todo: env
     if (!Predicate.isNil(env))
-      System.err.println("macroexpand: emacs environment = " + env.toString());
+      LogUtil.log("macro expand: emacs environment = " + env.toString(), GlobalEnvironment.MessageType.ERROR);
     if (!(macroCall instanceof LispList))
       return macroCall;
     LispSymbol macro;

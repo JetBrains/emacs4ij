@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LambdaOrSymbolWithFunction;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
@@ -265,7 +266,7 @@ public abstract class Minibuffer {
 
   @Subroutine("redisplay")
   public static LispSymbol redisplay (Environment environment, @Optional LispObject force) {
-    System.err.println("redisplay");
+    LogUtil.log("redisplay", GlobalEnvironment.MessageType.ERROR);
     return LispSymbol.ourT;
   }
 

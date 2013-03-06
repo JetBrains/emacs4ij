@@ -1,10 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.elisp;
 
+import com.intellij.openapi.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.AutoloadDefFromFileException;
 import org.jetbrains.emacs4ij.jelisp.exception.CyclicDefinitionLoadException;
 import org.jetbrains.emacs4ij.jelisp.exception.CyclicFunctionIndirectionException;
@@ -76,11 +78,11 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     myAliases = symbol.myAliases;
   }
 
-  public static LispSymbol bool (boolean value) {
+  public static LispSymbol bool(boolean value) {
     return value ? LispSymbol.ourT : LispSymbol.ourNil;
   }
 
-  public boolean toBoolean () {
+  public boolean toBoolean() {
     return !this.equals(ourNil);
   }
 
@@ -306,19 +308,20 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
   }
 
   private void checkCallStack () {
-    String q = GlobalEnvironment.ourCallStack.removeFirst();
+    Pair<String, Object> stackTop = GlobalEnvironment.ourCallStack.removeFirst();
+    String q = stackTop.getFirst();
     if (myName.equals("catch"))
       while (!q.equals(myName))
-        q = GlobalEnvironment.ourCallStack.removeFirst();
+        q = GlobalEnvironment.ourCallStack.removeFirst().getFirst();
     if (!q.equals(myName)) {
       if (myName.equals("eval-last-sexp")) {
         //we caught exception during the evaluation, so clear call stack
-        assert GlobalEnvironment.ourCallStack.getLast().equals(myName);
+        assert GlobalEnvironment.ourCallStack.getLast().getFirst().equals(myName);
         GlobalEnvironment.ourCallStack.clear();
         return;
       }
-      System.err.println(String.format("Top of stack = %s, current symbol = %s, left stack = %s",
-          q, myName, GlobalEnvironment.ourCallStack.toString()));
+      LogUtil.log(String.format("Top of stack = %s, current symbol = %s, left stack = %s",
+          stackTop, myName, GlobalEnvironment.ourCallStack.toString()), GlobalEnvironment.MessageType.ERROR);
       throw new InternalException(JelispBundle.message("call.stack.error"));
     }
   }
@@ -354,42 +357,41 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
   }
 
   private LispObject evaluateTrueFunction(Environment environment, Class exception, @Nullable List<LispObject> args) {
-    GlobalEnvironment.ourCallStack.push(myName);
+    GlobalEnvironment.ourCallStack.push(new Pair<String, Object>(myName, args));
     return eval(environment, exception, args);
   }
 
   private LispObject eval (Environment environment, Class exception, @Nullable List<LispObject> args) {
-    if (!environment.areSpecFormsAndMacroAllowed()) {
-      if (isSpecialForm() || isMacro())
-        throw new InvalidFunctionException(myName);
-      if (!isFunctionAlias())
-        environment.setSpecFormsAndMacroAllowed(true);
+    try {
+      if (!environment.areSpecFormsAndMacroAllowed()) {
+        if (isSpecialForm() || isMacro())
+          throw new InvalidFunctionException(myName);
+        if (!isFunctionAlias())
+          environment.setSpecFormsAndMacroAllowed(true);
+      }
+
+      if (args == null) args = new ArrayList<>();
+
+      if (isSubroutine()) {
+        return LispSubroutine.evaluate(myName, environment, args);
+      }
+      if (isMacro()) {
+        return evaluateMacro(environment, args);
+      }
+      if (isFunctionAlias()) {
+        return ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
+      }
+      if (isAutoload()) {
+        throw new IllegalStateException("unexpected");
+//        uploadAutoload();
+//        return eval(environment, exception, args);
+      }
+      return evaluateCustomFunction(environment, args);
     }
-    LispObject result;
-    if (args == null)
-      args = new ArrayList<>();
-    if (isSubroutine()) {
-      result = LispSubroutine.evaluate(myName, environment, args);
+
+    finally {
       checkCallStack();
-      return result;
     }
-    if (isMacro()) {
-      result = evaluateMacro(environment, args);
-      checkCallStack();
-      return result;
-    }
-    if (isFunctionAlias()) {
-      result = ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
-      checkCallStack();
-      return result;
-    }
-    if (isAutoload()) {
-      uploadAutoload();
-      return eval(environment, exception, args);
-    }
-    result = evaluateCustomFunction(environment, args);
-    checkCallStack();
-    return result;
   }
 
   public LispObject macroExpand (Environment environment, List<LispObject> args) {

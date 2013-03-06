@@ -17,12 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: ekaterina.polishchuk
- * Date: 7/8/11
- * Time: 1:30 PM
- * To change this template use File | Settings | File Templates.
- *
  * this class is a lisp list = (something in brackets 5 5 delimited by spaces or line breaks)
  */
 public final class LispList implements LispSequence {

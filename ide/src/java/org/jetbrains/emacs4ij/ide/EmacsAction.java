@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -56,7 +57,7 @@ public class EmacsAction extends AnAction {
         if (!((LispSymbol)myCommand).isFunction()) {
           LispSymbol cmd = environment.find(((LispSymbol)myCommand).getName());
           if (cmd == null || !cmd.isFunction()) {
-            System.err.println("upload: " + ((LispSymbol)myCommand).getName());
+            LogUtil.info("upload: " + ((LispSymbol)myCommand).getName());
             LispSymbol realCommand = environment.findAndRegisterEmacsFunction(((LispSymbol)myCommand).getName());
             if (realCommand != null)
               myCommand = realCommand;

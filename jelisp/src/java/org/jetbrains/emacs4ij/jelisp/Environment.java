@@ -311,8 +311,12 @@ public abstract class Environment {
   @NotNull
   public LispMinibuffer getMinibuffer() {
     LispMinibuffer miniBuffer = ourBufferManager.getMinibuffer();
-    if (miniBuffer == null)
+    if (miniBuffer == null) {
+      if (TestMode.TEST) {
+
+      }
       throw new UnregisteredBufferException("minibuffer");
+    }
     return miniBuffer;
   }
 

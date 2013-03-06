@@ -137,9 +137,7 @@ public abstract class Predicate {
     LispSymbol frameP = framep(object);
     if (frameP.equals(LispSymbol.ourNil))
       return LispSymbol.ourNil;
-    if (environment.isFrameAlive((LispFrame) object))
-      return frameP;
-    return LispSymbol.ourNil;
+    return LispSymbol.bool(environment.isFrameAlive((LispFrame) object));
   }
 
   @Subroutine("frame-visible-p")

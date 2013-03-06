@@ -148,11 +148,9 @@ public final class DefinitionLoader {
 
       while (true) {
         try {
-//                    System.out.println("PARSED: " + line);
           parsed.evaluate(GlobalEnvironment.INSTANCE);
         } catch (LispException e) {
-          System.err.println(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
-          //                throw new EnvironmentException(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()));
+          LogUtil.log(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()), GlobalEnvironment.MessageType.ERROR);
         }
         if (p.isFinished())
           break;
@@ -215,17 +213,14 @@ public final class DefinitionLoader {
         myIndex.get(id).remove(myDefinitionSrcFile);
         return findAndRegisterEmacsForm(id.getName(), id.getType());
       }
-//            if (!(evaluated instanceof LispSymbol))
-//                throw new InternalError(JelispBundle.message("function.failed", "find and register emacs form", id.getName()));
-//            if (!((LispSymbol) evaluated).getName().equals(id.getName()))
-//                System.err.println("DefinitionLoader.processDef: evaluated = " + ((LispSymbol) evaluated).getName() + ", name = " + id.getName());
       LispSymbol value = GlobalEnvironment.INSTANCE.find(id.getName());
       if (value == null) {
         if (evaluated instanceof LispSymbol && ((LispSymbol)evaluated).getName().equals(id.getName())) {
           GlobalEnvironment.INSTANCE.defineSymbol((LispSymbol) evaluated);
           return (LispSymbol) evaluated;
-        } else
+        } else {
           value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
+        }
       }
       return value;
     } finally {
@@ -258,7 +253,7 @@ public final class DefinitionLoader {
     if (!myIndex.containsKey(id)) {
 //            if (!myUploadHistory.isEmpty()) {
 ////                Object[] entries = myUploadHistory.entrySet().toArray(new Object[myUploadHistory.size()]);
-////                System.err.println("last upload call: " + entries[entries.length - 1] + ", search for: " + id.getName());
+////                LogUtil.log("last upload call: " + entries[entries.length - 1] + ", search for: " + id.getName(), MessageType.ERROR);
 //            }
 
       if (id.getType() == DefType.FUN)
@@ -296,12 +291,12 @@ public final class DefinitionLoader {
 
   private static LispList getDefFromInvokersSrc(Identifier id) {
     SortedMap<String, Long> map = myIndex.get(id);
-    for (String invoker: GlobalEnvironment.ourCallStack) {
-      if (!myUploadHistory.containsKey(invoker))
+    for (Pair<String, Object> invoker: GlobalEnvironment.ourCallStack) {
+      if (!myUploadHistory.containsKey(invoker.getFirst()))
         continue;
-      String key = myUploadHistory.get(invoker);
+      String key = myUploadHistory.get(invoker.getFirst());
       if (map.containsKey(key)) {
-        LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker), map.get(key), id);
+        LispList def = FileScanner.getDefFromFile(myUploadHistory.get(invoker.getFirst()), map.get(key), id);
         if (def != null) {
           return def;
         }
@@ -358,12 +353,11 @@ public final class DefinitionLoader {
       try {
         Identifier first = myLoadStack.removeFirst();
         if (!id.equals(first)) {
-          System.err.println(String.format("Load stack error: top of stack = %s, current id = %s, left stack = %s",
-              first.toString(), id.toString(), myLoadStack.toString()));
-          //                    throw new InternalException(JelispBundle.message("upload.stack.error"));
+          LogUtil.log(String.format("Load stack error: top of stack = %s, current id = %s, left stack = %s", first.toString(), id.toString(),
+              myLoadStack.toString()), GlobalEnvironment.MessageType.ERROR);
         }
       } catch (NoSuchElementException e) {
-        System.err.println(String.format("Load stack error: %s, left stack = %s", e.getMessage(), myLoadStack.toString()));
+        LogUtil.log(String.format("Load stack error: %s, left stack = %s", e.getMessage(), myLoadStack.toString()), GlobalEnvironment.MessageType.ERROR);
       }
     }
 
@@ -396,7 +390,7 @@ public final class DefinitionLoader {
           return getDef(line, defStart, id.getName());
         } else {
           myDefinitionSrcFile = null;
-          System.err.println("NULL def: " + id.toString() + ", file " + myFilePath);
+          LogUtil.log("NULL def: " + id.toString() + ", file " + myFilePath, GlobalEnvironment.MessageType.ERROR);
           return null;
         }
       } catch (FileNotFoundException e) {
@@ -474,9 +468,9 @@ public final class DefinitionLoader {
         } catch (ParserException e) {
             if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def
                 if (!e.getMessage().contains("\u001B") && !e.getMessage().contains("�")) {
-//                                    System.err.println("Function " + name + ": " + e.getMessage());
+//                LogUtil.log("Function " + name + ": " + e.getMessage(), MessageType.ERROR);
                 } else {
-//                                    System.err.println(myFile.getAbsolutePath());
+//                LogUtil.log(myFile.getAbsolutePath(), MessageType.ERROR);
                 }
             //skip here
         }

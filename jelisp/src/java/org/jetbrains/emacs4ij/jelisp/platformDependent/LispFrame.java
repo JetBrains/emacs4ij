@@ -1,25 +1,71 @@
 package org.jetbrains.emacs4ij.jelisp.platformDependent;
 
+import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
 
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 12/12/11
- * Time: 1:19 PM
- * To change this template use File | Settings | File Templates.
- */
-public interface LispFrame extends LispObject {
-    LispObject getParameter (LispSymbol parameter);
-    void setParameter(LispSymbol name, LispObject value);
-    void setVisible (boolean visible);
-    boolean isVisible ();
-    void setIconified (boolean iconified);
-    boolean isIconified ();
-    JComponent getComponent();
-    LispList getParameters();
+public abstract class LispFrame implements LispObject {
+  private Map<LispSymbol, LispObject> myParameters = new HashMap<>();
+  private List<LispSymbol> myFaces = new ArrayList<>();
+
+  public abstract void setVisible (boolean visible);
+  public abstract void setIconified (boolean iconified);
+
+  public LispFrame() {
+    setParameter("visibility", LispSymbol.ourT);
+    setParameter("buffer-predicate", LispSymbol.ourNil);
+  }
+
+  @Override
+  public LispObject evaluate(Environment environment) {
+    return this;
+  }
+
+  public boolean hasFace(LispSymbol face) {
+    return myFaces.contains(face);
+  }
+
+  public boolean isIconified() {
+    return getParameter("visibility").equals(new LispSymbol("icon"));
+  }
+
+  public boolean isVisible() {
+    return getParameter("visibility").equals(LispSymbol.ourT);
+  }
+
+  public LispObject getParameter(LispSymbol parameter) {
+    LispObject value = myParameters.get(parameter);
+    if (value == null)
+      throw new VoidVariableException(parameter.getName());
+    return value;
+  }
+
+  public void setParameter(LispSymbol name, LispObject value) {
+    myParameters.put(name, value);
+  }
+
+  public LispList getParameters() {
+    List<LispObject> list = new ArrayList<>();
+    for (Map.Entry<LispSymbol, LispObject> parameter: myParameters.entrySet()) {
+      LispList item = LispList.list(parameter.getKey());
+      item.append(parameter.getValue());
+      list.add(item);
+    }
+    return LispList.list(list);
+  }
+
+  protected final void setParameter(String name, LispObject value) {
+    myParameters.put(new LispSymbol(name), value);
+  }
+
+  private LispObject getParameter(String parameter) {
+    return getParameter(new LispSymbol(parameter));
+  }
 }

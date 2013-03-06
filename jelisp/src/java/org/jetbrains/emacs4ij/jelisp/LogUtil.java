@@ -1,7 +1,9 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.diagnostic.Logger;
+import org.jetbrains.annotations.NotNull;
 
+import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -13,7 +15,7 @@ public final class LogUtil {
     if (TestMode.isLoggingEnabled()) {
       LOG.info(msg);
     } else {
-      printToConsole(msg);
+      printToConsole(msg, System.out);
     }
   }
 
@@ -21,12 +23,20 @@ public final class LogUtil {
     if (TestMode.isLoggingEnabled()) {
       logger.info(msg);
     } else {
-      printToConsole(msg);
+      printToConsole(msg, System.out);
     }
   }
 
   public static void log(String msg, GlobalEnvironment.MessageType type) {
     log(LOG, msg, type);
+  }
+
+  public static void log(Throwable t) {
+    LOG.error(t);
+  }
+
+  public static void log(String msg, Throwable t) {
+    LOG.error(msg, t);
   }
 
   public static void log(Logger logger, String msg, GlobalEnvironment.MessageType type) {
@@ -42,11 +52,12 @@ public final class LogUtil {
           logger.info(msg);
       }
     } else {
-      printToConsole(msg);
+      boolean isErr = type == GlobalEnvironment.MessageType.ERROR || type == GlobalEnvironment.MessageType.WARNING;
+      printToConsole(msg, isErr ? System.err : System.out);
     }
   }
 
-  private static void printToConsole(String msg) {
-    System.out.println(sdf.format(Calendar.getInstance().getTime()) + " " + msg);
+  private static void printToConsole(String msg, @NotNull PrintStream out) {
+    out.println(sdf.format(Calendar.getInstance().getTime()) + " " + msg);
   }
 }

@@ -3,6 +3,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.rits.cloning.Cloner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Predicate;
 
@@ -86,7 +88,7 @@ public final class LispSyntaxTable implements LispCharTable {
       return myData.get(c);
     if (myParent != null)
       return myParent.getCharSyntax(c);
-    System.err.println("request for char syntax of " + c);
+    LogUtil.log("request for char syntax of " + c, GlobalEnvironment.MessageType.ERROR);
     return LispList.list();
   }
 

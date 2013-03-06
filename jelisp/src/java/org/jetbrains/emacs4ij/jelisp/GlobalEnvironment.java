@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
@@ -52,7 +53,8 @@ public class GlobalEnvironment extends Environment {
   private boolean isLoading = false;
 
   //for debug & extract definition on the fly
-  public static Deque<String> ourCallStack = new ArrayDeque<>();
+  public static Deque<Pair<String, Object>> ourCallStack = new ArrayDeque<>();
+
 
   //temporary solution while i'm not loading all sources
   private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
@@ -210,6 +212,12 @@ public class GlobalEnvironment extends Environment {
       myRecordedSymbols.add(symbol.getName());
     }
     putSymbol(symbol);
+  }
+
+  public void defineSymbols(LispSymbol... symbols) {
+    for (LispSymbol s: symbols) {
+      defineSymbol(s);
+    }
   }
 
   private void addBufferLocalVariable(String name) {
@@ -467,8 +475,8 @@ public class GlobalEnvironment extends Environment {
   }
 
   public static boolean isInteractiveCall() {
-    for (String function: ourCallStack) {
-      if (function.equals("call-interactively"))
+    for (Pair<String, Object> function: ourCallStack) {
+      if (function.getFirst().equals("call-interactively"))
         return true;
     }
     return false;

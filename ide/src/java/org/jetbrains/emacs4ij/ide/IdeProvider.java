@@ -7,6 +7,7 @@ import com.intellij.openapi.project.ProjectManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.emacs4ij.ide.tool.EchoArea;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.Ide;
 
@@ -35,10 +36,11 @@ public class IdeProvider implements Ide {
       default:
         throw new InternalException(Emacs4ijBundle.message("unsupported.msg.type", type.toString()));
     }
+
     try {
       getEchoArea().print(message + "\n", outputKey);
-    } catch (NullPointerException e) {
-      System.out.print(1);
+    } catch (Exception e) {
+      LogUtil.log(e);
     }
   }
 }
