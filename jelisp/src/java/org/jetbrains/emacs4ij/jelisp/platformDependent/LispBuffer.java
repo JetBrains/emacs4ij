@@ -41,6 +41,10 @@ public abstract class LispBuffer implements LispObject {
     protected int size() {
       return LispBuffer.this.size();
     }
+    @Override
+    protected int getCharacterShift() {
+      return -1;
+    }
   };
 
   protected LispBuffer(String name, Environment environment) {

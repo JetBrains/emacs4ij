@@ -4,7 +4,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
-import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
 
 import java.util.ArrayList;
@@ -24,6 +23,10 @@ public abstract class TextPropertiesHolder {
 
   protected abstract int size();
 
+  protected int getCharacterShift() {
+    return 0;
+  }
+
   protected final void setTextProperties (List<TextPropertiesInterval> intervals) {
     myIntervals = intervals;
   }
@@ -41,8 +44,8 @@ public abstract class TextPropertiesHolder {
   public final boolean actOnTextProperties(int givenStart, int givenEnd, LispList propertyList, Action action) {
     TextPropertiesInterval.Range range;
     try {
-      int start = this instanceof LispBuffer ? givenStart - 1 : givenStart;
-      int end   = this instanceof LispBuffer ? givenEnd - 1 : givenEnd;
+      int start = givenStart + getCharacterShift();
+      int end = givenEnd + getCharacterShift();
       range = new TextPropertiesInterval.Range(start, end, 0, size());
     } catch (ArgumentOutOfRange e) {
       throw new ArgumentOutOfRange(givenStart, givenEnd);
