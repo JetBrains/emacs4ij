@@ -218,19 +218,6 @@ public abstract class LispSubroutine {
           if (cause instanceof LispException)
             throw (LispException) cause;
 
-          if (cause instanceof NullPointerException) {
-            System.out.print(1);
-            try {
-              Object[] values = arguments.getValues();
-              LispObject a = (LispObject) m.invoke(null, values);
-              System.out.println(a);
-            } catch (IllegalAccessException e1) {
-              e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            } catch (InvocationTargetException e1) {
-              e1.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-
-          }
           LogUtil.log("Unrecognized exception", e);
           throw new LispException(cause.getMessage());
         }

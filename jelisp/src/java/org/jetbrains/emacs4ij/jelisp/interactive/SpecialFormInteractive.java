@@ -3,7 +3,11 @@ package org.jetbrains.emacs4ij.jelisp.interactive;
 import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LambdaOrSymbolWithFunction;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 
@@ -137,7 +141,7 @@ public final class SpecialFormInteractive extends InteractiveReader {
                 myPromptDefaultValue = " (default " + myParameterDefaultValue + "): ";
                 break;
             case 'c':
-                myEnvironment.getMinibuffer().addCharListener();
+                myEnvironment.getMinibuffer().setCharListener();
                 break;
             case 'd': // -- Value of point as number. Does not do I/O.
                 addArg(new LispInteger(myEnvironment.getBufferCurrentForEditing().point()));

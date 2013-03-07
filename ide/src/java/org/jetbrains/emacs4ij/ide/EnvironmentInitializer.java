@@ -16,6 +16,7 @@ import com.intellij.util.ui.UIUtil;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.exception.Attention;
 import org.jetbrains.emacs4ij.jelisp.exception.DoubleBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
@@ -41,7 +42,7 @@ public abstract class EnvironmentInitializer {
       try {
         return init();
       } catch (LispException e) {
-//      e.printStackTrace(); todo: log
+        LogUtil.log(e);
       }
     }
     return isGlobalInitialized;

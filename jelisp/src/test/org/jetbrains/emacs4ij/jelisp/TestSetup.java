@@ -5,18 +5,15 @@ public abstract class TestSetup {
     TestMode.TEST = true;
     TestMode.LOAD_FILES = false;
     TestMode.EXTRACT_DOC = false;
-    try {
-      if (GlobalEnvironment.INSTANCE == null) {
-        LogUtil.info("INIT GLOBAL ENV");
-        GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-        GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
-        DefinitionLoader.initialize(new DefinitionIndex());
-        GlobalEnvironment.initialize(null, null, null, null);
-      }
-      GlobalEnvironment.INSTANCE.startRecording();
-    } catch (RuntimeException e) {
-      e.printStackTrace();
+    if (GlobalEnvironment.INSTANCE == null) {
+      LogUtil.info("INIT GLOBAL ENV");
+      GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
+      GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
+      DefinitionLoader.initialize(new DefinitionIndex());
+      GlobalEnvironment.initialize(null, null, null, null);
+      new TestMinibuffer();
     }
+    GlobalEnvironment.INSTANCE.startRecording();
   }
 
   public static String getCause (Throwable e) {

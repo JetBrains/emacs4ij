@@ -60,12 +60,12 @@ public abstract class TextProperties {
     return LispList.list(deque.toArray(new LispObject[list.size()]));
   }
 
-  private static TextPropertiesHolder normalizeHolder (Environment environment, @Nullable LispObject holder) {
+  private static TextPropertiesHolder normalizeHolder(Environment environment, @Nullable LispObject holder) {
     if (Predicate.isNil(holder))
       holder = environment.getBufferCurrentForEditing();
     if (!(holder instanceof LispString) && !(holder instanceof LispBuffer))
       throw new WrongTypeArgumentException("buffer-or-string-p", holder);
-    return (TextPropertiesHolder) holder;
+    return ((LispBuffer) holder).getTextPropertiesHolder();
   }
 
   public static void addTextProperties (LispObject start, LispObject end, LispObject properties, LispString holder) {
@@ -79,7 +79,7 @@ public abstract class TextProperties {
   }
 
   @Subroutine("add-text-properties")
-  public static LispSymbol addTextProperties (Environment environment, MarkerOrInteger start, MarkerOrInteger end,
+  public static LispSymbol addTextProperties(Environment environment, MarkerOrInteger start, MarkerOrInteger end,
                                               LispObject properties, @Optional LispObject bufferOrString) {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     LispList propertyList = normalizeProperties(properties, false);
@@ -88,7 +88,7 @@ public abstract class TextProperties {
   }
 
   @Subroutine("set-text-properties")
-  public static LispSymbol setTextProperties (Environment environment, MarkerOrInteger start, MarkerOrInteger end,
+  public static LispSymbol setTextProperties(Environment environment, MarkerOrInteger start, MarkerOrInteger end,
                                               LispObject properties, @Optional LispObject bufferOrString) {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     LispList propertyList = normalizeProperties(properties, true);
@@ -97,7 +97,7 @@ public abstract class TextProperties {
   }
 
   @Subroutine("remove-text-properties")
-  public static LispSymbol removeTextProperties (Environment environment, MarkerOrInteger start, MarkerOrInteger end,
+  public static LispSymbol removeTextProperties(Environment environment, MarkerOrInteger start, MarkerOrInteger end,
                                                  LispObject properties, @Optional LispObject bufferOrString) {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     if (!(properties instanceof LispList))
@@ -129,7 +129,7 @@ public abstract class TextProperties {
   }
 
   @Subroutine("get-char-property")
-  public static LispObject getCharProperty (Environment environment, MarkerOrInteger position, LispObject property,
+  public static LispObject getCharProperty(Environment environment, MarkerOrInteger position, LispObject property,
                                             @Optional LispObject object) {
     //todo: object may be a window
     return getTextProperty(environment, position, property, object);

@@ -11,13 +11,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created with IntelliJ IDEA.
- * User: kate
- * Date: 4/20/12
- * Time: 10:50 AM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class InteractiveReader implements Completer {
   protected final static String ourEmptyMessage = "";
 
@@ -34,14 +27,6 @@ public abstract class InteractiveReader implements Completer {
     myEnvironment = environment;
     myCommand = command;
   }
-
-//    public static InteractiveReader create (Environment environment, LambdaOrSymbolWithFunction command, LispObject args) {
-//        if (args instanceof LispString)
-//            return new SpecialFormInteractive(environment, command, ((LispString) args).getData());
-//        if (args instanceof LispList)
-//            return new EmptyReader(environment, command, (LispList) args);
-//        return null;
-//    }
 
   public abstract boolean isFinished ();
   public abstract boolean isNoMatch();
@@ -68,7 +53,7 @@ public abstract class InteractiveReader implements Completer {
   }
 
   protected void putArgument() {
-    myEnvironment.getMinibuffer().readParameter(this);
+    myEnvironment.getMinibuffer().readParameter();
   }
 
   protected void notifyMiniBuffer() {

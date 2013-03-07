@@ -19,13 +19,6 @@ import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispWindow;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 12/17/11
- * Time: 1:26 PM
- * To change this template use File | Settings | File Templates.
- */
 public final class IdeaWindow implements LispWindow {
   private final int myId;
   private final LispBuffer myBuffer;
@@ -134,11 +127,13 @@ public final class IdeaWindow implements LispWindow {
 
   @Override
   public void closeTab() {
-    VirtualFile file = ((IdeaBuffer) myBuffer).getFile();
-    if (file == null)
-      return;
-    FileEditorManager fileEditorManager = FileEditorManager.getInstance(IdeaBuffer.getProject());
-    fileEditorManager.closeFile(file);
+    if (myBuffer instanceof IdeaBuffer) {
+      VirtualFile file = ((IdeaBuffer) myBuffer).getFile();
+      if (file == null)
+        return;
+      FileEditorManager fileEditorManager = FileEditorManager.getInstance(IdeaBuffer.getProject());
+      fileEditorManager.closeFile(file);
+    }
   }
 
   @Override

@@ -7,6 +7,12 @@ import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 public final class IdeaFrame extends LispFrame {
   private final IdeFrameImpl myFrame;
 
+  //for test
+  IdeaFrame() {
+    super();
+    myFrame = null;
+  }
+
   public IdeaFrame(IdeFrameImpl frame) {
     super();
     myFrame = frame;

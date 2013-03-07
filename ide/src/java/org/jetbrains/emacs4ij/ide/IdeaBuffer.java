@@ -1,50 +1,39 @@
 package org.jetbrains.emacs4ij.ide;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.event.DocumentEvent;
-import com.intellij.openapi.editor.event.DocumentListener;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
-import org.jetbrains.emacs4ij.jelisp.exception.AssignNullDocument;
-import org.jetbrains.emacs4ij.jelisp.exception.BufferOpenException;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
-import org.jetbrains.emacs4ij.jelisp.exception.NullBufferDocument;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 
-public class IdeaBuffer extends LispBuffer {
-  protected static Project ourProject;
-  protected Document myDocument;
+public final class IdeaBuffer extends LispBuffer {
+  private static Project ourProject;
   private VirtualFile myVirtualFile;
-
-  protected final DocumentListener myDocumentListener = new DocumentListener() {
-    private int myOldPosition;
+  private DocumentHolder myDocumentHolder = new DocumentHolder() {
     @Override
-    public void beforeDocumentChange(DocumentEvent documentEvent) {
-      myOldPosition = point();
+    protected void afterReplace(int newFinishPosition) {
+      gotoChar(newFinishPosition);
     }
-
     @Override
-    public void documentChanged(DocumentEvent documentEvent) {
-      int shift = documentEvent.getNewLength() - documentEvent.getOldLength();
-      if (shift < 0) {   //delete
-        updateMarkersPositions(point(), shift, false);
-        return;
-      }
-      if (shift > 0) { //insert
-        updateMarkersPositions(myOldPosition, shift, false);
-      }
+    protected String getOwnerName() {
+      return getName();
+    }
+    @Override
+    protected void updateMarkersPositions(int point, int shift, boolean b) {
+      IdeaBuffer.this.updateMarkersPositions(point, shift, b);
+    }
+    @Override
+    protected int point() {
+      return IdeaBuffer.this.point();
     }
   };
 
@@ -72,7 +61,7 @@ public class IdeaBuffer extends LispBuffer {
     setLocalVariable("default-directory", new LispString(file.getParent().getPath() + '/'));
   }
 
-  public IdeaBuffer (Environment environment, String name, String defaultDir, LispToolWindow window) {
+  public IdeaBuffer(Environment environment, String name, String defaultDir, LispToolWindow window) {
     this(name, environment, null, null);
     openToolBuffer(window);
     setLocalVariable("default-directory", new LispString(defaultDir));
@@ -80,12 +69,12 @@ public class IdeaBuffer extends LispBuffer {
 
   private void openToolBuffer (LispToolWindow window) {
     getEnvironment().onToolBufferOpened(window);
-    onOpen(((IdeaEditorWrapper) window.getEditor()).getEditor().getDocument());
+    myDocumentHolder.onOpen(((IdeaEditorWrapper) window.getEditor()).getEditor().getDocument());
   }
 
-  protected final void openStandardBuffer(Editor editor) {
+  private void openStandardBuffer(Editor editor) {
     getEnvironment().onBufferOpened(this, new IdeaEditorWrapper(editor));
-    onOpen(editor.getDocument());
+    myDocumentHolder.onOpen(editor.getDocument());
   }
 
   private void switchToWindow (final Editor editor, boolean switchBuffer) {
@@ -97,52 +86,37 @@ public class IdeaBuffer extends LispBuffer {
     return myVirtualFile;
   }
 
-  private void onOpen(Document document) {
-    if (myDocument != null && myDocument != document)
-      throw new BufferOpenException(getName());
-    if (document == null)
-      throw new AssignNullDocument(getName());
-    if (myDocument != null)
-      return;
-    myDocument = document;
-    myDocument.addDocumentListener(myDocumentListener);
-  }
-
   public void reopen (Editor editor, VirtualFile file) {
     assert file == myVirtualFile;
     openStandardBuffer(editor);
   }
 
-  @NotNull
-  protected Document getDocument() {
-    if (myDocument == null)
-      throw new NullBufferDocument(getName());
-    return myDocument;
-  }
-
-  protected Editor getEditor() {
+  public Editor getEditor() {
     return ((IdeaWindow)getEnvironment().getBufferLastSelectedWindow(this)).getEditor();
   }
 
   @Override
   public int size() {
-    return getDocument().getTextLength();
+    return myDocumentHolder.size();
   }
 
   @Override
   public int point() {
     Editor editor = getEditor();
+    if (editor == null) {
+      throw new IllegalStateException("null buffer editor: " + getName());
+    }
     return editor.logicalPositionToOffset(editor.getCaretModel().getLogicalPosition()) + 1;
   }
 
   @Override
   public String getText() {
-    return getDocument().getText();
+    return myDocumentHolder.getText();
   }
 
   @Override
   public void setText(String text) {
-    getDocument().setText(text);
+    myDocumentHolder.setText(text);
   }
 
   @Override
@@ -160,50 +134,14 @@ public class IdeaBuffer extends LispBuffer {
     getEditor().getCaretModel().moveToOffset(position - 1);
   }
 
-  protected void write (final String text) {
-    UIUtil.invokeLaterIfNeeded(new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-          @Override
-          public void run() {
-            getDocument().setText(text);
-            gotoChar(pointMax());
-          }
-        });
-      }
-    });
-  }
-
   @Override
   protected void insertAt (final int position, final String insertion) {
-    UIUtil.invokeLaterIfNeeded(new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-          @Override
-          public void run() {
-            getDocument().insertString(position, insertion);
-          }
-        });
-      }
-    });
+    myDocumentHolder.insertAt(position, insertion);
   }
 
   @Override
   public void replace(final int from, final int to, final String text) {
-    UIUtil.invokeLaterIfNeeded(new Runnable() {
-      @Override
-      public void run() {
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-          @Override
-          public void run() {
-            getDocument().replaceString(from - 1, to - 1, text);
-            gotoChar(from + text.length());
-          }
-        });
-      }
-    });
+    myDocumentHolder.replace(from, to, text);
   }
 
   @Override
@@ -234,11 +172,11 @@ public class IdeaBuffer extends LispBuffer {
         fileEditorManager.closeFile(file);
       }
     }
-    getDocument().removeDocumentListener(myDocumentListener);
-    myDocument = null;
+    myDocumentHolder.onKill();
   }
 
-  public void closeHeader () {
+  @Override
+  public void closeHeader() {
     try {
       Editor editor = getEditor();
       if (editor == null)

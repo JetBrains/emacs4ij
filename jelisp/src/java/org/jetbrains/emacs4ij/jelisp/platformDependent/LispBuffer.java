@@ -56,8 +56,13 @@ public abstract class LispBuffer implements LispObject {
     myEnvironment.defineBuffer(this);
   }
 
+  public TextPropertiesHolder getTextPropertiesHolder() {
+    return myPropertiesHolder;
+  }
+
   public abstract int size();
   public abstract void kill();
+  public abstract void closeHeader();
 
   public void reset() {
     myEnvironment.clear();
@@ -82,8 +87,8 @@ public abstract class LispBuffer implements LispObject {
   //-------------------------------------------------------------------------------
   //     text
   //-------------------------------------------------------------------------------
-  protected abstract String getText();
-  protected abstract void setText (final String text);
+  public abstract String getText();
+  public abstract void setText (final String text);
   protected abstract void insertAt (final int position, final String insertion);
   public abstract void replace(final int from, final int to, final String text);
 
@@ -317,7 +322,7 @@ public abstract class LispBuffer implements LispObject {
     return myName;
   }
 
-  public Environment getEnvironment() {
+  public BufferEnvironment getEnvironment() {
     return myEnvironment;
   }
 
