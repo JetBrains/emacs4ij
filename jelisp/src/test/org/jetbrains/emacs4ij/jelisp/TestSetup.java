@@ -1,5 +1,7 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
+
 public abstract class TestSetup {
   public static void runBeforeClass() {
     TestMode.TEST = true;
@@ -10,10 +12,20 @@ public abstract class TestSetup {
       GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
       GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
       DefinitionLoader.initialize(new DefinitionIndex());
-      GlobalEnvironment.initialize(null, null, null, null);
-      new TestMinibuffer();
+      GlobalEnvironment.initialize(null, null, null, null, new Runnable() {
+        @Override
+        public void run() {
+          new TestMinibuffer();
+        }
+      });
     }
     GlobalEnvironment.INSTANCE.startRecording();
+    try {
+      GlobalEnvironment.INSTANCE.getMinibuffer();
+    } catch (UnregisteredBufferException e) {
+      LogUtil.info("recreate mini buffer");
+      new TestMinibuffer();
+    }
   }
 
   public static String getCause (Throwable e) {

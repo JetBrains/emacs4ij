@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
@@ -59,6 +60,7 @@ public class GlobalEnvironment extends Environment {
   //temporary solution while i'm not loading all sources
   private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
       "font-core.el", "font-lock.el", "help.el");
+  //todo faces.el
 
   public static GlobalEnvironment INSTANCE = null;
 
@@ -127,26 +129,30 @@ public class GlobalEnvironment extends Environment {
     }
   }
 
-  //input parameters are nullable only for test!!!
   public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
-                                 @Nullable LispWindowFactory windowFactory, @Nullable Ide ide) {
+                                 @Nullable LispWindowFactory windowFactory,
+                                 @NotNull FrameManager frameManager,
+                                 @Nullable Ide ide, @Nullable Runnable initMinibuffer) {
     LogUtil.info(LOG, "GLOBAL ENVIRONMENT INIT STARTED");
     ourKeymapManager = new EmacsKeymapManager(keymapFactory);
     ourBufferManager = new BufferManager(bufferFactory);
     ourWindowManager = new WindowManager(windowFactory);
-    ourFrameManager = new FrameManagerImpl();
+    ourFrameManager = frameManager;
     INSTANCE = new GlobalEnvironment(ide);
+
+    if (initMinibuffer != null) {
+      initMinibuffer.run();
+    }
+
     Key.init();
     INSTANCE.init();
     LogUtil.info(LOG, "GLOBAL ENVIRONMENT INIT FINISHED");
   }
 
-  /**
-   * For platform-dependent tests only! See @org.jetbrains.emacs4ij.TestSetup
-   * @param frameManager to be set
-   */
-  public static void setFrameManager (final FrameManager frameManager) {
-    ourFrameManager = frameManager;
+  //input parameters are nullable only for test!!!
+  public static void initialize (@Nullable LispKeymapFactory keymapFactory, @Nullable LispBufferFactory bufferFactory,
+                                 @Nullable LispWindowFactory windowFactory, @Nullable Ide ide, @Nullable Runnable initMinibuffer) {
+    initialize(keymapFactory, bufferFactory, windowFactory, new FrameManagerImpl(), ide, initMinibuffer);
   }
 
   private void init() {

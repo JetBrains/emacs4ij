@@ -32,11 +32,11 @@ public final class LogUtil {
   }
 
   public static void log(Throwable t) {
-    LOG.error(t);
+    error(null, t);
   }
 
   public static void log(String msg, Throwable t) {
-    LOG.error(msg, t);
+    error(msg, t);
   }
 
   public static void log(Logger logger, String msg, GlobalEnvironment.MessageType type) {
@@ -59,5 +59,18 @@ public final class LogUtil {
 
   private static void printToConsole(String msg, @NotNull PrintStream out) {
     out.println(sdf.format(Calendar.getInstance().getTime()) + " " + msg);
+  }
+
+  private static void error(String msg, Throwable t) {
+    if (TestMode.isLoggingEnabled()) {
+      LOG.error(msg, t);
+    } else {
+      if (msg != null) {
+        printToConsole(msg, System.err);
+      }
+      if (t != null) {
+        t.printStackTrace();
+      }
+    }
   }
 }

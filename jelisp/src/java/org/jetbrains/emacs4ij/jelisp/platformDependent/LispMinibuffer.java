@@ -1,14 +1,17 @@
 package org.jetbrains.emacs4ij.jelisp.platformDependent;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.LogUtil;
+import org.jetbrains.emacs4ij.jelisp.TestMode;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.Emacs4ijFatalException;
+import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.interactive.InteractiveReader;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Minibuffer;
@@ -60,13 +63,18 @@ public abstract class LispMinibuffer extends LispBuffer {
 //    myActivationsDepth--;
   }
 
-  protected void open(LispBuffer parent) {
-    if (parent.isToolBuffer())
+  protected void open(@Nullable LispBuffer parent) {
+    if (parent != null && parent.isToolBuffer())
       throw new Emacs4ijFatalException(JelispBundle.message("open.minibuffer.in.tool.window"));
 
     myParent = parent;
     myActivationsDepth++;
     isOpened = true;
+
+    if (myActivationsDepth > 1) {
+      getEnvironment().killBuffer(this);
+      GlobalEnvironment.echo(JelispBundle.message("call.interactively.message"), GlobalEnvironment.MessageType.WARNING);
+    }
   }
 
   /*
@@ -74,11 +82,14 @@ public abstract class LispMinibuffer extends LispBuffer {
   */
   public void readParameter() {
     if (!isOpened) {
-      open(getEnvironment().getCurrentNonToolBuffer());
-      if (myActivationsDepth > 1) {
-        getEnvironment().killBuffer(this);
-        GlobalEnvironment.echo(JelispBundle.message("call.interactively.message"), GlobalEnvironment.MessageType.WARNING);
-        return;
+      try {
+        open(getEnvironment().getCurrentNonToolBuffer());
+      } catch (NoOpenedBufferException e) {
+        if (TestMode.TEST) {
+          open(null);
+        } else {
+          throw e;
+        }
       }
     }
     if (myInteractive.toShowSpecialNoMatchMessage()) {
@@ -115,14 +126,15 @@ public abstract class LispMinibuffer extends LispBuffer {
   }
 
   public void onInteractiveNoIoInput(InteractiveReader interactive) {
-    if (interactive.getCommand().equals(new LispSymbol("exit-minibuffer"))) {
+    if (new LispSymbol("exit-minibuffer").equals(interactive.getCommand())) {
       exitOnSuccess = true;
       onReadInput();
       return;
     }
     if (myInteractive != interactive) {
-      if (myInteractive != null && !myInteractive.isFinished())
+      if (myInteractive != null && !myInteractive.isFinished()) {
         myInteractiveStack.push(myInteractive);
+      }
       myInteractive = interactive;
     }
     if (myInteractive.isFinished()) {

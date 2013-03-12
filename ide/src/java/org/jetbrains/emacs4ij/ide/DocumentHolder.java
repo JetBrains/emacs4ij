@@ -46,7 +46,8 @@ abstract class DocumentHolder {
 
   @NotNull
   private Document getDocument() {
-    if (myDocument == null) throw new NullBufferDocument(getOwnerName());
+    if (myDocument == null)
+      throw new NullBufferDocument(getOwnerName());
     return myDocument;
   }
 

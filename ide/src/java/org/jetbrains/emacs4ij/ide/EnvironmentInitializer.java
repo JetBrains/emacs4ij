@@ -66,7 +66,12 @@ public abstract class EnvironmentInitializer {
 
     Keymap userKeymap = KeymapManager.getInstance().getActiveKeymap();
     try {
-      GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(), new IdeProvider());
+      GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(), new IdeProvider(), new Runnable() {
+        @Override
+        public void run() {
+          IdeaMiniBuffer.init(null, null);
+        }
+      });
       isGlobalInitialized = true;
     } catch (LispException e) {
       ((KeymapManagerImpl) KeymapManager.getInstance()).setActiveKeymap(userKeymap);
@@ -84,7 +89,7 @@ public abstract class EnvironmentInitializer {
       LispFrame existing = GlobalEnvironment.INSTANCE.getExistingFrame(new IdeaFrame((IdeFrameImpl) windowManager.getIdeFrame(project)));
       GlobalEnvironment.INSTANCE.setSelectedFrame(existing);
     }
-    IdeaMiniBuffer.init(null, environment);
+
     UIUtil.invokeLaterIfNeeded(new Runnable() {
       @Override
       public void run() {

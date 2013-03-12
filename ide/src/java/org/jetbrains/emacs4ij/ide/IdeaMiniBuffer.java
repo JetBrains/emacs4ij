@@ -11,9 +11,10 @@ import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.ui.EditorTextField;
 import com.intellij.util.Alarm;
 import com.intellij.util.ui.UIUtil;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.TestMode;
 import org.jetbrains.emacs4ij.jelisp.exception.Emacs4ijFatalException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
@@ -56,9 +57,9 @@ public final class IdeaMiniBuffer extends LispMinibuffer {
     }
   }
 
-  public static void init (@Nullable Editor editor, @NotNull Environment environment) {
+  public static void init (@Nullable Editor editor, @Nullable Environment environment) {
     if (myInstance == null) {
-      myInstance = new IdeaMiniBuffer(0, editor, environment, null);
+      myInstance = new IdeaMiniBuffer(0, editor, environment == null ? GlobalEnvironment.INSTANCE : environment, null);
     }
   }
 
@@ -182,10 +183,17 @@ public final class IdeaMiniBuffer extends LispMinibuffer {
     super.open(parent);
 
     final EditorTextField input = new EditorTextField("", IdeaBuffer.getProject(), FileTypes.PLAIN_TEXT);
-    ((IdeaBuffer)parent).getEditor().setHeaderComponent(input);
+
+    if (!(TestMode.TEST && parent == null)) {
+      ((IdeaBuffer)parent).getEditor().setHeaderComponent(input);
+    }
 
     input.setEnabled(true);
     Editor editor = input.getEditor();
+
+    if (TestMode.TEST && editor == null) {
+      return;
+    }
 
     if (editor == null) {
       throw new IllegalStateException();

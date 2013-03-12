@@ -48,7 +48,7 @@ abstract class CyclicManager<T> implements Manager<T> {
 
   @Override
   public final List<T> getData() {
-    return myData;
+    return Collections.unmodifiableList(myData);
   }
 
   @Override
@@ -58,8 +58,11 @@ abstract class CyclicManager<T> implements Manager<T> {
 
   @Override
   public final void remove (T item) {
-    if (!myData.remove(item))
+    if (!myData.remove(item)) {
       throwItemIsNotInDataSet(item);
+    } else {
+      LogUtil.info("remove " + item);
+    }
   }
 
   @Override

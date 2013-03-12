@@ -1,1 +1,4 @@
-"string"
+(message "string")
+:keywordExample
+;;comment line
+(simple list 1 2 3)
