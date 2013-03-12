@@ -363,8 +363,8 @@ public final class DefinitionLoader {
 
     static LispList getDefFromFile (final String fileName, long offset, Identifier id) {
       checkForCyclicUploading(id);
+      myLoadStack.push(id);
       try {
-        myLoadStack.push(id);
         myFile = new RandomAccessFile(fileName, "r");
         myFilePath = fileName;
         if (offset == -1) {
@@ -397,8 +397,12 @@ public final class DefinitionLoader {
         throw new ReadException(JelispBundle.message("no.file", fileName));
       } catch (IOException e1) {
         throw new ReadException(myFilePath);
-      }   finally {
+      } catch (Exception e2) {
+        e2.printStackTrace();
+        throw e2;
+      } finally {
         closeFile();
+        onUploadFinish(id);
       }
     }
 

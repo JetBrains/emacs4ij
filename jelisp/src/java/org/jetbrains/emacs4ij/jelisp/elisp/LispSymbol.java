@@ -357,11 +357,12 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
   }
 
   private LispObject evaluateTrueFunction(Environment environment, Class exception, @Nullable List<LispObject> args) {
-    GlobalEnvironment.ourCallStack.push(new Pair<String, Object>(myName, args));
     return eval(environment, exception, args);
   }
 
   private LispObject eval (Environment environment, Class exception, @Nullable List<LispObject> args) {
+    GlobalEnvironment.ourCallStack.push(new Pair<String, Object>(myName, args));
+
     try {
       if (!environment.areSpecFormsAndMacroAllowed()) {
         if (isSpecialForm() || isMacro())
@@ -382,9 +383,9 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
         return ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
       }
       if (isAutoload()) {
-        throw new IllegalStateException("unexpected");
-//        uploadAutoload();
-//        return eval(environment, exception, args);
+//        throw new IllegalStateException("unexpected");
+        uploadAutoload();
+        return eval(environment, exception, args);
       }
       return evaluateCustomFunction(environment, args);
     }
@@ -445,6 +446,24 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     myProperties.put(new LispSymbol(keyName), value);
   }
 
+  private void castFunctionCell () {
+    if (myFunction instanceof FunctionCell)
+      return;
+    if (isCustom()) {
+      castToLambda();
+      return;
+    }
+    if (isMacro()) {
+      castToMacro();
+      return;
+    }
+    if (isAutoload()) {
+      uploadAutoload();
+      return;
+    }
+    throw new InvalidFunctionException(myFunction.toString());
+  }
+
   private void uploadAutoload() {
     String fileName = ((LispString) getCarIfList(((LispList)myFunction).cdr())).getData();
     LispObject type;
@@ -462,24 +481,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     } catch (ReadException e) {
       throw new AutoloadDefFromFileException(fileName, myName);
     }
-  }
-
-  private void castFunctionCell () {
-    if (myFunction instanceof FunctionCell)
-      return;
-    if (isCustom()) {
-      castToLambda();
-      return;
-    }
-    if (isMacro()) {
-      castToMacro();
-      return;
-    }
-    if (isAutoload()) {
-      uploadAutoload();
-      return;
-    }
-    throw new InvalidFunctionException(myFunction.toString());
   }
 
   private boolean isAutoload() {

@@ -2,7 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
-import org.jetbrains.emacs4ij.jelisp.TestSetup;
+import org.jetbrains.emacs4ij.jelisp.JelispTestCase;
 import org.jetbrains.emacs4ij.jelisp.elisp.Lambda;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
@@ -19,7 +19,7 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class CoreTest extends BaseSubroutineTest {
+public class CoreTest extends JelispTestCase {
   @Test
   public void testSetVar() throws LispException {
     LispObject value = evaluateString("(set 'var (+ 2 3))");
@@ -156,7 +156,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("((defmacro mac (a) (message \"%s\" a)) 5)");
     } catch (Exception e) {
-      Assert.assertEquals("'(invalid-function (defmacro mac (a) (message \"%s\" a)))", TestSetup.getCause(e));
+      Assert.assertEquals("'(invalid-function (defmacro mac (a) (message \"%s\" a)))", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -187,7 +187,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(funcall 0 1 2)");
     } catch (Exception e) {
-      Assert.assertEquals("'(invalid-function 0)", TestSetup.getCause(e));
+      Assert.assertEquals("'(invalid-function 0)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -208,7 +208,7 @@ public class CoreTest extends BaseSubroutineTest {
       evaluateString("(set 'hook1 5)");
       evaluateString("(run-hooks 'hook1)");
     } catch (Exception e) {
-      Assert.assertEquals("'(invalid-function 5)", TestSetup.getCause(e));
+      Assert.assertEquals("'(invalid-function 5)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -310,7 +310,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(indirect-function 'g)");
     } catch (Exception e) {
-      Assert.assertEquals("'(void-function g)", TestSetup.getCause(e));
+      Assert.assertEquals("'(void-function g)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -323,7 +323,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(indirect-function 'g)");
     } catch (Exception e) {
-      Assert.assertEquals("'(cyclic-function-indirection f)", TestSetup.getCause(e));
+      Assert.assertEquals("'(cyclic-function-indirection f)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -360,7 +360,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(subr-arity 'if)");
     } catch (Exception e) {
-      Assert.assertEquals("'(wrong-type-argument subrp if)", TestSetup.getCause(e));
+      Assert.assertEquals("'(wrong-type-argument subrp if)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -387,7 +387,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(aref '[1 2 3] 10)");
     } catch (Exception e) {
-      Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", TestSetup.getCause(e));
+      Assert.assertEquals("'(args-out-of-range [1 2 3] 10)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -407,7 +407,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(aref \"hi\" 10)");
     } catch (Exception e) {
-      Assert.assertEquals("'(args-out-of-range \"hi\" 10)", TestSetup.getCause(e));
+      Assert.assertEquals("'(args-out-of-range \"hi\" 10)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -438,7 +438,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(apply '+ 1 2)");
     } catch (Exception e) {
-      Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
+      Assert.assertEquals("'(wrong-type-argument listp 2)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -455,7 +455,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(apply '< 1 2)");
     } catch (Exception e) {
-      Assert.assertEquals("'(wrong-type-argument listp 2)", TestSetup.getCause(e));
+      Assert.assertEquals("'(wrong-type-argument listp 2)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -466,7 +466,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(apply 'setq 'a '(5))");
     } catch (Exception e) {
-      Assert.assertEquals("'(invalid-function setq)", TestSetup.getCause(e));
+      Assert.assertEquals("'(invalid-function setq)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -477,7 +477,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(apply 'when 't '(message \"hi\"))");
     } catch (Exception e) {
-      Assert.assertEquals("'(invalid-function when)", TestSetup.getCause(e));
+      Assert.assertEquals("'(invalid-function when)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -498,7 +498,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(defalias a nil)");
     } catch (Exception e) {
-      Assert.assertEquals("'(void-variable a)", TestSetup.getCause(e));
+      Assert.assertEquals("'(void-variable a)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -778,7 +778,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("b");
     } catch (Exception e) {
-      Assert.assertEquals("'(void-variable b)", TestSetup.getCause(e));
+      Assert.assertEquals("'(void-variable b)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -848,7 +848,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("a");
     } catch (Exception e) {
-      Assert.assertEquals("(cyclic-variable-indirection a)", TestSetup.getCause(e));
+      Assert.assertEquals("(cyclic-variable-indirection a)", getCauseMsg(e));
       return;
     }
     Assert.fail();
@@ -861,7 +861,7 @@ public class CoreTest extends BaseSubroutineTest {
     try {
       evaluateString("(setq b 5)");
     } catch (Exception e) {
-      Assert.assertEquals("(cyclic-variable-indirection b)", TestSetup.getCause(e));
+      Assert.assertEquals("(cyclic-variable-indirection b)", getCauseMsg(e));
       return;
     }
     Assert.fail();

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.elisp.HasTextPropertiesHolder;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class LispBuffer implements LispObject {
+public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder {
   private final String myName;
   private final BufferEnvironment myEnvironment;
 
@@ -56,6 +57,7 @@ public abstract class LispBuffer implements LispObject {
     myEnvironment.defineBuffer(this);
   }
 
+  @Override
   public TextPropertiesHolder getTextPropertiesHolder() {
     return myPropertiesHolder;
   }

@@ -1,11 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.emacs4ij.jelisp.JelispTestCase;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class PredicateTest extends BaseSubroutineTest {
+public class PredicateTest extends JelispTestCase {
   @Test
   public void testStringp() throws Exception {
     LispObject lispObject = evaluateString("(stringp \"hello\")");

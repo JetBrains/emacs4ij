@@ -313,7 +313,7 @@ public abstract class Minibuffer {
     if (collection instanceof LispVector) { // aka obarray
       for (LispObject item: ((LispVector) collection).toLispObjectList()) {
         if (!(item instanceof LispSymbol))
-          Core.error(JelispBundle.message("wrong.obarray"));
+          Core.error(JelispBundle.message("invalid.object.array"));
         collectionValues.add(new LispString(((LispSymbol) item).getName()));
       }
     }

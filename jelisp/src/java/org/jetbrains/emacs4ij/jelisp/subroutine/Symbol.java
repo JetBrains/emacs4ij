@@ -1,6 +1,5 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import net.sf.cglib.core.CollectionUtils;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
@@ -24,7 +23,8 @@ import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Symbol {
   private Symbol() {}
@@ -178,21 +178,19 @@ public abstract class Symbol {
     if (objectArray == null) {
       return GlobalEnvironment.INSTANCE.find(name);
     }
-    Collection filtered = CollectionUtils.filter(objectArray.toLispObjectList(), new net.sf.cglib.core.Predicate() {
-      @Override
-      public boolean evaluate(Object o) {
-        if (o.equals(new LispInteger(0)))
-          return false;
-        if (o instanceof LispSymbol)
-          return ((LispSymbol) o).getName().equals(name);
-        Core.error(JelispBundle.message("wrong.obarray"));
-        return false;
+    List<LispSymbol> filtered = new ArrayList<>();
+    for (LispObject o: objectArray.toLispObjectList()) {
+      if (o.equals(new LispInteger(0)))
+        continue;
+      if (o instanceof LispSymbol && ((LispSymbol) o).getName().equals(name)) {
+        filtered.add((LispSymbol) o);
+        continue;
       }
-    });
+      Core.error(JelispBundle.message("invalid.object.array"));
+    }
     if (filtered.size() != 1 && filtered.size() != 0) throw new IllegalStateException("real size = " + filtered.size());
-
     if (filtered.isEmpty()) return null;
-    return (LispSymbol) filtered.iterator().next();
+    return filtered.get(0);
   }
 
   @Subroutine("intern")

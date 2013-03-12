@@ -14,7 +14,6 @@ public class TestMinibuffer extends LispMinibuffer {
 
   @Override
   protected void clearNoMatch() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -36,7 +35,7 @@ public class TestMinibuffer extends LispMinibuffer {
 
   @Override
   public int size() {
-    throw new UnsupportedOperationException();
+    return 0;
   }
 
   @Override

@@ -1,12 +1,22 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
+import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
-public abstract class TestSetup {
+public class JelispTestCase {
+  protected CustomEnvironment myEnvironment;
+
+  @BeforeClass
   public static void runBeforeClass() {
     TestMode.TEST = true;
-    TestMode.LOAD_FILES = false;
-    TestMode.EXTRACT_DOC = false;
+//    TestMode.EXTRACT_DOC = false;
+//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+//    TestMode.LOAD_FILES = false;
+
     if (GlobalEnvironment.INSTANCE == null) {
       LogUtil.info("INIT GLOBAL ENV");
       GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
@@ -20,6 +30,7 @@ public abstract class TestSetup {
       });
     }
     GlobalEnvironment.INSTANCE.startRecording();
+
     try {
       GlobalEnvironment.INSTANCE.getMinibuffer();
     } catch (UnregisteredBufferException e) {
@@ -28,8 +39,18 @@ public abstract class TestSetup {
     }
   }
 
-  public static String getCause (Throwable e) {
+  @Before
+  public void setUp() throws Exception {
+    GlobalEnvironment.INSTANCE.clearRecorded();
+    myEnvironment = new CustomEnvironment(GlobalEnvironment.INSTANCE);
+  }
+
+  public static String getCauseMsg(Throwable e) {
     if (e.getCause() == null) return e.getMessage();
-    return getCause(e.getCause());
+    return getCauseMsg(e.getCause());
+  }
+
+  protected LispObject evaluateString (String lispCode) throws LispException {
+    return new ForwardParser().parseLine(lispCode).evaluate(myEnvironment);
   }
 }

@@ -138,6 +138,23 @@ public abstract class TextPropertiesHolder {
         : Core.thisOrNil(interval.getProperties().get(property));
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof TextPropertiesHolder)) return false;
+
+    TextPropertiesHolder that = (TextPropertiesHolder) o;
+
+    if (myIntervals != null ? !myIntervals.equals(that.myIntervals) : that.myIntervals != null) return false;
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return myIntervals != null ? myIntervals.hashCode() : 0;
+  }
+
   public static final class TextPropertiesInterval implements Comparable<TextPropertiesInterval> {
     private Range myRange;
     private Map<LispObject, LispObject> myProperties;
@@ -192,7 +209,7 @@ public abstract class TextPropertiesHolder {
     }
 
     /*
-   returns true if any property changed, false otherwise
+    **  returns true if any property changed, false otherwise
     */
     private boolean addOrChangeProperties (LispList propertyList) {
       Map<LispObject, LispObject> properties = toPropertyMap(propertyList);
@@ -211,7 +228,7 @@ public abstract class TextPropertiesHolder {
     }
 
     /*
-    returns false if properties were empty and properties are to be removed, true otherwise
+    ** returns false if properties were empty and properties are to be removed, true otherwise
     */
     private boolean resetOrRemoveProperties (LispList propertyList) {
       if (propertyList.equals(LispList.list(LispSymbol.ourNil, LispSymbol.ourNil))) { //remove
@@ -224,7 +241,7 @@ public abstract class TextPropertiesHolder {
     }
 
     /*
-    returns true if any property changed, false otherwise
+    ** returns true if any property changed, false otherwise
     */
     private boolean removeProperties (LispList propertyList) {
       if (myProperties.isEmpty()) {
@@ -243,7 +260,7 @@ public abstract class TextPropertiesHolder {
     }
 
     /*
-    returns true if any property changed, false otherwise
+    ** returns true if any property changed, false otherwise
     */
     private boolean removePropertiesWithNames (LispList propertyNames) {
       if (myProperties.isEmpty()) {
@@ -337,13 +354,6 @@ public abstract class TextPropertiesHolder {
       return result;
     }
 
-    /**
-     * Created with IntelliJ IDEA.
-     * User: kate
-     * Date: 5/11/12
-     * Time: 12:23 PM
-     * To change this template use File | Settings | File Templates.
-     */
     public static class Range implements Comparable<Range> {
       private int myStart;
       private int myEnd;

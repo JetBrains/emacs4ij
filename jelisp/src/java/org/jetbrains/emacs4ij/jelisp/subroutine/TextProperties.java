@@ -2,6 +2,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.HasTextPropertiesHolder;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
@@ -65,7 +66,7 @@ public abstract class TextProperties {
       holder = environment.getBufferCurrentForEditing();
     if (!(holder instanceof LispString) && !(holder instanceof LispBuffer))
       throw new WrongTypeArgumentException("buffer-or-string-p", holder);
-    return ((LispBuffer) holder).getTextPropertiesHolder();
+    return ((HasTextPropertiesHolder) holder).getTextPropertiesHolder();
   }
 
   public static void addTextProperties (LispObject start, LispObject end, LispObject properties, LispString holder) {
@@ -74,7 +75,7 @@ public abstract class TextProperties {
     if (!(end instanceof MarkerOrInteger))
       throw new WrongTypeArgumentException("integer-or-marker-p", end);
     LispList propertyList = normalizeProperties(properties, false);
-    holder.actOnTextProperties(((MarkerOrInteger)start).getPosition(), ((MarkerOrInteger)end).getPosition(),
+    holder.getTextPropertiesHolder().actOnTextProperties(((MarkerOrInteger)start).getPosition(), ((MarkerOrInteger)end).getPosition(),
         propertyList, TextPropertiesHolder.Action.ADD);
   }
 

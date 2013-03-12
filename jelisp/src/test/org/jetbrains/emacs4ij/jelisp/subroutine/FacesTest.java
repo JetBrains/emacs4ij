@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.emacs4ij.jelisp.JelispTestCase;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -10,7 +11,7 @@ import java.util.Arrays;
 
 import static junit.framework.Assert.assertEquals;
 
-public class FacesTest extends BaseSubroutineTest {
+public class FacesTest extends JelispTestCase {
   @Test(expected = WrongTypeArgumentException.class)
   public void internalSetFontSelectionOrder1() {
     evaluateString("(internal-set-font-selection-order \"a\")");
