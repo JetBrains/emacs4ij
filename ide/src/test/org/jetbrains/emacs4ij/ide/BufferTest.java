@@ -665,7 +665,7 @@ public class BufferTest extends IdeTestCase {
     Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 1 3 '(a b))"));
     LispObject substring = evaluateString("(buffer-substring 2 3)");
     LispString expected = new LispString("a");
-    expected.actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
+    expected.getTextPropertiesHolder().actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
         TextPropertiesHolder.Action.ADD);
     Assert.assertEquals(expected, substring);
   }
