@@ -203,29 +203,25 @@ public final class DefinitionLoader {
   }
 
   private static LispSymbol processDef (LispList definition, Identifier id) {
+    if (definition == null)
+      return null;
+    LispObject evaluated;
     try {
-      if (definition == null)
-        return null;
-      LispObject evaluated;
-      try {
-        evaluated = definition.evaluate(GlobalEnvironment.INSTANCE);
-      } catch (LispException e) { //invalid definition
-        myIndex.get(id).remove(myDefinitionSrcFile);
-        return findAndRegisterEmacsForm(id.getName(), id.getType());
-      }
-      LispSymbol value = GlobalEnvironment.INSTANCE.find(id.getName());
-      if (value == null) {
-        if (evaluated instanceof LispSymbol && ((LispSymbol)evaluated).getName().equals(id.getName())) {
-          GlobalEnvironment.INSTANCE.defineSymbol((LispSymbol) evaluated);
-          return (LispSymbol) evaluated;
-        } else {
-          value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
-        }
-      }
-      return value;
-    } finally {
-      FileScanner.onUploadFinish(id);
+      evaluated = definition.evaluate(GlobalEnvironment.INSTANCE);
+    } catch (LispException e) { //invalid definition
+      myIndex.get(id).remove(myDefinitionSrcFile);
+      return findAndRegisterEmacsForm(id.getName(), id.getType());
     }
+    LispSymbol value = GlobalEnvironment.INSTANCE.find(id.getName());
+    if (value == null) {
+      if (evaluated instanceof LispSymbol && ((LispSymbol)evaluated).getName().equals(id.getName())) {
+        GlobalEnvironment.INSTANCE.defineSymbol((LispSymbol) evaluated);
+        return (LispSymbol) evaluated;
+      } else {
+        value = findAndRegisterEmacsForm(((LispSymbol) evaluated).getName(), id.getType());
+      }
+    }
+    return value;
   }
 
   private static LispList lookInSubrFirst (Identifier id) {
@@ -264,7 +260,6 @@ public final class DefinitionLoader {
 
   private static LispSymbol findAndRegisterEmacsForm (String name, DefType type) {
     Identifier id = new Identifier(name, type);
-    FileScanner.checkForCyclicUploading(id);
     checkExistence(id);
     LispList definition;
     SortedMap<String, Long> map = myIndex.get(id);
@@ -342,7 +337,7 @@ public final class DefinitionLoader {
       }
     }
 
-    static void checkForCyclicUploading (Identifier id) {
+    static void checkForCyclicUploading(Identifier id) {
       for (Identifier uploading: myLoadStack) {
         if (uploading.equals(id))
           throw new CyclicDefinitionLoadException(id.toString());
@@ -357,7 +352,8 @@ public final class DefinitionLoader {
               myLoadStack.toString()), GlobalEnvironment.MessageType.ERROR);
         }
       } catch (NoSuchElementException e) {
-        LogUtil.log(String.format("Load stack error: %s, left stack = %s", e.getMessage(), myLoadStack.toString()), GlobalEnvironment.MessageType.ERROR);
+        LogUtil.log(String.format("Load stack error: %s, current id = %s, left stack = %s", e.getMessage(), id.toString(),
+            myLoadStack.toString()), GlobalEnvironment.MessageType.ERROR);
       }
     }
 
@@ -367,60 +363,56 @@ public final class DefinitionLoader {
       try {
         myFile = new RandomAccessFile(fileName, "r");
         myFilePath = fileName;
+
         if (offset == -1) {
           SortedMap<String, Long> map = myIndex.get(id);
           if (map != null && map.containsKey(myFilePath)) {
             offset = map.get(myFilePath);
           } else {
             //we don't know offset
-            return getDefFromFile(fileName, id);
+            while (true) {
+              LispList def = tryGetDefFromFile(id);
+              if (def != null) return def;
+            }
           }
         }
+
         try {
           myFile.seek(offset);
         } catch (IOException e) {
           throw new ReadException(JelispBundle.message("invalid.offset", myFilePath, offset));
         }
-        String line = myFile.readLine();
-        if (line == null)
-          return null;
-        int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
-        if (defStart != -1) {
-          myDefinitionSrcFile = myFilePath;
-          return getDef(line, defStart, id.getName());
-        } else {
+
+        LispList def = tryGetDefFromFile(id);
+        if (def == null) {
           myDefinitionSrcFile = null;
           LogUtil.log("NULL def: " + id.toString() + ", file " + myFilePath, GlobalEnvironment.MessageType.ERROR);
           return null;
+        } else {
+          return def;
         }
-      } catch (FileNotFoundException e) {
+
+      } catch (NullLineException e0) {
+        return null;
+      } catch (FileNotFoundException e1) {
         throw new ReadException(JelispBundle.message("no.file", fileName));
-      } catch (IOException e1) {
+      } catch (IOException e2) {
         throw new ReadException(myFilePath);
-      } catch (Exception e2) {
-        e2.printStackTrace();
-        throw e2;
       } finally {
         closeFile();
         onUploadFinish(id);
       }
     }
 
-    static LispList getDefFromFile (String fileName, Identifier id) {
-      String line;
-      while (true) {
-        try {
-          line = myFile.readLine();
-        } catch (IOException e) {
-          throw new ReadException(fileName);
-        }
-        if (line == null)
-          return null;
-        int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
-        if (defStart == -1)
-          continue;
+    private static LispList tryGetDefFromFile (Identifier id) throws IOException {
+      String line = myFile.readLine();
+      if (line == null) throw new NullLineException();
+      int defStart = defStartIndex(line, id.getName(), (id.getType() == DefType.FUN ? myDefFuns : myDefVars));
+      if (defStart != -1) {
         myDefinitionSrcFile = myFilePath;
         return getDef(line, defStart, id.getName());
+      } else {
+        return null;
       }
     }
 
@@ -463,24 +455,24 @@ public final class DefinitionLoader {
     private static void saveId (Identifier id, long offset) {
       //todo: back
       //reader == myFile
-            /*Identifier id = null;
-    if (type == DefType.FUN) {//check if it is command
-        try {
-            LispList definition = getDef(reader, line, name);
-            if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.ourT))
-                id = new Identifier(name, SymbolType.CMD);
-        } catch (ParserException e) {
-            if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def
-                if (!e.getMessage().contains("\u001B") && !e.getMessage().contains("�")) {
+      /*Identifier id = null;
+if (type == DefType.FUN) {//check if it is command
+  try {
+      LispList definition = getDef(reader, line, name);
+      if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.ourT))
+          id = new Identifier(name, SymbolType.CMD);
+  } catch (ParserException e) {
+      if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def
+          if (!e.getMessage().contains("\u001B") && !e.getMessage().contains("�")) {
 //                LogUtil.log("Function " + name + ": " + e.getMessage(), MessageType.ERROR);
-                } else {
+          } else {
 //                LogUtil.log(myFile.getAbsolutePath(), MessageType.ERROR);
-                }
-            //skip here
-        }
-    }
-    if (id == null)
-        id = new Identifier(name, type);*/
+          }
+      //skip here
+  }
+}
+if (id == null)
+  id = new Identifier(name, type);*/
       if (myIndex.containsKey(id)) {
         SortedMap<String, Long> map = myIndex.get(id);
         if (!map.containsKey(myFilePath))
@@ -515,6 +507,12 @@ public final class DefinitionLoader {
       return n1 < n2
           ? -1
           : n1 == n2 ? o1.compareTo(o2) : 1;
+    }
+  }
+
+  private static class NullLineException extends RuntimeException {
+    public NullLineException() {
+      super();
     }
   }
 }

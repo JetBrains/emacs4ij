@@ -114,6 +114,12 @@ public class CoreTest extends JelispTestCase {
   }
 
   @Test
+  public void listConsEqual() {
+    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(equal (cons 1 (cons t nil)) (cons 1 t))"));
+    Assert.assertEquals(LispSymbol.ourT,   evaluateString("(equal (cons 1 (cons t nil)) '(1 t))"));
+  }
+
+  @Test
   public void testNilEqual() {
     LispObject r = evaluateString("(equal nil (cons nil nil))");
     Assert.assertEquals(LispSymbol.ourNil, r);
@@ -1037,31 +1043,4 @@ public class CoreTest extends JelispTestCase {
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
     DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
   }
-
-  @Test
-  public void qq() {
-    LispObject r = evaluateString("(defcustom katef\n" +
-        "  (mapcar (lambda (arg) (mapcar 'purecopy arg))\n" +
-        "  '((\"Monospace\" \"courier\" \"fixed\")\n" +
-        "    (\"courier\" \"CMU Typewriter Text\" \"fixed\")\n" +
-        "    (\"Sans Serif\" \"helv\" \"helvetica\" \"arial\" \"fixed\")\n" +
-        "    (\"helv\" \"helvetica\" \"arial\" \"fixed\")))\n" +
-        "  \"Alist of alternative font family names.\n" +
-        "Each element has the form (FAMILY ALTERNATIVE1 ALTERNATIVE2 ...).\n" +
-        "If fonts of family FAMILY can't be loaded, try ALTERNATIVE1, then\n" +
-        "ALTERNATIVE2 etc.\"\n" +
-        "  :tag \"Alternative font families to try\"\n" +
-        "  :type '(repeat (repeat string))\n" +
-        "  :group 'font-selection\n" +
-        "  :set #'(lambda (symbol value)\n" +
-        "\t   (set-default symbol value)\n" +
-        "\t   (internal-set-alternative-font-family-alist value)))");
-
-    LispSymbol f = myEnvironment.find("katef");
-
-    System.out.println(r);
-    System.out.println(f.getValue());
-
-  }
-
 }

@@ -318,6 +318,14 @@ public class GlobalEnvironment extends Environment {
     else if (os.contains("linux")) systemType = "gnu/linux";
     else throw new IllegalStateException(os);
     defineSymbol("system-type", new LispString(systemType));
+
+    defineSymbol("after-load-alist");  //lread.c
+    defineSymbol("initial-window-system", new LispSymbol("x"));
+
+    LispSymbol readOnly = new LispSymbol("read-only");
+    GlobalEnvironment.INSTANCE.defineSymbol(readOnly); //just intern with no value
+
+    defineSymbol("minibuffer-prompt-properties", LispList.list(readOnly, LispSymbol.ourT));  //minibuf.c
   }
 
   public LispVector getObjectArray() {

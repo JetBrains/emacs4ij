@@ -309,7 +309,6 @@ public abstract class Core {
           if (noError != null && !noError.equals(LispSymbol.ourNil))
             return LispSymbol.ourNil;
           throw new CyclicFunctionIndirectionException(symbol.getName());
-
           //return signalOrNot(noError, "cyclic-function-indirection", symbol.getName());
         }
         symbol = (LispSymbol) f;
@@ -410,10 +409,14 @@ public abstract class Core {
     if (!(featuresValue instanceof LispList))
       throw new WrongTypeArgumentException("listp", featuresValue);
 
-    LispSymbol realFeature;
+    LispSymbol realFeature = null;
     try {
       realFeature = feature.uploadVariableDefinition();
     } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+      //skip, goto realFeature == null and define there
+    }
+
+    if (realFeature == null) {
       GlobalEnvironment.INSTANCE.defineSymbol(feature);
       realFeature = feature;
     }

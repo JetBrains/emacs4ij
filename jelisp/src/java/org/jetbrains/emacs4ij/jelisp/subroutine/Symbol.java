@@ -55,7 +55,7 @@ public abstract class Symbol {
     try {
       LispSymbol real = symbol.uploadVariableDefinition();
       return Core.thisOrNil(real.getProperty(propertyName));
-    } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+    } catch (CyclicDefinitionLoadException | VoidVariableException | NullPointerException e) {
       return LispSymbol.ourNil;
     }
   }
@@ -65,7 +65,7 @@ public abstract class Symbol {
     try {
       LispSymbol real = symbol.uploadVariableDefinition();
       real.setProperty(propertyName, value);
-    } catch (CyclicDefinitionLoadException | VoidVariableException e) {
+    } catch (CyclicDefinitionLoadException | VoidVariableException | NullPointerException e) {
       symbol.setProperty(propertyName, value);
       GlobalEnvironment.INSTANCE.defineSymbol(symbol);
     }

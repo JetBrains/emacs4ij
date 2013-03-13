@@ -296,18 +296,17 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     return value;
   }
 
-  @NotNull
   public LispSymbol uploadVariableDefinition() {
     LispSymbol symbol = GlobalEnvironment.INSTANCE.find(myName);
     if (symbol == null && isKeyword())
       return this;
     if (symbol == null) {
-      symbol =  GlobalEnvironment.INSTANCE.findAndRegisterEmacsVariable(myName);
+      symbol = GlobalEnvironment.INSTANCE.findAndRegisterEmacsVariable(myName);
     }
     return symbol;
   }
 
-  private void checkCallStack () {
+  private void popFromCallStack() {
     Pair<String, Object> stackTop = GlobalEnvironment.ourCallStack.removeFirst();
     String q = stackTop.getFirst();
     if (myName.equals("catch"))
@@ -324,6 +323,19 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
           stackTop, myName, GlobalEnvironment.ourCallStack.toString()), GlobalEnvironment.MessageType.ERROR);
       throw new InternalException(JelispBundle.message("call.stack.error"));
     }
+  }
+
+  private void pushToCallStack(Object args) {
+    //todo startsWith("def") doesn't guarantee that it is a real definition form
+    if (myName.startsWith("def")) {
+      for (Pair<String, Object> item: GlobalEnvironment.ourCallStack) {
+        if (item.getFirst().equals(myName) && item.getSecond().equals(args)) {
+          throw new CyclicDefinitionLoadException(myName + ' ' + args);
+        }
+      }
+    }
+
+    GlobalEnvironment.ourCallStack.push(new Pair<>(myName, args));
   }
 
   public LispSymbol uploadFunctionDefinition (Environment environment, Class exception) {
@@ -353,15 +365,11 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
 
   public LispObject evaluateFunction (Environment environment, Class exception, @Nullable List<LispObject> args) {
     LispSymbol trueFunction = uploadFunctionDefinition(environment, exception);
-    return trueFunction.evaluateTrueFunction(environment, exception, args);
-  }
-
-  private LispObject evaluateTrueFunction(Environment environment, Class exception, @Nullable List<LispObject> args) {
-    return eval(environment, exception, args);
+    return trueFunction.eval(environment, exception, args);
   }
 
   private LispObject eval (Environment environment, Class exception, @Nullable List<LispObject> args) {
-    GlobalEnvironment.ourCallStack.push(new Pair<String, Object>(myName, args));
+    pushToCallStack(args);
 
     try {
       if (!environment.areSpecFormsAndMacroAllowed()) {
@@ -383,7 +391,6 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
         return ((LispSymbol)myFunction).evaluateFunction(environment, exception, args);
       }
       if (isAutoload()) {
-//        throw new IllegalStateException("unexpected");
         uploadAutoload();
         return eval(environment, exception, args);
       }
@@ -391,7 +398,7 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     }
 
     finally {
-      checkCallStack();
+      popFromCallStack();
     }
   }
 
