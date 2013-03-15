@@ -47,18 +47,18 @@ public abstract class Window {
                                       @Optional LispObject window, LispObject considerMinibuffer, LispObject allFrames) {
     window = getWindow(environment, window);
     if (considerMinibuffer == null)
-      considerMinibuffer = LispSymbol.ourNil;
+      considerMinibuffer = LispSymbol.NIL;
     if (allFrames == null) {
-      allFrames = LispSymbol.ourNil;
+      allFrames = LispSymbol.NIL;
     }
 
     List<LispFrame> frames = new ArrayList<>();
-    if (allFrames.equals(LispSymbol.ourNil)) {
+    if (allFrames.equals(LispSymbol.NIL)) {
       LispFrame frame =  ((LispWindow) window).getFrame();
       frames.add(frame);
       boolean considerMinibuf = false;
-      if ((considerMinibuffer.equals(LispSymbol.ourNil) && environment.getMiniBufferActivationsDepth() > 0)
-          || considerMinibuffer.equals(LispSymbol.ourT))
+      if ((considerMinibuffer.equals(LispSymbol.NIL) && environment.getMiniBufferActivationsDepth() > 0)
+          || considerMinibuffer.equals(LispSymbol.T))
         considerMinibuf = true;
       if (considerMinibuf) {
         LispMinibuffer miniBuffer = environment.getFrameMinibuffer(frame);
@@ -70,7 +70,7 @@ public abstract class Window {
       }
     } else if (allFrames.equals(new LispSymbol("visible"))) {
       frames = environment.getVisibleFrames(); //search all visible frames
-    } else if (allFrames.equals(LispSymbol.ourT)) { //search all frames.
+    } else if (allFrames.equals(LispSymbol.T)) { //search all frames.
       frames = environment.getAllFrames();
     } else if (allFrames.equals(new LispInteger(0))) { //search visible and iconified frames.
       frames = environment.getVisibleAndIconifiedFrames();
@@ -107,14 +107,14 @@ public abstract class Window {
       for (LispWindow v: visibleWindows) {
         if (!isMinibufferOrToolWindow(v)) {
           environment.deleteFrameOtherWindows(v.getFrame(), v);
-          return LispSymbol.ourNil;
+          return LispSymbol.NIL;
         }
       }
       throw new IllegalStateException();
     }
 
     environment.deleteFrameOtherWindows(w.getFrame(), w);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("selected-window")
@@ -126,7 +126,7 @@ public abstract class Window {
   public static LispObject windowStart (Environment environment, @Optional LispObject windowObject) {
     LispWindow window = getWindow(environment, windowObject);
     Integer start = window.getDisplayStart();
-    return start == null ? LispSymbol.ourNil : new LispInteger(start);
+    return start == null ? LispSymbol.NIL : new LispInteger(start);
   }
 
   @Subroutine("window-point")
@@ -135,4 +135,8 @@ public abstract class Window {
     return new LispInteger(window.getBuffer().point());
   }
 
+  @Subroutine("window-system")
+  public static LispSymbol windowSystem(@Optional LispObject frame) {
+    return new LispSymbol("x");
+  }
 }

@@ -17,7 +17,7 @@ public class SyntaxTableTest extends JelispTestCase {
   public void testStandardSyntaxTable () {
     LispSyntaxTable standard = SyntaxTable.getStandardSyntaxTable();
     for (char i = 0; i < 128; i++) {
-      Assert.assertNotSame(LispSymbol.ourNil, standard.getCharSyntax(i));
+      Assert.assertNotSame(LispSymbol.NIL, standard.getCharSyntax(i));
     }
   }
 

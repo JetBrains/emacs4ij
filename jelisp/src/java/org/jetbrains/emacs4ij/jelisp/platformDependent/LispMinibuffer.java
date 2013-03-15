@@ -176,7 +176,7 @@ public abstract class LispMinibuffer extends LispBuffer {
     if (defaultValue == null)
       return new LispSymbol("");
     if (defaultValue instanceof LispSymbol) {
-      if (!defaultValue.equals(LispSymbol.ourNil))
+      if (!defaultValue.equals(LispSymbol.NIL))
         return (LispSymbol) defaultValue;
       return new LispSymbol("");
     }

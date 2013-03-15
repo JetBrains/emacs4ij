@@ -1,7 +1,16 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.Lambda;
+import org.jetbrains.emacs4ij.jelisp.elisp.LambdaOrSymbolWithFunction;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSequence;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -21,7 +30,7 @@ public abstract class Sequence {
 
     private static boolean isSequence (LispObject object) {
         //Returns t if object is a list, vector, string, char-table, todo: bool-vector, nil otherwise.
-        return (object instanceof LispSequence || object.equals(LispSymbol.ourNil));    
+        return (object instanceof LispSequence || object.equals(LispSymbol.NIL));
     }
     
     @Subroutine("sequencep")
@@ -33,7 +42,7 @@ public abstract class Sequence {
     public static LispInteger length (LispObject sequence) {
         if (!isSequence(sequence))
             throw new WrongTypeArgumentException("sequencep", sequence);
-        if (sequence.equals(LispSymbol.ourNil))
+        if (sequence.equals(LispSymbol.NIL))
             return new LispInteger(0);
         return new LispInteger(((LispSequence)sequence).size());
     }
@@ -41,13 +50,13 @@ public abstract class Sequence {
     @Subroutine(value = "append")
     public static LispObject append (@Optional LispObject... args) {
         if (args == null || args.length == 0)
-            return LispSymbol.ourNil;
+            return LispSymbol.NIL;
         ArrayList<LispObject> list = new ArrayList<>();
         for (int i = 0; i < args.length - 1; ++i) {
             LispObject sequence = args[i];
             if (!isStringListVectorNil(sequence))
                 throw new WrongTypeArgumentException("sequencep", sequence);
-            if (sequence.equals(LispSymbol.ourNil))
+            if (sequence.equals(LispSymbol.NIL))
                 continue;
             list.addAll(((LispSequence)sequence).toLispObjectList());
         }
@@ -78,7 +87,7 @@ public abstract class Sequence {
 
     @Subroutine("copy-sequence")
     public static LispObject copySequence (LispObject arg) {
-        if (LispSymbol.ourNil.equals(arg))
+        if (LispSymbol.NIL.equals(arg))
             return arg;
         //todo: bool-vector
         if (!isSequence(arg))
@@ -88,7 +97,7 @@ public abstract class Sequence {
     
     private static boolean isStringListVectorNil (LispObject object) {
         return (object instanceof LispVector) || (object instanceof LispString) || (object instanceof LispList)
-         || (object.equals(LispSymbol.ourNil));
+         || (object.equals(LispSymbol.NIL));
     }
     
     @Subroutine("concat")
@@ -101,7 +110,7 @@ public abstract class Sequence {
         }
         String res = "";
         for (LispObject s: sequences) {
-            if (s.equals(LispSymbol.ourNil))
+            if (s.equals(LispSymbol.NIL))
                 continue;
             LispSequence sequence = (LispSequence) s;
             res += sequence.toCharString();
@@ -119,7 +128,7 @@ public abstract class Sequence {
         }
         LispVector v = new LispVector();
         for (LispObject s : sequences) {
-            if (s.equals(LispSymbol.ourNil))
+            if (s.equals(LispSymbol.NIL))
                 continue;
             LispSequence sequence = (LispSequence) s;
             v.add(sequence.toLispObjectList());
@@ -152,7 +161,7 @@ public abstract class Sequence {
 
     @Subroutine("delete")
     public static LispObject delete (LispObject element, LispObject sequence) {
-        if (sequence.equals(LispSymbol.ourNil))
+        if (sequence.equals(LispSymbol.NIL))
             return sequence;
         if (!(sequence instanceof LispString || sequence instanceof LispList || sequence instanceof LispVector))
             return sequence;

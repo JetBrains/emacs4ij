@@ -142,13 +142,13 @@ public class SyntaxDescriptorTest {
   @Test
   public void testGetSyntaxClassGenericComment() {
     int code = SyntaxDescriptor.makeFullSyntaxCode("! 123bn");
-    Assert.assertEquals(SyntaxDescriptor.ClassType.GENERIC_COMMENT, SyntaxDescriptor.classBySyntaxCode(code));
+    Assert.assertEquals(SyntaxDescriptor.ClassType.GENERIC_COMMENT_DELIMITER, SyntaxDescriptor.classBySyntaxCode(code));
   }
 
   @Test
   public void testGetSyntaxClassGenericString() {
     int code = SyntaxDescriptor.makeFullSyntaxCode("| 123bn");
-    Assert.assertEquals(SyntaxDescriptor.ClassType.GENERIC_STRING, SyntaxDescriptor.classBySyntaxCode(code));
+    Assert.assertEquals(SyntaxDescriptor.ClassType.GENERIC_STRING_DELIMITER, SyntaxDescriptor.classBySyntaxCode(code));
   }
 
   @Test

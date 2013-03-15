@@ -120,7 +120,7 @@ public abstract class SyntaxTable {
     if (!isSyntaxTable(syntaxTable))
       throw new WrongTypeArgumentException("syntax-table-p", syntaxTable);
     ((LispSyntaxTable)syntaxTable).modifyEntry(character, stringToSyntax(newEntry));
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   public static int getCharFullSyntaxCode (Environment environment, char c) {

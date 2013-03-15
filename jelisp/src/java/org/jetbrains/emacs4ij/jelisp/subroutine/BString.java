@@ -89,9 +89,9 @@ public abstract class BString {
         throw new ArgumentOutOfRange(string.toString(), start.toString());
     }
     LispSymbol s = environment.find("case-fold-search");
-    int r = string.match(environment, regexp, from, (s != null && !s.getValue().equals(LispSymbol.ourNil)));
+    int r = string.match(environment, regexp, from, (s != null && !s.getValue().equals(LispSymbol.NIL)));
     if (r == -1)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     return new LispInteger(r);
   }
 
@@ -103,8 +103,8 @@ public abstract class BString {
       LispObject[] a = new LispObject[args.length-1];
       System.arraycopy(args, 1, a, 0, args.length - 1);
       myCurrentMessage = format((LispString) formatObj,  a);
-    } else if (formatObj.equals(LispSymbol.ourNil)) {
-      myCurrentMessage = new LispString(LispSymbol.ourNil.toString());
+    } else if (formatObj.equals(LispSymbol.NIL)) {
+      myCurrentMessage = new LispString(LispSymbol.NIL.toString());
     } else {
       throw new WrongTypeArgumentException("stringp", formatObj);
     }
@@ -178,7 +178,7 @@ public abstract class BString {
   public static LispSymbol stringLessP (LispObject one, LispObject two) {
     String s1 = getDataOrName(one);
     String s2 = getDataOrName(two);
-    return s1.compareTo(s2) < 0 ? LispSymbol.ourT : LispSymbol.ourNil;
+    return s1.compareTo(s2) < 0 ? LispSymbol.T : LispSymbol.NIL;
   }
 
   @Subroutine("string-equal")
@@ -246,6 +246,6 @@ public abstract class BString {
   public static LispObject reSearchBackward(LispString regExp,
                                             @Optional LispObject bound, LispObject noError, LispObject count) {
     //todo: implement
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 }

@@ -427,7 +427,7 @@ public final class ForwardParser extends Parser {
       }
     }
     Integer n = c.toInteger();
-    return n == null ? LispSymbol.ourNil : new LispInteger(n);
+    return n == null ? LispSymbol.NIL : new LispInteger(n);
   }
 
   @Override

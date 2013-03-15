@@ -27,13 +27,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: kate
- * Date: 4/4/12
- * Time: 3:04 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Minibuffer {
   private Minibuffer() {}
 
@@ -56,10 +49,10 @@ public abstract class Minibuffer {
         historySymbol = (LispSymbol) ((LispList) historyObject).car();
 
         LispObject cdr = ((LispList) historyObject).cdr();
-        if (!cdr.equals(LispSymbol.ourNil) && !(cdr instanceof LispInteger)) {
+        if (!cdr.equals(LispSymbol.NIL) && !(cdr instanceof LispInteger)) {
           throw new WrongTypeArgumentException("integerp", cdr);
         }
-        if (!cdr.equals(LispSymbol.ourNil)) {
+        if (!cdr.equals(LispSymbol.NIL)) {
           historyPosition = ((LispInteger) cdr).getData();
         }
       } else {
@@ -101,7 +94,7 @@ public abstract class Minibuffer {
     environment.setVariable(new LispSymbol("minibuffer-completion-table", collection));
     environment.setVariable(new LispSymbol("minibuffer-completion-predicate", Core.thisOrNil(predicate)));
     environment.setVariable(new LispSymbol("minibuffer-completion-confirm",
-        requireMatch.equals(LispSymbol.ourT) ? LispSymbol.ourNil : requireMatch));
+        requireMatch.equals(LispSymbol.T) ? LispSymbol.NIL : requireMatch));
 
     String alreadyTyped = "";
     if (!Predicate.isNil(initialInput)) {
@@ -231,7 +224,7 @@ public abstract class Minibuffer {
    */
   @Subroutine(value = "exit-minibuffer", isCmd = true)
   public static LispObject exitMinibuffer (Environment environment) {
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   public static void goOn (InteractiveReader reader) {
@@ -267,7 +260,7 @@ public abstract class Minibuffer {
   @Subroutine("redisplay")
   public static LispSymbol redisplay (Environment environment, @Optional LispObject force) {
     LogUtil.log("redisplay", GlobalEnvironment.MessageType.ERROR);
-    return LispSymbol.ourT;
+    return LispSymbol.T;
   }
 
   @Subroutine("read-buffer")
@@ -292,8 +285,8 @@ public abstract class Minibuffer {
       promptString = prompt.toString();
 
     return completingRead (environment, new LispString(promptString), environment.find("internal-complete-buffer"),
-        LispSymbol.ourNil, requireMatch, LispSymbol.ourNil, environment.find("buffer-name-history").getValue(),
-        def, LispSymbol.ourNil);
+        LispSymbol.NIL, requireMatch, LispSymbol.NIL, environment.find("buffer-name-history").getValue(),
+        def, LispSymbol.NIL);
   }
 
   private static List<LispObject> getCollectionFromArgument (LispObject collection) {
@@ -334,13 +327,13 @@ public abstract class Minibuffer {
   }
 
   private static boolean fitsPredicate (Environment environment, LispObject predicate, LispObject value) {
-    return Predicate.isNil(predicate) || !Core.functionCall(environment, predicate, value).equals(LispSymbol.ourNil);
+    return Predicate.isNil(predicate) || !Core.functionCall(environment, predicate, value).equals(LispSymbol.NIL);
   }
 
   private static boolean fitsRegexps (Environment environment, LispString value) {
     LispObject regexps = environment.find("completion-regexp-list").getValue();
-    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.ourNil);
-    if (regexps.equals(LispSymbol.ourNil))
+    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.NIL);
+    if (regexps.equals(LispSymbol.NIL))
       return true;
     if (!(regexps instanceof LispList))
       throw new WrongTypeArgumentException("listp", "completion-regexp-list");
@@ -364,7 +357,7 @@ public abstract class Minibuffer {
   }
 
   private static String commonPrefix (Environment environment, String one, String two) {
-    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.ourNil);
+    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.NIL);
     if (!isCaseFold)
       return StringUtil.commonPrefix(one, two);
     String cp = StringUtil.commonPrefix(one.toLowerCase(), two.toLowerCase());
@@ -375,7 +368,7 @@ public abstract class Minibuffer {
                                                    LispObject predicate, @Nullable LispObject noSpace) {
     List<LispObject> collectionValues = getCollectionFromArgument(collection);
     List<String> possibleCompletions = new ArrayList<>();
-    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.ourNil);
+    boolean isCaseFold = !environment.find("completion-ignore-case").getValue().equals(LispSymbol.NIL);
     for (LispObject value: collectionValues) {
       LispString key = getKey(value);
       if (startsWith(key.getData(), prefix, isCaseFold)
@@ -393,16 +386,16 @@ public abstract class Minibuffer {
     if (collection instanceof LispSymbol
         || (collection instanceof LispList && ((LispList) collection).car() instanceof LispSymbol)) {
       if (predicate == null)
-        predicate = LispSymbol.ourNil;
-      return Core.functionCall(environment, collection, toComplete, predicate, LispSymbol.ourNil);
+        predicate = LispSymbol.NIL;
+      return Core.functionCall(environment, collection, toComplete, predicate, LispSymbol.NIL);
     }
     List<String> possibleCompletions = possibleCompletions(environment, toComplete.getData(),
         collection, predicate, null);
     if (possibleCompletions.isEmpty())
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     for (String match: possibleCompletions) {
       if (match.equals(toComplete.getData()))
-        return LispSymbol.ourT;
+        return LispSymbol.T;
     }
     if (possibleCompletions.size() == 1)
       return new LispString(possibleCompletions.get(0));
@@ -417,8 +410,8 @@ public abstract class Minibuffer {
     if (collection instanceof LispSymbol
         || (collection instanceof LispList && ((LispList) collection).car() instanceof LispSymbol)) {
       if (predicate == null)
-        predicate = LispSymbol.ourNil;
-      return Core.functionCall(environment, collection, toComplete, predicate, LispSymbol.ourT);
+        predicate = LispSymbol.NIL;
+      return Core.functionCall(environment, collection, toComplete, predicate, LispSymbol.T);
     }
     List<String> possibleCompletions = possibleCompletions(environment, toComplete.getData(),
         collection, predicate, noSpace);
@@ -435,7 +428,7 @@ public abstract class Minibuffer {
     if (collection instanceof LispSymbol
         || (collection instanceof LispList && ((LispList) collection).car() instanceof LispSymbol)) {
       if (predicate == null)
-        predicate = LispSymbol.ourNil;
+        predicate = LispSymbol.NIL;
       return Core.functionCall(environment, collection, toComplete, predicate, new LispSymbol("lambda"));
     }
     List<String> possibleCompletions = possibleCompletions(environment, toComplete.getData(),
@@ -452,9 +445,9 @@ public abstract class Minibuffer {
     }
     LispList collection = LispList.list(bufferNames);
 
-    if (flag.equals(LispSymbol.ourNil))
+    if (flag.equals(LispSymbol.NIL))
       return tryCompletion(environment, toComplete, collection, predicate);
-    if (flag.equals(LispSymbol.ourT)) {
+    if (flag.equals(LispSymbol.T)) {
       return allCompletions(environment, toComplete, collection, predicate, null);
     }
     return testCompletion(environment, toComplete, collection, predicate);

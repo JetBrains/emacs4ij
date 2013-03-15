@@ -15,7 +15,7 @@ public class HashTableTest extends JelispTestCase {
   @Test
   public void testMakeHashTableDefault() {
     LispObject hashTable = evaluateString("(make-hash-table)");
-    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5), hashTable);
+    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5), hashTable);
     Assert.assertEquals("#s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8 data ())",
         hashTable.toString());
   }
@@ -23,7 +23,7 @@ public class HashTableTest extends JelispTestCase {
   @Test
   public void testMakeHashTableTestOk() {
     LispObject hashTable = evaluateString("(make-hash-table :test 'eq)");
-    Assert.assertEquals(new LispHashTable("eq", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5), hashTable);
+    Assert.assertEquals(new LispHashTable("eq", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5), hashTable);
   }
 
   @Test
@@ -112,12 +112,12 @@ public class HashTableTest extends JelispTestCase {
   @Test
   public void testMakeHash() {
     LispObject hashTable = evaluateString("(makehash)");
-    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5), hashTable);
+    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5), hashTable);
     Assert.assertEquals("#s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8 data ())",
         hashTable.toString());
 
     hashTable = evaluateString("(makehash 'eq)");
-    Assert.assertEquals(new LispHashTable("eq", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5), hashTable);
+    Assert.assertEquals(new LispHashTable("eq", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5), hashTable);
     Assert.assertEquals("#s(hash-table size 65 test eq rehash-size 1.5 rehash-threshold 0.8 data ())",
         hashTable.toString());
   }
@@ -127,12 +127,12 @@ public class HashTableTest extends JelispTestCase {
     evaluateString("(setq table (makehash))");
     evaluateString("(puthash 'a 1 table)");
     LispObject table = evaluateString("table");
-    LispHashTable expected = new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5);
+    LispHashTable expected = new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5);
     expected.put(new LispSymbol("a"), new LispInteger(1));
     Assert.assertEquals(expected, table);
 
     evaluateString("(defun f (symbol int) (message \"%s\" symbol) (+ int 1))");
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(maphash 'f table)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(maphash 'f table)"));
   }
 
   @Test
@@ -174,7 +174,7 @@ public class HashTableTest extends JelispTestCase {
   public void testMakeHashTableFloatThreshold() {
     evaluateString("(setq h (make-hash-table :rehash-threshold 1.0))");
     LispObject hashTable = evaluateString("h");
-    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(1.0), LispSymbol.ourNil, 1.5), hashTable);
+    Assert.assertEquals(new LispHashTable("eql", 65, new LispFloat(1.0), LispSymbol.NIL, 1.5), hashTable);
   }
 
   @Test
@@ -182,13 +182,13 @@ public class HashTableTest extends JelispTestCase {
     evaluateString("(setq table (make-hash-table :size 1))");
     evaluateString("(puthash 'a 1 table)");
     LispObject table = evaluateString("table");
-    LispHashTable expected = new LispHashTable("eql", 1, new LispFloat(0.8), LispSymbol.ourNil, 1.5);
+    LispHashTable expected = new LispHashTable("eql", 1, new LispFloat(0.8), LispSymbol.NIL, 1.5);
     expected.put(new LispSymbol("a"), new LispInteger(1));
     Assert.assertEquals(expected, table);
 
     evaluateString("(puthash 'b 1 table)");
     table = evaluateString("table");
-    expected = new LispHashTable("eql", 2, new LispFloat(0.8), LispSymbol.ourNil, 1.5);
+    expected = new LispHashTable("eql", 2, new LispFloat(0.8), LispSymbol.NIL, 1.5);
     expected.put(new LispSymbol("a"), new LispInteger(1));
     expected.put(new LispSymbol("b"), new LispInteger(1));
     Assert.assertEquals(expected, table);
@@ -199,7 +199,7 @@ public class HashTableTest extends JelispTestCase {
   public void testReadFromPrintNotation() {
     evaluateString("(setq table #s(hash-table test eql rehash-size 1.5 size 65 data (key1 1 2 \"two\") rehash-threshold 0.8))");
     LispObject table = evaluateString("table");
-    LispHashTable expected = new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.ourNil, 1.5);
+    LispHashTable expected = new LispHashTable("eql", 65, new LispFloat(0.8), LispSymbol.NIL, 1.5);
     expected.put(new LispSymbol("key1"), new LispInteger(1));
     expected.put(new LispInteger(2), new LispString("two"));
     Assert.assertEquals(expected, table);

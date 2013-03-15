@@ -55,7 +55,7 @@ public final class Primitive implements FunctionCell, LispCommand {
     @Override
     public LispObject getDocumentation() {
         if (myDocumentation == null)
-            return LispSymbol.ourNil;        
+            return LispSymbol.NIL;
         if (myDocumentation instanceof LispString)
             return new LispString (((LispString) myDocumentation).getData().replace("usage: (" + myName, "\n(fn"));
         return myDocumentation;

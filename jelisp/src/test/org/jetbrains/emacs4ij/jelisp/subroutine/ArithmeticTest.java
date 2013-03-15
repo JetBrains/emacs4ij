@@ -44,7 +44,7 @@ public class ArithmeticTest extends JelispTestCase {
   @Test
   public void testMore() {
     LispSymbol more = Arithmetic.more(new LispInteger(5), new LispFloat(1.3));
-    Assert.assertEquals(LispSymbol.ourT, more);
+    Assert.assertEquals(LispSymbol.T, more);
   }
 
   @Test
@@ -68,9 +68,9 @@ public class ArithmeticTest extends JelispTestCase {
   @Test
   public void testNumOrMarkersEqual() {
     LispObject r = evaluateString("(= 1 2)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(= 1 1.0)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
   }
 
   @Test
@@ -98,29 +98,29 @@ public class ArithmeticTest extends JelispTestCase {
   @Test
   public void testNumOrMarkersNotEqual() {
     LispObject r = evaluateString("(/= 1 2)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(/= 1 1.0)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
   public void testNumOrMarkersLessOrEqual() {
     LispObject r = evaluateString("(<= 1 2)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(<= 1 1.0)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(<= 2 1.0)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
   public void testMoreOrEqual() {
     LispSymbol more = Arithmetic.moreOrEqual(new LispInteger(5), new LispFloat(1.3));
-    Assert.assertEquals(LispSymbol.ourT, more);
+    Assert.assertEquals(LispSymbol.T, more);
     more = Arithmetic.moreOrEqual(new LispInteger(5), new LispFloat(5));
-    Assert.assertEquals(LispSymbol.ourT, more);
+    Assert.assertEquals(LispSymbol.T, more);
     more = Arithmetic.moreOrEqual(new LispInteger(3), new LispFloat(4));
-    Assert.assertEquals(LispSymbol.ourNil, more);
+    Assert.assertEquals(LispSymbol.NIL, more);
   }
 
   @Test
@@ -194,13 +194,13 @@ public class ArithmeticTest extends JelispTestCase {
   @Test
   public void testEql() {
     LispObject eq = evaluateString("(eql 1 1.0)");
-    Assert.assertEquals(LispSymbol.ourNil, eq);
+    Assert.assertEquals(LispSymbol.NIL, eq);
     eq = evaluateString("(eql 1.0 1.0)");
-    Assert.assertEquals(LispSymbol.ourT, eq);
+    Assert.assertEquals(LispSymbol.T, eq);
     eq = evaluateString("(eql (make-marker) 1.0)");
-    Assert.assertEquals(LispSymbol.ourNil, eq);
+    Assert.assertEquals(LispSymbol.NIL, eq);
     eq = evaluateString("(eql 'a 1.0)");
-    Assert.assertEquals(LispSymbol.ourNil, eq);
+    Assert.assertEquals(LispSymbol.NIL, eq);
   }
 
   @Test

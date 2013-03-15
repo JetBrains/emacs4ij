@@ -34,7 +34,7 @@ public class MatchTest extends JelispTestCase {
     LispObject r = evaluateString("(match-beginning 0)");
     Assert.assertEquals(new LispInteger(4), r);
     r = evaluateString("(match-beginning 1)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -48,7 +48,7 @@ public class MatchTest extends JelispTestCase {
     r = evaluateString("(match-beginning 2)");
     Assert.assertEquals(new LispInteger(6), r);
     r = evaluateString("(match-beginning 3)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -62,7 +62,7 @@ public class MatchTest extends JelispTestCase {
     r = evaluateString("(match-end 2)");
     Assert.assertEquals(new LispInteger(9), r);
     r = evaluateString("(match-end 3)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class MatchTest extends JelispTestCase {
     r = evaluateString("(match-string 2 \"The quick fox jumped quickly.\")");
     Assert.assertEquals(new LispString("ick"), r);
     r = evaluateString("(match-string 3 \"The quick fox jumped quickly.\")");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -130,7 +130,7 @@ public class MatchTest extends JelispTestCase {
   @Test
   public void setEmptyMatchDataToNil() {
     LispObject data = evaluateString("(set-match-data nil)");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(), data);
   }
@@ -141,7 +141,7 @@ public class MatchTest extends JelispTestCase {
     LispObject data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9)), data);
     data = evaluateString("(set-match-data nil)");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(), data);
   }
@@ -149,7 +149,7 @@ public class MatchTest extends JelispTestCase {
   @Test
   public void setEmptyMatchDataToWrongStartList() {
     LispObject data = evaluateString("(set-match-data '(a 1 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(), data);
   }

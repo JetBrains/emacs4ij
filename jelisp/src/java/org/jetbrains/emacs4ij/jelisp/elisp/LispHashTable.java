@@ -135,7 +135,7 @@ public final class LispHashTable implements LispObject {
     public String toString() {
         StringBuilder sb = new StringBuilder("#s(hash-table size ");
         sb.append(myCapacity).append(" test ").append(myEqualityMethod.toString().toLowerCase());
-        if (!myWeakness.equals(LispSymbol.ourNil))
+        if (!myWeakness.equals(LispSymbol.NIL))
             sb.append(" weakness ").append(myWeakness.toString());
         sb.append(" rehash-size ").append(myRehashSize)
                 .append(" rehash-threshold ").append(myRehashThreshold)

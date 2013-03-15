@@ -13,14 +13,14 @@ import java.util.Map;
 
 public abstract class LispFrame implements LispObject {
   private Map<LispSymbol, LispObject> myParameters = new HashMap<>();
-  private List<LispSymbol> myFaces = new ArrayList<>();
+  private Map<LispSymbol, LispObject> myFaceAList = new HashMap<>();
 
   public abstract void setVisible (boolean visible);
   public abstract void setIconified (boolean iconified);
 
   public LispFrame() {
-    setParameter("visibility", LispSymbol.ourT);
-    setParameter("buffer-predicate", LispSymbol.ourNil);
+    setParameter("visibility", LispSymbol.T);
+    setParameter("buffer-predicate", LispSymbol.NIL);
   }
 
   @Override
@@ -28,8 +28,8 @@ public abstract class LispFrame implements LispObject {
     return this;
   }
 
-  public boolean hasFace(LispSymbol face) {
-    return myFaces.contains(face);
+  public Map<LispSymbol, LispObject> getFacesAList() {
+    return myFaceAList;
   }
 
   public boolean isIconified() {
@@ -37,7 +37,7 @@ public abstract class LispFrame implements LispObject {
   }
 
   public boolean isVisible() {
-    return getParameter("visibility").equals(LispSymbol.ourT);
+    return getParameter("visibility").equals(LispSymbol.T);
   }
 
   public LispObject getParameter(LispSymbol parameter) {

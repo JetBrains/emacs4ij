@@ -12,13 +12,6 @@ import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created with IntelliJ IDEA.
- * User: kate
- * Date: 5/23/12
- * Time: 12:40 PM
- * To change this template use File | Settings | File Templates.
- */
 abstract class BaseForwardMultilineParser implements Observer {
   protected ForwardParser myForwardParser = new ForwardParser();
   protected String myFilename;

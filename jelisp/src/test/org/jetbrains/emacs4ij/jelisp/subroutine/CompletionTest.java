@@ -48,13 +48,13 @@ public class CompletionTest extends JelispTestCase {
   @Test
   public void testTryCompletionListWithInt() {
     LispObject completion = evaluateString("(try-completion \"1\" '(\"*anna\" *alla 1))");
-    Assert.assertEquals(LispSymbol.ourNil, completion);
+    Assert.assertEquals(LispSymbol.NIL, completion);
   }
 
   @Test
   public void testTryCompletionNilArg() {
     LispObject completion = evaluateString("(try-completion \"nil\" '(\"a\" nil \"aalla\"))");
-    Assert.assertEquals(LispSymbol.ourT, completion);
+    Assert.assertEquals(LispSymbol.T, completion);
   }
 
   @Test
@@ -99,10 +99,10 @@ public class CompletionTest extends JelispTestCase {
   public void testTryCompletionCaseFoldT() {
     evaluateString("(setq completion-ignore-case nil)");
     LispObject completion = evaluateString("(try-completion \"Alla\" '(\"Alla\" \"alla\"))");
-    Assert.assertEquals(LispSymbol.ourT, completion);
+    Assert.assertEquals(LispSymbol.T, completion);
     evaluateString("(setq completion-ignore-case t)");
     completion = evaluateString("(try-completion \"Alla\" '(\"Alla\" \"alla\"))");
-    Assert.assertEquals(LispSymbol.ourT, completion);
+    Assert.assertEquals(LispSymbol.T, completion);
   }
 
   @Test
@@ -129,9 +129,9 @@ public class CompletionTest extends JelispTestCase {
   public void testTestCompletions() {
     evaluateString("(setq completion-ignore-case t)");
     LispObject test = evaluateString("(test-completion \"alla\" '(\"Alla\" \"allaz\"))");
-    Assert.assertEquals(LispSymbol.ourT, test);
+    Assert.assertEquals(LispSymbol.T, test);
     evaluateString("(defun test1 (s) (equal (aref s 0) 65))");
     test = evaluateString("(test-completion \"alla\" '(\"allaz\" \"alla\" \"alla\") 'test1)");
-    Assert.assertEquals(LispSymbol.ourNil, test);
+    Assert.assertEquals(LispSymbol.NIL, test);
   }
 }

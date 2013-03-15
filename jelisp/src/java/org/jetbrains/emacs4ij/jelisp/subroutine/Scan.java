@@ -3,11 +3,16 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSyntaxTable;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.elisp.SyntaxDescriptor;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.Range;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ScanException;
+import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 public abstract class Scan {
   private Scan() {}
@@ -17,6 +22,44 @@ public abstract class Scan {
   public static LispObject evalLastSexp (Environment environment, LispObject evalLastSexpArgInternal) {
     LispObject result = environment.getBufferCurrentForEditing().evaluateLastForm();
     return Core.thisOrNil(result);
+  }
+
+  @Subroutine("parse-partial-sexp")
+  public static LispList parsePartialSexp(Environment environment, LispInteger from, LispInteger to,
+                                          @Optional LispObject targetDepth, LispObject stopBefore, LispObject oldState, LispObject commentStop) {
+
+    int targDepth = Predicate.isNil(targetDepth) ? -1 : Predicate.getInteger(targetDepth);
+    Range r = new Range(from.getData(), to.getData(), environment.getBufferCurrentForEditing());
+
+    //todo: scan and return real data)))
+
+    return LispList.list(new LispInteger(1),
+        LispSymbol.NIL,
+        to,
+        LispSymbol.NIL,
+        LispSymbol.NIL,
+        LispSymbol.NIL,
+        new LispInteger(0),
+        LispSymbol.NIL,
+        LispSymbol.NIL,
+        LispSymbol.NIL
+    );
+  }
+
+  @Subroutine("forward-comment")
+  public static LispSymbol forwardComment(Environment environment, LispInteger count) {
+    int k = count.getData();
+    if (k == 0) return LispSymbol.T;
+
+    LispBuffer current = environment.getBufferCurrentForEditing();
+    int point = current.point();
+    LispSyntaxTable syntaxTable = current.getSyntaxTable();
+
+    //todo if k > 0 scan k comments forward, otherwise backward. Go to position.
+
+    //todo use Scan.skipCommentForward
+
+    return LispSymbol.NIL;
   }
 
   @Subroutine("scan-sexps")
@@ -36,13 +79,13 @@ public abstract class Scan {
     if (from > environment.getBufferCurrentForEditing().pointMax())
       from = environment.getBufferCurrentForEditing().pointMax();
 
-    boolean ignoreComments = environment.find("parse-sexp-ignore-comments").getValue().equals(LispSymbol.ourT);
+    boolean ignoreComments = environment.find("parse-sexp-ignore-comments").getValue().equals(LispSymbol.T);
 
     if (count > 0)
       return scanForward(environment, from, depth, minDepth, count, sexpFlag, ignoreComments);
     if (count < 0)
       return scanBackward(environment, from);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   private static LispObject scanForward (Environment environment, int from, int depth, int minDepth,
@@ -95,7 +138,7 @@ public abstract class Scan {
           }
           count--;
           continue;
-        case GENERIC_COMMENT:
+        case GENERIC_COMMENT_DELIMITER:
           commentStyle = SyntaxDescriptor.CommentStyle.GENERIC;
         case COMMENT_START:
           if (!ignoreComments)
@@ -137,13 +180,13 @@ public abstract class Scan {
           if (depth < minDepth)
             throw new ScanException(JelispBundle.message("unexpected.expression.end"));
           break;
-        case STRING_QUOTE: case GENERIC_STRING:
+        case STRING_QUOTE: case GENERIC_STRING_DELIMITER:
           char stringTerminator = iterator.previous.character;
           while (true) {
             iterator.checkUnbalancedParentheses();
             if (code == SyntaxDescriptor.ClassType.STRING_QUOTE
                 ? iterator.current.character == stringTerminator && iterator.current.syntax == SyntaxDescriptor.ClassType.STRING_QUOTE
-                : iterator.current.syntax == SyntaxDescriptor.ClassType.GENERIC_STRING)
+                : iterator.current.syntax == SyntaxDescriptor.ClassType.GENERIC_STRING_DELIMITER)
               break;
 
             if (iterator.current.syntax == SyntaxDescriptor.ClassType.CHARACTER_QUOTE
@@ -165,7 +208,7 @@ public abstract class Scan {
     if (count < 0)
       throw new LispException("generic scan-forward error");
     iterator.checkUnbalancedParentheses(depth);
-    return iterator.valid() ? new LispInteger(iterator.from + 1) : LispSymbol.ourNil;
+    return iterator.valid() ? new LispInteger(iterator.from + 1) : LispSymbol.NIL;
   }
 
   private static LispObject scanBackward (Environment environment, int from) {
@@ -198,7 +241,7 @@ public abstract class Scan {
           : iterator.nesting < 0)) {
         return true;
       }
-      if (iterator.current.syntax == SyntaxDescriptor.ClassType.GENERIC_COMMENT
+      if (iterator.current.syntax == SyntaxDescriptor.ClassType.GENERIC_COMMENT_DELIMITER
           && style == SyntaxDescriptor.CommentStyle.GENERIC) {
         return true;
       }

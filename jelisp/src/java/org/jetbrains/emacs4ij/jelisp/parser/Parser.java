@@ -121,7 +121,7 @@ abstract class Parser extends Observable {
     try {
       getCurrentChar();
     } catch (EndOfLineException e) {
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
     return tryToParse(isBackQuote);
   }

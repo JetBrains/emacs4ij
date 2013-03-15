@@ -12,7 +12,7 @@ public class LispListTest {
   @Test
   public void testCreateTrueList () {
     LispList list = LispList.list();
-    Assert.assertEquals(LispSymbol.ourNil, list);
+    Assert.assertEquals(LispSymbol.NIL, list);
   }
 
   @Test
@@ -34,17 +34,17 @@ public class LispListTest {
 
   @Test
   public void testToStringCons() {
-    LispList list = LispList.cons(new LispInteger(1), LispSymbol.ourNil);
+    LispList list = LispList.cons(new LispInteger(1), LispSymbol.NIL);
     Assert.assertEquals("(1)", list.toString());
-    list = LispList.cons(LispSymbol.ourNil, new LispInteger(1));
+    list = LispList.cons(LispSymbol.NIL, new LispInteger(1));
     Assert.assertEquals("(nil . 1)", list.toString());
-    list = LispList.cons(LispSymbol.ourNil, LispSymbol.ourNil);
+    list = LispList.cons(LispSymbol.NIL, LispSymbol.NIL);
     Assert.assertEquals("(nil)", list.toString());
   }
 
   @Test
   public void testToString() {
-    LispList list = LispList.list(LispList.list(new LispInteger(1), new LispInteger(2)), LispSymbol.ourNil);
+    LispList list = LispList.list(LispList.list(new LispInteger(1), new LispInteger(2)), LispSymbol.NIL);
     Assert.assertEquals("((1 2) nil)", list.toString());
   }
 
@@ -57,11 +57,11 @@ public class LispListTest {
 
   @Test
   public void testListOfNils () {
-    LispList list = LispList.list(LispSymbol.ourNil, LispSymbol.ourNil);
+    LispList list = LispList.list(LispSymbol.NIL, LispSymbol.NIL);
     Assert.assertEquals("(nil nil)", list.toString());
     ArrayList<LispObject> tList = new ArrayList<LispObject> ();
-    tList.add(LispSymbol.ourNil);
-    tList.add(LispSymbol.ourNil);
+    tList.add(LispSymbol.NIL);
+    tList.add(LispSymbol.NIL);
     Assert.assertEquals(tList, list.toLispObjectList());
   }
 
@@ -73,7 +73,7 @@ public class LispListTest {
 
   @Test
   public void testToObjectList() {
-    LispList list = LispList.list(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.ourNil, LispList.list(new LispSymbol("b"))));
+    LispList list = LispList.list(LispList.list(new LispSymbol("a")), LispList.cons(LispSymbol.NIL, LispList.list(new LispSymbol("b"))));
     List<LispObject> a = list.toLispObjectList();
     Assert.assertEquals(2, a.size());
 
@@ -86,7 +86,7 @@ public class LispListTest {
     Assert.assertEquals(2, a.size());
     Assert.assertTrue(a.get(1) instanceof LispList);
 
-    list = LispList.list(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.ourNil));
+    list = LispList.list(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.NIL));
     a = list.toLispObjectList();
     Assert.assertEquals(2, a.size());
     Assert.assertTrue(a.get(1) instanceof LispList);
@@ -94,7 +94,7 @@ public class LispListTest {
 
   @Test
   public void testToObjectListCons() {
-    LispList list = LispList.cons(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.ourNil));
+    LispList list = LispList.cons(new LispSymbol("a"), LispList.cons(new LispSymbol("a"), LispSymbol.NIL));
     List<LispObject> a = list.toLispObjectList();
     Assert.assertEquals("(a a)", list.toString());
     Assert.assertEquals(2, a.size());
@@ -126,7 +126,7 @@ public class LispListTest {
   public void testSize() {
     LispList list = LispList.list();
     Assert.assertEquals(0, list.size());
-    list = LispList.cons(LispSymbol.ourNil, null);
+    list = LispList.cons(LispSymbol.NIL, null);
     Assert.assertEquals(1, list.size());
     list = LispList.list(new LispInteger(1), new LispInteger(1), new LispInteger(1), new LispInteger(1), new LispInteger(1));
     Assert.assertEquals(5, list.size());
@@ -159,41 +159,41 @@ public class LispListTest {
   @Test
   public void testResetEmptyWithNilElt() {
     LispList current = LispList.list();
-    LispList list = LispList.list(LispSymbol.ourNil);
+    LispList list = LispList.list(LispSymbol.NIL);
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL), current);
   }
 
   @Test
   public void testResetEmptyWith3Elt() {
     LispList current = LispList.list();
-    LispList list = LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil);
+    LispList list = LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL);
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL), current);
   }
 
   @Test
   public void testResetWithEqualLengthList() {
     LispList current = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
-    LispList list = LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil);
+    LispList list = LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL);
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL), current);
   }
 
   @Test
   public void testResetWithLessBy1List() {
     LispList current = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3));
-    LispList list = LispList.list(LispSymbol.ourNil, new LispInteger(1));
+    LispList list = LispList.list(LispSymbol.NIL, new LispInteger(1));
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL), current);
   }
 
   @Test
   public void testResetWithLessBy3List() {
     LispList current = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3), new LispInteger(4), new LispInteger(5));
-    LispList list = LispList.list(LispSymbol.ourNil, new LispInteger(1));
+    LispList list = LispList.list(LispSymbol.NIL, new LispInteger(1));
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(1), LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, new LispInteger(1), LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL), current);
   }
 
   @Test
@@ -201,6 +201,6 @@ public class LispListTest {
     LispList current = LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3), new LispInteger(4), new LispInteger(5));
     LispList list = LispList.list();
     current.resetWith(list);
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil), current);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL), current);
   }
 }

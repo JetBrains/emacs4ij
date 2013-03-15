@@ -4,20 +4,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-/**
- * @author kate
- *
- */
-
 interface Manager<T> {
-    boolean define (T item);
-    @NotNull T getCurrent () ;
-    T switchTo (T item);
-    void bury (T item);
-    List<T> getData();
-    int getSize();
-    void remove (T item);
-    void clear();
-    boolean isAlive (T item);
-    boolean isEmpty();
+  boolean define (T item);
+  @NotNull T getCurrent () ;
+  T switchTo (T item);
+  void bury (T item);
+  List<T> getData();
+  int getSize();
+  void remove (T item);
+  void clear();
+  boolean isAlive (T item);
+  boolean isEmpty();
 }

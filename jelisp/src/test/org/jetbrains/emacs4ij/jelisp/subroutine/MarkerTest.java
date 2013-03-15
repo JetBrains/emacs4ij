@@ -12,7 +12,7 @@ public class MarkerTest extends JelispTestCase {
   @Test
   public void testMarkerInsertionType() throws Exception {
     LispMarker marker = new LispMarker();
-    Assert.assertEquals(LispSymbol.ourNil, Marker.markerInsertionType(marker));
+    Assert.assertEquals(LispSymbol.NIL, Marker.markerInsertionType(marker));
   }
 
   @Test
@@ -25,11 +25,11 @@ public class MarkerTest extends JelispTestCase {
   public void testSetMarkerInsertionType() throws Exception {
     evaluateString("(defvar m (make-marker))");
     LispObject lispObject =  evaluateString("(set-marker-insertion-type m ())");
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(marker-insertion-type m)"));
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(marker-insertion-type m)"));
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
 
     lispObject =  evaluateString("(set-marker-insertion-type m (+ 5 5))");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(marker-insertion-type m)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(marker-insertion-type m)"));
     Assert.assertEquals(new LispInteger(10), lispObject);
   }
 }

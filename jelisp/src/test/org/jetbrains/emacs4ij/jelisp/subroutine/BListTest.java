@@ -24,13 +24,13 @@ public class BListTest extends JelispTestCase {
     Assert.assertEquals(new LispInteger(1), LispObject);
     evaluateString("(set 'p '())");
     LispObject = evaluateString("(car p)");
-    Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
   public void testCarNil() {
     LispObject res = evaluateString("(car nil)");
-    Assert.assertEquals(LispSymbol.ourNil, res);
+    Assert.assertEquals(LispSymbol.NIL, res);
   }
 
   @Test
@@ -52,7 +52,7 @@ public class BListTest extends JelispTestCase {
     Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), LispObject);
     evaluateString("(set 'p '(1))");
     LispObject = evaluateString("(cdr p)");
-    Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
@@ -70,28 +70,28 @@ public class BListTest extends JelispTestCase {
   @Test
   public void testCdrNil() {
     LispObject res = evaluateString("(cdr nil)");
-    Assert.assertEquals(LispSymbol.ourNil, res);
+    Assert.assertEquals(LispSymbol.NIL, res);
   }
 
   @Test
   public void testCarSafe() {
     evaluateString("(set 'p 'defun)");
     LispObject LispObject = evaluateString("(car-safe p)");
-    Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
   public void testCdrSafe() throws Exception {
     evaluateString("(set 'p 'defun)");
     LispObject LispObject = evaluateString("(cdr-safe p)");
-    Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
   public void testMemq () {
     evaluateString("(set 'a '(1 2 3))");
     LispObject LispObject = evaluateString("(memq 4 a)");
-    Assert.assertEquals("not exist", LispSymbol.ourNil, LispObject);
+    Assert.assertEquals("not exist", LispSymbol.NIL, LispObject);
     LispObject = evaluateString("(memq 3 a)");
     Assert.assertEquals(LispList.list(new LispInteger(3)), LispObject);
   }
@@ -109,15 +109,15 @@ public class BListTest extends JelispTestCase {
   @Test
   public void testList() {
     LispObject r = evaluateString("(list)");
-    Assert.assertEquals("no args", LispSymbol.ourNil, r);
+    Assert.assertEquals("no args", LispSymbol.NIL, r);
     r = evaluateString("(list 5 \"test\")");
     Assert.assertEquals("2 args", LispList.list(new LispInteger(5), new LispString("test")), r);
     r = evaluateString("(list nil)");
-    Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.ourNil), r);
+    Assert.assertEquals("list of nil -1", LispList.list(LispSymbol.NIL), r);
     r = evaluateString("(list (list))");
-    Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.ourNil), r);
+    Assert.assertEquals("list of nil -2", LispList.list(LispSymbol.NIL), r);
     r = evaluateString("(list 1 nil)");
-    Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.ourNil), r);
+    Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.NIL), r);
   }
 
   @Test
@@ -212,7 +212,7 @@ public class BListTest extends JelispTestCase {
   @Test
   public void testNconcNil() {
     LispObject r = evaluateString("(nconc)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -289,7 +289,7 @@ public class BListTest extends JelispTestCase {
     r = evaluateString("(nth -1 a)");
     Assert.assertEquals(new LispInteger(1), r);
     r = evaluateString("(nth 5 a)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -297,13 +297,13 @@ public class BListTest extends JelispTestCase {
     LispObject r = evaluateString("(assoc 1 '(1 2 3 4 (1 . \"alla\") 5))");
     Assert.assertEquals(LispList.cons(new LispInteger(1), new LispString("alla")), r);
     r = evaluateString("(assoc nil '(1 (nil . nil) 2))");
-    Assert.assertEquals(LispList.cons(LispSymbol.ourNil, LispSymbol.ourNil), r);
+    Assert.assertEquals(LispList.cons(LispSymbol.NIL, LispSymbol.NIL), r);
     r = evaluateString("(assoc 1 '((1 2 3) (nil . nil) 2))");
     Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
     r = evaluateString("(assoc nil '((() 2 3) (nil . nil) 2))");
-    Assert.assertEquals(LispList.list(LispSymbol.ourNil, new LispInteger(2), new LispInteger(3)), r);
+    Assert.assertEquals(LispList.list(LispSymbol.NIL, new LispInteger(2), new LispInteger(3)), r);
     r = evaluateString("(assoc nil nil)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -339,7 +339,7 @@ public class BListTest extends JelispTestCase {
   @Test
   public void testDelqTheOnly() {
     LispObject r = evaluateString("(delq 1 '(1))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -348,7 +348,7 @@ public class BListTest extends JelispTestCase {
     Assert.assertEquals(LispList.list(new LispInteger(2)), r);
     evaluateString("(setq c '(1 1 1 1 1 1))");
     r = evaluateString("(delq 1 c)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("c");
     Assert.assertEquals("(1 1 1 1 1 1)", r.toString());
   }
@@ -398,9 +398,9 @@ public class BListTest extends JelispTestCase {
   @Test
   public void testNthCdrNil() {
     LispObject r = evaluateString("(nthcdr 5 nil)");
-    Assert.assertEquals (LispSymbol.ourNil, r);
+    Assert.assertEquals (LispSymbol.NIL, r);
     r = evaluateString("(nthcdr 3 '(1 2 3))");
-    Assert.assertEquals (LispSymbol.ourNil, r);
+    Assert.assertEquals (LispSymbol.NIL, r);
     r = evaluateString("(nthcdr -1 '(1 2 3))");
     Assert.assertEquals (LispList.list(new LispInteger(1), new LispInteger(2), new LispInteger(3)), r);
   }
@@ -409,7 +409,7 @@ public class BListTest extends JelispTestCase {
   public void testAssq() {
     evaluateString("(setq foo '(1 (2 (3))))");
     LispObject r = evaluateString("(assq '(1 (2 (3))) '(5 nil \"str\" ((1 (2 (3))) 6) ((1 (2 (3))) . 3)))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(assq 5 '(1 \"hi\" (5 . 3) (5 1)))");
     Assert.assertEquals (LispList.cons(new LispInteger(5), new LispInteger(3)), r);
   }
@@ -427,7 +427,7 @@ public class BListTest extends JelispTestCase {
   public void testSetcdrNil() {
     evaluateString("(defvar b (list 1 nil))");
     LispObject b = evaluateString("b");
-    Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.ourNil), b);
+    Assert.assertEquals(LispList.list(new LispInteger(1), LispSymbol.NIL), b);
     evaluateString("(setcdr b 2)");
     b = evaluateString("b");
     Assert.assertEquals(LispList.cons(new LispInteger(1), new LispInteger(2)), b);
@@ -459,7 +459,7 @@ public class BListTest extends JelispTestCase {
   public void testAfterAppend() {
     evaluateString("(setq k '(keymap))");
     evaluateString("(setq k (append k '(keymap)))");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(consp (cdr k))"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(consp (cdr k))"));
   }
 
   @Test

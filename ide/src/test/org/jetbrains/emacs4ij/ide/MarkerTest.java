@@ -46,7 +46,7 @@ public class MarkerTest extends IdeTestCase {
     m = evaluateString("(goto-char (point-min))");
     Assert.assertEquals(new LispInteger(1), m);
     m = evaluateString("(insert \"Q\")");
-    Assert.assertEquals(LispSymbol.ourNil, m);
+    Assert.assertEquals(LispSymbol.NIL, m);
     m = evaluateString("m1");
     Assert.assertEquals("#<marker at 6 in 3.txt>", m.toString());
     m = evaluateString("(set-marker m1 nil)");
@@ -60,9 +60,9 @@ public class MarkerTest extends IdeTestCase {
     LispObject m2 = evaluateString("(setq m2 (copy-marker m1))");
     Assert.assertEquals("#<marker at 6 in 3.txt>", m2.toString());
     m2 = evaluateString("(eq m1 m2)");
-    Assert.assertEquals(LispSymbol.ourNil, m2);
+    Assert.assertEquals(LispSymbol.NIL, m2);
     m2 = evaluateString("(equal m1 m2)");
-    Assert.assertEquals(LispSymbol.ourT, m2);
+    Assert.assertEquals(LispSymbol.T, m2);
   }
 
   public void testGetMarkerPos () {
@@ -71,7 +71,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispInteger(1), p);
     evaluateString("(set-marker m nil)");
     p = evaluateString("(marker-position m)");
-    Assert.assertEquals(LispSymbol.ourNil, p);
+    Assert.assertEquals(LispSymbol.NIL, p);
   }
 
   public void testGetMarkerBuffer() {
@@ -83,13 +83,13 @@ public class MarkerTest extends IdeTestCase {
   public void testBufferHasMarkersAt() {
     evaluateString("(setq m (point-marker))");
     LispObject b = evaluateString("(buffer-has-markers-at 1)");
-    Assert.assertEquals(LispSymbol.ourT, b);
+    Assert.assertEquals(LispSymbol.T, b);
     b = evaluateString("(buffer-has-markers-at nil)");
-    Assert.assertEquals(LispSymbol.ourNil, b);
+    Assert.assertEquals(LispSymbol.NIL, b);
     b = evaluateString("(buffer-has-markers-at 2)");
-    Assert.assertEquals(LispSymbol.ourNil, b);
+    Assert.assertEquals(LispSymbol.NIL, b);
     b = evaluateString("(buffer-has-markers-at \"hello\")");
-    Assert.assertEquals(LispSymbol.ourNil, b);
+    Assert.assertEquals(LispSymbol.NIL, b);
   }
 
 //    //todo fix CoreTest.testSimple first
@@ -106,7 +106,7 @@ public class MarkerTest extends IdeTestCase {
 
   public void testMarkForced() {
     LispObject mark = evaluateString("(mark t)");
-    Assert.assertEquals(LispSymbol.ourNil, mark);
+    Assert.assertEquals(LispSymbol.NIL, mark);
   }
 
   public void testSetMark() throws Throwable {
@@ -136,18 +136,18 @@ public class MarkerTest extends IdeTestCase {
 
   public void testPushMark () {
     LispObject r = evaluateString("(push-mark)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(mark t)");
     Assert.assertEquals(new LispInteger(1), r);
 
     r = evaluateString("(push-mark 5)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
 
     r = evaluateString("(push-mark 5 t)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
 
     r = evaluateString("(push-mark 5 t t)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(mark t)");
     Assert.assertEquals(new LispInteger(5), r);
   }
@@ -180,7 +180,7 @@ public class MarkerTest extends IdeTestCase {
 
   public void testUseRegionP() {
     LispObject r = evaluateString("(use-region-p)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   public void testInsertNil() {
@@ -231,18 +231,18 @@ public class MarkerTest extends IdeTestCase {
 
     evaluateString("(string-match \"quick\" \"The quick fox jumped quickly.\")");
     data = evaluateString("(match-data nil reuse)");
-    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.NIL), data);
     data = evaluateString("reuse");
-    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.NIL), data);
     data = evaluateString("m");
     Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
     Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), data);
 
     evaluateString("(setq reuse (list 1 2 m))");
     data = evaluateString("(match-data nil reuse t)");
-    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.NIL), data);
     data = evaluateString("reuse");
-    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.ourNil), data);
+    Assert.assertEquals(LispList.list(new LispInteger(4), new LispInteger(9), LispSymbol.NIL), data);
     data = evaluateString("m");
     Assert.assertFalse(m.isSet());
     Assert.assertEquals(m, data);
@@ -272,7 +272,7 @@ public class MarkerTest extends IdeTestCase {
 
   public void testSetMatchDataNowhereMarker() {
     LispObject data = evaluateString("(set-match-data (list (make-marker) 1 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispInteger(0), new LispInteger(1)), data);
   }
@@ -284,7 +284,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
 
     LispObject data = evaluateString("(set-match-data (list m 1))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     LispMarker m2 = new LispMarker(1, myEnvironment.getBufferCurrentForEditing());
     Assert.assertEquals(LispList.list(m, m2), data);
@@ -297,7 +297,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
 
     LispObject data = evaluateString("(set-match-data (list 1 m))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(3)), data);
   }
@@ -314,7 +314,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
 
     LispObject data = evaluateString("(set-match-data (list m1 1 m2 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
         m2, new LispMarker(2, myTests.get("2.txt"))), data);
@@ -327,7 +327,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
 
     LispObject data = evaluateString("(set-match-data (list 3 1 m2 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
         m2, new LispMarker(2, myTests.get("2.txt"))), data);
@@ -340,7 +340,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
 
     LispObject data = evaluateString("(set-match-data (list 3 1 2 m2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(1), new LispInteger(2), new LispInteger(4)), data);
   }
@@ -357,7 +357,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(4, myTests.get("2.txt")), m2);
 
     LispObject data = evaluateString("(set-match-data (list m1 1 m1 5 m2 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
         new LispMarker(3, myTests.get("2.txt")), new LispMarker(5, myTests.get("2.txt")),
@@ -378,7 +378,7 @@ public class MarkerTest extends IdeTestCase {
     evaluateString("(setq e (make-marker))");
 
     LispObject data = evaluateString("(set-match-data (list m1 1 m2 5 e 2))");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispMarker(3, myTests.get("2.txt")), new LispMarker(1, myTests.get("2.txt")),
         m2, new LispMarker(5, myTests.get("2.txt")),
@@ -392,7 +392,7 @@ public class MarkerTest extends IdeTestCase {
     Assert.assertEquals(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()), m);
 
     LispObject data = evaluateString("(set-match-data (list m 1) t)");
-    Assert.assertEquals(LispSymbol.ourNil, data);
+    Assert.assertEquals(LispSymbol.NIL, data);
     data = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispMarker(3, myEnvironment.getBufferCurrentForEditing()),
         new LispMarker(1, myEnvironment.getBufferCurrentForEditing())), data);
@@ -410,7 +410,7 @@ public class MarkerTest extends IdeTestCase {
     evaluateString("(set-match-data (list 1 2))");
     String init = myEnvironment.getBufferCurrentForEditing().getText();
     LispObject replaced = evaluateString("(replace-match \"anna\")");
-    Assert.assertEquals(LispSymbol.ourNil, replaced);
+    Assert.assertEquals(LispSymbol.NIL, replaced);
     String expected ="anna" + init.substring(1);
     Assert.assertEquals(expected, myEnvironment.getBufferCurrentForEditing().getText());
     Assert.assertEquals(5, myEnvironment.getBufferCurrentForEditing().point());
@@ -420,7 +420,7 @@ public class MarkerTest extends IdeTestCase {
     evaluateString("(setq m (make-marker))");
     evaluateString("(set-marker m 1)");
     LispObject eq = evaluateString("(eql m 1)");
-    Assert.assertEquals(LispSymbol.ourNil, eq);
+    Assert.assertEquals(LispSymbol.NIL, eq);
   }
 
   public void testReplaceMatchInBuffer () {

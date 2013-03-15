@@ -120,7 +120,7 @@ public final class LispList implements LispSequence {
   @Override
   public LispObject evaluate(Environment environment) {
     if (isEmpty())
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
 
     LispObject function = car();
     List<LispObject> args = myCdr instanceof LispList ? ((LispList)myCdr).toLispObjectList() : new ArrayList<LispObject>();
@@ -242,7 +242,7 @@ public final class LispList implements LispSequence {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof LispList)) {
-      return o.equals(LispSymbol.ourNil) && isEmpty();
+      return o.equals(LispSymbol.NIL) && isEmpty();
     }
     LispList lispList = (LispList) o;
     if (myCar != null ? !myCar.equals(lispList.myCar) : lispList.myCar != null)
@@ -305,7 +305,7 @@ public final class LispList implements LispSequence {
   }
 
   public void append (LispObject object) {
-    if (object.equals(LispSymbol.ourNil))
+    if (object.equals(LispSymbol.NIL))
       return;
     if (myCdr != null && myCdr instanceof LispList)
       ((LispList) myCdr).append(object);
@@ -368,6 +368,7 @@ public final class LispList implements LispSequence {
     return list;
   }
 
+  //get (key . values) with key==first from associated list
   public LispObject assq (LispObject first) {
     for (LispObject item: toLispObjectList()) {
       if (item instanceof LispList) {
@@ -375,7 +376,7 @@ public final class LispList implements LispSequence {
           return item;
       }
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   public LispObject nthCdr (int n) {
@@ -387,7 +388,7 @@ public final class LispList implements LispSequence {
     if (i < n && result != null)
       throw new WrongTypeArgumentException("listp", result);
     if (result == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     return result;
   }
 
@@ -439,11 +440,11 @@ public final class LispList implements LispSequence {
       ((LispList)current).setCar(Core.thisOrNil(tail));
       while (((LispList)current).realCdr() instanceof LispList) {
 
-        ((LispList)current).setCar(LispSymbol.ourNil);
+        ((LispList)current).setCar(LispSymbol.NIL);
         current = ((LispList)current).realCdr();
       }
-      ((LispList)current).setCar(LispSymbol.ourNil);
-      ((LispList)current).setCdr(LispSymbol.ourNil);
+      ((LispList)current).setCar(LispSymbol.NIL);
+      ((LispList)current).setCdr(LispSymbol.NIL);
     }
   }
 
@@ -474,7 +475,7 @@ public final class LispList implements LispSequence {
     List<LispObject> list = new ArrayList<>();
     while (left != null && right != null) {
       LispObject predicateValue = Core.functionCall(GlobalEnvironment.INSTANCE, predicate, left.car(), right.car());
-      if (predicateValue.equals(LispSymbol.ourNil)) {
+      if (predicateValue.equals(LispSymbol.NIL)) {
         list.add(right.car());
         right = right.getListCdr();
       } else {

@@ -1,6 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.GenericCharTable;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispCharTable;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -36,7 +42,7 @@ public abstract class CharTable {
 
     @Subroutine("set-char-table-parent")
     public static LispObject setCharTableParent (GenericCharTable table, LispObject newParent) {
-        if (newParent instanceof GenericCharTable || newParent.equals(LispSymbol.ourNil)) {
+        if (newParent instanceof GenericCharTable || newParent.equals(LispSymbol.NIL)) {
             table.setParent(newParent);
             return newParent;
         }
@@ -66,7 +72,7 @@ public abstract class CharTable {
 
     @Subroutine("char-table-range")
     public static LispObject charTableRange (GenericCharTable table, LispObject range) {
-        if (range.equals(LispSymbol.ourNil)) {
+        if (range.equals(LispSymbol.NIL)) {
             return table.getDefault();
         } else if (range instanceof LispInteger) { //i.e. char
             return table.ref(((LispInteger) range).getData());
@@ -82,9 +88,9 @@ public abstract class CharTable {
 
     @Subroutine("set-char-table-range")
     public static LispObject setCharTableRange (GenericCharTable table, LispObject range, LispObject value) {
-        if (range.equals(LispSymbol.ourNil)) {
+        if (range.equals(LispSymbol.NIL)) {
             table.setDefault(value);
-        } else if (range.equals(LispSymbol.ourT)) {
+        } else if (range.equals(LispSymbol.T)) {
             table.setContent(value);
         } else if (range instanceof LispInteger) { //i.e. char
             table.setRange(((LispInteger) range).getData(), ((LispInteger) range).getData(), value);
@@ -100,12 +106,12 @@ public abstract class CharTable {
 
     @Subroutine("set-char-table-default")
     public static LispObject setCharTableDefault (LispObject table, LispObject ch, LispObject value) {
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
     }
 
     @Subroutine("map-char-table")
     public static LispSymbol mapCharTable (LispObject function, LispCharTable table) {
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
     }
 
 }

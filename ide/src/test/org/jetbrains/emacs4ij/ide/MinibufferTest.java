@@ -71,7 +71,7 @@ public class MinibufferTest extends IdeTestCase {
   }
 
   public void testReturnDefault_NilSymbol () {
-    LispObject ret = myMiniBuffer.returnDefault (LispSymbol.ourNil);
+    LispObject ret = myMiniBuffer.returnDefault (LispSymbol.NIL);
     Assert.assertEquals(new LispSymbol(""), ret);
   }
 

@@ -3,6 +3,8 @@ package org.jetbrains.emacs4ij.jelisp.elisp;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.TextPropertiesInterval;
 import org.jetbrains.emacs4ij.jelisp.exception.ArgumentOutOfRange;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
@@ -32,7 +34,7 @@ public final class LispString implements LispAtom, LispSequence, LispArray, Stri
     myData = data.replaceAll("\\\\\"", "\"");
   }
 
-  public LispString (String data, List<TextPropertiesHolder.TextPropertiesInterval> textProperties) {
+  public LispString (String data, List<TextPropertiesInterval> textProperties) {
     this(data);
     myTextPropertiesHolder.setTextProperties(textProperties);
   }

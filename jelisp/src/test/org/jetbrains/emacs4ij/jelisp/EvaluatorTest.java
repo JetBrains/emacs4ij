@@ -31,13 +31,13 @@ public class EvaluatorTest extends JelispTestCase {
   @Test
   public void testNil () {
     LispObject n = evaluateString("nil");
-    Assert.assertEquals(LispSymbol.ourNil, n);
+    Assert.assertEquals(LispSymbol.NIL, n);
   }
 
   @Test
   public void testT () {
     LispObject n = evaluateString("t");
-    Assert.assertEquals(LispSymbol.ourT, n);
+    Assert.assertEquals(LispSymbol.T, n);
   }
 
   @Test
@@ -45,7 +45,7 @@ public class EvaluatorTest extends JelispTestCase {
     try {
       evaluateString("(defun f (a &optional b) a b)");
       LispObject LispObject = evaluateString("(f 5)");
-      Assert.assertEquals(LispSymbol.ourNil, LispObject);
+      Assert.assertEquals(LispSymbol.NIL, LispObject);
 
       evaluateString("(defun f (a &optional b) b a)");
       LispObject = evaluateString("(f 5)");
@@ -53,7 +53,7 @@ public class EvaluatorTest extends JelispTestCase {
 
       evaluateString("(defun f (a &optional b c &rest d e) a b c d e)");
       LispObject = evaluateString("(f 1 2 3 4 5)");
-      Assert.assertEquals(LispSymbol.ourNil, LispObject);
+      Assert.assertEquals(LispSymbol.NIL, LispObject);
 
       evaluateString("(defun f (a &optional b c &rest d e) d)");
       LispObject = evaluateString("(f 1 2 3 4 5)");
@@ -61,7 +61,7 @@ public class EvaluatorTest extends JelispTestCase {
 
       evaluateString("(defun f (a &optional b c) b c)");
       LispObject = evaluateString("(f 1)");
-      Assert.assertEquals(LispSymbol.ourNil, LispObject);
+      Assert.assertEquals(LispSymbol.NIL, LispObject);
 
     } catch (LispException e) {
       System.out.println(e.getMessage());
@@ -72,7 +72,7 @@ public class EvaluatorTest extends JelispTestCase {
   @Test
   public void testEvalGlobalVar() {
     LispObject var = evaluateString("default-directory");
-    org.junit.Assert.assertEquals(LispSymbol.ourNil, var);
+    org.junit.Assert.assertEquals(LispSymbol.NIL, var);
   }
 
   @Test

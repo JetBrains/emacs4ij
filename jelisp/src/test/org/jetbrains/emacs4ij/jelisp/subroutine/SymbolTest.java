@@ -56,7 +56,7 @@ public class SymbolTest extends JelispTestCase {
   public void testGet() throws Exception {
     evaluateString("(set 'a 5)");
     LispObject LispObject = evaluateString("(get 'a 'p2)");
-    Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
@@ -164,9 +164,9 @@ public class SymbolTest extends JelispTestCase {
   @Test
   public void testDocumentation_Builtin() {
     LispObject doc = evaluateString("(documentation-property 'if 'function-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
     doc = evaluateString("(get 'if 'function-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
     doc = evaluateString("(documentation 'if)");
     LispString trueDoc = new LispString("If COND yields non-nil, do THEN, else do ELSE...\n" +
         "Returns the value of THEN or the value of the last of the ELSE's.\n" +
@@ -194,9 +194,9 @@ public class SymbolTest extends JelispTestCase {
   public void testDocumentation_CustomFun() {
     evaluateString("(defun f () \"doc\")");
     LispObject doc = evaluateString("(documentation-property 'f 'function-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
     doc = evaluateString("(get 'f 'function-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
     doc = evaluateString("(documentation 'f)");
     Assert.assertEquals(new LispString("doc"), doc);
   }
@@ -219,7 +219,7 @@ public class SymbolTest extends JelispTestCase {
   public void testFunctionDocumentationNil () {
     evaluateString("(defun a () \"doc\" 2)");
     LispObject doc = evaluateString("(documentation-property 'a 'function-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
   }
 
   @Test
@@ -339,7 +339,7 @@ public class SymbolTest extends JelispTestCase {
   @Test
   public void testInteractiveForm() {
     LispObject r = evaluateString("(interactive-form 5)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(interactive-form 'forward-char)");
     Assert.assertEquals(LispList.list(new LispSymbol("interactive"), new LispString("")), r);
     r = evaluateString("(interactive-form 'switch-to-buffer)");
@@ -374,19 +374,19 @@ public class SymbolTest extends JelispTestCase {
         "  :type 'boolean\n" +
         "  :version \"21.1\")");
     Assert.assertTrue(symbol instanceof LispSymbol);
-    Assert.assertEquals(LispSymbol.ourT, ((LispSymbol) symbol).getValue());
+    Assert.assertEquals(LispSymbol.T, ((LispSymbol) symbol).getValue());
   }
 
   @Test
   public void defaultForDefcustom() {
     LispObject value = evaluateString("eval-expression-debug-on-error");
-    Assert.assertEquals(LispSymbol.ourT, value);
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(default-boundp 'eval-expression-debug-on-error)"));
+    Assert.assertEquals(LispSymbol.T, value);
+    Assert.assertEquals(LispSymbol.T, evaluateString("(default-boundp 'eval-expression-debug-on-error)"));
   }
 
   @Test
   public void testCCGAValue() {
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("custom-current-group-alist"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("custom-current-group-alist"));
   }
 
   @Test
@@ -418,7 +418,7 @@ public class SymbolTest extends JelispTestCase {
   @Test
   public void testAliasDocumentation() {
     LispObject f = evaluateString("(fset 'f '(lambda () \"doc1\"))");
-    Assert.assertEquals(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil, new LispString("doc1")), f);
+    Assert.assertEquals(LispList.list(new LispSymbol("lambda"), LispSymbol.NIL, new LispString("doc1")), f);
     f = evaluateString("(defalias 'g 'f \"doc2\")");
     Assert.assertEquals(new LispSymbol("f"), f);
     LispObject doc = evaluateString("(documentation 'f)");

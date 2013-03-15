@@ -32,13 +32,13 @@ public class SequenceTest extends JelispTestCase {
     r = evaluateString("(append '() 'a)");
     Assert.assertEquals(new LispSymbol("a"), r);
     r = evaluateString("(append nil nil nil nil)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(append)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
 
     r = evaluateString("(append '(+ 2 3) '(+ 2 3 nil))");
     Assert.assertEquals(LispList.list(new LispSymbol("+"), new LispInteger(2), new LispInteger(3),
-        new LispSymbol("+"), new LispInteger(2), new LispInteger(3), LispSymbol.ourNil), r);
+        new LispSymbol("+"), new LispInteger(2), new LispInteger(3), LispSymbol.NIL), r);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class SequenceTest extends JelispTestCase {
     LispObject r = evaluateString("(mapcar '+ \"hi\")");
     Assert.assertEquals(LispList.list(new LispInteger(104), new LispInteger(105)), r);
     r = evaluateString("(mapcar '+ nil)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(mapcar '+ '(1 2))");
     Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), r);
     r = evaluateString("(mapcar '+ '[1 2])");
@@ -198,7 +198,7 @@ public class SequenceTest extends JelispTestCase {
     LispObject sequence = evaluateString("(mapc 'f '(1 2))");
     Assert.assertEquals(LispList.list(new LispInteger(1), new LispInteger(2)), sequence);
     sequence = evaluateString("(mapc 'f '())");
-    Assert.assertEquals(LispSymbol.ourNil, sequence);
+    Assert.assertEquals(LispSymbol.NIL, sequence);
   }
 
   @Test

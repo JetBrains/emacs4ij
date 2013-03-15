@@ -35,10 +35,10 @@ public final class GenericCharTable implements LispCharTable {
                 throw new WrongTypeArgumentException("wholenump", n);
             myNExtras = ((LispInteger)n).getData();
             if (myNExtras > MAX_N_EXTRA_SLOTS)
-                throw new ArgumentOutOfRange(n, LispSymbol.ourNil);
+                throw new ArgumentOutOfRange(n, LispSymbol.NIL);
         }
-        myParent = LispSymbol.ourNil;
-        myDefault = init == null ? LispSymbol.ourNil : init;
+        myParent = LispSymbol.NIL;
+        myDefault = init == null ? LispSymbol.NIL : init;
         mySubtype = purpose;
         Arrays.fill(myExtras, myDefault);
     }

@@ -1,14 +1,17 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
 import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
+import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.util.XlfdField;
@@ -24,6 +27,11 @@ public abstract class Faces {
 
   private final static int SORT_ORDER_SIZE = 4;
 
+  private static enum FaceAttribute {
+    FACE, FAMILY, FOUNDRY, WIDTH, HEIGHT, WEIGHT, SLANT, UNDERLINE, INVERSE, FOREGROUND, BACKGROUND, STIPPLE,
+    OVERLINE, STRIKE_THROUGH, BOX, INHERIT, FONT_SET, VECTOR
+  }
+
   private static LispSymbol kwSlant = new LispSymbol(":slant");
   private static LispSymbol kwHeight = new LispSymbol(":height");
   private static LispSymbol kwWidth = new LispSymbol(":width");
@@ -36,6 +44,13 @@ public abstract class Faces {
 
   static {
     GlobalEnvironment.INSTANCE.defineSymbols(kwSlant, kwHeight, kwWidth, kwWeight);
+    GlobalEnvironment.INSTANCE.defineSymbol("unspecified");
+    GlobalEnvironment.INSTANCE.defineSymbol("face");
+    GlobalEnvironment.INSTANCE.defineSymbol(":ignore-defface");
+    GlobalEnvironment.INSTANCE.defineSymbol(":family");
+    GlobalEnvironment.INSTANCE.defineSymbol("face-alias");
+    GlobalEnvironment.INSTANCE.defineSymbol("face-no-inherit");
+
     ourFontSortOrder.add(XlfdField.SET_WIDTH);
     ourFontSortOrder.add(XlfdField.POINT_SIZE);
     ourFontSortOrder.add(XlfdField.WEIGHT);
@@ -79,7 +94,7 @@ public abstract class Faces {
 
     //todo update global sort order with ourFontSortOrder
 
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("internal-set-alternative-font-family-alist")
@@ -96,7 +111,7 @@ public abstract class Faces {
     if (face instanceof LispString) {
       f = Symbol.intern(environment, (LispString) face, null);
     } else if (!(face instanceof LispSymbol)) {
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     } else {
       f = environment.find(((LispSymbol) face).getName());
     }
@@ -105,7 +120,7 @@ public abstract class Faces {
       return LispSymbol.bool(ourDefaultFrameFacesAttributes.containsKey(f));
     }
     if (Predicate.frameLiveP(environment, frame).toBoolean()) {
-      return LispSymbol.bool(((LispFrame) frame).hasFace(f));
+      return LispSymbol.bool(((LispFrame) frame).getFacesAList().containsKey(f));
     }
 
     throw new WrongTypeArgumentException("frame-live-p", frame);
@@ -116,6 +131,128 @@ public abstract class Faces {
     ourAlternativeFontRegistryAlist = checkAndCopyAlternativeAlist(environment, aList);
     resetFaces();
     return LispList.list(ourAlternativeFontRegistryAlist);
+  }
+
+  @Subroutine("internal-make-lisp-face")
+  public static LispVector internalMakeLispFace(Environment environment, LispSymbol face, @Optional LispObject frame) {
+    LispVector globalFace = getFaceDefOnFrame(null, face, false);
+    LispVector resolvedFace = null;
+    LispFrame f = null;
+    if (!Predicate.isNil(frame)) {
+      if (Predicate.frameLiveP(environment, face).equals(LispSymbol.NIL))
+        throw new WrongTypeArgumentException("frame-live-p", frame);
+      f = (LispFrame) frame;
+      resolvedFace = getFaceDefOnFrame(f, face, false);
+    }
+
+    if (globalFace == null) {
+      ourDefaultFrameFacesAttributes.put(face, createEmptyFaceAttributes());
+    } else if (f == null) {
+      emptifyFaceAttributes(globalFace);
+    }
+
+    if (f != null) {
+      if (resolvedFace == null) {
+        f.getFacesAList().put(face, createEmptyFaceAttributes());
+      } else {
+        emptifyFaceAttributes(resolvedFace);
+      }
+    } else {
+      resolvedFace = globalFace;
+    }
+
+    if (face.getProperty("face-no-inherit") == LispSymbol.NIL) {
+      //todo (1)
+    }
+
+    if (!verifyFaceAttributes(resolvedFace))
+      throw new LispException(JelispBundle.message("invalid.face", face));
+
+    return resolvedFace;
+  }
+
+  private static LispVector createEmptyFaceAttributes() {
+    LispVector attrs = LispVector.make(getAttributesSize(), get("unspecified"));
+    attrs.setItem(0, get("face"));
+    return attrs;
+  }
+
+  private static void emptifyFaceAttributes(LispVector attrs) {
+    for (int i = 1; i < getAttributesSize(); i++) {
+      attrs.setItem(i, get("unspecified"));
+    }
+  }
+
+  @Subroutine("internal-set-lisp-face-attribute")
+  public static LispSymbol internalSetLispFaceAttribute(Environment environment, LispSymbol face, LispSymbol attribute, LispObject value, @Optional LispObject frame) {
+    face = (LispSymbol) getFace(face, true);
+    LispVector attrs;
+
+    if (Predicate.isNil(frame)) { //set for selected frame
+      return internalSetLispFaceAttribute(environment, face, attribute, value, environment.getSelectedFrame());
+    } else if (frame.equals(LispSymbol.T)) { //default for new frames
+
+      attrs = getFaceDefOnFrame(null, face, true);
+
+      if (isUnspecified(value)) {
+        value = get(":ignore-defface");
+      }
+
+    } else if (frame.equals(new LispInteger(0))) { //change face on all frames + default for new
+      internalSetLispFaceAttribute(environment, face, attribute, value, LispSymbol.T);
+      for (LispFrame f: environment.getAllFrames()) {
+        internalSetLispFaceAttribute(environment, face, attribute, value, f);
+      }
+      return (LispSymbol) getFace(face, true);
+    } else if (Predicate.frameLiveP(environment, frame).equals(LispSymbol.T)) { //set for given frame
+      attrs = getFaceDefOnFrame((LispFrame) frame, face, false);
+      if (attrs == null) {
+        attrs = internalMakeLispFace(environment, face, frame);
+      }
+    } else {
+      throw new WrongTypeArgumentException("frame-live-p", frame);
+    }
+    LispObject old = null;
+    if (get(":family").equals(attribute)) {
+      if (notUnspecifiedAndNotIgnoreDefFace(value)) {
+        verifyNonEmptyString(value, "Invalid face family");
+      }
+      old = setFaceAttribute(attrs, FaceAttribute.FAMILY, value);
+    } else if (get(":foundry").equals(attribute)) {
+      if (notUnspecifiedAndNotIgnoreDefFace(value)) {
+        verifyNonEmptyString(value, "Invalid face foundry");
+      }
+      old = setFaceAttribute(attrs, FaceAttribute.FOUNDRY, value);
+    }
+
+    if (get(":height").equals(attribute)) {
+      if (notUnspecifiedAndNotIgnoreDefFace(value)) {
+        if (symbol("default").equals(face)) {
+          if (!Predicate.isInteger(value) || ((LispInteger)value).getData() <= 0) {
+            throw new LispException("Default face height not absolute and positive " + value);
+          }
+        } else {
+          //todo check if value is valid
+        }
+      }
+      old = setFaceAttribute(attrs, FaceAttribute.HEIGHT, value);
+      //todo implement other attributes
+
+    } else {
+      Core.error(JelispBundle.message("invalid.face.attr.name", attribute.getName()));
+    }
+
+    if (!value.equals(old)) {
+      //todo (1) apply to frame:)
+    }
+
+    return face;
+  }
+
+  private static LispObject setFaceAttribute(LispVector attrs, FaceAttribute index, LispObject value) {
+    LispObject old = attrs.get(index.ordinal());
+    attrs.setItem(index.ordinal(), value);
+    return old;
   }
 
   protected static List<XlfdField> getFontSortOrder() {
@@ -147,5 +284,76 @@ public abstract class Faces {
 
   private static void resetFaces() {
     //todo reset all used faces
+  }
+
+  private static LispVector getFaceDefOnFrame(@Nullable LispFrame frame, LispObject face, boolean throwError) {
+    face = getFace(face, throwError);
+    LispObject attributes = frame == null ? ourDefaultFrameFacesAttributes.get(face) : frame.getFacesAList().get(face);
+    if (attributes == null || !verifyFaceAttributes(attributes)) {
+      if (throwError)
+        throw new LispException(JelispBundle.message("invalid.face", face));
+      else return null;
+    }
+    return (LispVector) attributes;
+  }
+
+  private static LispObject getFace(LispObject face, boolean throwError) {
+    LispSymbol f;
+    if (face instanceof LispString) {
+      f = new LispSymbol(((LispString) face).getData());
+      GlobalEnvironment.INSTANCE.defineSymbol(f);
+    } if (!isNonNilSymbol(face)) {
+      return face;
+    } else {
+      f = ((LispSymbol) face).uploadVariableDefinition();
+    }
+
+    List<LispSymbol> aliases = new ArrayList<>();
+    while (true) {
+      LispObject alias = f.getProperty(get("face-alias"));
+      if (alias == null || !isNonNilSymbol(alias)) return f;
+      if (aliases.contains((LispSymbol)alias)) {
+        if (throwError) throw new LispException("circular-list " + f);
+        return symbol("default");
+      }
+      aliases.add((LispSymbol)alias);
+      f = (LispSymbol)alias;
+    }
+  }
+
+  private static void verifyNonEmptyString(LispObject s, String error) {
+    if (!Predicate.isString(s)) throw new WrongTypeArgumentException("stringp", s);
+    if (((LispString)s).getData().isEmpty()) throw new LispException(error + " " + s);
+  }
+
+  private static boolean verifyFaceAttributes(LispObject attr) {
+    return attr instanceof LispVector && ((LispVector) attr).size() == getAttributesSize()
+        && ((LispVector) attr).get(0).equals(symbol("face"));
+  }
+
+  private static int getAttributesSize() {
+    return FaceAttribute.values().length;
+  }
+
+  private static boolean isNonNilSymbol(LispObject o) {
+    return o instanceof LispSymbol && !LispSymbol.NIL.equals(o);
+  }
+
+  private static boolean notUnspecifiedAndNotIgnoreDefFace(LispObject attribute) {
+    return !get("unspecified").equals(attribute) && !get(":ignore-defface").equals(attribute);
+  }
+
+  private static boolean isUnspecified(LispObject attribute) {
+    return get("unspecified").equals(attribute);
+  }
+
+  private static LispSymbol symbol(String name) {
+    return new LispSymbol(name);
+  }
+
+  private static LispSymbol get(String name) {
+    LispSymbol s = GlobalEnvironment.INSTANCE.find(name);
+    if (name == null) throw new IllegalStateException();
+    return s;
   }
 }

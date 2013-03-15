@@ -276,7 +276,7 @@ public class IdeaKeymap implements LispKeymap {
       return function;
     if (myParent != null)
       return ((IdeaKeymap)myParent).getKeyBinding(shortcut);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
     //get idea binding
 
 //        String[] actions = ourKeymapManager.getActiveKeymap().getActionIds(shortcut);

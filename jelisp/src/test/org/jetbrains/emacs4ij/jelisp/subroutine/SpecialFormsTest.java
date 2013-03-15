@@ -35,13 +35,13 @@ public class SpecialFormsTest extends JelispTestCase {
     LispObject kit = evaluateString("(defun kit (a) (car-safe a))");
     junit.framework.Assert.assertEquals("kit ", new LispSymbol("kit"), kit);
     LispObject LispObject = evaluateString("(kit 'test)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
   public void testLetEmpty() {
     LispObject LispObject = evaluateString("(let ())");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
@@ -53,13 +53,13 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testLetNilVar() {
     LispObject LispObject = evaluateString("(let (a) a)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
   public void testLetEmptyBody() {
     LispObject LispObject = evaluateString("(let ((a 5)) )");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testCond() {
     LispObject cond = evaluateString("(cond)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, cond);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, cond);
     cond = evaluateString("(cond (5))");
     junit.framework.Assert.assertEquals(new LispInteger(5), cond);
     cond = evaluateString("(cond (nil 10 15) (1 2 3))");
@@ -111,14 +111,14 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testCondResult() {
     LispObject r = evaluateString("(cond (t (message \"a\") nil) (t (message \"b\")))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
   public void testWhile() {
     evaluateString("(set 'my-list '(1 2 3))");
     LispObject LispObject = evaluateString("(while my-list (car my-list) (set 'my-list (cdr my-list)))");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, LispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, LispObject);
   }
 
   @Test
@@ -158,13 +158,13 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testAndEmpty() {
     LispObject and = evaluateString("(and)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourT, and);
+    junit.framework.Assert.assertEquals(LispSymbol.T, and);
   }
 
   @Test
   public void testAndNil() {
     LispObject and = evaluateString("(and 1 2 3 nil)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, and);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, and);
   }
 
   @Test
@@ -176,7 +176,7 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testOrEmpty() {
     LispObject or = evaluateString("(or)");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, or);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, or);
   }
 
   @Test
@@ -232,7 +232,7 @@ public class SpecialFormsTest extends JelispTestCase {
     LispObject fun = evaluateString("(defun nilFun () ())");
     junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
     LispObject value = evaluateString("(nilFun)");
-    junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
+    junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.NIL, value);
   }
 
   @Test
@@ -240,7 +240,7 @@ public class SpecialFormsTest extends JelispTestCase {
     LispObject fun = evaluateString("(defun nilFun ())");
     junit.framework.Assert.assertEquals("defun return value assertion", new LispSymbol("nilFun"), fun);
     LispObject value = evaluateString("(nilFun)");
-    junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.ourNil, value);
+    junit.framework.Assert.assertEquals("nilFun return value assertion", LispSymbol.NIL, value);
   }
 
   @Test
@@ -277,7 +277,7 @@ public class SpecialFormsTest extends JelispTestCase {
   public void testDefVarNilDoc() {
     evaluateString("(defvar a 5 5)");
     LispObject doc = evaluateString("(documentation-property 'a 'variable-documentation)");
-    Assert.assertEquals(LispSymbol.ourNil, doc);
+    Assert.assertEquals(LispSymbol.NIL, doc);
   }
 
   @Test
@@ -317,7 +317,7 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testDefconst() {
     LispObject a = evaluateString("(defconst a 5 5)");
-    Assert.assertEquals(LispSymbol.ourNil, ((LispSymbol) a).getDocumentation());
+    Assert.assertEquals(LispSymbol.NIL, ((LispSymbol) a).getDocumentation());
     Assert.assertEquals(new LispInteger(5), evaluateString("a"));
     evaluateString("(setq a 10)");
     Assert.assertEquals(new LispInteger(10), evaluateString("a"));
@@ -350,7 +350,7 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testSetqNil() {
     LispObject lispObject = evaluateString("(setq)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
   }
 
   @Test
@@ -462,7 +462,7 @@ public class SpecialFormsTest extends JelispTestCase {
   public void testDefineMacro_WithDocString() {
     LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"docstring\" nil)");
     LispObject fCell = evaluateString("(symbol-function 'm1)");
-    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("docstring"), LispSymbol.ourNil), fCell);
+    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("docstring"), LispSymbol.NIL), fCell);
   }
 
   @Test (expected = WrongNumberOfArgumentsException.class)
@@ -474,28 +474,28 @@ public class SpecialFormsTest extends JelispTestCase {
   public void testDefineMacro_DeclareAfterArguments() {
     LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) \"hello2\" nil)");
     LispObject fCell = evaluateString("(symbol-function 'm1)");
-    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
+    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.NIL), fCell);
   }
 
   @Test
   public void testDefineMacro_DoubleDeclareAfterArguments() {
     LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) \"hello3\" nil)");
     LispObject fCell = evaluateString("(symbol-function 'm1)");
-    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
+    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.NIL), fCell);
   }
 
   @Test
   public void testDefineMacro_DeclareAfterDocstring() {
     LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello2\" (declare (doc-string \"hello1\")) nil)");
     LispObject fCell = evaluateString("(symbol-function 'm1)");
-    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.ourNil), fCell);
+    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello2"), LispSymbol.NIL), fCell);
   }
 
   @Test
   public void testDefineMacro_DoubleDeclareAfterDocstring() {
     LispSymbol macro = (LispSymbol) evaluateString("(defmacro m1 () \"hello3\" (declare (doc-string \"hello1\")) (declare (doc-string \"hello2\")) nil)");
     LispObject fCell = evaluateString("(symbol-function 'm1)");
-    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.ourNil), fCell);
+    Assert.assertEquals(LispList.list(new LispSymbol("macro"), new LispSymbol("lambda"), LispList.list(), new LispString("hello3"), LispSymbol.NIL), fCell);
   }
 
   @Test
@@ -507,7 +507,7 @@ public class SpecialFormsTest extends JelispTestCase {
         LispList.list(),
         new LispString("hello2"),
         LispList.list(new LispSymbol("declare"), LispList.list(new LispSymbol("doc-string"), new LispString("hello3"))),
-        LispSymbol.ourNil),
+        LispSymbol.NIL),
         fCell);
   }
 
@@ -615,7 +615,7 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testCatchNoBody() {
     LispObject r = evaluateString("(catch 'a)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -637,11 +637,11 @@ public class SpecialFormsTest extends JelispTestCase {
   @Test
   public void testInteractiveNil() {
     LispObject i = evaluateString("(interactive)");
-    Assert.assertEquals(LispSymbol.ourNil, i);
+    Assert.assertEquals(LispSymbol.NIL, i);
     i = evaluateString("(interactive nil)");
-    Assert.assertEquals(LispSymbol.ourNil, i);
+    Assert.assertEquals(LispSymbol.NIL, i);
     i = evaluateString("(interactive ())");
-    Assert.assertEquals(LispSymbol.ourNil, i);
+    Assert.assertEquals(LispSymbol.NIL, i);
   }
 
   @Test
@@ -665,7 +665,7 @@ public class SpecialFormsTest extends JelispTestCase {
   public void testInteractiveInnerScope() {
     evaluateString("(defun f () (+ 3 6) (interactive))");
     LispObject r = evaluateString("(f)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test

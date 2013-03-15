@@ -59,7 +59,7 @@ public abstract class Marker {
   public static LispMarker setMarker (LispMarker marker, LispObject markerOrInteger, @Optional LispBuffer buffer) {
     if (Predicate.isNil(buffer))
       buffer = GlobalEnvironment.INSTANCE.getBufferCurrentForEditing();
-    if (!markerOrInteger.equals(LispSymbol.ourNil) && !(markerOrInteger instanceof MarkerOrInteger))
+    if (!markerOrInteger.equals(LispSymbol.NIL) && !(markerOrInteger instanceof MarkerOrInteger))
       throw new WrongTypeArgumentException("integer-or-marker-p", markerOrInteger);
     Integer position = markerOrInteger instanceof MarkerOrInteger
         ? ((MarkerOrInteger) markerOrInteger).getPosition()
@@ -75,7 +75,7 @@ public abstract class Marker {
 
   @Subroutine("marker-position")
   public static LispObject markerPosition (LispMarker marker) {
-    return marker.getPosition() == null ? LispSymbol.ourNil : new LispInteger(marker.getPosition());
+    return marker.getPosition() == null ? LispSymbol.NIL : new LispInteger(marker.getPosition());
   }
 
   @Subroutine("marker-buffer")
@@ -87,7 +87,7 @@ public abstract class Marker {
   public static LispSymbol bufferHasMarkersAt (Environment environment, LispObject position) {
     if (position instanceof LispInteger)
       return LispSymbol.bool(environment.getBufferCurrentForEditing().hasMarkersAt(((LispInteger) position).getData()));
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("mark-marker")
@@ -97,9 +97,9 @@ public abstract class Marker {
 
   @Subroutine("region-beginning")
   public static LispInteger regionBeginning (Environment environment) {
-    LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+    LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.T).evaluate(environment);
     LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
-    if (!mark.equals(LispSymbol.ourNil)) {
+    if (!mark.equals(LispSymbol.NIL)) {
       if (Arithmetic.less(mark, point).toBoolean())
         return (LispInteger)mark;
     }
@@ -108,9 +108,9 @@ public abstract class Marker {
 
   @Subroutine("region-end")
   public static LispInteger regionEnd (Environment environment) {
-    LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.ourT).evaluate(environment);
+    LispObject mark = LispList.list(new LispSymbol("mark"), LispSymbol.T).evaluate(environment);
     LispInteger point = new LispInteger(environment.getBufferCurrentForEditing().point());
-    if (!mark.equals(LispSymbol.ourNil)) {
+    if (!mark.equals(LispSymbol.NIL)) {
       if (Arithmetic.more(mark, point).toBoolean())
         return (LispInteger)mark;
     }

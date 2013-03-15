@@ -24,13 +24,13 @@ public final class IdeaFrame extends LispFrame {
   }
 
   public void setVisible(boolean visible) {
-    setParameter("visibility", visible ? LispSymbol.ourT : LispSymbol.ourNil);
+    setParameter("visibility", visible ? LispSymbol.T : LispSymbol.NIL);
     myFrame.setVisible(visible);
   }
 
   @Override
   public void setIconified(boolean iconified) {
-    setParameter("visibility", iconified ? new LispSymbol("icon") : LispSymbol.ourT);
+    setParameter("visibility", iconified ? new LispSymbol("icon") : LispSymbol.T);
     if (!iconified) {
       myFrame.show();
       //WindowManagerImpl.getInstance().

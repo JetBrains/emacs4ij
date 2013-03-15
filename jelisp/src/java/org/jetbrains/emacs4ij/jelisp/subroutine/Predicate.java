@@ -61,10 +61,10 @@ public abstract class Predicate {
   @Subroutine("subrp")
   public static LispObject subrp (LispObject functionCell) {
     if (functionCell == null || !(functionCell instanceof FunctionCell))
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     if (functionCell instanceof Primitive)
-      return LispSymbol.ourT;
-    return LispSymbol.ourNil;
+      return LispSymbol.T;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("bufferp")
@@ -75,24 +75,24 @@ public abstract class Predicate {
   @Subroutine("commandp")
   public static LispSymbol commandp (LispObject function, @Nullable @Optional LispObject forCallInteractively) {
     if (Core.toCommand(function) != null)
-      return LispSymbol.ourT;
+      return LispSymbol.T;
 
     //todo: autoload objects
     // http://www.gnu.org/s/emacs/manual/html_node/elisp/Interactive-Call.html
 
     if (isNil(forCallInteractively)) {
       // do not accept keyboard macros: string and vector
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
     if (function instanceof LispString) {
       //todo: check
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
     if (function instanceof LispVector) {
       //todo: check
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("buffer-live-p")
@@ -100,20 +100,20 @@ public abstract class Predicate {
     if (object instanceof LispBuffer) {
       return LispSymbol.bool(environment.isBufferAlive((LispBuffer) object));
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("fboundp")
   public static LispSymbol fboundp (Environment environment, LispSymbol symbol) {
     LispSymbol f = environment.find(symbol.getName());
     if (f == null || !f.isFunction())
-      return LispSymbol.ourNil;
-    return LispSymbol.ourT;
+      return LispSymbol.NIL;
+    return LispSymbol.T;
   }
 
   @Subroutine("byte-code-function-p")
   public static LispSymbol byteCodeFunctionP (LispObject object) {
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("framep")
@@ -127,29 +127,29 @@ public abstract class Predicate {
       if (os.contains("nix") || os.contains("nux"))
         return new LispSymbol("x");
       //todo: ?? `ns' for an Emacs frame on a GNUstep or Macintosh Cocoa display,
-      return LispSymbol.ourT;
+      return LispSymbol.T;
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("frame-live-p")
   public static LispSymbol frameLiveP (Environment environment, LispObject object) {
     LispSymbol frameP = framep(object);
-    if (frameP.equals(LispSymbol.ourNil))
-      return LispSymbol.ourNil;
+    if (frameP.equals(LispSymbol.NIL))
+      return LispSymbol.NIL;
     return LispSymbol.bool(environment.isFrameAlive((LispFrame) object));
   }
 
   @Subroutine("frame-visible-p")
   public static LispSymbol frameVisibleP (Environment environment, LispObject object) {
     LispSymbol frameLiveP = frameLiveP(environment, object);
-    if (frameLiveP.equals(LispSymbol.ourNil))
+    if (frameLiveP.equals(LispSymbol.NIL))
       throw new WrongTypeArgumentException("frame-live-p", object);
     if (((LispFrame) object).isIconified())
       return new LispSymbol("icon");
     if (((LispFrame) object).isVisible())
-      return LispSymbol.ourT;
-    return LispSymbol.ourNil;
+      return LispSymbol.T;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("windowp")
@@ -186,9 +186,9 @@ public abstract class Predicate {
     try {
       Symbol.defaultValue(environment, symbol);
     } catch (VoidVariableException e) {
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
-    return LispSymbol.ourT;
+    return LispSymbol.T;
   }
 
   @Subroutine("vectorp")
@@ -217,7 +217,7 @@ public abstract class Predicate {
   }
 
   public static boolean isNil (LispObject object) {
-    return object == null || object.equals(LispSymbol.ourNil);
+    return object == null || object.equals(LispSymbol.NIL);
   }
 
   public static boolean isWholeNumber(LispObject object) {
@@ -291,7 +291,7 @@ public abstract class Predicate {
 
   @Subroutine("nlistp")
   public static LispSymbol notListP (LispObject object) {
-    return LispSymbol.bool(!(object.equals(LispSymbol.ourNil) || object instanceof LispList));
+    return LispSymbol.bool(!(object.equals(LispSymbol.NIL) || object instanceof LispList));
   }
 
   @Subroutine("floatp")
@@ -321,6 +321,11 @@ public abstract class Predicate {
   @Subroutine("featurep")
   public static LispSymbol featureP (LispSymbol feature, @Optional LispObject subFeature) {
     return LispSymbol.bool(isFeature(feature, subFeature));
+  }
+
+  public static int getInteger(LispObject i) {
+    if (!isInteger(i)) throw new WrongTypeArgumentException("integerp", i);
+    return ((LispInteger)i).getData();
   }
 }
 

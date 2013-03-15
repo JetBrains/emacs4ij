@@ -8,13 +8,14 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
-import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.Action;
 import org.jetbrains.emacs4ij.jelisp.exception.NoBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.NoOpenedBufferException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Core;
+import org.jetbrains.emacs4ij.jelisp.subroutine.Match;
 import org.jetbrains.emacs4ij.jelisp.subroutine.SpecialForms;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,7 +51,7 @@ public class BufferTest extends IdeTestCase {
 
   public void testBufferp() {
     LispObject lispObject = evaluateString("(bufferp (current-buffer))");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
   }
 
   public void testBufferpWrongNargs() {
@@ -76,7 +77,7 @@ public class BufferTest extends IdeTestCase {
 
   public void testGetBuffer_NonExistent() {
     LispObject lispObject = evaluateString("(get-buffer \"test.txt\")");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
   }
 
   public void testGetBuffer_Nil() {
@@ -274,14 +275,14 @@ public class BufferTest extends IdeTestCase {
   public void testForwardChar_NoParam () {
     int from = myEnvironment.getBufferCurrentForEditing().point();
     LispObject lispObject = evaluateString("(forward-char)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     Assert.assertEquals(from+1, myEnvironment.getBufferCurrentForEditing().point());
   }
 
   public void testForwardChar () {
     int from = myEnvironment.getBufferCurrentForEditing().point();
     LispObject lispObject = evaluateString("(forward-char 5)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     Assert.assertEquals(from+5, myEnvironment.getBufferCurrentForEditing().point());
   }
 
@@ -301,7 +302,7 @@ public class BufferTest extends IdeTestCase {
     myEnvironment.getBufferCurrentForEditing().forwardChar(2);
     int from = myEnvironment.getBufferCurrentForEditing().point();
     LispObject lispObject = evaluateString("(backward-char)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     Assert.assertEquals(from-1, myEnvironment.getBufferCurrentForEditing().point());
   }
 
@@ -309,7 +310,7 @@ public class BufferTest extends IdeTestCase {
     myEnvironment.getBufferCurrentForEditing().forwardChar(3);
     int from = myEnvironment.getBufferCurrentForEditing().point();
     LispObject lispObject = evaluateString("(backward-char 2)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     Assert.assertEquals(from-2, myEnvironment.getBufferCurrentForEditing().point());
   }
 
@@ -369,7 +370,7 @@ public class BufferTest extends IdeTestCase {
     Assert.assertEquals(m1, lispObject);
 
     m1.set(buffer.pointMin(), buffer);
-    m1.setInsertionType(LispSymbol.ourT);
+    m1.setInsertionType(LispSymbol.T);
     lispObject = evaluateString("(copy-marker -50 t)");
     Assert.assertEquals(m1, lispObject);
   }
@@ -377,9 +378,9 @@ public class BufferTest extends IdeTestCase {
 
   public void testEq() {
     LispObject lispObject = evaluateString("(eq (point-marker) (point-marker))");
-    junit.framework.Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(equal (point-marker) (point-marker))");
-    junit.framework.Assert.assertEquals(LispSymbol.ourT, lispObject);
+    junit.framework.Assert.assertEquals(LispSymbol.T, lispObject);
   }
 
 
@@ -436,7 +437,7 @@ public class BufferTest extends IdeTestCase {
     myEnvironment.hideBuffer(myTests.get(myTestFiles[1]));
 
     LispObject t = evaluateString("(null (get-buffer-window (get-buffer \"" + myTestFiles[1] + "\") 'visible))");
-    Assert.assertEquals(LispSymbol.ourT, t);
+    Assert.assertEquals(LispSymbol.T, t);
 
     LispObject buffer = evaluateString("(get-next-valid-buffer (nreverse (buffer-list)))");
     Assert.assertTrue(buffer instanceof LispBuffer);
@@ -446,7 +447,7 @@ public class BufferTest extends IdeTestCase {
 
   public void testGetNextValidBufferNil() {
     LispObject buffer = evaluateString("(get-next-valid-buffer (buffer-list))");
-    Assert.assertEquals(LispSymbol.ourNil, buffer);
+    Assert.assertEquals(LispSymbol.NIL, buffer);
   }
 
 
@@ -537,25 +538,25 @@ public class BufferTest extends IdeTestCase {
 
   public void testAlivePredicate () {
     LispObject lispObject = evaluateString("(buffer-live-p (get-buffer \"1.txt\"))");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(kill-buffer \"1.txt\")");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(buffer-live-p (get-buffer \"1.txt\"))");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(buffer-live-p \"1.txt\")");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
   }
 
   public void testReplaceBufferInWindows () {
     LispObject lispObject = evaluateString("(replace-buffer-in-windows)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), myTests.get(myTestFiles[1]));
   }
 
   public void testKillLastBuffer () {
     Assert.assertEquals(myEnvironment.getBuffersSize(), 6);
     LispObject lispObject = evaluateString("(kill-buffer \"5.txt\")");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = myEnvironment.getBufferCurrentForEditing();
     Assert.assertEquals(myEnvironment.findBufferSafe(myTestFiles[1]), lispObject);
     Assert.assertEquals(myEnvironment.getBuffersSize(), 5);
@@ -585,15 +586,15 @@ public class BufferTest extends IdeTestCase {
 
   public void testDefaultValueGlobals() {
     LispObject r = evaluateString("(default-value 'default-directory)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(default-value 'mark-active)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   //todo simple.el required
 //    public void testDefaultValueExtern() {
 //        LispObject r = evaluateString("(default-value 'mark-ring)");
-//        Assert.assertEquals(LispSymbol.ourNil, r);
+//        Assert.assertEquals(LispSymbol.NIL, r);
 //    }
 
   public void testDefaultValueBufferLocals() {
@@ -627,7 +628,7 @@ public class BufferTest extends IdeTestCase {
     LispMarker mark = buffer.getMark();
     Assert.assertEquals("3", mark.getPosition().toString());
     LispObject result = evaluateString("(insert 1 2 3)");
-    Assert.assertEquals(LispSymbol.ourNil, result);
+    Assert.assertEquals(LispSymbol.NIL, result);
     text = buffer.getText();
     System.out.println(text);
     Assert.assertTrue(text.contains(insertion));
@@ -646,7 +647,7 @@ public class BufferTest extends IdeTestCase {
     completion = evaluateString("(internal-complete-buffer \"1\" nil nil)");
     Assert.assertEquals(new LispString("1.txt"), completion);
     completion = evaluateString("(internal-complete-buffer \"1\" nil 5)");
-    Assert.assertEquals(LispSymbol.ourT, completion); //todo: emacs shows nil
+    Assert.assertEquals(LispSymbol.T, completion); //todo: emacs shows nil
   }
 
   public void testAddTextPropertyOutOfRange() {
@@ -662,11 +663,10 @@ public class BufferTest extends IdeTestCase {
 
   public void testAddTextPropertyOk() {
     evaluateString("(switch-to-buffer \"3.txt\")");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(add-text-properties 1 3 '(a b))"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(add-text-properties 1 3 '(a b))"));
     LispObject substring = evaluateString("(buffer-substring 2 3)");
     LispString expected = new LispString("a");
-    expected.getTextPropertiesHolder().actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
-        TextPropertiesHolder.Action.ADD);
+    expected.getTextPropertiesHolder().actOnTextProperties(0, 1, LispList.list(new LispSymbol("a"), new LispSymbol("b")), Action.ADD);
     Assert.assertEquals(expected, substring);
   }
 
@@ -680,13 +680,13 @@ public class BufferTest extends IdeTestCase {
 
   public void testMakeVarBufferLocal() {
     Assert.assertEquals(new LispSymbol("a"), evaluateString("(make-variable-buffer-local 'a)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-p 'a)"));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-if-set-p 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(local-variable-p 'a)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-if-set-p 'a)"));
 
     LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
     SpecialForms.setq(current.getEnvironment(), new LispSymbol("a"), new LispInteger(5));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'a)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-if-set-p 'a)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(local-variable-if-set-p 'a)"));
 
     Assert.assertEquals(new LispInteger(5), evaluateString("(buffer-local-value 'a (current-buffer))"));
   }
@@ -705,8 +705,8 @@ public class BufferTest extends IdeTestCase {
     LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
     SpecialForms.setq(current.getEnvironment(), new LispSymbol("a"), new LispInteger(1));
     Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'a (current-buffer))"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-p 'a)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(local-variable-if-set-p 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(local-variable-p 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(local-variable-if-set-p 'a)"));
   }
 
   public void testBufferLocalityLocal() {
@@ -728,8 +728,8 @@ public class BufferTest extends IdeTestCase {
     Core.defineVariableAlias(current.getEnvironment(), new LispSymbol("w"), new LispSymbol("q"), null);
     Assert.assertEquals(new LispSymbol("q"), evaluateString("(make-local-variable 'w)"));
     Assert.assertEquals(new LispInteger(1), evaluateString("(buffer-local-value 'w (current-buffer))"));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'w)"));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'q)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'w)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'q)"));
 
     LispBuffer other = (LispBuffer) evaluateString("(other-buffer)");
     Assert.assertNotSame(current, other);
@@ -742,11 +742,11 @@ public class BufferTest extends IdeTestCase {
     evaluateString("(setq q 1)");
     evaluateString("(defvaralias 'w 'q)");
     evaluateString("(make-local-variable 'q)");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'q)"));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'w)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'q)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'w)"));
     LispBuffer current = (LispBuffer) evaluateString("(current-buffer)");
     Core.defineVariableAlias(current.getEnvironment(), new LispSymbol("a"), new LispSymbol("w"), null);
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(local-variable-p 'a)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(local-variable-p 'a)"));
   }
 
   public void testKillVar() {
@@ -766,11 +766,41 @@ public class BufferTest extends IdeTestCase {
     Assert.assertFalse(varMap.containsKey(new LispSymbol("a")));
   }
 
+  public void testLookingAt() {
+    String regexp = callLookingAt(4, LispSymbol.T);
+    Assert.assertEquals(myEnvironment.getBufferCurrentForEditing(), Match.getBuffer());
+    Assert.assertArrayEquals(new Integer[] {4, 4 + regexp.length()}, Match.getLastMatch().toArray(new Integer[2]));
+  }
+
+  public void testLookingAtFurther() {
+    callLookingAt(2, LispSymbol.NIL);
+    Assert.assertNull(Match.getBuffer());
+    Assert.assertTrue(Match.getLastMatch().isEmpty());
+  }
+
+  public void testLookingAtFalse() {
+    callLookingAt(5, LispSymbol.NIL);
+    Assert.assertNull(Match.getBuffer());
+    Assert.assertTrue(Match.getLastMatch().isEmpty());
+  }
+
+  private String callLookingAt(int point, LispSymbol expectedValue) {
+    evaluateString("(switch-to-buffer \"5.txt\")");
+    evaluateString("(goto-char " + point + ")");
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(match-data)"));
+    LispBuffer buffer = (LispBuffer) Buffer.getBuffer(myEnvironment, new LispString("5.txt"));
+    Assert.assertEquals(buffer, myEnvironment.getBufferCurrentForEditing());
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(match-data)"));
+    String regexp = "sage";
+    Assert.assertEquals(expectedValue, evaluateString("(looking-at \"" + regexp + "\")"));
+    return regexp;
+  }
+
   //requirements: load font-lock.el (set TestMode.LOAD_FILES = true)
   public void testAssignFaces() {
     evaluateString("(switch-to-buffer \"5.txt\")");
     LispObject maxPoint = evaluateString("(point-max)");
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(font-lock-fontify-syntactically-region (point-min) (point-max))"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(font-lock-fontify-syntactically-region (point-min) (point-max) t)"));
     Assert.assertEquals(maxPoint, evaluateString("(point)"));
   }
 
@@ -806,8 +836,8 @@ public class BufferTest extends IdeTestCase {
   public void testSetf() {
       evaluateString("(setq timer (timer-create))");
       Assert.assertEquals(new LispInteger(4), evaluateString("(setf (timer--function timer) 4)"));
-      Assert.assertEquals(new LispVector(LispSymbol.ourT, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil,
-              LispSymbol.ourNil, new LispInteger(4), LispSymbol.ourNil, LispSymbol.ourNil), evaluateString("timer"));
+      Assert.assertEquals(new LispVector(LispSymbol.T, LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL,
+              LispSymbol.NIL, new LispInteger(4), LispSymbol.NIL, LispSymbol.NIL), evaluateString("timer"));
   }
 
   //todo load (void macro timer--function)

@@ -139,12 +139,12 @@ public abstract class LispSubroutine {
                                           List<LispObject> args, int argsCounter, int i) {
     try {
       if (!(expectedType.isInstance(args.get(argsCounter)))) {
-        if (expectedType.equals(LispList.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
+        if (expectedType.equals(LispList.class) && args.get(argsCounter).equals(LispSymbol.NIL)) {
           arguments.setValue(i, LispList.list());
           return argsCounter + 1;
         }
-        if (expectedType.equals(LispSymbol.class) && args.get(argsCounter).equals(LispSymbol.ourNil)) {
-          arguments.setValue(i, LispSymbol.ourNil);
+        if (expectedType.equals(LispSymbol.class) && args.get(argsCounter).equals(LispSymbol.NIL)) {
+          arguments.setValue(i, LispSymbol.NIL);
           return argsCounter + 1;
         }
         if (arguments.isOptional(i))
@@ -212,7 +212,7 @@ public abstract class LispSubroutine {
 
           if (cause instanceof VoidVariableException && TestMode.TEST && c == Key.class) {
             LogUtil.log("Skip keymap errors in test mode", GlobalEnvironment.MessageType.ERROR);
-            return LispSymbol.ourNil;
+            return LispSymbol.NIL;
           }
 
           if (cause instanceof LispException)

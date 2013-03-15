@@ -12,13 +12,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 14/02/12
- * Time: 00:08
- * To change this template use File | Settings | File Templates.
- */
 public final class BackwardMultilineParser implements Observer {
   private BackwardParser myBackwardParser = new BackwardParser();
   private List<String> myReader;

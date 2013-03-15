@@ -45,7 +45,7 @@ class StandardCompletionContext extends CompletionContext {
         return new LispInteger(Integer.parseInt(parameter));
       case 'C': //command
         LispSymbol cmd = environment.find(parameter);
-        if (cmd != null && Predicate.commandp(cmd, null).equals(LispSymbol.ourT))
+        if (cmd != null && Predicate.commandp(cmd, null).equals(LispSymbol.T))
           return cmd;
         break;
       case 'D': // -- Directory name.
@@ -122,12 +122,12 @@ class StandardCompletionContext extends CompletionContext {
         break;
       case 'z': // -- Coding system.
         if (StringUtil.isEmpty(parameter))
-          return LispSymbol.ourNil;
+          return LispSymbol.NIL;
         throw new NotImplementedException("verification for 'z'");
       case 'Z':
         //todo: if prefix-arg provided -- try to verify.
         //otherwise nil:
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
       default:
         setMatch(true);
         return null;

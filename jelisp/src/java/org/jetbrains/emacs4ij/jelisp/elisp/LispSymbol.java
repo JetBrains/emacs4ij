@@ -33,9 +33,9 @@ import java.util.Map;
  * elisp symbol = variable name, function name, constant name, special form name, etc
  */
 public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, KeymapCell {
-  public static final LispSymbol ourNil = new LispSymbol("nil");
-  public static final LispSymbol ourT = new LispSymbol("t");
-  public static final LispSymbol ourVoid = new LispSymbol("void");
+  public static final LispSymbol NIL = new LispSymbol("nil");
+  public static final LispSymbol T = new LispSymbol("t");
+  public static final LispSymbol VOID = new LispSymbol("void");
 
   private String myName = null;
   private Map<LispSymbol, LispObject> myProperties = new HashMap<>();
@@ -79,11 +79,11 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
   }
 
   public static LispSymbol bool(boolean value) {
-    return value ? LispSymbol.ourT : LispSymbol.ourNil;
+    return value ? LispSymbol.T : LispSymbol.NIL;
   }
 
   public boolean toBoolean() {
-    return !this.equals(ourNil);
+    return !this.equals(NIL);
   }
 
   public LispSymbol(String name, boolean bufferLocal) {
@@ -240,7 +240,7 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null) return false;
-    if (o.getClass().equals(LispList.class) && ((LispList)o).isEmpty() && this.equals(ourNil))
+    if (o.getClass().equals(LispList.class) && ((LispList)o).isEmpty() && this.equals(NIL))
       return true;
     if (o.getClass() != getClass())
       return false;
@@ -477,7 +477,7 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     try {
       type = getCarIfList(((LispList)myFunction).nthCdr(4));
     } catch (LispException e) {
-      type = LispSymbol.ourNil;
+      type = LispSymbol.NIL;
     }
     try {
       LispList def = GlobalEnvironment.INSTANCE.getEmacsDefFromFile(myName, fileName, type);
@@ -503,7 +503,7 @@ public final class LispSymbol implements LispAtom, LambdaOrSymbolWithFunction, K
     if (myFunction == null)
       return getProperty(JelispBundle.message("var.doc"));
     if (isAutoload()) {
-      LispObject doc = LispSymbol.ourNil;
+      LispObject doc = LispSymbol.NIL;
       try {
         doc = getCarIfList(((LispList)myFunction).nthCdr(2));
       } catch (LispException e) {

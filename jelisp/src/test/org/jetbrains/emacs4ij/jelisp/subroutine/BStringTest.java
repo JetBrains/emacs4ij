@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
-import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.Action;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -99,7 +99,7 @@ public class BStringTest extends JelispTestCase {
     Assert.assertEquals(new LispInteger(5), r);
     evaluateString("(setq case-fold-search nil)");
     r = evaluateString("(string-match \"A\" \"africa\")");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -118,7 +118,7 @@ public class BStringTest extends JelispTestCase {
     LispObject r = evaluateString("(string-match \"^[ACHMsS]-.\" \"M-x\")");
     Assert.assertEquals(new LispInteger(0), r);
     r = evaluateString("(string-match \"^[ACHMsS]-.\" \"kvaM-x\")");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -158,7 +158,7 @@ public class BStringTest extends JelispTestCase {
   @Test
   public void testStringMatchDollar() {
     LispObject r = evaluateString("(string-match \"u?hhhh$\" \"ah\")");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(string-match \"u?h$\" \"ah\")");
     Assert.assertEquals(new LispInteger(1), r);
   }
@@ -341,7 +341,7 @@ public class BStringTest extends JelispTestCase {
   @Test
   public void testStringMatchBackReferenceNoMatch() {
     LispObject match = evaluateString("(string-match \"\\\\(bar*q\\\\)anna\\\\1\" \"qbarrrrrrqannabarrrrrq\")");
-    Assert.assertEquals(LispSymbol.ourNil, match);
+    Assert.assertEquals(LispSymbol.NIL, match);
   }
 
   @Test
@@ -386,7 +386,7 @@ public class BStringTest extends JelispTestCase {
     Assert.assertEquals(new LispInteger(3), match);
     LispObject matchData = evaluateString("(match-data)");
     Assert.assertEquals(LispList.list(new LispInteger(3), new LispInteger(3)), matchData);
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-match \"\\\\'hei\" \"hei\")"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(string-match \"\\\\'hei\" \"hei\")"));
     Assert.assertEquals(LispList.list(), evaluateString("(match-data)"));
   }
 
@@ -415,9 +415,9 @@ public class BStringTest extends JelispTestCase {
 
   @Test
   public void testStringLessP() {
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(string-lessp 'a \"b\")"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'b \"b\")"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(string-lessp 'c \"b\")"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(string-lessp 'a \"b\")"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(string-lessp 'b \"b\")"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(string-lessp 'c \"b\")"));
   }
 
   @Test
@@ -425,8 +425,7 @@ public class BStringTest extends JelispTestCase {
     evaluateString("(setq s (propertize \"hello\" 'a 'b))");
     LispObject o = evaluateString("(substring s 2 4)");
     LispString expected = new LispString("ll");
-    expected.getTextPropertiesHolder().actOnTextProperties(0, 2, LispList.list(new LispSymbol("a"), new LispSymbol("b")),
-        TextPropertiesHolder.Action.ADD);
+    expected.getTextPropertiesHolder().actOnTextProperties(0, 2, LispList.list(new LispSymbol("a"), new LispSymbol("b")), Action.ADD);
     Assert.assertEquals(expected, o);
   }
 

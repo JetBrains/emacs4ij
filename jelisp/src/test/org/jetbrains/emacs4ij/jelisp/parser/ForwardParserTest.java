@@ -9,7 +9,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispVector;
-import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.Action;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.EndOfLineException;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.MissingClosingBracketException;
@@ -194,14 +194,14 @@ public class ForwardParserTest {
   @Test (expected = EndOfLineException.class)
   public void testEmptyQuote() throws LispException {
     LispObject lispObject = p.parseLine("'");
-    Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+    Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.NIL)), lispObject);
   }
 
   //todo
   /*@Test what expected
   public void testQuotedSpace() throws LispException {
       LispObject lispObject = p.parseLine("' ");
-      Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+      Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.NIL)), lispObject);
   }*/
 
   @Test
@@ -574,7 +574,7 @@ public class ForwardParserTest {
   @Test
   public void testParseCharNil() {
     LispObject c = p.parseLine("?\\C-(");
-    Assert.assertEquals(LispSymbol.ourNil, c);
+    Assert.assertEquals(LispSymbol.NIL, c);
   }
 
   @Test
@@ -954,17 +954,15 @@ public class ForwardParserTest {
   @Test
   public void testParseStringWithTextPropOneProp() {
     LispString expected = new LispString("hello");
-    expected.getTextPropertiesHolder().actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesHolder.Action.ADD);
+    expected.getTextPropertiesHolder().actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.NIL), Action.ADD);
     Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a)"));
   }
 
   @Test
   public void testParseStringWithTextPropTwoProp() {
     LispString expected = new LispString("hello");
-    expected.getTextPropertiesHolder().actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.ourNil), TextPropertiesHolder.Action.ADD);
-    expected.getTextPropertiesHolder().actOnTextProperties(3, 5,
-        LispList.list(new LispSymbol("q"), new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")),
-        TextPropertiesHolder.Action.ADD);
+    expected.getTextPropertiesHolder().actOnTextProperties(1, 2, LispList.list(new LispSymbol("a"), LispSymbol.NIL), Action.ADD);
+    expected.getTextPropertiesHolder().actOnTextProperties(3, 5, LispList.list(new LispSymbol("q"), new LispSymbol("b"), new LispSymbol("c"), new LispSymbol("d")), Action.ADD);
     Assert.assertEquals(expected, p.parseLine("#(\"hello\" 2 1 a 3 5 (q b c d))"));
   }
 

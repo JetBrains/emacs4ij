@@ -34,7 +34,7 @@ public final class LispMarker implements MarkerOrInteger {
     }    
 
     public LispObject setInsertionType (LispObject type) {
-        isAfterInsertion = !type.equals(LispSymbol.ourNil);
+        isAfterInsertion = !type.equals(LispSymbol.NIL);
         return type;
     }
 

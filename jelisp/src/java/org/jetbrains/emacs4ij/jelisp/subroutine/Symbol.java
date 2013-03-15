@@ -40,7 +40,7 @@ public abstract class Symbol {
   @Subroutine("symbol-value")
   public static LispObject symbolValue (Environment environment, LispSymbol arg) {
     LispSymbol symbol = environment.find(arg.getName());
-    if (symbol == null || !symbol.hasValue() || symbol.getValue().equals(LispSymbol.ourVoid))
+    if (symbol == null || !symbol.hasValue() || symbol.getValue().equals(LispSymbol.VOID))
       throw new VoidVariableException(arg.getName());
     return symbol.getValue();
   }
@@ -56,7 +56,7 @@ public abstract class Symbol {
       LispSymbol real = symbol.uploadVariableDefinition();
       return Core.thisOrNil(real.getProperty(propertyName));
     } catch (CyclicDefinitionLoadException | VoidVariableException | NullPointerException e) {
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
   }
 
@@ -99,14 +99,14 @@ public abstract class Symbol {
         doc += (doc.length() > 0 ? '\n' : "") + line.substring(0, line.indexOf(''));
       return new LispString(doc);
     } catch (IOException e) {
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     }
   }
 
   @Subroutine("documentation-property")
   public static LispObject documentationProperty (Environment environment, LispSymbol symbol, LispSymbol propertyName,
                                                   @Nullable @Optional LispObject verbatim)  {
-    //todo: if (verbatim != null) && !(verbatim.equals(LispSymbol.ourNil) ---
+    //todo: if (verbatim != null) && !(verbatim.equals(LispSymbol.NIL) ---
     // Third argument RAW omitted or nil means pass the result through `substitute-command-keys' if it is a string.
 
     LispObject value = get(environment, symbol, propertyName);
@@ -122,7 +122,7 @@ public abstract class Symbol {
         throw new VoidFunctionException(name);
 
       LispObject funPropValue = documentationProperty(environment, f, new LispSymbol("function-documentation"), null);
-      if (!funPropValue.equals(LispSymbol.ourNil))
+      if (!funPropValue.equals(LispSymbol.NIL))
         return funPropValue;
 
       if (!f.isFunction())
@@ -223,7 +223,7 @@ public abstract class Symbol {
     if (command instanceof LispList)
       command = new Lambda((LispList) command);
     if (!Predicate.commandp(command, null).toBoolean())
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     return ((LispCommand)command).getInteractiveForm();
   }
 

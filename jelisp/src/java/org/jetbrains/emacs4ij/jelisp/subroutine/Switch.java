@@ -36,9 +36,9 @@ public abstract class Switch {
     boolean noRecord = !Predicate.isNil(noRecordObject);
 
     environment.setSelectionManagedBySubroutine(true);
-    if (bufferOrName.equals(LispSymbol.ourNil)) {
-      LispObject otherBuffer = Buffer.otherBuffer(environment, bufferOrName, LispSymbol.ourT, null);
-      if (otherBuffer.equals(LispSymbol.ourNil))
+    if (bufferOrName.equals(LispSymbol.NIL)) {
+      LispObject otherBuffer = Buffer.otherBuffer(environment, bufferOrName, LispSymbol.T, null);
+      if (otherBuffer.equals(LispSymbol.NIL))
         throw new InternalException(JelispBundle.message("nil.other.buffer"));
       return switchBuffers(environment, (LispBuffer) otherBuffer, noRecord);
     }

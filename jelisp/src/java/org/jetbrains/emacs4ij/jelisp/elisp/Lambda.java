@@ -31,7 +31,7 @@ public final class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
     if (!data.get(0).equals(new LispSymbol("lambda")))
       throw new InvalidFunctionException(def.toString());
     try {
-      if (!data.get(1).equals(LispSymbol.ourNil))
+      if (!data.get(1).equals(LispSymbol.NIL))
         parseArgumentsList((LispList) data.get(1));
     } catch (ClassCastException e) {
       throw new InvalidFunctionException(def.toString());
@@ -126,7 +126,7 @@ public final class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
   }
 
   private LispObject evaluateBody (Environment inner) {
-    LispObject result = LispSymbol.ourNil;
+    LispObject result = LispSymbol.NIL;
     for (LispObject bodyForm: myBody) {
       result = bodyForm.evaluate(inner);
     }
@@ -198,7 +198,7 @@ public final class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
   @Override
   public String getInteractiveString () {
     LispObject args = myInteractive.cdr();
-    if (args.equals(LispSymbol.ourNil) || !(args instanceof LispList))
+    if (args.equals(LispSymbol.NIL) || !(args instanceof LispList))
       return null;
     LispObject first = ((LispList) args).toLispObjectList().get(0);
     if (first instanceof LispString) {
@@ -251,10 +251,10 @@ public final class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
   }
 
   protected final static class LambdaArgument {
-    private LispSymbol myKeyword = LispSymbol.ourNil;
+    private LispSymbol myKeyword = LispSymbol.NIL;
     private LispSymbol myVar;
-    private LispObject myInitForm = LispSymbol.ourNil;
-    private LispSymbol mySetVar = LispSymbol.ourNil;
+    private LispObject myInitForm = LispSymbol.NIL;
+    private LispSymbol mySetVar = LispSymbol.NIL;
     public enum Type {REQUIRED, OPTIONAL, REST, KEYWORD}
     private Type myType;
 
@@ -317,14 +317,14 @@ public final class Lambda implements FunctionCell, LambdaOrSymbolWithFunction {
       myVar = new LispSymbol(myVar.getName());
       if (value == null) {
         myVar.setValue(myInitForm.evaluate(inner));
-        if (!mySetVar.equals(LispSymbol.ourNil))
-          mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourNil);
+        if (!mySetVar.equals(LispSymbol.NIL))
+          mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.NIL);
         inner.defineSymbol(myVar);
         return;
       }
       myVar.setValue(value);
-      if (!mySetVar.equals(LispSymbol.ourNil))
-        mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.ourT);
+      if (!mySetVar.equals(LispSymbol.NIL))
+        mySetVar = new LispSymbol(mySetVar.getName(), LispSymbol.T);
       inner.defineSymbol(myVar);
     }
 

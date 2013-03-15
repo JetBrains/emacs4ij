@@ -12,7 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSyntaxTable;
-import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.TextPropertiesHolder;
 import org.jetbrains.emacs4ij.jelisp.exception.Attention;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.VoidVariableException;
@@ -37,7 +37,7 @@ public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder 
   private int myModificationsCount = 0;
   private int mySaveModCount = 0;
 
-  private TextPropertiesHolder myPropertiesHolder = new TextPropertiesHolder() {
+  private final TextPropertiesHolder myPropertiesHolder = new TextPropertiesHolder() {
     @Override
     protected int size() {
       return LispBuffer.this.size();

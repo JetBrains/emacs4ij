@@ -69,7 +69,7 @@ public abstract class Buffer {
     if (bufferOrName instanceof LispString) {
       LispBuffer buffer = environment.findBuffer(((LispString) bufferOrName).getData());
       if (buffer == null)
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
       return buffer;
     }
     if (bufferOrName instanceof LispBuffer) {
@@ -117,7 +117,7 @@ public abstract class Buffer {
   @Subroutine("set-buffer")
   public static LispObject setBuffer (Environment environment, LispObject bufferOrName) {
     LispObject lispObject = getBuffer(environment, bufferOrName);
-    if (lispObject.equals(LispSymbol.ourNil)) {
+    if (lispObject.equals(LispSymbol.NIL)) {
       throw new NoBufferException(bufferOrName.toString());
     }
     if (!environment.isMainOrGlobal()) {
@@ -157,7 +157,7 @@ public abstract class Buffer {
       throw new WrongTypeArgumentException("integerp", shift.toString());
     String message = environment.getBufferCurrentForEditing().forwardChar(((LispInteger)shift).getData());
     if (message.equals(""))
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     return new LispSymbol(message);
   }
 
@@ -169,7 +169,7 @@ public abstract class Buffer {
       throw new WrongTypeArgumentException("integerp", shift.toString());
     String message = environment.getBufferCurrentForEditing().forwardChar(-((LispInteger)shift).getData());
     if (message.equals(""))
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     return new LispSymbol(message);
   }
 
@@ -194,12 +194,12 @@ public abstract class Buffer {
     }
 
     if (environment.getBufferCurrentForEditing().equals(buffer)) {
-      Switch.switchToBuffer(environment, LispSymbol.ourNil, null);
+      Switch.switchToBuffer(environment, LispSymbol.NIL, null);
     }
 
     environment.buryBuffer(buffer);
 
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
   @Subroutine("generate-new-buffer-name")
   public static LispString generateNewBufferName (Environment environment, LispString startingName, @Optional LispString ignore) {
@@ -225,9 +225,9 @@ public abstract class Buffer {
     environment.hideBuffer(buffer);
     Switch.switchToBuffer(environment,
         environment.getOtherBuffer(buffer, environment.getSelectedFrame(), false),
-        LispSymbol.ourNil);
+        LispSymbol.NIL);
 
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine(value = "kill-buffer", isCmd = true, interactive = "bKill buffer", key = "\\C-xk")
@@ -236,9 +236,9 @@ public abstract class Buffer {
     LispSymbol killBufferQueryFunctions = environment.find("kill-buffer-query-functions");
     if (killBufferQueryFunctions != null) {
       LispObject functions = killBufferQueryFunctions.getValue();
-      if (functions != null && functions != LispSymbol.ourVoid) {
+      if (functions != null && functions != LispSymbol.VOID) {
         LispObject evaluationResult = functions.evaluate(environment);
-        if (evaluationResult.equals(LispSymbol.ourNil))
+        if (evaluationResult.equals(LispSymbol.NIL))
           return new LispString(JelispBundle.message("buffer.not.killed", bufferOrName.toString()));
       }
     }
@@ -250,7 +250,7 @@ public abstract class Buffer {
 
     environment.setSelectionManagedBySubroutine(true);
     environment.killBuffer(buffer);
-    return LispSymbol.ourT;
+    return LispSymbol.T;
   }
 
   @Subroutine("minibuffer-depth")
@@ -277,7 +277,7 @@ public abstract class Buffer {
       toInsert.append(converted);
     }
     environment.getBufferCurrentForEditing().insert(toInsert.toString());
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("set-buffer-major-mode")
@@ -393,7 +393,7 @@ public abstract class Buffer {
   public static LispSymbol killAllLocalVars (Environment environment) {
     Core.runHooks(environment, new LispSymbol("change-major-mode-hook"));
     environment.getBufferCurrentForEditing().reset();
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("set-buffer-modified-p")
@@ -420,7 +420,7 @@ public abstract class Buffer {
   @Subroutine(value = "widen", isCmd = true, key = "\\C-xnw")
   public static LispSymbol widen (Environment environment) {
     //todo: remove narrowing from current buffer
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("buffer-file-name")

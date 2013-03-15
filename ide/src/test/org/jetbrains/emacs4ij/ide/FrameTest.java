@@ -15,12 +15,12 @@ public class FrameTest extends IdeTestCase {
   }
 
   public void testFrameParameters() {
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(modify-frame-parameters nil '((test 2 3) (a 1) . 5))"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(modify-frame-parameters nil '((test 2 3) (a 1) . 5))"));
     Assert.assertEquals(LispList.list(new LispInteger(2), new LispInteger(3)), evaluateString("(frame-parameter nil 'test)"));
     Assert.assertEquals(LispList.list(new LispInteger(1)), evaluateString("(frame-parameter nil 'a)"));
     LispObject parameters = evaluateString("(frame-parameters)");
     Assert.assertTrue(parameters.toString().contains("(test 2 3)") && parameters.toString().contains("(a 1)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(frame-parameter nil 'buffer-predicate)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(frame-parameter nil 'buffer-predicate)"));
   }
 
   public void testFrameParametersWrongArg() {

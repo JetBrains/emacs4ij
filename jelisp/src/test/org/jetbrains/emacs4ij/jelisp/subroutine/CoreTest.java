@@ -65,84 +65,84 @@ public class CoreTest extends JelispTestCase {
   @Test
   public void testEq() {
     LispObject lispObject = evaluateString("(eq 5 5)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(eq 'foo 'foo)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(eq \"qwa\" \"qwa\")");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(eq \"\" \"\")");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(eq '(1 (2 (3))) '(1 (2 (3))))");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     evaluateString("(setq foo '(1 (2 (3))))");
     lispObject = evaluateString("(eq foo foo)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(eq foo '(1 (2 (3))))");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(eq [(1 2) 3] [(1 2) 3])");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
   }
 
   @Ignore
   @Test
   public void testEqSymbol() {
     LispObject lispObject = evaluateString("(eq (make-symbol \"foo\") 'foo)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
   }
 
   @Test
   public void testEqual() {
     LispObject lispObject = evaluateString("(equal 5 5)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal 'foo 'foo)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal \"qwa\" \"qwa\")");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal \"qwa\" \"QWA\")");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(equal \"\" \"\")");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal '(1 (2 (3))) '(1 (2 (3))))");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     evaluateString("(setq foo '(1 (2 (3))))");
     lispObject = evaluateString("(equal foo foo)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal foo '(1 (2 (3))))");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
     lispObject = evaluateString("(equal [(1 2) 3] [(1 2) 3])");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
   }
 
   @Test
   public void listConsEqual() {
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(equal (cons 1 (cons t nil)) (cons 1 t))"));
-    Assert.assertEquals(LispSymbol.ourT,   evaluateString("(equal (cons 1 (cons t nil)) '(1 t))"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(equal (cons 1 (cons t nil)) (cons 1 t))"));
+    Assert.assertEquals(LispSymbol.T,   evaluateString("(equal (cons 1 (cons t nil)) '(1 t))"));
   }
 
   @Test
   public void testNilEqual() {
     LispObject r = evaluateString("(equal nil (cons nil nil))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(equal nil '())");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(equal nil '(nil))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
   public void testNull () {
     LispObject lispObject = evaluateString("(null 5)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(null nil)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
   }
 
   @Test
   public void testLispNot() throws Exception {
     LispObject lispObject = evaluateString("(not 5)");
-    Assert.assertEquals(LispSymbol.ourNil, lispObject);
+    Assert.assertEquals(LispSymbol.NIL, lispObject);
     lispObject = evaluateString("(not nil)");
-    Assert.assertEquals(LispSymbol.ourT, lispObject);
+    Assert.assertEquals(LispSymbol.T, lispObject);
   }
 
   @Test
@@ -523,15 +523,15 @@ public class CoreTest extends JelispTestCase {
     LispObject r = evaluateString("(defalias 'a (symbol-function 'f) (make-marker))");
     Assert.assertEquals("(lambda nil)", r.toString());
     r = evaluateString("(symbol-function 'a)");
-    Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.ourNil));
+    Lambda test = new Lambda(LispList.list(new LispSymbol("lambda"), LispSymbol.NIL));
     test.setDocumentation(new LispMarker());
     Assert.assertEquals(test, r);
     r = evaluateString("(get 'variable-documentation 'a)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(documentation 'a)");
     Assert.assertEquals(new LispMarker(), r);
     r = evaluateString("(documentation 'f)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -546,20 +546,20 @@ public class CoreTest extends JelispTestCase {
   @Test
   public void testAtom() {
     LispObject r = evaluateString("(atom 5)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(atom [])");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(atom nil)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(atom 'a)");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
     r = evaluateString("(atom ())");
-    Assert.assertEquals(LispSymbol.ourT, r);
+    Assert.assertEquals(LispSymbol.T, r);
 
     r = evaluateString("(atom '(5))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("(atom (cons 1 2))");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -627,9 +627,9 @@ public class CoreTest extends JelispTestCase {
         " (setq ,variable nil)))");
     evaluateString("(setq foo t)");
     LispObject r = evaluateString("(t-becomes-nil foo)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
     r = evaluateString("foo");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -740,7 +740,7 @@ public class CoreTest extends JelispTestCase {
   //todo '(cyclic-function-indirection define-minor-mode)
   public void testDefineMinorMode() {
     LispObject r = evaluateString("(define-minor-mode m1 \"doc\")");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -753,7 +753,7 @@ public class CoreTest extends JelispTestCase {
   public void testInteractiveInBody() {
     evaluateString("(defun f () (+ 3 6) (interactive \"Binput\"))");
     LispObject r = evaluateString("(f)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   @Test
@@ -775,7 +775,7 @@ public class CoreTest extends JelispTestCase {
 
     Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("doc")),
         evaluateString("(symbol-plist 'b)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(symbol-plist 'a)"));
   }
 
   @Test
@@ -813,7 +813,7 @@ public class CoreTest extends JelispTestCase {
         evaluateString("(symbol-plist 'b)"));
     Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
         evaluateString("(symbol-plist 'c)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(symbol-plist 'a)"));
   }
 
   @Test
@@ -844,7 +844,7 @@ public class CoreTest extends JelispTestCase {
         evaluateString("(symbol-plist 'b)"));
     Assert.assertEquals(LispList.list(new LispSymbol("variable-documentation"), new LispString("c")),
         evaluateString("(symbol-plist 'c)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(symbol-plist 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(symbol-plist 'a)"));
   }
 
   @Test
@@ -960,8 +960,8 @@ public class CoreTest extends JelispTestCase {
 
   @Test
   public void testTimerCreate() {
-    Assert.assertEquals(new LispVector(LispSymbol.ourT, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil,
-        LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil, LispSymbol.ourNil),
+    Assert.assertEquals(new LispVector(LispSymbol.T, LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL,
+        LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL, LispSymbol.NIL),
         evaluateString("(setq timer (timer-create))"));
   }
 
@@ -994,7 +994,7 @@ public class CoreTest extends JelispTestCase {
     Assert.assertEquals(new LispInteger(10), evaluateString("(b 5)"));
     Assert.assertEquals(new LispString("doc"), evaluateString("(documentation 'b)"));
     evaluateString("(fset 'b '(autoload \"./jelisp/src/test/test\"))");
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(documentation 'b)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(documentation 'b)"));
     Assert.assertEquals(new LispInteger(6), evaluateString("(b 1)"));
   }
 
@@ -1020,10 +1020,10 @@ public class CoreTest extends JelispTestCase {
   @Test
   public void testFeatureP() {
     evaluateString("(provide 'f '(a))");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'a)"));
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(featurep 'f 'a)"));
-    Assert.assertEquals(LispSymbol.ourNil, evaluateString("(featurep 'f 'b)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(featurep 'f)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(featurep 'a)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(featurep 'f 'a)"));
+    Assert.assertEquals(LispSymbol.NIL, evaluateString("(featurep 'f 'b)"));
   }
 
   @Test

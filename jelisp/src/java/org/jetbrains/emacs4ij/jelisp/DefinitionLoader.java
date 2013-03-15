@@ -459,7 +459,7 @@ public final class DefinitionLoader {
 if (type == DefType.FUN) {//check if it is command
   try {
       LispList definition = getDef(reader, line, name);
-      if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.ourT))
+      if (BuiltinPredicates.commandp(definition, null).equals(LispSymbol.T))
           id = new Identifier(name, SymbolType.CMD);
   } catch (ParserException e) {
       if (!e.getMessage().contains("Unknown code block: )")) //this means we've found def inside other def

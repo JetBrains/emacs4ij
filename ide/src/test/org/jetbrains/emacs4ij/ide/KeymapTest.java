@@ -12,10 +12,10 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
 public class KeymapTest extends IdeTestCase {
   public void testKeymapP() throws Exception {
     evaluateString("(setq k (make-sparse-keymap))");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(keymapp k)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(keymapp k)"));
     evaluateString("(setq m 1)");
     evaluateString("(fset 'm (make-sparse-keymap))");
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(keymapp 'm)"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(keymapp 'm)"));
   }
 
   public void testMakeKeymap() throws Exception {
@@ -31,7 +31,7 @@ public class KeymapTest extends IdeTestCase {
     LispObject parent = evaluateString("(keymap-parent k1)");
     Assert.assertEquals(Key.makeSparseKeymap(null), parent);
     parent = evaluateString("(keymap-parent k2)");
-    Assert.assertEquals(LispSymbol.ourNil, parent);
+    Assert.assertEquals(LispSymbol.NIL, parent);
   }
 
   public void testCopyKeymapAsSymbolFunction() throws Exception {
@@ -45,11 +45,11 @@ public class KeymapTest extends IdeTestCase {
   public void testKeymapParent() throws Exception {
     evaluateString("(setq k (make-sparse-keymap))");
     LispObject r = evaluateString("(keymap-parent k)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
 
     evaluateString("(setq k (make-keymap))");
     r = evaluateString("(keymap-parent k)");
-    Assert.assertEquals(LispSymbol.ourNil, r);
+    Assert.assertEquals(LispSymbol.NIL, r);
   }
 
   public void testSetKeymapParentSparseTwice() throws Exception {
@@ -190,9 +190,9 @@ public class KeymapTest extends IdeTestCase {
 
 //    public void testEventConvertListNil() {
 //        LispObject r = evaluateString("(event-convert-list \"C-x\")");
-//        Assert.assertEquals(LispSymbol.ourNil, r);
+//        Assert.assertEquals(LispSymbol.NIL, r);
 //        r = evaluateString("(event-convert-list 5)");
-//        Assert.assertEquals(LispSymbol.ourNil, r);
+//        Assert.assertEquals(LispSymbol.NIL, r);
 //    }
 //
 //    public void testEventConvertList() {

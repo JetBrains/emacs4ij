@@ -30,7 +30,7 @@ public class FacesTest extends JelispTestCase {
   @Test
   public void internalSetFontSelectionOrder4() {
     assertEquals(Arrays.asList(XlfdField.SET_WIDTH, XlfdField.POINT_SIZE, XlfdField.WEIGHT, XlfdField.SLANT), Faces.getFontSortOrder());
-    assertEquals(LispSymbol.ourNil, evaluateString("(internal-set-font-selection-order '(:height :weight :width :slant))"));
+    assertEquals(LispSymbol.NIL, evaluateString("(internal-set-font-selection-order '(:height :weight :width :slant))"));
     assertEquals(Arrays.asList(XlfdField.POINT_SIZE, XlfdField.WEIGHT, XlfdField.SET_WIDTH, XlfdField.SLANT), Faces.getFontSortOrder());
   }
 }

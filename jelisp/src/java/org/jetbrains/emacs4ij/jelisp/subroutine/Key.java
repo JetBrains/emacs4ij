@@ -83,7 +83,7 @@ public abstract class Key {
     LispKeymap element = getKeymap(object);
     if (element == null)
       throw new WrongTypeArgumentException("keymapp", object);
-    return element.getParent() == null ? LispSymbol.ourNil : element.getParent();
+    return element.getParent() == null ? LispSymbol.NIL : element.getParent();
   }
 
   @Subroutine("set-keymap-parent")
@@ -92,7 +92,7 @@ public abstract class Key {
     if (element == null)
       throw new WrongTypeArgumentException("keymapp", object);
     LispKeymap trueParent = getKeymap(parent);
-    if (trueParent == null && !parent.equals(LispSymbol.ourNil))
+    if (trueParent == null && !parent.equals(LispSymbol.NIL))
       throw new WrongTypeArgumentException("keymapp", parent);
     element.setParent(trueParent);
     return parent;
@@ -102,7 +102,7 @@ public abstract class Key {
   public static LispSymbol definePrefixCommand (LispSymbol command, @Optional LispSymbol mapVar, @Optional LispObject name) {
     LispKeymap keymap = makeSparseKeymap(name);
     command.setFunction(keymap);
-    if (mapVar != null && !mapVar.equals(LispSymbol.ourNil))
+    if (mapVar != null && !mapVar.equals(LispSymbol.NIL))
       mapVar.setValue(keymap);
     else command.setValue(keymap);
     return command;
@@ -183,25 +183,25 @@ public abstract class Key {
   public static LispSymbol useGlobalMap (Environment environment, LispKeymap keymap) {
     GlobalEnvironment.INSTANCE.setVariable(new LispSymbol("global-map", keymap));
     environment.setActiveKeymap(keymap);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("use-local-map")
   public static LispSymbol useLocalMap (Environment environment, LispKeymap keymap) {
     environment.getBufferCurrentForEditing().setKeymap(keymap);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   public static void init() {
     ourKeyMapSymbol.setProperty("char-table-extra-slots", new LispInteger(0));
     GlobalEnvironment.INSTANCE.defineSymbol(ourKeyMapSymbol);
     LispSymbol globalMap = makeKeymap("global-map");
-    if (globalMap.getValue().equals(LispSymbol.ourNil))
+    if (globalMap.getValue().equals(LispSymbol.NIL))
       return;
     setKey(globalMap, makeSparseKeymap("ctl-x-map"), "\\C-x");
     setKey(globalMap, makeSparseKeymap("esc-map"), "<ESC>");
     setKey(globalMap, "keyboard-escape-quit", "<ESC><ESC>");
-    GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.ourT);
+    GlobalEnvironment.INSTANCE.defineSymbol("define-key-rebound-commands", LispSymbol.T);
 
     LispSymbol mblMap = makeKeymap("minibuffer-local-map");
     setKey(mblMap, "exit-minibuffer", "<RET>");
@@ -245,7 +245,7 @@ public abstract class Key {
     LispKeymap keymap = makeSparseKeymap(name);
     try {
       LispObject value = parentSymbol.getValue();
-      LispKeymap parent = value.equals(LispSymbol.ourNil) ? null : (LispKeymap) value;
+      LispKeymap parent = value.equals(LispSymbol.NIL) ? null : (LispKeymap) value;
       //todo: this is only for test!
       if (keymap != null)
         keymap.setParent(parent);

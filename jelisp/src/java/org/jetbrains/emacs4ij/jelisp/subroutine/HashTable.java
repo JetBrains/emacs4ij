@@ -1,8 +1,19 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
 import org.jetbrains.emacs4ij.jelisp.Environment;
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
-import org.jetbrains.emacs4ij.jelisp.exception.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispFloat;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispHashTable;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispNumber;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidArgumentListException;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.InvalidHashTableParameterException;
+import org.jetbrains.emacs4ij.jelisp.exception.VoidFunctionException;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
 /**
  * Created with IntelliJ IDEA.
@@ -71,7 +82,7 @@ public abstract class HashTable {
         if (equalityMethod == null)
             equalityMethod = "eql";
         if (weakness == null)
-            weakness = LispSymbol.ourNil;
+            weakness = LispSymbol.NIL;
         if (initialCapacity == -1)
             initialCapacity = 65;
         if (rehashSize == -1)
@@ -85,7 +96,7 @@ public abstract class HashTable {
     @Subroutine("gethash")
     public static LispObject getHash (LispObject key, LispHashTable table, @Optional LispObject defaultValue) {
         if (Predicate.isNil(defaultValue))
-            defaultValue = LispSymbol.ourNil;
+            defaultValue = LispSymbol.NIL;
         LispObject value = table.get(key);
         return value == null ? defaultValue : value;
     }
@@ -99,13 +110,13 @@ public abstract class HashTable {
     @Subroutine("remhash")
     public static LispSymbol removeHash (LispObject key, LispHashTable table) {
         table.remove(key);
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
     }
 
     @Subroutine("clrhash")
     public static LispSymbol removeHash (LispHashTable table) {
         table.clear();
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
     }
 
     @Subroutine("maphash")
@@ -121,7 +132,7 @@ public abstract class HashTable {
             throw new InvalidFunctionException(function.toString());
 
         table.map(environment, function);
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
     }
 
     @Subroutine("define-hash-table-test")

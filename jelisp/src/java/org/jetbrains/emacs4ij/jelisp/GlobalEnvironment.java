@@ -207,7 +207,7 @@ public class GlobalEnvironment extends Environment {
   }
 
   public void defineSymbol (String name) {
-    defineSymbol(new LispSymbol(name, LispSymbol.ourNil));
+    defineSymbol(new LispSymbol(name, LispSymbol.NIL));
   }
 
   @Override
@@ -226,7 +226,7 @@ public class GlobalEnvironment extends Environment {
   }
 
   private void addBufferLocalVariable(String name) {
-    addBufferLocalVariable(name, LispSymbol.ourNil);
+    addBufferLocalVariable(name, LispSymbol.NIL);
   }
 
   private void addBufferLocalVariable(String name, LispObject value) {
@@ -261,7 +261,7 @@ public class GlobalEnvironment extends Environment {
 
   private void defineUserOptions() {
     defineSymbol("mark-even-if-inactive");   //callint.c
-    defineSymbol("enable-recursive-minibuffers", LispSymbol.ourT);  //minibuf.c
+    defineSymbol("enable-recursive-minibuffers", LispSymbol.T);  //minibuf.c
   }
 
   private void defineBufferLocalVariables() {
@@ -285,7 +285,7 @@ public class GlobalEnvironment extends Environment {
     defineSymbol("case-fold-search");
     defineSymbol("obarray", new LispVector());
     defineSymbol("values", LispList.list());
-    defineSymbol("standard-output", LispSymbol.ourT);
+    defineSymbol("standard-output", LispSymbol.T);
     defineSymbol("this-command");
     defineSymbol("last-command");
     defineSymbol("current-prefix-arg");
@@ -324,7 +324,7 @@ public class GlobalEnvironment extends Environment {
     LispSymbol readOnly = new LispSymbol("read-only");
     GlobalEnvironment.INSTANCE.defineSymbol(readOnly); //just intern with no value
 
-    defineSymbol("minibuffer-prompt-properties", LispList.list(readOnly, LispSymbol.ourT));  //minibuf.c
+    defineSymbol("minibuffer-prompt-properties", LispList.list(readOnly, LispSymbol.T));  //minibuf.c
   }
 
   public LispVector getObjectArray() {
@@ -363,10 +363,10 @@ public class GlobalEnvironment extends Environment {
   }
 
   private void setConstants() {
-    defineConstant("nil", LispSymbol.ourNil);
-    defineConstant("t", LispSymbol.ourT);
+    defineConstant("nil", LispSymbol.NIL);
+    defineConstant("t", LispSymbol.T);
 
-    defineSymbol("void", LispSymbol.ourVoid);
+    defineSymbol("void", LispSymbol.VOID);
     String docDir = ourEmacsHome + "/etc/";
     File file = new File (docDir);
     if (file.exists() && file.isDirectory()) {
@@ -429,7 +429,7 @@ public class GlobalEnvironment extends Environment {
     List<String> commandList = new ArrayList<>();
     while (iterator.hasNext()) {
       LispSymbol symbol = iterator.next().getValue();
-      if (Predicate.commandp(symbol, null).equals(LispSymbol.ourT)) {
+      if (Predicate.commandp(symbol, null).equals(LispSymbol.T)) {
         if (symbol.getName().length() < begin.length())
           continue;
         if (begin.equals(symbol.getName().substring(0, begin.length())))
@@ -445,7 +445,7 @@ public class GlobalEnvironment extends Environment {
     List<String> functionList = new ArrayList<>();
     while (iterator.hasNext()) {
       LispSymbol symbol = iterator.next().getValue();
-      if (Predicate.fboundp(this, symbol).equals(LispSymbol.ourT)) {
+      if (Predicate.fboundp(this, symbol).equals(LispSymbol.T)) {
         if (symbol.getName().length() < begin.length())
           continue;
         if (begin.equals(symbol.getName().substring(0, begin.length())))
@@ -475,7 +475,7 @@ public class GlobalEnvironment extends Environment {
 
   @Override
   public void clearRecorded() {
-    Match.clearHistory();
+    Match.clearData();
     ourCallStack.clear();
     for (String name: myRecordedSymbols) {
       myBufferLocals.remove(name);

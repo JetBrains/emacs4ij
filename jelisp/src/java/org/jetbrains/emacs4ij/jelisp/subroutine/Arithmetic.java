@@ -1,6 +1,12 @@
 package org.jetbrains.emacs4ij.jelisp.subroutine;
 
-import org.jetbrains.emacs4ij.jelisp.elisp.*;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispFloat;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispNumber;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
+import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
 import org.jetbrains.emacs4ij.jelisp.exception.MarkerPointsNowhereException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 
@@ -15,10 +21,10 @@ public abstract class Arithmetic {
     private Arithmetic() {}
 
     public static LispNumber numberOrMarkerToNumber (LispObject lispObject) {
-        if (Predicate.numberOrMarkerP(lispObject).equals(LispSymbol.ourNil))
+        if (Predicate.numberOrMarkerP(lispObject).equals(LispSymbol.NIL))
             throw new WrongTypeArgumentException("number-or-marker-p", lispObject.toString());
         LispNumber n;
-        if (Predicate.markerP(lispObject).equals(LispSymbol.ourT)) {
+        if (Predicate.markerP(lispObject).equals(LispSymbol.T)) {
             if (((LispMarker)lispObject).isSet())
                 n = new LispInteger(((LispMarker)lispObject).getPosition());
             else 
@@ -99,11 +105,11 @@ public abstract class Arithmetic {
     @Subroutine("eql")
     public static LispSymbol eql (LispObject one, LispObject two) {
         if (one == two)
-            return LispSymbol.ourT;
+            return LispSymbol.T;
         if (one.getClass() != two.getClass())
-            return LispSymbol.ourNil;
+            return LispSymbol.NIL;
         if (!(one instanceof LispNumber))
-            return LispSymbol.ourNil;
+            return LispSymbol.NIL;
         return LispSymbol.bool(((LispNumber)one).getData().equals(((LispNumber)two).getData()));
     }
 

@@ -182,7 +182,7 @@ public class BackwardParserTest {
   @Test
   public void testEmptyQuote() throws LispException {
     LispObject lispObject = p.parseLine("'");
-    Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.ourNil)), lispObject);
+    Assert.assertEquals(LispList.list(Arrays.<LispObject>asList(new LispSymbol("quote"),  LispSymbol.NIL)), lispObject);
   }
 
   @Test (expected = EndOfLineException.class)

@@ -51,9 +51,9 @@ public class CharTableTest extends JelispTestCase {
   public void testCharTableP() {
     evaluateString("(defvar ct (make-char-table 'p))");
     LispObject t = evaluateString("(char-table-p ct)");
-    Assert.assertEquals(LispSymbol.ourT, t);
+    Assert.assertEquals(LispSymbol.T, t);
     t = evaluateString("(char-table-p nil)");
-    Assert.assertEquals(LispSymbol.ourNil, t);
+    Assert.assertEquals(LispSymbol.NIL, t);
   }
 
   @Test
@@ -63,7 +63,7 @@ public class CharTableTest extends JelispTestCase {
     evaluateString("(defvar ct (make-char-table 'p))");
     for (int s = 0; s < 10; ++s) {
       LispObject a = evaluateString("(char-table-extra-slot ct " + s + ')');
-      Assert.assertEquals(LispSymbol.ourNil, a);
+      Assert.assertEquals(LispSymbol.NIL, a);
     }
   }
 
@@ -111,7 +111,7 @@ public class CharTableTest extends JelispTestCase {
     evaluateString("(put 'p 'char-table-extra-slots 5)");
     evaluateString("(defvar ct (make-char-table 'p))");
     LispObject a = evaluateString("(char-table-parent ct)");
-    Assert.assertEquals(LispSymbol.ourNil, a);
+    Assert.assertEquals(LispSymbol.NIL, a);
   }
 
   @Test
@@ -143,7 +143,7 @@ public class CharTableTest extends JelispTestCase {
     LispObject a = evaluateString("(set-char-table-parent ct ctp)");
     Assert.assertEquals(evaluateString("ctp"), a);
     a = evaluateString("(set-char-table-parent ct nil)");
-    Assert.assertEquals(LispSymbol.ourNil, a);
+    Assert.assertEquals(LispSymbol.NIL, a);
   }
 
   @Test
@@ -230,7 +230,7 @@ public class CharTableTest extends JelispTestCase {
 
   @Test
   public void testSyntaxTableIsCharTable() {
-    Assert.assertEquals(LispSymbol.ourT, evaluateString("(char-table-p (syntax-table))"));
+    Assert.assertEquals(LispSymbol.T, evaluateString("(char-table-p (syntax-table))"));
   }
 
   @Ignore

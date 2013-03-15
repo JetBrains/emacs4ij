@@ -10,7 +10,8 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.elisp.MarkerOrInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.Optional;
-import org.jetbrains.emacs4ij.jelisp.elisp.TextPropertiesHolder;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.Action;
+import org.jetbrains.emacs4ij.jelisp.elisp.text.TextPropertiesHolder;
 import org.jetbrains.emacs4ij.jelisp.exception.OddTextPropListLengthException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongNumberOfArgumentsException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
@@ -39,14 +40,14 @@ public abstract class TextProperties {
                                            LispObject propertyName, LispObject propertyValue,
                                            @Optional LispObject bufferOrString) {
     addTextProperties(environment, start, end, LispList.list(propertyName, propertyValue), bufferOrString);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   private static LispList normalizeProperties(LispObject properties, boolean revert) {
     if (properties instanceof LispList && ((LispList) properties).size() % 2 != 0)
       throw new OddTextPropListLengthException();
     if (!(properties instanceof LispList))
-      return LispList.list(properties, LispSymbol.ourNil);
+      return LispList.list(properties, LispSymbol.NIL);
     if (!revert)
       return (LispList) properties;
     return revert(((LispList) properties).toLispObjectList());
@@ -75,8 +76,8 @@ public abstract class TextProperties {
     if (!(end instanceof MarkerOrInteger))
       throw new WrongTypeArgumentException("integer-or-marker-p", end);
     LispList propertyList = normalizeProperties(properties, false);
-    holder.getTextPropertiesHolder().actOnTextProperties(((MarkerOrInteger)start).getPosition(), ((MarkerOrInteger)end).getPosition(),
-        propertyList, TextPropertiesHolder.Action.ADD);
+    holder.getTextPropertiesHolder().actOnTextProperties(((MarkerOrInteger) start).getPosition(), ((MarkerOrInteger) end).getPosition(),
+        propertyList, Action.ADD);
   }
 
   @Subroutine("add-text-properties")
@@ -85,7 +86,7 @@ public abstract class TextProperties {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     LispList propertyList = normalizeProperties(properties, false);
     return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(),
-        propertyList, TextPropertiesHolder.Action.ADD));
+        propertyList, Action.ADD));
   }
 
   @Subroutine("set-text-properties")
@@ -94,7 +95,7 @@ public abstract class TextProperties {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     LispList propertyList = normalizeProperties(properties, true);
     return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(),
-        propertyList, TextPropertiesHolder.Action.SET));
+        propertyList, Action.SET));
   }
 
   @Subroutine("remove-text-properties")
@@ -102,9 +103,8 @@ public abstract class TextProperties {
                                                  LispObject properties, @Optional LispObject bufferOrString) {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     if (!(properties instanceof LispList))
-      return LispSymbol.ourNil;
-    return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(),
-        (LispList) properties, TextPropertiesHolder.Action.REMOVE));
+      return LispSymbol.NIL;
+    return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(), (LispList) properties, Action.REMOVE));
   }
 
   @Subroutine("remove-list-of-text-properties")
@@ -112,9 +112,8 @@ public abstract class TextProperties {
                                                        LispObject propertyNames, @Optional LispObject bufferOrString) {
     TextPropertiesHolder holder = normalizeHolder(environment, bufferOrString);
     if (!(propertyNames instanceof LispList))
-      return LispSymbol.ourNil;
-    return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(),
-        (LispList) propertyNames, TextPropertiesHolder.Action.REMOVE_LIST));
+      return LispSymbol.NIL;
+    return LispSymbol.bool(holder.actOnTextProperties(start.getPosition(), end.getPosition(), (LispList) propertyNames, Action.REMOVE_LIST));
   }
 
   @Subroutine("text-properties-at")

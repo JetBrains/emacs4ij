@@ -17,13 +17,6 @@ import java.util.List;
 
 import static org.jetbrains.emacs4ij.jelisp.subroutine.Predicate.isNil;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 12/15/11
- * Time: 7:14 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Frame {
   private Frame() {}
 
@@ -36,7 +29,7 @@ public abstract class Frame {
     if (Predicate.isNil(object))
       object = environment.getSelectedFrame();
     LispSymbol frameLiveP = Predicate.frameLiveP(environment, object);
-    if (frameLiveP.equals(LispSymbol.ourNil))
+    if (frameLiveP.equals(LispSymbol.NIL))
       throw new WrongTypeArgumentException("frame-live-p", object);
     return (LispFrame) object;
   }
@@ -60,10 +53,10 @@ public abstract class Frame {
     LispBuffer buffer = Buffer.getBufferByBufferNameOrNil(environment, bufferOrName);
     List<LispFrame> frames = new ArrayList<>();
     if (isNil(frame))
-      frame = LispSymbol.ourNil;
+      frame = LispSymbol.NIL;
     if (frame.equals(new LispSymbol("visible"))) {
       frames = environment.getVisibleFrames(); //search all visible frames
-    } else if (frame.equals(LispSymbol.ourT)) { //search all frames.
+    } else if (frame.equals(LispSymbol.T)) { //search all frames.
       frames = environment.getAllFrames();
     } else if (frame.equals(new LispInteger(0))) { //search visible and iconified frames.
       frames = environment.getVisibleAndIconifiedFrames();
@@ -79,7 +72,7 @@ public abstract class Frame {
         return window;
     }
 
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine(value = "make-frame-visible", isCmd = true)
@@ -97,17 +90,17 @@ public abstract class Frame {
       int k = f.isVisible() ? 1 : 0;
       if (environment.getVisibleAndIconifiedFrames().size() - k <= 0) {
         Core.error(JelispBundle.message("make.invisible.error"));
-        return LispSymbol.ourNil;
+        return LispSymbol.NIL;
       }
     }
     f.setVisible(false);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine(value = "iconify-frame", isCmd = true)
   public static LispObject iconifyFrame(Environment environment, @Optional LispObject frame) {
     getLiveFrame(environment, frame).setIconified(true);
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("frame-list")
@@ -139,7 +132,7 @@ public abstract class Frame {
         throw new WrongTypeArgumentException("symbolp", name);
       frame.setParameter((LispSymbol) name, ((LispList) pair).cdr());
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("frame-parameters")

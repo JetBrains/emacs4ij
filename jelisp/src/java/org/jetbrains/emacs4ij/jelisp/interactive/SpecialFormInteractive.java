@@ -171,7 +171,7 @@ public final class SpecialFormInteractive extends InteractiveReader {
         myInitialInput = defaultDirectory();
         break;
       case 'i': // -- Ignored, i.e. always nil. Does not do I/O.
-        addArg(LispSymbol.ourNil);
+        addArg(LispSymbol.NIL);
         notifyMiniBuffer();
         return;
       case 'k': // -- Key sequence (downcase the last event if needed to get a definition).
@@ -216,7 +216,7 @@ public final class SpecialFormInteractive extends InteractiveReader {
         break;
       case 'U':
         //todo: get the up-event that was discarded (if any) after ‘k’ or ‘K’ read a down-event. Otherwise nil
-        addArg(LispSymbol.ourNil);
+        addArg(LispSymbol.NIL);
         notifyMiniBuffer();
         return;
       case 'x': // -- Lisp expression read but not evaluated.
@@ -232,7 +232,7 @@ public final class SpecialFormInteractive extends InteractiveReader {
 
   private LispInteger prefixArgToNumber () {
     LispObject value = myEnvironment.find("current-prefix-arg").getValue();
-    if (value.equals(LispSymbol.ourNil))
+    if (value.equals(LispSymbol.NIL))
       return null;
     return value instanceof LispInteger ? (LispInteger) value : new LispInteger(1);
   }

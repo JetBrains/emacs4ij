@@ -28,7 +28,7 @@ final class FrameManagerImpl extends CyclicManager<LispFrame> implements FrameMa
   public List<LispFrame> getVisibleFrames () {
     List<LispFrame> visibleFrames = new ArrayList<>();
     for (LispFrame frame: myData) {
-      if (Predicate.frameVisibleP(GlobalEnvironment.INSTANCE, frame).equals(LispSymbol.ourT))
+      if (Predicate.frameVisibleP(GlobalEnvironment.INSTANCE, frame).equals(LispSymbol.T))
         visibleFrames.add(frame);
     }
     return visibleFrames;
@@ -39,7 +39,7 @@ final class FrameManagerImpl extends CyclicManager<LispFrame> implements FrameMa
     List<LispFrame> frames = new ArrayList<>();
     for (LispFrame frame: myData) {
       LispSymbol predicate = Predicate.frameVisibleP(GlobalEnvironment.INSTANCE, frame);
-      if (predicate.equals(LispSymbol.ourT) || predicate.equals(new LispSymbol("icon")))
+      if (predicate.equals(LispSymbol.T) || predicate.equals(new LispSymbol("icon")))
         frames.add(frame);
     }
     return frames;

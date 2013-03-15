@@ -47,7 +47,7 @@ public abstract class Core {
   private Core() {}
 
   public static LispObject thisOrNil (@Nullable LispObject object) {
-    return object == null ? LispSymbol.ourNil : object;
+    return object == null ? LispSymbol.NIL : object;
   }
 
   public static void error (String message) {
@@ -59,7 +59,7 @@ public abstract class Core {
 
   @Subroutine("set")
   public static LispObject set (Environment environment, LispSymbol variable, LispObject initValue) {
-    LispObject value = (initValue == null) ? LispSymbol.ourVoid : initValue;
+    LispObject value = (initValue == null) ? LispSymbol.VOID : initValue;
     LispSymbol symbol = new LispSymbol(variable.getName(), value);
     environment.setVariable(symbol);
     return value;
@@ -96,7 +96,7 @@ public abstract class Core {
 
   @Subroutine("null")
   public static LispObject lispNull (LispObject lObject) {
-    return LispSymbol.bool(lObject.equals(LispSymbol.ourNil));
+    return LispSymbol.bool(lObject.equals(LispSymbol.NIL));
   }
 
   @Subroutine("not")
@@ -106,7 +106,7 @@ public abstract class Core {
 
   private static LispObject getArgumentsForCall (Environment environment, LispList interactiveForm) {
     LispObject body = interactiveForm.cdr();
-    if (body.equals(LispSymbol.ourNil))
+    if (body.equals(LispSymbol.NIL))
       return LispList.list();
     if (!(body instanceof LispList))
       throw new WrongTypeArgumentException("listp", body);
@@ -164,12 +164,12 @@ public abstract class Core {
   private static void shiftPrefixArgs(Environment environment) {
     environment.setVariable(new LispSymbol("last-prefix-arg", environment.find("current-prefix-arg").getValue()));
     environment.setVariable(new LispSymbol("current-prefix-arg", environment.find("prefix-arg").getValue()));
-    environment.setVariable(new LispSymbol("prefix-arg", LispSymbol.ourNil));
+    environment.setVariable(new LispSymbol("prefix-arg", LispSymbol.NIL));
   }
 
   private static void clearPrefixArgs(Environment environment) {
     environment.setVariable(new LispSymbol("last-prefix-arg", environment.find("current-prefix-arg").getValue()));
-    environment.setVariable(new LispSymbol("current-prefix-arg", LispSymbol.ourNil));
+    environment.setVariable(new LispSymbol("current-prefix-arg", LispSymbol.NIL));
   }
 
   public static void shiftCommandVars(LambdaOrSymbolWithFunction command) {
@@ -181,7 +181,7 @@ public abstract class Core {
 
   public static LambdaOrSymbolWithFunction getInvoker() {
     LambdaOrSymbolWithFunction invoker = (LambdaOrSymbolWithFunction) GlobalEnvironment.INSTANCE.find("this-command").getValue();
-    return invoker.equals(LispSymbol.ourNil) ? null : invoker;
+    return invoker.equals(LispSymbol.NIL) ? null : invoker;
   }
 
   @Subroutine("call-interactively")
@@ -226,7 +226,7 @@ public abstract class Core {
   }
 
   private static void runFunction (Environment environment, LispSymbol function) {
-    if (function.equals(LispSymbol.ourNil))
+    if (function.equals(LispSymbol.NIL))
       return;
     function.evaluateFunction(environment, InvalidFunctionException.class, new ArrayList<LispObject>());
   }
@@ -234,11 +234,11 @@ public abstract class Core {
   @Subroutine("run-hooks")
   public static LispObject runHooks (Environment environment, @Optional LispSymbol... hooks) {
     if (hooks == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     for (LispSymbol hook: hooks) {
       LispSymbol tHook = environment.find(hook.getName());
-      if (tHook == null || tHook.equals(LispSymbol.ourNil)
-          || !tHook.hasValue() || tHook.getValue().equals(LispSymbol.ourNil))
+      if (tHook == null || tHook.equals(LispSymbol.NIL)
+          || !tHook.hasValue() || tHook.getValue().equals(LispSymbol.NIL))
         continue;
       if (tHook.getValue() instanceof LispSymbol) {
         runFunction(environment, (LispSymbol) tHook.getValue());
@@ -256,7 +256,7 @@ public abstract class Core {
       }
       throw new InvalidFunctionException(tHook.getValue().toString());
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("macroexpand")
@@ -298,16 +298,16 @@ public abstract class Core {
 
     while (true) {
       if (!symbol.isFunction()) {
-        if (noError != null && !noError.equals(LispSymbol.ourNil))
-          return LispSymbol.ourNil;
+        if (noError != null && !noError.equals(LispSymbol.NIL))
+          return LispSymbol.NIL;
         throw new VoidFunctionException(((LispSymbol) object).getName());
         //return signalOrNot(noError, "void-function", symbol.getName());
       }
       LispObject f = symbol.getFunction();
       if (f instanceof LispSymbol) {
         if (examined.contains(((LispSymbol) f).getName())) {
-          if (noError != null && !noError.equals(LispSymbol.ourNil))
-            return LispSymbol.ourNil;
+          if (noError != null && !noError.equals(LispSymbol.NIL))
+            return LispSymbol.NIL;
           throw new CyclicFunctionIndirectionException(symbol.getName());
           //return signalOrNot(noError, "cyclic-function-indirection", symbol.getName());
         }
@@ -321,7 +321,7 @@ public abstract class Core {
 
   @Subroutine("subr-arity")
   public static LispObject subrArity (LispObject object) {
-    if (subrp(object).equals(LispSymbol.ourNil))
+    if (subrp(object).equals(LispSymbol.NIL))
       throw new WrongTypeArgumentException("subrp",
           object instanceof LispSymbol ? ((LispSymbol) object).getName() : object.toString());
     Primitive subr = (Primitive)object;
@@ -353,13 +353,13 @@ public abstract class Core {
 
   @Subroutine("apply")
   public static LispObject apply (Environment environment, LispObject function, LispObject... args) {
-    if (!(args[args.length-1] instanceof LispList) && !args[args.length-1].equals(LispSymbol.ourNil))
+    if (!(args[args.length-1] instanceof LispList) && !args[args.length-1].equals(LispSymbol.NIL))
       throw new WrongTypeArgumentException("listp", args[args.length-1]);
 
     ArrayList<LispObject> list = new ArrayList<>();
     list.addAll(Arrays.asList(args).subList(0, args.length - 1));
 
-    if (!args[args.length-1].equals(LispSymbol.ourNil)) {
+    if (!args[args.length-1].equals(LispSymbol.NIL)) {
       List<LispObject> last = ((LispList)args[args.length-1]).toLispObjectList();
       list.addAll(last);
     }
@@ -470,7 +470,7 @@ public abstract class Core {
       ((LispBuffer) printCharFun).insert(toInsert);
     } else if (printCharFun instanceof LispMarker) {
       ((LispMarker) printCharFun).insert(toInsert);
-    } else if (printCharFun.equals(LispSymbol.ourT)) {
+    } else if (printCharFun.equals(LispSymbol.T)) {
       GlobalEnvironment.echo(object.toString(), GlobalEnvironment.MessageType.INFO);
     } else {
       for (LispObject character: result.toLispObjectList()) {
@@ -529,7 +529,7 @@ public abstract class Core {
 
   @Subroutine("load-average")
   public static LispObject loadAverage (@Optional LispObject useFloats) {
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   @Subroutine("autoload")
@@ -537,7 +537,7 @@ public abstract class Core {
                                      @Optional LispObject doc, LispObject interactive, LispObject type) {
     LispSymbol f = environment.find(function.getName());
     if (f != null && f.isFunction())
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     LispList list = LispList.list(Arrays.asList(new LispSymbol("autoload"),
         fileName, Core.thisOrNil(doc), Core.thisOrNil(interactive), Core.thisOrNil(type)));
     if (f == null) {
@@ -551,7 +551,7 @@ public abstract class Core {
   @Subroutine(value = "start-kbd-macro", isCmd = true, interactive = "P")
   public static LispSymbol startKbdMacro (Environment environment, LispObject array, @Optional LispObject noExec) {
     //todo: implement
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
 }

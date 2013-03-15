@@ -457,7 +457,7 @@ public abstract class Environment {
   }
 
   public LispList getEmacsDefFromFile (String name, String file, LispObject typeObject) {
-//        if (typeObject.equals(LispSymbol.ourNil) || typeObject.equals(new LispSymbol("macro"))) //function or macro
+//        if (typeObject.equals(LispSymbol.NIL) || typeObject.equals(new LispSymbol("macro"))) //function or macro
     if (typeObject.equals(new LispSymbol("keymap")))
       throw new NotImplementedException("keymap autoload");
     if (file.endsWith(".elc"))

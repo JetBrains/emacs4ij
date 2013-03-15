@@ -51,7 +51,7 @@ public abstract class SpecialForms {
         continue;
       }
       if (var instanceof LispSymbol) {
-        LispSymbol symbol = new LispSymbol (((LispSymbol) var).getName(), LispSymbol.ourNil);
+        LispSymbol symbol = new LispSymbol (((LispSymbol) var).getName(), LispSymbol.NIL);
         if (isStar)
           inner.defineSymbol(symbol);
         else vars.add(symbol);
@@ -68,7 +68,7 @@ public abstract class SpecialForms {
   private static LispObject executeLet (boolean isStar, Environment environment, LispList varList, LispObject... body) {
     Environment inner = new CustomEnvironment(environment);
     bindLetVariables(isStar, inner, varList);
-    LispObject result = LispSymbol.ourNil;
+    LispObject result = LispSymbol.NIL;
     for (LispObject bodyForm: body) {
       result = bodyForm.evaluate(inner);
     }
@@ -98,20 +98,20 @@ public abstract class SpecialForms {
   @Subroutine("cond")
   public static LispObject cond (Environment environment, @Optional LispObject... args) {
     if (args == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
 
-    LispObject result = LispSymbol.ourNil;
+    LispObject result = LispSymbol.NIL;
     for (int i=0; i!=args.length; ++i) {
       LispObject clause = args[i];
       if (!(clause instanceof LispList)) {
-        if (clause.equals(LispSymbol.ourNil))
+        if (clause.equals(LispSymbol.NIL))
           continue;
         throw new WrongTypeArgumentException("listp", clause);
       }
       if (((LispList) clause).isEmpty())
         continue;
       LispObject condition = ((LispList) clause).car().evaluate(environment);
-      if (!condition.equals(LispSymbol.ourNil)) {
+      if (!condition.equals(LispSymbol.NIL)) {
         List<LispObject> data = ((LispList) clause).cdr() instanceof LispList ?
             ((LispList)((LispList) clause).cdr()).toLispObjectList() : new ArrayList<LispObject>();
         result = condition;
@@ -126,7 +126,7 @@ public abstract class SpecialForms {
   public static LispObject lispWhile(Environment environment, LispObject cond, @Optional LispObject... body) {
     Environment inner = new CustomEnvironment(environment);
     LispObject condition = cond.evaluate(inner);
-    while (!condition.equals(LispSymbol.ourNil)) {
+    while (!condition.equals(LispSymbol.NIL)) {
       if (body != null)
         for (LispObject bodyForm: body)
           bodyForm.evaluate(inner);
@@ -137,13 +137,13 @@ public abstract class SpecialForms {
   @Subroutine(value = "if")
   public static LispObject lispIf (Environment environment, LispObject cond, LispObject then, @Optional LispObject... elseBody) {
     LispObject condition = cond.evaluate(environment);
-    if (!condition.equals(LispSymbol.ourNil)) {
+    if (!condition.equals(LispSymbol.NIL)) {
       return then.evaluate(environment);
     }
     if (elseBody == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
 
-    LispObject result = LispSymbol.ourNil;
+    LispObject result = LispSymbol.NIL;
     for (LispObject bodyForm: elseBody) {
       result = bodyForm.evaluate(environment);
     }
@@ -153,11 +153,11 @@ public abstract class SpecialForms {
   @Subroutine("and")
   public static LispObject lispAnd(Environment environment, @Optional LispObject... conditions) {
     if (conditions == null)
-      return LispSymbol.ourT;
-    LispObject result = LispSymbol.ourT;
+      return LispSymbol.T;
+    LispObject result = LispSymbol.T;
     for (LispObject condition: conditions) {
       result = condition.evaluate(environment);
-      if (result.equals(LispSymbol.ourNil))
+      if (result.equals(LispSymbol.NIL))
         return result;
     }
     return result;
@@ -166,13 +166,13 @@ public abstract class SpecialForms {
   @Subroutine("or")
   public static LispObject lispOr(Environment environment, @Optional LispObject... conditions) {
     if (conditions == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     for (LispObject condition: conditions) {
       LispObject result = condition.evaluate(environment);
-      if (!result.equals(LispSymbol.ourNil))
+      if (!result.equals(LispSymbol.NIL))
         return result;
     }
-    return LispSymbol.ourNil;
+    return LispSymbol.NIL;
   }
 
   private static LispSymbol defSymbol (Environment environment, LispSymbol name, LispObject initValue, boolean overwrite, LispObject docString) {
@@ -233,7 +233,7 @@ public abstract class SpecialForms {
       return LispList.list();
 //            return arg instanceof LispList && ((LispList) arg).isEmpty()
 //                    ? (LispList) arg
-//                    : LispList.list(LispSymbol.ourNil);
+//                    : LispList.list(LispSymbol.NIL);
 
     if (arg instanceof LispList) {
       arg = arg.evaluate(environment);
@@ -259,9 +259,9 @@ public abstract class SpecialForms {
   @Subroutine("progn")
   public static LispObject progn (Environment environment, @Optional LispObject... args) {
     if (args == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     Environment inner = new CustomEnvironment(environment);
-    LispObject result = LispSymbol.ourNil;
+    LispObject result = LispSymbol.NIL;
     for (LispObject arg: args) {
       result = arg.evaluate(inner);
     }
@@ -292,14 +292,14 @@ public abstract class SpecialForms {
   @Subroutine("setq")
   public static LispObject setq (Environment environment, @Optional LispObject... args) {
     if (args == null)
-      return LispSymbol.ourNil;
+      return LispSymbol.NIL;
     Environment inner = new CustomEnvironment(environment);
     int index = 0;
-    LispObject value = LispSymbol.ourNil;
+    LispObject value = LispSymbol.NIL;
     while (index < args.length) {
       if (!(args[index] instanceof LispSymbol))
         throw new WrongTypeArgumentException("symbolp", args[index]);
-      value = (index+1 == args.length) ? LispSymbol.ourNil : args[index+1].evaluate(inner);
+      value = (index+1 == args.length) ? LispSymbol.NIL : args[index+1].evaluate(inner);
       LispSymbol symbol = new LispSymbol(((LispSymbol) args[index]).getName(), value);
       environment.setVariable(symbol);
       index += 2;
@@ -390,7 +390,7 @@ public abstract class SpecialForms {
             GlobalEnvironment.ourCallStack.removeFirst();
           }
           Environment inner = new CustomEnvironment(environment);
-          if (!var.equals(LispSymbol.ourNil)) {
+          if (!var.equals(LispSymbol.NIL)) {
             LispSymbol test = environment.find(var.getName());
             if (test == null) {
               //init in given environment
@@ -401,7 +401,7 @@ public abstract class SpecialForms {
               inner.defineSymbol(var);
             }
           }
-          LispObject result = LispSymbol.ourNil;
+          LispObject result = LispSymbol.NIL;
           for (LispObject form: ((LispList)handler.cdr()).toLispObjectList()) {
             result = form.evaluate(inner);
           }
@@ -417,7 +417,7 @@ public abstract class SpecialForms {
     //note: emacs man says nil cannot be tag, but signals no error though
     LispObject tag = tagObject.evaluate(environment);
     try {
-      LispObject result = LispSymbol.ourNil;
+      LispObject result = LispSymbol.NIL;
       for (LispObject bodyForm: body) {
         result = bodyForm.evaluate(environment);
       }
