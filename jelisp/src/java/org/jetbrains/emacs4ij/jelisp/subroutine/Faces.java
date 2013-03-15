@@ -133,6 +133,12 @@ public abstract class Faces {
     return LispList.list(ourAlternativeFontRegistryAlist);
   }
 
+  @Subroutine("display-supports-face-attributes-p")
+  public static LispSymbol displaySupportsFaceAttrsP(LispVector attributes, @Optional LispObject display) {
+    //todo:)
+    return LispSymbol.T;
+  }
+
   @Subroutine("internal-make-lisp-face")
   public static LispVector internalMakeLispFace(Environment environment, LispSymbol face, @Optional LispObject frame) {
     LispVector globalFace = getFaceDefOnFrame(null, face, false);
