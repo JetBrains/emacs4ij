@@ -114,7 +114,7 @@ public class DefinitionLoaderTest extends JelispTestCase {
 
   @Test
   public void testLoad() {
-    DefinitionLoader.loadFile("jit-lock.el");
+    DefinitionLoader.loadEmacsFile("jit-lock.el");
     Assert.assertNotNull(GlobalEnvironment.INSTANCE.find("with-buffer-prepared-for-jit-lock"));
   }
 }

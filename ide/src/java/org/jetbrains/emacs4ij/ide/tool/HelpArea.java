@@ -18,7 +18,6 @@ import org.jetbrains.emacs4ij.jelisp.platformDependent.LispFrame;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispToolWindow;
 import org.jetbrains.emacs4ij.jelisp.subroutine.Buffer;
 
-
 public class HelpArea extends Emacs4ijToolWindow implements LispToolWindow {
   private int myId;
   private LispBuffer myBuffer = null;
@@ -32,10 +31,10 @@ public class HelpArea extends Emacs4ijToolWindow implements LispToolWindow {
   public HelpArea (final Project project) {
     super(project);
 
-    ((EditorEx) myEditor).addFocusListener(new FocusChangeListener() {
+    ((EditorEx) getEditor()).addFocusListener(new FocusChangeListener() {
       @Override
       public void focusGained(Editor editor) {
-        GlobalEnvironment.INSTANCE.switchToWindow(new IdeaEditorWrapper(myEditor), true);
+        GlobalEnvironment.INSTANCE.switchToWindow(getEditorWrapper(), true);
       }
 
       @Override
@@ -61,8 +60,8 @@ public class HelpArea extends Emacs4ijToolWindow implements LispToolWindow {
   }
 
   @Override
-  public EditorWrapper getEditor() {
-    return new IdeaEditorWrapper(myEditor);
+  public EditorWrapper getEditorWrapper() {
+    return new IdeaEditorWrapper(getEditor());
   }
 
   @Override
@@ -113,7 +112,7 @@ public class HelpArea extends Emacs4ijToolWindow implements LispToolWindow {
 
   @Override
   public boolean editorEquals(EditorWrapper editor) {
-    return myEditor == ((IdeaEditorWrapper)editor).getEditor();
+    return getEditor() == ((IdeaEditorWrapper)editor).getEditor();
   }
 
   @Override

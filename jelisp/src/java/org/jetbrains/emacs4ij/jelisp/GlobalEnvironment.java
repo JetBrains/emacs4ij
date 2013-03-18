@@ -164,7 +164,7 @@ public class GlobalEnvironment extends Environment {
 
     if (TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES) {
       //note: it's important to load backquote before defsubst
-      DefinitionLoader.loadFile(myFilesToLoad.get(0));
+      DefinitionLoader.loadEmacsFile(myFilesToLoad.get(0));
       defineDefForms();
 
       if (TestMode.LOAD_FILES) {
@@ -172,7 +172,7 @@ public class GlobalEnvironment extends Environment {
         for (int i = 1; i < myFilesToLoad.size(); ++i) {
           String fileName = myFilesToLoad.get(i);
           LogUtil.info(LOG, "load " + fileName);
-          DefinitionLoader.loadFile(fileName);
+          DefinitionLoader.loadEmacsFile(fileName);
         }
         LogUtil.info(LOG, "finish load files");
       }
@@ -325,6 +325,13 @@ public class GlobalEnvironment extends Environment {
     GlobalEnvironment.INSTANCE.defineSymbol(readOnly); //just intern with no value
 
     defineSymbol("minibuffer-prompt-properties", LispList.list(readOnly, LispSymbol.T));  //minibuf.c
+
+    defineSymbol("force-load-messages");
+    defineSymbol("load-suffixes", LispList.list(new LispString(".el")));
+    defineSymbol("load-path");
+    defineSymbol("load-file-rep-suffixes", LispList.list(new LispString("")));
+    defineSymbol("load-in-progress");
+    defineSymbol("load-file-name");
   }
 
   public LispVector getObjectArray() {

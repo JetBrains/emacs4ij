@@ -121,28 +121,31 @@ public final class DefinitionLoader {
     }
   }
 
-  public static void loadFile (String fileName) {
-    String fullName = GlobalEnvironment.getEmacsSource() + "/lisp/" + fileName;
-    RandomAccessFile reader;
+  public static void loadEmacsFile(String fileName) {
     try {
-      reader = new RandomAccessFile(fullName, "r");
+      loadFile(GlobalEnvironment.getEmacsSource() + "/lisp/" + fileName);
     } catch (FileNotFoundException e) {
       throw new EnvironmentException(e.getMessage());
     }
-    String line;
-    ForwardMultilineParser p = new ForwardMultilineParser(reader, fullName);
-    while (true){
+  }
+
+  public static void loadFile(String fileName) throws FileNotFoundException {
+    //todo update 'load-history' variable value (see help for 'load' subroutine)
+
+    RandomAccessFile reader = new RandomAccessFile(fileName, "r");
+    String line = null;
+    ForwardMultilineParser p = new ForwardMultilineParser(reader, fileName);
+    while (true) {
       try {
         line = reader.readLine();
       } catch (IOException e) {
         //todo: line index
-        throw new ReadException(fullName +  ", line " + 0);
+        throw new ReadException(fileName +  ", line " + 0);
       }
-      if (line == null)
-        break;
+      if (line == null) break;
 
       boolean skip = skip(line);
-      LispObject parsed = p.parse(line, getFileOffset(reader, fullName));
+      LispObject parsed = p.parse(line, getFileOffset(reader, fileName));
       if (Predicate.isNil(parsed) || skip)
         continue;
 
@@ -150,10 +153,9 @@ public final class DefinitionLoader {
         try {
           parsed.evaluate(GlobalEnvironment.INSTANCE);
         } catch (LispException e) {
-          LogUtil.log(JelispBundle.message("loader.error", fullName, p.getLine(), e.getMessage()), GlobalEnvironment.MessageType.ERROR);
+          LogUtil.log(JelispBundle.message("loader.error", fileName, p.getLine(), e.getMessage()), GlobalEnvironment.MessageType.ERROR);
         }
-        if (p.isFinished())
-          break;
+        if (p.isFinished()) break;
         parsed = p.parseNext();
       }
     }

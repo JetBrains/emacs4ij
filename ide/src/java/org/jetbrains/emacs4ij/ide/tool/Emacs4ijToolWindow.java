@@ -11,13 +11,14 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.emacs4ij.ide.EnvironmentInitializer;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 
 import javax.swing.*;
 import java.awt.*;
 
 abstract class Emacs4ijToolWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
   private final Project myProject;
-  protected final Editor myEditor;
+  private final Editor myEditor;
 
   protected abstract String getToolWindowName();
 
@@ -47,10 +48,17 @@ abstract class Emacs4ijToolWindow extends SimpleToolWindowPanel implements DataP
     return myProject.isDisposed();
   }
 
+  protected Editor getEditor() {
+    return myEditor;
+  }
+
   @Override
   public void dispose() {
-    if (myEditor != null) {
+    if (myEditor != null && !myEditor.isDisposed()) {
       EditorFactory.getInstance().releaseEditor(myEditor);
+    }
+    if (myEditor != null && myEditor.isDisposed()) {
+      LogUtil.info("double dispose " + getToolWindowName());
     }
   }
 }

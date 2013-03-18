@@ -3,6 +3,10 @@ package org.jetbrains.emacs4ij.ide;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.HighlighterTargetArea;
+import com.intellij.openapi.editor.markup.MarkupModel;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
 import com.intellij.openapi.fileEditor.FileEditorManagerListener;
@@ -31,6 +35,7 @@ import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import java.awt.*;
 
 public class MyProjectComponent implements ProjectComponent {
   private Environment myEnvironment = null;
@@ -71,10 +76,18 @@ public class MyProjectComponent implements ProjectComponent {
     myProject.getMessageBus().connect().subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
       @Override
       public void fileOpened(FileEditorManager fileEditorManager, VirtualFile virtualFile) {
+        Editor editor = ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor();
+        MarkupModel m2 = editor.getMarkupModel();
+
+//        MarkupModel m2 = DocumentMarkupModel.forDocument(editor.getDocument(), myProject, true);
+
+        TextAttributes attr = new TextAttributes(Color.blue, Color.yellow, Color.ORANGE, EffectType.LINE_UNDERSCORE, 0);
+        m2.addRangeHighlighter(0, editor.getDocument().getTextLength(), 0, attr, HighlighterTargetArea.EXACT_RANGE);
+
         if (myEnvironment == null)
           return;
         try {
-          Editor editor = ((TextEditor) fileEditorManager.getSelectedEditor(virtualFile)).getEditor();
+
           EditorWrapper wrapper = new IdeaEditorWrapper(editor);
           try {
             myEnvironment.getEditorBuffer(wrapper);
@@ -183,8 +196,6 @@ public class MyProjectComponent implements ProjectComponent {
   }
 
   public void projectClosed() {
-
-
     // called when project is being closed
   }
 }

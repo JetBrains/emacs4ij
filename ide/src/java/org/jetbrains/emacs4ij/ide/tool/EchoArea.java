@@ -21,21 +21,21 @@ public class EchoArea extends Emacs4ijToolWindow {
     ApplicationManager.getApplication().invokeLater(new Runnable() {
       @Override
       public void run() {
-        if (isProjectDisposed() || myEditor == null) {
+        if (isProjectDisposed() || getEditor() == null) {
           return;
         }
-        Document document = myEditor.getDocument();
-        boolean scroll = document.getTextLength() == myEditor.getCaretModel().getOffset();
+        Document document = getEditor().getDocument();
+        boolean scroll = document.getTextLength() == getEditor().getCaretModel().getOffset();
         int messageStart = document.getTextLength();
         document.insertString(document.getText().length(), message);
 
         TextAttributes attributes = EditorColorsManager.getInstance().getGlobalScheme().getAttributes(key);
         int layer = HighlighterLayer.CARET_ROW + 1;
-        myEditor.getMarkupModel().addRangeHighlighter(messageStart, document.getTextLength(), layer, attributes, HighlighterTargetArea.EXACT_RANGE);
+        getEditor().getMarkupModel().addRangeHighlighter(messageStart, document.getTextLength(), layer, attributes, HighlighterTargetArea.EXACT_RANGE);
 
         if (scroll) {
-          myEditor.getCaretModel().moveToOffset(document.getTextLength());
-          myEditor.getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
+          getEditor().getCaretModel().moveToOffset(document.getTextLength());
+          getEditor().getScrollingModel().scrollToCaret(ScrollType.MAKE_VISIBLE);
         }
 
         ToolWindow toolWindow = getIdeaToolWindow();

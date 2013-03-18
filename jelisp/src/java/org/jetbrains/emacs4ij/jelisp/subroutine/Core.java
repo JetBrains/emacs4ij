@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.jelisp.subroutine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.emacs4ij.jelisp.BufferEnvironment;
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.JelispBundle;
@@ -35,6 +36,7 @@ import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -554,4 +556,49 @@ public abstract class Core {
     return LispSymbol.NIL;
   }
 
+  // todo subroutine substitute-in-file-name
+
+  @Subroutine("load")
+  public static LispSymbol load(Environment environment, LispString fileName,
+                                @Optional LispObject noError, LispObject noMessage, LispObject noSuffix, LispObject mustSuffix) {
+    boolean signalError = !Predicate.isNil(noError);
+    boolean showMessage = !Predicate.isNil(noMessage) || environment.find("force-load-messages").getValue() != LispSymbol.NIL;
+
+    //todo try suffixes as defined in 'load-suffixes global var
+
+    String name = fileName.getData();
+    if (name.endsWith(".elc")) {
+      LogUtil.log("Request to load " + name + ", replace with .el", GlobalEnvironment.MessageType.WARNING);
+      name = name.replace(".elc", ".el");
+    }
+
+    //todo what with suffix if load directory?
+
+    if (Predicate.isNil(noSuffix) && !name.endsWith(".el")) {
+      name += ".el";
+    }
+
+    if (!Predicate.isNil(mustSuffix) && !name.endsWith(".el")) {
+      if (signalError) throw new LispException("mustSuffix specified, but file extension is invalid: " + name);
+      return LispSymbol.NIL;
+    }
+
+    //todo check load-file-rep-suffixes to get equal files
+
+    LispSymbol loadInProgress = environment.find("load-in-progress");
+    LispSymbol loadFileName = environment.find("load-file-name");
+    try {
+      loadInProgress.setValue(LispSymbol.T);
+      loadFileName.setValue(fileName);
+      DefinitionLoader.loadFile(name);
+    } catch (FileNotFoundException e) {
+      if (signalError) signal(new LispSymbol("file-error"), LispList.list(new LispString("Cannot open load file"), fileName));
+      return LispSymbol.NIL;
+    } finally {
+      loadInProgress.setValue(LispSymbol.NIL);
+      loadFileName.setValue(LispSymbol.NIL);
+    }
+
+    return LispSymbol.T;
+  }
 }

@@ -746,7 +746,7 @@ public class CoreTest extends JelispTestCase {
   @Test
   public void testSimple() {
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
-    DefinitionLoader.loadFile("simple.el");
+    DefinitionLoader.loadEmacsFile("simple.el");
   }
 
   @Test
@@ -950,7 +950,7 @@ public class CoreTest extends JelispTestCase {
 
   @Test
   public void testLoadLispMode() {
-    DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
+    DefinitionLoader.loadEmacsFile("emacs-lisp/lisp-mode.el");
   }
 
   @Test
@@ -1029,18 +1029,18 @@ public class CoreTest extends JelispTestCase {
   @Test
   public void startup() {
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
-    DefinitionLoader.loadFile("startup.el");
+    DefinitionLoader.loadEmacsFile("startup.el");
   }
 
   @Test
   public void faces() {
-    DefinitionLoader.loadFile("faces.el");
+    DefinitionLoader.loadEmacsFile("faces.el");
 //    evaluateString("(list-faces-display)");
   }
 
   @Test
   public void lispMode() {
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
-    DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
+    DefinitionLoader.loadEmacsFile("emacs-lisp/lisp-mode.el");
   }
 }

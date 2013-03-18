@@ -69,7 +69,7 @@ public final class IdeaBuffer extends LispBuffer {
 
   private void openToolBuffer (LispToolWindow window) {
     getEnvironment().onToolBufferOpened(window);
-    myDocumentHolder.onOpen(((IdeaEditorWrapper) window.getEditor()).getEditor().getDocument());
+    myDocumentHolder.onOpen(((IdeaEditorWrapper) window.getEditorWrapper()).getEditor().getDocument());
   }
 
   private void openStandardBuffer(Editor editor) {
