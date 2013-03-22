@@ -812,6 +812,19 @@ public class BufferTest extends IdeTestCase {
     Assert.assertEquals(new LispInteger(0), evaluateString("font-lock-verbose"));
   }
 
+  public void testFontifyBuffer() {
+    LispObject q = evaluateString("(font-lock-fontify-buffer)");
+    System.out.println(q);
+  }
+
+  public void testBOL() {
+    assertNil(evaluateString("(beginning-of-line -100)"));
+    LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
+    assertEquals(1, buffer.getLine());
+    assertEquals(buffer.getLineStartIndex(), buffer.getColumn());
+    assertEquals(1, buffer.point());
+  }
+
   /* todo get back
   public void testSetLispMode() {
       evaluateString("(emacs-lisp-mode)");

@@ -39,8 +39,8 @@ class IdeTestCase extends CodeInsightFixtureTestCase {
   private String setGlobalEnv() {
     TestMode.TEST = true;
     TestMode.EXTRACT_DOC = false;
-//    TestMode.LOAD_FILES = false;
-//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+    TestMode.LOAD_FILES = false;
+    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
 
     if (GlobalEnvironment.INSTANCE == null) {
       LogUtil.info("INIT GLOBAL ENV");

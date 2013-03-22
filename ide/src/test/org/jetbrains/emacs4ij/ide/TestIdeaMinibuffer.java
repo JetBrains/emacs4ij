@@ -127,12 +127,21 @@ public class TestIdeaMinibuffer extends LispMinibuffer {
   }
 
   @Override
-  protected int getLine() {
+  public void goTo(int line, int column) {
+  }
+
+  @Override
+  public int getLine() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  protected int getColumn() {
+  public int getColumn() {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int getLineStartIndex() {
+    return 1;
   }
 }

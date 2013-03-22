@@ -1,6 +1,7 @@
 package org.jetbrains.emacs4ij.ide;
 
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.VisualPosition;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -120,18 +121,28 @@ public final class IdeaBuffer extends LispBuffer {
   }
 
   @Override
-  protected int getLine() {
+  public int getLine() {
     return getEditor().getCaretModel().getVisualPosition().getLine();
   }
 
   @Override
-  protected int getColumn() {
+  public int getColumn() {
     return getEditor().getCaretModel().getVisualPosition().getColumn() - 1;
+  }
+
+  @Override
+  public int getLineStartIndex() {
+    return 1;
   }
 
   @Override
   public void setPoint(int position) {
     getEditor().getCaretModel().moveToOffset(position - 1);
+  }
+
+  @Override
+  public void goTo(int line, int column) {
+    getEditor().getCaretModel().moveToVisualPosition(new VisualPosition(line, column));
   }
 
   @Override

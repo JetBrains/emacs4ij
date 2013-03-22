@@ -269,13 +269,23 @@ public final class IdeaMiniBuffer extends LispMinibuffer {
   }
 
   @Override
-  protected int getLine() {
+  public void goTo(int line, int column) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public int getLine() {
     return getEditor().getCaretModel().getVisualPosition().getLine();
   }
 
   @Override
-  protected int getColumn() {
+  public int getColumn() {
     return getEditor().getCaretModel().getVisualPosition().getColumn() - 1;
+  }
+
+  @Override
+  public int getLineStartIndex() {
+    return 1;
   }
 
   private Editor getEditor() {

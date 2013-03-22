@@ -431,4 +431,26 @@ public abstract class Buffer {
       throw new WrongTypeArgumentException("bufferp", bufferObject);
     return ((LispBuffer)bufferObject).getVariableValue("buffer-file-name");
   }
+
+  @Subroutine("bolp")
+  public static LispSymbol isPointAtLineBeginning(Environment environment) {
+    return LispSymbol.bool(environment.getBufferCurrentForEditing().isPointAtLineStart());
+  }
+
+  @Subroutine(value = "beginning-of-line", interactive = "^p")
+  public static LispSymbol movePointToBeginningOfLine(Environment environment, @Optional LispObject nLinesForward) {
+    //todo consider "inhibit-field-text-motion"
+    int n = 0;
+    if (!Predicate.isNil(nLinesForward)) {
+      if (!(nLinesForward instanceof LispInteger)) throw new WrongTypeArgumentException("integerp", nLinesForward);
+      n = ((LispInteger) nLinesForward).getData();
+    }
+    LispBuffer buffer = environment.getBufferCurrentForEditing();
+    int line = buffer.getLine() + n;
+    if (line < 1) line = 1;
+    buffer.goTo(line, buffer.getLineStartIndex());
+
+    return LispSymbol.NIL;
+  }
+
 }

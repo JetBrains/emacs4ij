@@ -333,6 +333,9 @@ public class GlobalEnvironment extends Environment {
     defineSymbol("load-file-rep-suffixes", LispList.list(new LispString("")));
     defineSymbol("load-in-progress");
     defineSymbol("load-file-name");
+
+    defineSymbol("parse-sexp-lookup-properties");
+    defineSymbol("inhibit-field-text-motion");
   }
 
   public LispVector getObjectArray() {

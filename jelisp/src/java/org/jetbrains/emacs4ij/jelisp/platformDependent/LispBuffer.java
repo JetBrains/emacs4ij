@@ -216,6 +216,13 @@ public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder 
   public abstract int point();
   public abstract void setPoint(int position);
 
+  /**
+   * moves buffer point to given position. If it is outside the real buffer size, just stop at the end (or beginning)
+   * @param line
+   * @param column
+   */
+  public abstract void goTo(int line, int column);
+
   public int pointMin() {
     return 1;
   }
@@ -253,7 +260,6 @@ public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder 
     setPoint(position);
     return message;
   }
-
 
   //-------------------------------------------------------------------------------
   //     markers
@@ -299,8 +305,13 @@ public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder 
   //-------------------------------------------------------------------------------
   //     getters & setters; basic
   //-------------------------------------------------------------------------------
-  protected abstract int getLine();
-  protected abstract int getColumn();
+  public abstract int getLine();
+  public abstract int getColumn();
+  public abstract int getLineStartIndex();
+
+  public boolean isPointAtLineStart() {
+    return getColumn() == getLineStartIndex();
+  }
 
   public LispObject evaluateLastForm() {
     String[] code = getText().split("\n");

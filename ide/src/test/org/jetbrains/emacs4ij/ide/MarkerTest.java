@@ -1,5 +1,6 @@
 package org.jetbrains.emacs4ij.ide;
 
+import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
@@ -15,6 +16,7 @@ public class MarkerTest extends IdeTestCase {
     super.setUp();
     setTestFiles(true);
     evaluateString("(switch-to-buffer \"3.txt\")");
+    DefinitionLoader.loadEmacsFile("simple.el");
   }
 
   public void testSetMarker() {
