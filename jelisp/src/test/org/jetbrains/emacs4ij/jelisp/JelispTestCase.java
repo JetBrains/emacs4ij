@@ -1,6 +1,8 @@
 package org.jetbrains.emacs4ij.jelisp;
 
+import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.LispException;
 import org.jetbrains.emacs4ij.jelisp.exception.UnregisteredBufferException;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
@@ -13,9 +15,9 @@ public class JelispTestCase {
   @BeforeClass
   public static void runBeforeClass() {
     TestMode.TEST = true;
-//    TestMode.EXTRACT_DOC = false;
-//    TestMode.LOAD_FILES = false;
-//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+    TestMode.EXTRACT_DOC = false;
+    TestMode.LOAD_FILES = false;
+    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
 
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
 
@@ -54,5 +56,14 @@ public class JelispTestCase {
 
   protected LispObject evaluateString (String lispCode) throws LispException {
     return new ForwardParser().parseLine(lispCode).evaluate(myEnvironment);
+  }
+
+  //todo use in tests
+  protected final void assertT(LispObject object) {
+    Assert.assertEquals(LispSymbol.T, object);
+  }
+
+  protected final void assertNil(LispObject object) {
+    Assert.assertEquals(LispSymbol.NIL, object);
   }
 }

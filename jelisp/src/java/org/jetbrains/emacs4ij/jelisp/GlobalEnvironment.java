@@ -59,7 +59,9 @@ public class GlobalEnvironment extends Environment {
 
   //temporary solution while i'm not loading all sources
   private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
-      "font-core.el", "font-lock.el", "help.el", "faces.el");
+      "font-core.el", "font-lock.el"
+//      , "help.el", "faces.el"
+  );
 
   public static GlobalEnvironment INSTANCE = null;
 

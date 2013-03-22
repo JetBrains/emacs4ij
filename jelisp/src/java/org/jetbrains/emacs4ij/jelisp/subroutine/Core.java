@@ -36,6 +36,7 @@ import org.jetbrains.emacs4ij.jelisp.interactive.SpecialFormInteractive;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispBuffer;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispMinibuffer;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -561,12 +562,16 @@ public abstract class Core {
   @Subroutine("load")
   public static LispSymbol load(Environment environment, LispString fileName,
                                 @Optional LispObject noError, LispObject noMessage, LispObject noSuffix, LispObject mustSuffix) {
-    boolean signalError = !Predicate.isNil(noError);
-    boolean showMessage = !Predicate.isNil(noMessage) || environment.find("force-load-messages").getValue() != LispSymbol.NIL;
+    boolean signalError = Predicate.isNil(noError);
+    boolean showMessage = Predicate.isNil(noMessage) || environment.find("force-load-messages").getValue() != LispSymbol.NIL;
+
+    File file  = new File(".");
+    System.out.println(file.getAbsolutePath());
 
     //todo try suffixes as defined in 'load-suffixes global var
 
     String name = fileName.getData();
+
     if (name.endsWith(".elc")) {
       LogUtil.log("Request to load " + name + ", replace with .el", GlobalEnvironment.MessageType.WARNING);
       name = name.replace(".elc", ".el");
@@ -587,14 +592,22 @@ public abstract class Core {
 
     LispSymbol loadInProgress = environment.find("load-in-progress");
     LispSymbol loadFileName = environment.find("load-file-name");
+    boolean success = false;
     try {
+      if (showMessage) {
+        GlobalEnvironment.echo("Loading " + name + "... (source)", GlobalEnvironment.MessageType.INFO);
+      }
       loadInProgress.setValue(LispSymbol.T);
       loadFileName.setValue(fileName);
       DefinitionLoader.loadFile(name);
+      success = true;
     } catch (FileNotFoundException e) {
       if (signalError) signal(new LispSymbol("file-error"), LispList.list(new LispString("Cannot open load file"), fileName));
       return LispSymbol.NIL;
     } finally {
+      if (success) {
+        GlobalEnvironment.echo("done", GlobalEnvironment.MessageType.INFO);
+      }
       loadInProgress.setValue(LispSymbol.NIL);
       loadFileName.setValue(LispSymbol.NIL);
     }

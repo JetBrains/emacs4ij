@@ -56,6 +56,7 @@ abstract class Emacs4ijToolWindow extends SimpleToolWindowPanel implements DataP
   public void dispose() {
     if (myEditor != null && !myEditor.isDisposed()) {
       EditorFactory.getInstance().releaseEditor(myEditor);
+      LogUtil.info("dispose " + getToolWindowName());
     }
     if (myEditor != null && myEditor.isDisposed()) {
       LogUtil.info("double dispose " + getToolWindowName());

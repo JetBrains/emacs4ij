@@ -1043,4 +1043,9 @@ public class CoreTest extends JelispTestCase {
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
     DefinitionLoader.loadEmacsFile("emacs-lisp/lisp-mode.el");
   }
+
+  @Test
+  public void loadFile() {
+    assertT(evaluateString("(load \"jelisp/src/testSrc/test\")"));
+  }
 }

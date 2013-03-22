@@ -190,9 +190,10 @@ public class MyProjectComponent implements ProjectComponent {
     // TODO: insert component initialization logic here
   }
 
+  @Override
   public void disposeComponent() {
-    myEchoArea.dispose();
-    myHelpArea.dispose();
+//    myEchoArea.dispose();
+//    myHelpArea.dispose();
   }
 
   public void projectClosed() {
