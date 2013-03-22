@@ -41,7 +41,7 @@ public class MyProjectComponent implements ProjectComponent {
   private Environment myEnvironment = null;
   private Project myProject;
   private EchoArea myEchoArea;
-  private HelpArea myHelpArea;
+  private HelpArea myHelpArea = null;
 
   public MyProjectComponent(Project project) {
     myProject = project;
@@ -50,7 +50,7 @@ public class MyProjectComponent implements ProjectComponent {
       @Override
       public void run() {
         myEchoArea = new EchoArea(myProject);
-        myHelpArea = new HelpArea(myProject);
+        if (GlobalEnvironment.isHelpLoaded()) myHelpArea = new HelpArea(myProject);
       } });
   }
 
@@ -63,7 +63,7 @@ public class MyProjectComponent implements ProjectComponent {
   }
 
   private void setToolWindowsEnabled(boolean enabled) {
-    myHelpArea.setToolWindowEnabled(enabled, myEnvironment);
+    if (myHelpArea != null) myHelpArea.setToolWindowEnabled(enabled, myEnvironment);
     myEchoArea.setToolWindowEnabled(enabled);
   }
 
@@ -192,8 +192,8 @@ public class MyProjectComponent implements ProjectComponent {
 
   @Override
   public void disposeComponent() {
-//    myEchoArea.dispose();
-//    myHelpArea.dispose();
+    myEchoArea.dispose();
+    if (myHelpArea != null) myHelpArea.dispose();
   }
 
   public void projectClosed() {

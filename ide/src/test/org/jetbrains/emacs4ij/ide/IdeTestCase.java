@@ -4,6 +4,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightFixtureTestCase;
 import com.intellij.ui.EditorTextField;
+import junit.framework.Assert;
 import org.jetbrains.emacs4ij.jelisp.CustomEnvironment;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
@@ -11,6 +12,7 @@ import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.TestMode;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
+import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.junit.Before;
 
@@ -37,8 +39,8 @@ class IdeTestCase extends CodeInsightFixtureTestCase {
   private String setGlobalEnv() {
     TestMode.TEST = true;
     TestMode.EXTRACT_DOC = false;
-    TestMode.LOAD_FILES = false;
-    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+//    TestMode.LOAD_FILES = false;
+//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
 
     if (GlobalEnvironment.INSTANCE == null) {
       LogUtil.info("INIT GLOBAL ENV");
@@ -86,5 +88,13 @@ class IdeTestCase extends CodeInsightFixtureTestCase {
 
   protected final LispObject evaluateString(String lispCode) {
     return new ForwardParser().parseLine(lispCode).evaluate(myEnvironment);
+  }
+
+  protected final void assertT(LispObject object) {
+    Assert.assertEquals(LispSymbol.T, object);
+  }
+
+  protected final void assertNil(LispObject object) {
+    Assert.assertEquals(LispSymbol.NIL, object);
   }
 }

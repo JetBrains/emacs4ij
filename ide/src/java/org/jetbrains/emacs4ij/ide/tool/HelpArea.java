@@ -28,7 +28,7 @@ public class HelpArea extends Emacs4ijToolWindow implements LispToolWindow {
     return "Emacs4ij Help";
   }
 
-  public HelpArea (final Project project) {
+  public HelpArea(final Project project) {
     super(project);
 
     ((EditorEx) getEditor()).addFocusListener(new FocusChangeListener() {

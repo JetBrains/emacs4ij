@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.emacs4ij.ide.EnvironmentInitializer;
+import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
 import org.jetbrains.emacs4ij.jelisp.LogUtil;
 
 import javax.swing.*;
@@ -59,7 +60,7 @@ abstract class Emacs4ijToolWindow extends SimpleToolWindowPanel implements DataP
       LogUtil.info("dispose " + getToolWindowName());
     }
     if (myEditor != null && myEditor.isDisposed()) {
-      LogUtil.info("double dispose " + getToolWindowName());
+      LogUtil.log("double dispose " + getToolWindowName(), GlobalEnvironment.MessageType.ERROR);
     }
   }
 }

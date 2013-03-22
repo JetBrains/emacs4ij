@@ -804,6 +804,10 @@ public class BufferTest extends IdeTestCase {
     Assert.assertEquals(maxPoint, evaluateString("(point)"));
   }
 
+  public void testToggleOnFontLockMode() {
+    assertT(evaluateString("(font-lock-mode t)"));
+  }
+
   /* todo get back
   public void testSetLispMode() {
       evaluateString("(emacs-lisp-mode)");

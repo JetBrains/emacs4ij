@@ -504,5 +504,7 @@ public class GlobalEnvironment extends Environment {
     return false;
   }
 
-
+  public static boolean isHelpLoaded() {
+    return myFilesToLoad.contains("help.el");
+  }
 }

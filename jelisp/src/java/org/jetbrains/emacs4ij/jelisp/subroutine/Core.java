@@ -614,4 +614,19 @@ public abstract class Core {
 
     return LispSymbol.T;
   }
+
+  @Subroutine("prefix-numeric-value")
+  public static LispInteger prefixNumericValue(LispObject raw) {
+    if (Predicate.isNil(raw)) {
+      return new LispInteger(1);
+    } else if (raw instanceof LispInteger) {
+      return (LispInteger) raw;
+    } else if (raw instanceof LispList && ((LispList) raw).car() instanceof LispInteger) {
+      return (LispInteger) ((LispList) raw).car();
+    } else if (new LispSymbol("-").equals(raw)) {
+      return new LispInteger(-1);
+    } else {
+      return new LispInteger(1);
+    }
+  }
 }

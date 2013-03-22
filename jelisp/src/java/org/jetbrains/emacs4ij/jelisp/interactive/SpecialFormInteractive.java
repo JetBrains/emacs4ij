@@ -136,6 +136,8 @@ public final class SpecialFormInteractive extends InteractiveReader {
   }
 
   private void prepare () {
+    LispSymbol currentPrefixArg = myEnvironment.find("current-prefix-arg");
+
     switch (myCompletionContext.getInteractiveChar()) {
       case 'b': // -- Name of existing buffer.
         myParameterDefaultValue = myEnvironment.getBufferCurrentForEditing().getName();
@@ -183,23 +185,19 @@ public final class SpecialFormInteractive extends InteractiveReader {
         notifyMiniBuffer();
         return;
       case 'N': // -- Numeric prefix arg, or if none, do like code `n'.
-        LispInteger value = prefixArgToNumber();
-        if (value == null) {
+        if (currentPrefixArg == null) {
           myCompletionContext.setInteractiveChar('n');
           break;
         }
-        addArg(value);
+        addArg(Core.prefixNumericValue(currentPrefixArg.getValue()));
         notifyMiniBuffer();
         return;
       case 'p': // -- Prefix arg converted to number. Does not do I/O.
-        LispInteger v = prefixArgToNumber();
-        if (v == null)
-          v = new LispInteger(1);
-        addArg(v);
+        addArg(Core.prefixNumericValue(currentPrefixArg == null ? null : currentPrefixArg.getValue()));
         notifyMiniBuffer();
         return;
       case 'P': // -- Prefix arg in raw form. Does not do I/O.
-        addArg(myEnvironment.find("current-prefix-arg").getValue());
+        addArg(currentPrefixArg.getValue());
         notifyMiniBuffer();
         return;
       case 'r': // -- Region: point and mark as 2 numeric args, smallest first.
@@ -228,13 +226,6 @@ public final class SpecialFormInteractive extends InteractiveReader {
     }
     normalizePromptAndDefault();
     putArgument();
-  }
-
-  private LispInteger prefixArgToNumber () {
-    LispObject value = myEnvironment.find("current-prefix-arg").getValue();
-    if (value.equals(LispSymbol.NIL))
-      return null;
-    return value instanceof LispInteger ? (LispInteger) value : new LispInteger(1);
   }
 
   private int getMarkPosition(String errorMsg) {
