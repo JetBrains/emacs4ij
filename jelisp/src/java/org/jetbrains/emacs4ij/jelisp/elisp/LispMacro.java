@@ -15,36 +15,36 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public final class LispMacro implements FunctionCell {
-    private Lambda myLambda;
+  private Lambda myLambda;
 
-    public LispMacro(LispList def) {
-        List<LispObject> data = def.toLispObjectList();
-        if (!data.get(0).equals(new LispSymbol("macro")))
-            throw new InternalException(JelispBundle.message("wrong.def.form", "macro", def.toString()));
-        myLambda = new Lambda(LispList.list(data.subList(1, data.size())));
-    }
+  public LispMacro(LispList def) {
+    List<LispObject> data = def.toLispObjectList();
+    if (!data.get(0).equals(new LispSymbol("macro")))
+      throw new InternalException(JelispBundle.message("wrong.def.form", "macro", def.toString()));
+    myLambda = new Lambda(LispList.list(data.subList(1, data.size())));
+  }
 
-    public LispObject expand (Environment environment, List<LispObject> args) {
-        return myLambda.evaluate(environment, args);
-    }
+  public LispObject expand (Environment environment, List<LispObject> args) {
+    return myLambda.evaluate(environment, args);
+  }
 
-    @Override
-    public LispObject getDocumentation() {
-        return myLambda.getDocumentation();
-    }
+  @Override
+  public LispObject getDocumentation() {
+    return myLambda.getDocumentation();
+  }
 
-    @Override
-    public void setDocumentation(LispObject doc) {
-        myLambda.setDocumentation(doc);
-    }
+  @Override
+  public void setDocumentation(LispObject doc) {
+    myLambda.setDocumentation(doc);
+  }
 
-    @Override
-    public int getNRequiredArguments() {
-        return myLambda.getNRequiredArguments();
-    }
+  @Override
+  public int getNRequiredArguments() {
+    return myLambda.getNRequiredArguments();
+  }
 
-    @Override
-    public LispObject evaluate(Environment environment) {
-        throw new DirectEvaluationException("macro");
-    }
+  @Override
+  public LispObject evaluate(Environment environment) {
+    throw new DirectEvaluationException("macro");
+  }
 }

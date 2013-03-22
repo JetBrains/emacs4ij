@@ -274,8 +274,7 @@ public abstract class Environment {
 
   public void setVariable(LispSymbol symbol) {
     String name = symbol.getName();
-    if (myOuterEnv == null || containsSymbol(name) ||
-        (this instanceof BufferEnvironment && GlobalEnvironment.INSTANCE.isVariableBufferLocal(name))) {
+    if (myOuterEnv == null || containsSymbol(name) || (this instanceof BufferEnvironment && GlobalEnvironment.INSTANCE.isVariableBufferLocal(name))) {
       LispSymbol variable = mySymbols.get(name);
       if (variable == null) {
         defineSymbol(symbol);

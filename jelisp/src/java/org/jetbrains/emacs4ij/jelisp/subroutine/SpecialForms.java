@@ -180,8 +180,9 @@ public abstract class SpecialForms {
     if (variable == null) {
       LispObject value = initValue == null ? null : initValue.evaluate(environment);
       LispSymbol symbol = new LispSymbol(name.getName());
-      if (value instanceof LispSymbol && ((LispSymbol) value).getName().equals(name.getName()))
+      if (value instanceof LispSymbol && ((LispSymbol) value).getName().equals(name.getName())) {
         value = symbol;
+      }
       symbol.setValue(value);
       if (docString != null) {
         symbol.setVariableDocumentation(docString.evaluate(environment));
@@ -190,15 +191,13 @@ public abstract class SpecialForms {
       return symbol;
     }
     if (overwrite || (!variable.hasValue() && initValue != null)) {
-      if (initValue == null)
-        throw new InternalException(JelispBundle.message("null.init.value"));
+      if (initValue == null) throw new InternalException(JelispBundle.message("null.init.value"));
       LispObject value = initValue.evaluate(environment);
       variable.setValue(value);
     }
     if (docString != null) {
       variable.setVariableDocumentation(docString.evaluate(environment));
     }
-    GlobalEnvironment.INSTANCE.defineSymbol(variable);
     return variable;
   }
 
@@ -383,7 +382,7 @@ public abstract class SpecialForms {
           // todo: unbind all bindings; clean-ups for all unwind-protect forms
           ForwardParser forwardParser = new ForwardParser();
           LispList errorInfo = (LispList) forwardParser.parseLine(exc.getMessage());
-          while (!GlobalEnvironment.ourCallStack.getFirst().equals("condition-case")) {
+          while (!GlobalEnvironment.ourCallStack.getFirst().getFirst().equals("condition-case")) {
             //todo: make full error list and store it in errorInfo
             // make somehow new error message
             // errorInfo = new LispList( <new error> errorInfo);

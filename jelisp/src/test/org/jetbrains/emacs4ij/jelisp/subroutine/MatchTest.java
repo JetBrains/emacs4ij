@@ -8,6 +8,7 @@ import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispSymbol;
 import org.jetbrains.emacs4ij.jelisp.exception.NoMatchData;
+import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.junit.Test;
 
 public class MatchTest extends JelispTestCase {
@@ -146,12 +147,9 @@ public class MatchTest extends JelispTestCase {
     Assert.assertEquals(LispList.list(), data);
   }
 
-  @Test
-  public void setEmptyMatchDataToWrongStartList() {
-    LispObject data = evaluateString("(set-match-data '(a 1 2))");
-    Assert.assertEquals(LispSymbol.NIL, data);
-    data = evaluateString("(match-data)");
-    Assert.assertEquals(LispList.list(), data);
+  @Test(expected = WrongTypeArgumentException.class)
+  public void setEmptyMatchDataToWrongStartListExc() {
+    evaluateString("(set-match-data '(a 1 2))");
   }
 
   @Test

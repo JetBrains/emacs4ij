@@ -511,10 +511,8 @@ public class SpecialFormsTest extends JelispTestCase {
         fCell);
   }
 
-
   private static void conditionCaseErrorChecker (Object error, String expectedMessage) {
-    if (error instanceof LispString) {
-      // from signal
+    if (error instanceof LispString) { // from signal
       Assert.assertEquals(expectedMessage, ((LispString) error).getData());
       return;
     }
@@ -546,9 +544,7 @@ public class SpecialFormsTest extends JelispTestCase {
   public void testConditionCase3 () {
     evaluateString("(setq a \"hello\")");
     LispObject r = evaluateString("(condition-case b (+ a 5) (wrong-type-argument (symbol-value 'b)))");
-    Assert.assertEquals(LispList.list(new LispSymbol("wrong-type-argument"),
-        new LispSymbol("number-or-marker-p"), new LispString("hello")),
-        r);
+    Assert.assertEquals(LispList.list(new LispSymbol("wrong-type-argument"), new LispSymbol("number-or-marker-p"), new LispString("hello")), r);
   }
 
   @Test

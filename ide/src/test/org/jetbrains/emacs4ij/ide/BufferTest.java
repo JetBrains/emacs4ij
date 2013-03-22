@@ -808,6 +808,10 @@ public class BufferTest extends IdeTestCase {
     assertT(evaluateString("(font-lock-mode t)"));
   }
 
+  public void testFontLockVerbose() {
+    Assert.assertEquals(new LispInteger(0), evaluateString("font-lock-verbose"));
+  }
+
   /* todo get back
   public void testSetLispMode() {
       evaluateString("(emacs-lisp-mode)");

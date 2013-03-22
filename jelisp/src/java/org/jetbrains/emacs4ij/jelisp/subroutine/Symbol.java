@@ -163,9 +163,10 @@ public abstract class Symbol {
       //todo: check for buffer-locality
       // real.setBufferLocal(true); //?
       real.setValue(value);
-    } else
+    } else {
       symbol.setValue(value);
-    GlobalEnvironment.INSTANCE.defineSymbol(new LispSymbol(symbol));
+      GlobalEnvironment.INSTANCE.defineSymbol(symbol);
+    }
     return value;
   }
 
@@ -180,13 +181,14 @@ public abstract class Symbol {
     }
     List<LispSymbol> filtered = new ArrayList<>();
     for (LispObject o: objectArray.toLispObjectList()) {
-      if (o.equals(new LispInteger(0)))
-        continue;
-      if (o instanceof LispSymbol && ((LispSymbol) o).getName().equals(name)) {
-        filtered.add((LispSymbol) o);
-        continue;
+      if (o.equals(new LispInteger(0))) continue;
+      if (o instanceof LispSymbol) {
+        if (((LispSymbol) o).getName().equals(name)) {
+          filtered.add((LispSymbol) o);
+        }
+      } else {
+        Core.error(JelispBundle.message("invalid.object.array"));
       }
-      Core.error(JelispBundle.message("invalid.object.array"));
     }
     if (filtered.size() != 1 && filtered.size() != 0) throw new IllegalStateException("real size = " + filtered.size());
     if (filtered.isEmpty()) return null;

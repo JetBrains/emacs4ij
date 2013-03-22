@@ -37,12 +37,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class DefinitionLoader {
-  static enum DefType {VAR, FUN} //todo: not private for test only  && IDENTIFIER
+  static enum DefType {VAR, FUN, GENERIC} //todo: not private for test only  && IDENTIFIER
   static enum SymbolType {VAR, FUN, CMD} //todo: not private for test only  && IDENTIFIER
   protected static List<String> myDefVars = Arrays.asList("defcustom", "defvar", "defconst", "defgroup", "defface", "defvaralias");
   protected static List<String> myDefFuns = Arrays.asList("defun", "defmacro", "defsubst", "defalias", "define-derived-mode", "define-minor-mode");
-  private static final Map<String, String> myUploadHistory = new LinkedHashMap<>();
+  private static final Map<String, String> myUploadHistory = new LinkedHashMap<>(); //for loading definitions on the fly
   protected static DefinitionIndex myIndex = new DefinitionIndex();
+
+  private static DefinitionIndex myUploadIndex = new DefinitionIndex(); //for logging file loading
+
   private static String myDefinitionSrcFile;
   //for test
   private static List<String> mySkipForms = new ArrayList<>();
@@ -130,10 +133,8 @@ public final class DefinitionLoader {
   }
 
   public static void loadFile(String fileName) throws FileNotFoundException {
-    //todo update 'load-history' variable value (see help for 'load' subroutine)
-
     RandomAccessFile reader = new RandomAccessFile(fileName, "r");
-    String line = null;
+    String line;
     ForwardMultilineParser p = new ForwardMultilineParser(reader, fileName);
     while (true) {
       try {
@@ -145,12 +146,14 @@ public final class DefinitionLoader {
       if (line == null) break;
 
       boolean skip = skip(line);
-      LispObject parsed = p.parse(line, getFileOffset(reader, fileName));
+      Long offset = getFileOffset(reader, fileName);
+      LispObject parsed = p.parse(line, offset);
       if (Predicate.isNil(parsed) || skip)
         continue;
 
       while (true) {
         try {
+          saveLoadHistory(parsed, fileName, offset);
           parsed.evaluate(GlobalEnvironment.INSTANCE);
         } catch (LispException e) {
           LogUtil.log(JelispBundle.message("loader.error", fileName, p.getLine(), e.getMessage()), GlobalEnvironment.MessageType.ERROR);
@@ -159,6 +162,40 @@ public final class DefinitionLoader {
         parsed = p.parseNext();
       }
     }
+  }
+
+  private static void saveLoadHistory(LispObject parsed, String filename, long offset) {
+    //todo update 'load-history' variable value (see help for 'load' subroutine)
+    if (parsed instanceof LispList) {
+      LispObject defForm = ((LispList) parsed).car();
+      LispObject name = ((LispList) parsed).toLispObjectList().get(1);
+      if (defForm instanceof LispSymbol && name instanceof LispSymbol) {
+        String defName = ((LispSymbol) defForm).getName();
+        boolean fun = myDefFuns.contains(defName);
+        boolean var = myDefVars.contains(defName);
+        DefType type;
+        if (fun == var) {
+          type = DefType.GENERIC;
+        } else if (fun) {
+          type = DefType.FUN;
+        } else {
+          type = DefType.VAR;
+        }
+        putToDefIndex(myUploadIndex, new Identifier(((LispSymbol) name).getName(), type), filename, offset);
+      }
+    }
+  }
+
+  private static void putToDefIndex(DefinitionIndex index, Identifier id, String filename, long offset) {
+    if (index.containsKey(id)) {
+      SortedMap<String, Long> map = index.get(id);
+      if (!map.containsKey(filename))
+        map.put(filename, offset);
+      return;
+    }
+    TreeMap<String, Long> map = new TreeMap<>(FileNamesComparator.INSTANCE);
+    map.put(filename, offset);
+    index.put(id, map);
   }
 
   public static LispList getDefFromFile(String fileName, String functionName, DefType type) {
@@ -475,15 +512,8 @@ if (type == DefType.FUN) {//check if it is command
 }
 if (id == null)
   id = new Identifier(name, type);*/
-      if (myIndex.containsKey(id)) {
-        SortedMap<String, Long> map = myIndex.get(id);
-        if (!map.containsKey(myFilePath))
-          map.put(myFilePath, offset);
-        return;
-      }
-      TreeMap<String, Long> map = new TreeMap<>(FileNamesComparator.INSTANCE);
-      map.put(myFilePath, offset);
-      myIndex.put(id, map);
+
+      putToDefIndex(myIndex, id, myFilePath, offset);
     }
   }
 

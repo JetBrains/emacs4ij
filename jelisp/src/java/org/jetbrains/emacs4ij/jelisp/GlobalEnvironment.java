@@ -56,7 +56,6 @@ public class GlobalEnvironment extends Environment {
   //for debug & extract definition on the fly
   public static Deque<Pair<String, Object>> ourCallStack = new ArrayDeque<>();
 
-
   //temporary solution while i'm not loading all sources
   private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
       "font-core.el", "font-lock.el"

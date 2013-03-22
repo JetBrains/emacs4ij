@@ -253,8 +253,8 @@ public abstract class Minibuffer {
 
   private static boolean wasInteractiveFormWithoutRead() {
     return GlobalEnvironment.ourCallStack.size() == 2
-        && GlobalEnvironment.ourCallStack.getFirst().equals("interactive")
-        && GlobalEnvironment.ourCallStack.getLast().equals("eval-last-sexp");
+        && GlobalEnvironment.ourCallStack.getFirst().getFirst().equals("interactive")
+        && GlobalEnvironment.ourCallStack.getLast().getFirst().equals("eval-last-sexp");
   }
 
   @Subroutine("redisplay")

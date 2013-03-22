@@ -986,7 +986,7 @@ public class CoreTest extends JelispTestCase {
 
   @Test
   public void testAutoload() {
-    evaluateString("(autoload 'b \"./jelisp/src/test/test\" \"alla\" nil 'anna)");
+    evaluateString("(autoload 'b \"./jelisp/src/testSrc/test\" \"alla\" nil 'anna)");
     LispObject f = evaluateString("(symbol-function 'b)");
     Assert.assertTrue(f instanceof LispList);
     Assert.assertEquals("(autoload \"./jelisp/src/test/test\" \"alla\" nil anna)", f.toString());

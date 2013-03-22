@@ -16,8 +16,8 @@ public class JelispTestCase {
   public static void runBeforeClass() {
     TestMode.TEST = true;
     TestMode.EXTRACT_DOC = false;
-//    TestMode.LOAD_FILES = false;
-//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+    TestMode.LOAD_FILES = false;
+    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
 
     DefinitionLoader.addSkipForms("(eval-when-compile ", "(defvar special-mode-map");
 
