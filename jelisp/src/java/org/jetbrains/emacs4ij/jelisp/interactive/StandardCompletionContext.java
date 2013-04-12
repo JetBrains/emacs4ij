@@ -4,6 +4,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.emacs4ij.jelisp.Environment;
 import org.jetbrains.emacs4ij.jelisp.GlobalEnvironment;
+import org.jetbrains.emacs4ij.jelisp.JelispBundle;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispObject;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispString;
@@ -111,6 +112,7 @@ class StandardCompletionContext extends CompletionContext {
             int n = (int) Double.parseDouble(parameter);
             return new LispInteger(n);
           } catch (NumberFormatException e2) {
+            myNoMatchMessage = JelispBundle.message("number.no.match.msg");
             //todo: don't show prompt
             break;
           }

@@ -25,7 +25,7 @@ public abstract class TextProperties {
   private TextProperties() {}
 
   @Subroutine("propertize")
-  public static LispObject propertize (Environment environment, LispString string, @Optional LispObject... properties) {
+  public static LispString propertize (Environment environment, LispString string, @Optional LispObject... properties) {
     int propLength = properties.length;
     if (propLength == 0 || propLength % 2 != 0)
       throw new WrongNumberOfArgumentsException("propertize");

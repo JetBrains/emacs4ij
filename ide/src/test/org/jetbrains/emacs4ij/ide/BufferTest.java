@@ -3,6 +3,7 @@ package org.jetbrains.emacs4ij.ide;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import org.jetbrains.emacs4ij.jelisp.DefinitionLoader;
 import org.jetbrains.emacs4ij.jelisp.Environment;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispInteger;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispList;
 import org.jetbrains.emacs4ij.jelisp.elisp.LispMarker;
@@ -21,7 +22,6 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.SpecialForms;
 import org.junit.Assert;
 import org.junit.Before;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -819,39 +819,33 @@ public class BufferTest extends IdeTestCase {
     System.out.println(q);
   }
 
-//  public void testBOL() {
-//    assertNil(evaluateString("(beginning-of-line -100)"));
-//    LispBuffer buffer = myEnvironment.getBufferCurrentForEditing();
-//    assertEquals(1, buffer.getLine());
-//    assertEquals(1, buffer.point());
-//    assertTrue(buffer.isPointAtLineStart());
-//    assertEquals(buffer.getColumnStartIndex(), buffer.getColumn());
-//  }
-
-  //todo get back
   public void testSetLispMode() {
-      evaluateString("(emacs-lisp-mode)");
-      LispObject cmd = evaluateString("(key-binding \"\\C-x\\C-e\")");
-      LispObject globalMap = evaluateString("(current-global-map)");
-      LispObject localMap = evaluateString("(current-local-map)");
-      Assert.assertEquals(new LispSymbol("emacs-lisp-mode"), evaluateString("major-mode"));
+    LogUtil.info("cmd (emacs-lisp-mode) started");
+    evaluateString("(emacs-lisp-mode)");
+    LogUtil.info("cmd (emacs-lisp-mode) finished");
 
-      System.out.println(cmd);
+    LispObject cmd = evaluateString("(key-binding \"\\C-x\\C-e\")");
+    LispObject globalMap = evaluateString("(current-global-map)");
+    LispObject localMap = evaluateString("(current-local-map)");
+    Assert.assertEquals(new LispSymbol("emacs-lisp-mode"), evaluateString("major-mode"));
+    Assert.assertEquals("eval-last-sexp", cmd.toString());
+    System.out.println(globalMap);
+    System.out.println(localMap);
   }
 
-  public void testSetFontLockMinorMode() throws FileNotFoundException {
-      DefinitionLoader.loadFile("emacs-lisp/lisp-mode.el");
-      evaluateString("(emacs-lisp-mode)");
-      evaluateString("(font-lock-mode)");
-      LispSymbol f = (LispSymbol) evaluateString("'font-lock-string-face");
-      Assert.assertTrue(f == f.getValue());
-      LispObject fProp = evaluateString("(symbol-plist 'font-lock-string-face)");
-      LispObject fValueProp = evaluateString("(symbol-plist (symbol-value 'font-lock-string-face))");
-      Assert.assertEquals(fProp, fValueProp);
+  public void testSetFontLockMinorMode() {
+    DefinitionLoader.loadEmacsFile("emacs-lisp/lisp-mode.el");
+    evaluateString("(emacs-lisp-mode)");
+    evaluateString("(font-lock-mode)");
+    LispSymbol f = (LispSymbol) evaluateString("'font-lock-string-face");
+    Assert.assertTrue(f == f.getValue());
+    LispObject fProp = evaluateString("(symbol-plist 'font-lock-string-face)");
+    LispObject fValueProp = evaluateString("(symbol-plist (symbol-value 'font-lock-string-face))");
+    Assert.assertEquals(fProp, fValueProp);
 //        System.out.println(fValueProp.toString());
 
-      evaluateString("(switch-to-buffer \"5.txt\")");
-      Assert.assertEquals(f, evaluateString("(get-char-property 5 'face)"));
+    evaluateString("(switch-to-buffer \"5.txt\")");
+    Assert.assertEquals(f, evaluateString("(get-char-property 5 'face)"));
   }
 
   /*

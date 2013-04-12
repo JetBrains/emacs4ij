@@ -133,6 +133,7 @@ public final class DefinitionLoader {
   }
 
   public static void loadFile(String fileName) throws FileNotFoundException {
+    LogUtil.info("load " + fileName);
     RandomAccessFile reader = new RandomAccessFile(fileName, "r");
     String line;
     ForwardMultilineParser p = new ForwardMultilineParser(reader, fileName);

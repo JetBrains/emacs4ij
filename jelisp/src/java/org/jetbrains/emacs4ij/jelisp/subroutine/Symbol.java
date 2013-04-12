@@ -196,7 +196,11 @@ public abstract class Symbol {
   }
 
   @Subroutine("intern")
-  public static LispSymbol intern (Environment environment, LispString name, @Optional LispObject objectArray) {
+  public static LispSymbol intern(LispString name, @Optional LispObject objectArray) {
+    return intern(name.getData(), objectArray);
+  }
+
+  public static LispSymbol intern(String name, LispObject objectArray) {
     //TODO? you cannot intern a given symbol in more than one object array
 
     if (Predicate.isNil(objectArray))
@@ -204,11 +208,11 @@ public abstract class Symbol {
     if (objectArray != null && (!(objectArray instanceof LispVector) || ((LispVector) objectArray).isEmpty()))
       throw new WrongTypeArgumentException("vectorp", objectArray);
 
-    LispSymbol symbol = getSymbol(name.getData(), (LispVector) objectArray);
+    LispSymbol symbol = getSymbol(name, (LispVector) objectArray);
     if (symbol != null)
       return symbol;
 
-    symbol = new LispSymbol(name.getData());
+    symbol = new LispSymbol(name);
 
     if (objectArray == null)
       GlobalEnvironment.INSTANCE.defineSymbol(symbol);

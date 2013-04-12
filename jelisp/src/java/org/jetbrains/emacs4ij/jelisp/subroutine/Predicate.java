@@ -327,5 +327,20 @@ public abstract class Predicate {
     if (!isInteger(i)) throw new WrongTypeArgumentException("integerp", i);
     return ((LispInteger)i).getData();
   }
+
+  @Subroutine("y-or-n-p")
+  public static LispSymbol yesOrNoP(Environment environment, LispString prompt) {
+
+    LispString p = TextProperties.propertize(environment, new LispString(prompt.getData() + "(y or n) "),
+        Symbol.intern("face", null), Symbol.intern("minibuffer-prompt", null));
+
+    //todo use interactive form to
+
+    LispObject map = Symbol.intern("query-replace-map", null).getValue();
+
+
+
+
+  }
 }
 

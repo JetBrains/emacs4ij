@@ -121,8 +121,9 @@ public abstract class LispMinibuffer extends LispBuffer {
     myInteractive.onReadParameter(readInputString());
     if (myInteractive.isFinished()) {
       runInteractive();
-    } else if (!myInteractive.isNoMatch())
+    } else if (!myInteractive.isNoMatch()) {
       myInteractive.readNextArgument();
+    }
   }
 
   public void onInteractiveNoIoInput(InteractiveReader interactive) {

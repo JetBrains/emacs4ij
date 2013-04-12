@@ -60,6 +60,7 @@ public class GlobalEnvironment extends Environment {
   private static List<String> myFilesToLoad = Arrays.asList("emacs-lisp/backquote.el", "jit-lock.el", "emacs-lisp/timer.el",
       "font-core.el", "font-lock.el"
 //      , "help.el", "faces.el"
+      , "replace.el"
   );
 
   public static GlobalEnvironment INSTANCE = null;
@@ -167,13 +168,10 @@ public class GlobalEnvironment extends Environment {
       //note: it's important to load backquote before defsubst
       DefinitionLoader.loadEmacsFile(myFilesToLoad.get(0));
       defineDefForms();
-
       if (TestMode.LOAD_FILES) {
         LogUtil.info(LOG, "start load files");
         for (int i = 1; i < myFilesToLoad.size(); ++i) {
-          String fileName = myFilesToLoad.get(i);
-          LogUtil.info(LOG, "load " + fileName);
-          DefinitionLoader.loadEmacsFile(fileName);
+          DefinitionLoader.loadEmacsFile(myFilesToLoad.get(i));
         }
         LogUtil.info(LOG, "finish load files");
       }
@@ -336,6 +334,10 @@ public class GlobalEnvironment extends Environment {
 
     defineSymbol("parse-sexp-lookup-properties");
     defineSymbol("inhibit-field-text-motion");
+
+    defineSymbol("use-dialog-box", LispSymbol.T);
+
+    //todo last-nonmenu-event
   }
 
   public LispVector getObjectArray() {

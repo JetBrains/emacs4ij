@@ -24,12 +24,12 @@ public final class SpecialFormInteractive extends InteractiveReader {
   private final StandardCompletionContext myCompletionContext = new StandardCompletionContext();
 
   //for tests
-  public SpecialFormInteractive (Environment environment, String interactive) {
+  public SpecialFormInteractive(Environment environment, String interactive) {
     super(environment, null);
     init(interactive);
   }
 
-  public SpecialFormInteractive (Environment environment, LambdaOrSymbolWithFunction function, String interactive) {
+  public SpecialFormInteractive(Environment environment, LambdaOrSymbolWithFunction function, String interactive) {
     super(environment, function);
     init(interactive);
   }
