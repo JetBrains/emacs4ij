@@ -131,11 +131,6 @@ public final class IdeaBuffer extends LispBuffer {
   }
 
   @Override
-  public int getLineStartIndex() {
-    return 1;
-  }
-
-  @Override
   public void setPoint(int position) {
     getEditor().getCaretModel().moveToOffset(position - 1);
   }

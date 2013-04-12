@@ -447,8 +447,8 @@ public abstract class Buffer {
     }
     LispBuffer buffer = environment.getBufferCurrentForEditing();
     int line = buffer.getLine() + n;
-    if (line < 1) line = 1;
-    buffer.goTo(line, buffer.getLineStartIndex());
+    if (line < 0) line = 0;
+    buffer.goTo(line, buffer.getColumnStartIndex());
 
     return LispSymbol.NIL;
   }

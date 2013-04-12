@@ -283,11 +283,6 @@ public final class IdeaMiniBuffer extends LispMinibuffer {
     return getEditor().getCaretModel().getVisualPosition().getColumn() - 1;
   }
 
-  @Override
-  public int getLineStartIndex() {
-    return 1;
-  }
-
   private Editor getEditor() {
     return ((IdeaWindow)getEnvironment().getBufferLastSelectedWindow(this)).getEditor();
   }

@@ -307,10 +307,13 @@ public abstract class LispBuffer implements LispObject, HasTextPropertiesHolder 
   //-------------------------------------------------------------------------------
   public abstract int getLine();
   public abstract int getColumn();
-  public abstract int getLineStartIndex();
+
+  public final int getColumnStartIndex() {
+    return 0;
+  }
 
   public boolean isPointAtLineStart() {
-    return getColumn() == getLineStartIndex();
+    return getColumn() == getColumnStartIndex();
   }
 
   public LispObject evaluateLastForm() {

@@ -82,9 +82,4 @@ public class TestMinibuffer extends LispMinibuffer {
   public int getColumn() {
     throw new UnsupportedOperationException();
   }
-
-  @Override
-  public int getLineStartIndex() {
-    return 1;
-  }
 }
