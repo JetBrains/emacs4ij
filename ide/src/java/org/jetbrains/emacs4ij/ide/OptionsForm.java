@@ -47,7 +47,7 @@ public class OptionsForm extends JFrame {
         : textField.getText();
     JFileChooser fileChooser = new JFileChooser(startDirectory);
     fileChooser.setDialogTitle("Select Emacs " + name + " directory");
-    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
       String dir = fileChooser.getSelectedFile().getAbsolutePath();
       textField.setText(dir);
@@ -60,8 +60,7 @@ public class OptionsForm extends JFrame {
         return false;
       }
     } else {
-      if (GlobalEnvironment.isEmacsPropertyOk(type))
-        return true;
+      if (GlobalEnvironment.isEmacsPropertyOk(type)) return true;
       onWrongProperty(label, type);
       return false;
     }

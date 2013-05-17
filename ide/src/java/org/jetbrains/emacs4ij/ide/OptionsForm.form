@@ -51,8 +51,8 @@
         </constraints>
         <properties>
           <editable value="true"/>
-          <enabled value="false"/>
-          <toolTipText value="The directory where Emacs was installed. In Windows it is usually C:\ProgramFiles and in Linux - /usr/share"/>
+          <enabled value="true"/>
+          <toolTipText value="The directory where Emacs was installed. On Windows it is usually C:\ProgramFiles; on Linux - /usr/share; on MacOS - /Applications/Emacs.app/Contents/Resources"/>
         </properties>
       </component>
       <component id="a1552" class="javax.swing.JLabel" binding="srcLabel">
@@ -72,7 +72,7 @@
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties>
-          <enabled value="false"/>
+          <enabled value="true"/>
           <toolTipText value="To enable Emacs4ij plugin you need to download Emacs sources from http://www.gnu.org/software/emacs/ . Here you should specify the location of the downloaded extracted sources."/>
         </properties>
       </component>

@@ -53,7 +53,7 @@ public final class DefinitionLoader {
   private static List<String> mySkipDirs = Arrays.asList("/language/", "/international/");
 
   public static void initialize (@Nullable DefinitionIndex index) {
-    LogUtil.info("DefinitionLoader: init start");
+    LogUtil.info("DefinitionLoader: init start, index size=" + (index == null ? 0 : index.size()));
 
     if (index == null) {
       index = new DefinitionIndex();

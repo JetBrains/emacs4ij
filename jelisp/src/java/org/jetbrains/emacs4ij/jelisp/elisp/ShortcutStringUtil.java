@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
@@ -30,7 +31,11 @@ abstract class ShortcutStringUtil {
     myReplaceMap.put("<RET>", " ENTER ");
     myReplaceMap.put("<TAB>", " TAB ");
     myReplaceMap.put("\\^", " ctrl ");
-    myReplaceMap.put(regModifier('M'), " alt "); // :)
+    if (System.getProperty("os.name").toLowerCase().startsWith("mac os")) {
+      myReplaceMap.put(regModifier('M'), " meta ");
+    } else {
+      myReplaceMap.put(regModifier('M'), " alt ");
+    }
     myReplaceMap.put(regModifier('C'), " ctrl ");
     myReplaceMap.put(regModifier('S'), " shift ");
     myReplaceMap.put(regModifier('A'), " alt ");
@@ -71,6 +76,7 @@ abstract class ShortcutStringUtil {
       }
       sb.append(item).append(' ');
     }
+    LogUtil.info("shortcut: " + string.getData() + " -> " + sb.toString().trim());
 
     return sb.toString().trim();
   }
