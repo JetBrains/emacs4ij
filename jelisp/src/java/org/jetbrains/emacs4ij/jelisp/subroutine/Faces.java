@@ -109,7 +109,7 @@ public abstract class Faces {
     LispSymbol f;
 
     if (face instanceof LispString) {
-      f = Symbol.intern(environment, (LispString) face, null);
+      f = Symbol.intern((LispString) face, null);
     } else if (!(face instanceof LispSymbol)) {
       return LispSymbol.NIL;
     } else {
@@ -279,7 +279,7 @@ public abstract class Faces {
         if (!(alternative instanceof LispString)) {
           throw new WrongTypeArgumentException("stringp", alternative);
         }
-        itemCopy.add(Symbol.intern(environment, (LispString) alternative, null));
+        itemCopy.add(Symbol.intern((LispString) alternative, null));
       }
 
       copy.add(LispList.list(itemCopy));

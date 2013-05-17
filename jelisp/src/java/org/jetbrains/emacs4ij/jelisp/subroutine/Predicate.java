@@ -338,9 +338,7 @@ public abstract class Predicate {
 
     LispObject map = Symbol.intern("query-replace-map", null).getValue();
 
-
-
-
+    return LispSymbol.NIL;
   }
 }
 
