@@ -64,7 +64,7 @@ public class MyProjectComponent implements ProjectComponent {
 
   private void setToolWindowsEnabled(boolean enabled) {
     if (myHelpArea != null) myHelpArea.setToolWindowEnabled(enabled, myEnvironment);
-    myEchoArea.setToolWindowEnabled(enabled);
+    if (myEchoArea != null) myEchoArea.setToolWindowEnabled(enabled);
   }
 
   @NotNull
