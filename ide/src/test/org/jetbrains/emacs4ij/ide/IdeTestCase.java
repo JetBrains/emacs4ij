@@ -38,14 +38,14 @@ class IdeTestCase extends CodeInsightFixtureTestCase {
 
   private String setGlobalEnv() {
     TestMode.TEST = true;
-//    TestMode.EXTRACT_DOC = false;
-//    TestMode.LOAD_FILES = false;
-//    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
+    TestMode.EXTRACT_DOC = false;
+    TestMode.LOAD_FILES = false;
+    TestMode.INIT_GLOBAL_ENV_FROM_EMACS_SOURCES = false;
 
     if (GlobalEnvironment.INSTANCE == null) {
       LogUtil.info("INIT GLOBAL ENV");
-      GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-      GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
+      GlobalEnvironment.setEmacsSource("/Users/kate/lib/emacs-23.4");
+      GlobalEnvironment.setEmacsHome("/Applications/Emacs.app/Contents/Resources");
       DefinitionLoader.initialize(ServiceManager.getService(EmacsIndexService.class).getEmacsIndex());
       GlobalEnvironment.initialize(new KeymapCreator(), new BufferCreator(), new WindowCreator(), new TestFrameManagerImpl(), new IdeProvider(),
           new Runnable() {
@@ -60,7 +60,7 @@ class IdeTestCase extends CodeInsightFixtureTestCase {
 
     GlobalEnvironment.INSTANCE.defineBuffer(TestIdeaMinibuffer.getInstance());
 
-    return "/home/kate/emacs4ij/ide/src/testSrc/";
+    return "/Users/kate/emacs4ij/ide/src/testSrc/";
   }
 
   protected final void setTestFiles(boolean reverseOrder) {

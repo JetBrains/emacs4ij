@@ -23,8 +23,8 @@ public class JelispTestCase {
 
     if (GlobalEnvironment.INSTANCE == null) {
       LogUtil.info("INIT GLOBAL ENV");
-      GlobalEnvironment.setEmacsSource("/home/kate/Downloads/emacs-23.4");
-      GlobalEnvironment.setEmacsHome("/usr/share/emacs/23.4");
+      GlobalEnvironment.setEmacsSource("/Users/kate/lib/emacs-23.4");
+      GlobalEnvironment.setEmacsHome("/Applications/Emacs.app/Contents/Resources");
       DefinitionLoader.initialize(new DefinitionIndex());
       GlobalEnvironment.initialize(null, null, null, null, new Runnable() {
         @Override
