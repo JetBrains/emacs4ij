@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.KeyboardShortcut;
 import com.intellij.openapi.actionSystem.Shortcut;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.emacs4ij.jelisp.LogUtil;
 import org.jetbrains.emacs4ij.jelisp.parser.ForwardParser;
 import org.jetbrains.emacs4ij.jelisp.parser.exception.ParserException;
 
@@ -76,8 +75,6 @@ abstract class ShortcutStringUtil {
       }
       sb.append(item).append(' ');
     }
-    LogUtil.info("shortcut: " + string.getData() + " -> " + sb.toString().trim());
-
     return sb.toString().trim();
   }
 

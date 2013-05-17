@@ -17,13 +17,6 @@ import org.jetbrains.emacs4ij.jelisp.exception.InternalException;
 import org.jetbrains.emacs4ij.jelisp.exception.WrongTypeArgumentException;
 import org.jetbrains.emacs4ij.jelisp.platformDependent.LispKeymap;
 
-/**
- * Created by IntelliJ IDEA.
- * User: kate
- * Date: 2/15/12
- * Time: 3:31 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class Key {
   private static LispSymbol ourKeyMapSymbol = new LispSymbol("keymap");
 

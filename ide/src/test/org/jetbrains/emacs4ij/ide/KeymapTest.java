@@ -12,10 +12,11 @@ import org.jetbrains.emacs4ij.jelisp.subroutine.Key;
 public class KeymapTest extends IdeTestCase {
   public void testKeymapP() throws Exception {
     evaluateString("(setq k (make-sparse-keymap))");
-    Assert.assertEquals(LispSymbol.T, evaluateString("(keymapp k)"));
+    assertT(evaluateString("(keymapp k)"));
     evaluateString("(setq m 1)");
     evaluateString("(fset 'm (make-sparse-keymap))");
-    Assert.assertEquals(LispSymbol.T, evaluateString("(keymapp 'm)"));
+    assertT(evaluateString("(keymapp 'm)"));
+    assertNil(evaluateString("(keymapp ())"));
   }
 
   public void testMakeKeymap() throws Exception {
