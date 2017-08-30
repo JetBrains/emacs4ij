@@ -1,3 +1,5 @@
+[![obsolete project](http://jb.gg/badges/obsolete.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
 This is a plugin for GNU Emacs support in IntelliJ IDEA. 
 
 To use this plugin you have install GNU Emacs and to download full Emacs sources (http://ftp.gnu.org/pub/gnu/emacs/). Please, use Emacs 23.4.
